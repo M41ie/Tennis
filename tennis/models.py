@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import datetime
 from dataclasses import dataclass, field
-from typing import List, Dict
+from typing import List, Dict, Optional
 
 @dataclass
 class Player:
@@ -10,7 +10,8 @@ class Player:
     name: str
     singles_rating: float = 1000.0
     doubles_rating: float = 1000.0
-    matches: List['Match'] = field(default_factory=list)
+    singles_matches: List['Match'] = field(default_factory=list)
+    doubles_matches: List['DoublesMatch'] = field(default_factory=list)
 
 @dataclass
 class Club:
@@ -19,6 +20,7 @@ class Club:
     logo: str | None = None
     region: str | None = None
     members: Dict[str, Player] = field(default_factory=dict)
+    matches: List['Match | DoublesMatch'] = field(default_factory=list)
 
 @dataclass
 class Match:
@@ -28,3 +30,21 @@ class Match:
     score_a: int
     score_b: int
     format_weight: float = 1.0
+    rating_a_after: Optional[float] = None
+    rating_b_after: Optional[float] = None
+
+
+@dataclass
+class DoublesMatch:
+    date: datetime.date
+    player_a1: Player
+    player_a2: Player
+    player_b1: Player
+    player_b2: Player
+    score_a: int
+    score_b: int
+    format_weight: float = 1.0
+    rating_a1_after: Optional[float] = None
+    rating_a2_after: Optional[float] = None
+    rating_b1_after: Optional[float] = None
+    rating_b2_after: Optional[float] = None

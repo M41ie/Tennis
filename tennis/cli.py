@@ -2,8 +2,13 @@ import argparse
 import datetime
 from typing import Optional
 
-from .models import Player, Club, Match
-from .rating import update_ratings, weighted_rating
+from .models import Player, Club, Match, DoublesMatch
+from .rating import (
+    update_ratings,
+    update_doubles_ratings,
+    weighted_rating,
+    weighted_doubles_rating,
+)
 from .storage import load_data, save_data
 
 
@@ -32,6 +37,85 @@ def record_match(clubs, club_id: str, user_a: str, user_b: str, score_a: int, sc
         raise ValueError('Both players must be in club')
     match = Match(date=date, player_a=pa, player_b=pb, score_a=score_a, score_b=score_b, format_weight=weight)
     update_ratings(match)
+    clubs[club_id].matches.append(match)
+
+    rating_a = weighted_rating(pa, date)
+    rating_b = weighted_rating(pb, date)
+    print(f"New ratings: {pa.name} {rating_a:.1f}, {pb.name} {rating_b:.1f}")
+
+
+def record_doubles(clubs, club_id: str, a1: str, a2: str, b1: str, b2: str, score_a: int, score_b: int, date: datetime.date, weight: float):
+    club = clubs.get(club_id)
+    if not club:
+        raise ValueError('Club not found')
+    pa1 = club.members.get(a1)
+    pa2 = club.members.get(a2)
+    pb1 = club.members.get(b1)
+    pb2 = club.members.get(b2)
+    if not all([pa1, pa2, pb1, pb2]):
+        raise ValueError('All players must be in club')
+    match = DoublesMatch(
+        date=date,
+        player_a1=pa1,
+        player_a2=pa2,
+        player_b1=pb1,
+        player_b2=pb2,
+        score_a=score_a,
+        score_b=score_b,
+        format_weight=weight,
+    )
+    update_doubles_ratings(match)
+    clubs[club_id].matches.append(match)
+    rating_a1 = weighted_doubles_rating(pa1, date)
+    rating_a2 = weighted_doubles_rating(pa2, date)
+    rating_b1 = weighted_doubles_rating(pb1, date)
+    rating_b2 = weighted_doubles_rating(pb2, date)
+    print(
+        f"New doubles ratings: {pa1.name} {rating_a1:.1f}, {pa2.name} {rating_a2:.1f}, "
+        f"{pb1.name} {rating_b1:.1f}, {pb2.name} {rating_b2:.1f}"
+    )
+
+
+def leaderboard(clubs, club_id: str, doubles: bool):
+    club = clubs.get(club_id)
+    if not club:
+        raise ValueError('Club not found')
+    today = datetime.date.today()
+    if doubles:
+        players = [
+            (p.name, weighted_doubles_rating(p, today)) for p in club.members.values()
+        ]
+    else:
+        players = [
+            (p.name, weighted_rating(p, today)) for p in club.members.values()
+        ]
+    for name, rating in sorted(players, key=lambda x: x[1], reverse=True):
+        print(f"{name}: {rating:.1f}")
+
+
+def player_history(clubs, club_id: str, user_id: str, doubles: bool):
+    club = clubs.get(club_id)
+    if not club:
+        raise ValueError('Club not found')
+    player = club.members.get(user_id)
+    if not player:
+        raise ValueError('Player not found')
+    matches = player.doubles_matches if doubles else player.singles_matches
+    for m in matches:
+        if doubles:
+            if m.player_a1 == player:
+                rating = m.rating_a1_after
+            elif m.player_a2 == player:
+                rating = m.rating_a2_after
+            elif m.player_b1 == player:
+                rating = m.rating_b1_after
+            else:
+                rating = m.rating_b2_after
+            opponents = f"{m.player_b1.name}/{m.player_b2.name}" if m.player_a1 == player or m.player_a2 == player else f"{m.player_a1.name}/{m.player_a2.name}"
+        else:
+            rating = m.rating_a_after if m.player_a == player else m.rating_b_after
+            opponents = m.player_b.name if m.player_a == player else m.player_a.name
+        print(f"{m.date.isoformat()} vs {opponents}: {rating:.1f}")
 
 
 def main():
@@ -58,6 +142,26 @@ def main():
     rmatch.add_argument('--date', type=lambda s: datetime.datetime.strptime(s, '%Y-%m-%d').date(), default=datetime.date.today())
     rmatch.add_argument('--weight', type=float, default=1.0)
 
+    rdouble = sub.add_parser('record_doubles')
+    rdouble.add_argument('club_id')
+    rdouble.add_argument('a1')
+    rdouble.add_argument('a2')
+    rdouble.add_argument('b1')
+    rdouble.add_argument('b2')
+    rdouble.add_argument('score_a', type=int)
+    rdouble.add_argument('score_b', type=int)
+    rdouble.add_argument('--date', type=lambda s: datetime.datetime.strptime(s, '%Y-%m-%d').date(), default=datetime.date.today())
+    rdouble.add_argument('--weight', type=float, default=1.0)
+
+    board = sub.add_parser('leaderboard')
+    board.add_argument('club_id')
+    board.add_argument('--doubles', action='store_true')
+
+    hist = sub.add_parser('player_history')
+    hist.add_argument('club_id')
+    hist.add_argument('user_id')
+    hist.add_argument('--doubles', action='store_true')
+
     args = parser.parse_args()
     clubs = load_data()
 
@@ -66,10 +170,35 @@ def main():
     elif args.cmd == 'add_player':
         add_player(clubs, args.club_id, args.user_id, args.name)
     elif args.cmd == 'record_match':
-        record_match(clubs, args.club_id, args.user_a, args.user_b, args.score_a, args.score_b, args.date, args.weight)
-        pa = clubs[args.club_id].members[args.user_a]
-        pb = clubs[args.club_id].members[args.user_b]
-        print(f"New ratings: {pa.name} {pa.singles_rating:.1f}, {pb.name} {pb.singles_rating:.1f}")
+        record_match(
+            clubs,
+            args.club_id,
+            args.user_a,
+            args.user_b,
+            args.score_a,
+            args.score_b,
+            args.date,
+            args.weight,
+        )
+    elif args.cmd == 'record_doubles':
+        record_doubles(
+            clubs,
+            args.club_id,
+            args.a1,
+            args.a2,
+            args.b1,
+            args.b2,
+            args.score_a,
+            args.score_b,
+            args.date,
+            args.weight,
+        )
+    elif args.cmd == 'leaderboard':
+        leaderboard(clubs, args.club_id, args.doubles)
+        return
+    elif args.cmd == 'player_history':
+        player_history(clubs, args.club_id, args.user_id, args.doubles)
+        return
     else:
         parser.print_help()
         return
