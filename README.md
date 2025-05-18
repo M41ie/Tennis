@@ -1,0 +1,17 @@
+# Tennis Rating Prototype
+
+This repository contains a prototype implementation of a tennis rating system
+based on the requirements in the `Requirement` file. It allows creation of
+clubs, registration of players and recording of match scores. Ratings are
+updated with a simplified Elo style algorithm and are time weighted according to
+the last 20 matches.
+
+## Usage
+
+```
+python3 -m tennis.cli create_club CLUB_ID NAME [--logo LOGO] [--region REGION]
+python3 -m tennis.cli add_player CLUB_ID USER_ID NAME
+python3 -m tennis.cli record_match CLUB_ID USER_A USER_B SCORE_A SCORE_B [--date YYYY-MM-DD] [--weight W]
+```
+
+Data is saved to `data.json` in the repository root.
