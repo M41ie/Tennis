@@ -43,11 +43,17 @@ def load_data() -> Dict[str, Club]:
                         score_a=m['score_a'],
                         score_b=m['score_b'],
                         format_weight=m.get('weight', 1.0),
+                        location=m.get('location'),
+                        format_name=m.get('format_name'),
                         rating_a1_after=m.get('rating_a1_after'),
                         rating_a2_after=m.get('rating_a2_after'),
                         rating_b1_after=m.get('rating_b1_after'),
                         rating_b2_after=m.get('rating_b2_after'),
                     )
+                    match.rating_a1_before = m.get('rating_a1_before')
+                    match.rating_a2_before = m.get('rating_a2_before')
+                    match.rating_b1_before = m.get('rating_b1_before')
+                    match.rating_b2_before = m.get('rating_b2_before')
                     club.matches.append(match)
                     ma1.doubles_matches.append(match)
                     ma2.doubles_matches.append(match)
@@ -63,9 +69,13 @@ def load_data() -> Dict[str, Club]:
                         score_a=m['score_a'],
                         score_b=m['score_b'],
                         format_weight=m.get('weight', 1.0),
+                        location=m.get('location'),
+                        format_name=m.get('format_name'),
                         rating_a_after=m.get('rating_a_after'),
                         rating_b_after=m.get('rating_b_after'),
                     )
+                    match.rating_a_before = m.get('rating_a_before')
+                    match.rating_b_before = m.get('rating_b_before')
                     club.matches.append(match)
                     pa.singles_matches.append(match)
                     pb.singles_matches.append(match)
@@ -108,6 +118,12 @@ def save_data(clubs: Dict[str, Club]) -> None:
                     'score_a': m.score_a,
                     'score_b': m.score_b,
                     'weight': m.format_weight,
+                    'location': m.location,
+                    'format_name': m.format_name,
+                    'rating_a1_before': m.rating_a1_before,
+                    'rating_a2_before': m.rating_a2_before,
+                    'rating_b1_before': m.rating_b1_before,
+                    'rating_b2_before': m.rating_b2_before,
                     'rating_a1_after': m.rating_a1_after,
                     'rating_a2_after': m.rating_a2_after,
                     'rating_b1_after': m.rating_b1_after,
@@ -122,6 +138,10 @@ def save_data(clubs: Dict[str, Club]) -> None:
                     'score_a': m.score_a,
                     'score_b': m.score_b,
                     'weight': m.format_weight,
+                    'location': m.location,
+                    'format_name': m.format_name,
+                    'rating_a_before': m.rating_a_before,
+                    'rating_b_before': m.rating_b_before,
                     'rating_a_after': m.rating_a_after,
                     'rating_b_after': m.rating_b_after,
                 })

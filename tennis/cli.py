@@ -60,7 +60,18 @@ def pre_rate(clubs, club_id: str, rater_id: str, target_id: str, rating: float):
     target.doubles_rating = new_rating
 
 
-def record_match(clubs, club_id: str, user_a: str, user_b: str, score_a: int, score_b: int, date: datetime.date, weight: float):
+def record_match(
+    clubs,
+    club_id: str,
+    user_a: str,
+    user_b: str,
+    score_a: int,
+    score_b: int,
+    date: datetime.date,
+    weight: float,
+    location: str | None = None,
+    format_name: str | None = None,
+):
     club = clubs.get(club_id)
     if not club:
         raise ValueError('Club not found')
@@ -68,7 +79,16 @@ def record_match(clubs, club_id: str, user_a: str, user_b: str, score_a: int, sc
     pb = club.members.get(user_b)
     if not pa or not pb:
         raise ValueError('Both players must be in club')
-    match = Match(date=date, player_a=pa, player_b=pb, score_a=score_a, score_b=score_b, format_weight=weight)
+    match = Match(
+        date=date,
+        player_a=pa,
+        player_b=pb,
+        score_a=score_a,
+        score_b=score_b,
+        format_weight=weight,
+        location=location,
+        format_name=format_name,
+    )
     update_ratings(match)
     clubs[club_id].matches.append(match)
 
@@ -79,7 +99,20 @@ def record_match(clubs, club_id: str, user_a: str, user_b: str, score_a: int, sc
     print(f"New ratings: {pa.name} {rating_a:.1f}, {pb.name} {rating_b:.1f}")
 
 
-def record_doubles(clubs, club_id: str, a1: str, a2: str, b1: str, b2: str, score_a: int, score_b: int, date: datetime.date, weight: float):
+def record_doubles(
+    clubs,
+    club_id: str,
+    a1: str,
+    a2: str,
+    b1: str,
+    b2: str,
+    score_a: int,
+    score_b: int,
+    date: datetime.date,
+    weight: float,
+    location: str | None = None,
+    format_name: str | None = None,
+):
     club = clubs.get(club_id)
     if not club:
         raise ValueError('Club not found')
@@ -98,6 +131,8 @@ def record_doubles(clubs, club_id: str, a1: str, a2: str, b1: str, b2: str, scor
         score_a=score_a,
         score_b=score_b,
         format_weight=weight,
+        location=location,
+        format_name=format_name,
     )
     update_doubles_ratings(match)
     clubs[club_id].matches.append(match)
@@ -185,6 +220,61 @@ def leaderboard(
         print(f"{avatar} {p.name}: {rating:.1f}")
 
 
+def get_player_match_cards(clubs, club_id: str, user_id: str):
+    """Return a list of match card info dictionaries for a player."""
+    club = clubs.get(club_id)
+    if not club:
+        raise ValueError("Club not found")
+    player = club.members.get(user_id)
+    if not player:
+        raise ValueError("Player not found")
+
+    cards = []
+    for m in player.singles_matches:
+        if m.player_a == player:
+            opp = m.player_b
+            self_score = m.score_a
+            opp_score = m.score_b
+            self_after = m.rating_a_after
+            self_before = m.rating_a_before
+            opp_after = m.rating_b_after
+            opp_before = m.rating_b_before
+        else:
+            opp = m.player_a
+            self_score = m.score_b
+            opp_score = m.score_a
+            self_after = m.rating_b_after
+            self_before = m.rating_b_before
+            opp_after = m.rating_a_after
+            opp_before = m.rating_a_before
+
+        cards.append(
+            {
+                "date": m.date,
+                "location": m.location,
+                "format": m.format_name,
+                "self_score": self_score,
+                "opponent_score": opp_score,
+                "opponent": opp.name,
+                "self_rating_after": self_after,
+                "self_delta": (
+                    self_after - self_before
+                    if self_after is not None and self_before is not None
+                    else None
+                ),
+                "opponent_rating_after": opp_after,
+                "opponent_delta": (
+                    opp_after - opp_before
+                    if opp_after is not None and opp_before is not None
+                    else None
+                ),
+            }
+        )
+
+    cards.sort(key=lambda x: x["date"], reverse=True)
+    return cards
+
+
 def player_history(clubs, club_id: str, user_id: str, doubles: bool):
     club = clubs.get(club_id)
     if not club:
@@ -192,9 +282,9 @@ def player_history(clubs, club_id: str, user_id: str, doubles: bool):
     player = club.members.get(user_id)
     if not player:
         raise ValueError('Player not found')
-    matches = player.doubles_matches if doubles else player.singles_matches
-    for m in matches:
-        if doubles:
+    if doubles:
+        matches = player.doubles_matches
+        for m in matches:
             if m.player_a1 == player:
                 rating = m.rating_a1_after
             elif m.player_a2 == player:
@@ -203,11 +293,22 @@ def player_history(clubs, club_id: str, user_id: str, doubles: bool):
                 rating = m.rating_b1_after
             else:
                 rating = m.rating_b2_after
-            opponents = f"{m.player_b1.name}/{m.player_b2.name}" if m.player_a1 == player or m.player_a2 == player else f"{m.player_a1.name}/{m.player_a2.name}"
-        else:
-            rating = m.rating_a_after if m.player_a == player else m.rating_b_after
-            opponents = m.player_b.name if m.player_a == player else m.player_a.name
-        print(f"{m.date.isoformat()} vs {opponents}: {rating:.1f}")
+            opponents = (
+                f"{m.player_b1.name}/{m.player_b2.name}"
+                if m.player_a1 == player or m.player_a2 == player
+                else f"{m.player_a1.name}/{m.player_a2.name}"
+            )
+            print(f"{m.date.isoformat()} vs {opponents}: {rating:.1f}")
+    else:
+        cards = get_player_match_cards(clubs, club_id, user_id)
+        for c in cards:
+            delta = c["self_delta"]
+            delta_str = f" ({delta:+.1f})" if delta is not None else ""
+            print(
+                f"{c['date'].isoformat()} {c['location'] or '-'} "
+                f"{c['format'] or '-'} {c['self_score']}-{c['opponent_score']} vs "
+                f"{c['opponent']}: {c['self_rating_after']:.1f}{delta_str}"
+            )
 
 
 def main():
@@ -241,6 +342,7 @@ def main():
     rmatch.add_argument('score_a', type=int)
     rmatch.add_argument('score_b', type=int)
     rmatch.add_argument('--date', type=lambda s: datetime.datetime.strptime(s, '%Y-%m-%d').date(), default=datetime.date.today())
+    rmatch.add_argument('--location')
     rmatch.add_argument('--format', choices=FORMAT_WEIGHTS.keys())
     rmatch.add_argument('--weight', type=float)
 
@@ -253,6 +355,7 @@ def main():
     rdouble.add_argument('score_a', type=int)
     rdouble.add_argument('score_b', type=int)
     rdouble.add_argument('--date', type=lambda s: datetime.datetime.strptime(s, '%Y-%m-%d').date(), default=datetime.date.today())
+    rdouble.add_argument('--location')
     rdouble.add_argument('--format', choices=FORMAT_WEIGHTS.keys())
     rdouble.add_argument('--weight', type=float)
 
@@ -302,6 +405,8 @@ def main():
             args.score_b,
             args.date,
             weight,
+            location=args.location,
+            format_name=args.format,
         )
     elif args.cmd == 'record_doubles':
         weight = args.weight
@@ -320,6 +425,8 @@ def main():
             args.score_b,
             args.date,
             weight,
+            location=args.location,
+            format_name=args.format,
         )
     elif args.cmd == 'leaderboard':
         leaderboard(
