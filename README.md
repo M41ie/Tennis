@@ -15,3 +15,12 @@ python3 -m tennis.cli record_match CLUB_ID USER_A USER_B SCORE_A SCORE_B [--date
 ```
 
 Data is saved to `data.json` in the repository root.
+
+## Running Tests
+
+Install dependencies and execute the test suite:
+
+```bash
+pip install -r requirements.txt
+pytest -q
+```
