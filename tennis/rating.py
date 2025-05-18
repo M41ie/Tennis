@@ -132,10 +132,19 @@ def update_doubles_ratings(match: DoublesMatch) -> Tuple[float, float, float, fl
     total_a = match.player_a1.doubles_rating + match.player_a2.doubles_rating
     total_b = match.player_b1.doubles_rating + match.player_b2.doubles_rating
 
-    delta_a1 = delta_team_a * (match.player_a1.doubles_rating / total_a)
-    delta_a2 = delta_team_a * (match.player_a2.doubles_rating / total_a)
-    delta_b1 = delta_team_b * (match.player_b1.doubles_rating / total_b)
-    delta_b2 = delta_team_b * (match.player_b2.doubles_rating / total_b)
+    if total_a == 0:
+        delta_a1 = delta_team_a / 2
+        delta_a2 = delta_team_a / 2
+    else:
+        delta_a1 = delta_team_a * (match.player_a1.doubles_rating / total_a)
+        delta_a2 = delta_team_a * (match.player_a2.doubles_rating / total_a)
+
+    if total_b == 0:
+        delta_b1 = delta_team_b / 2
+        delta_b2 = delta_team_b / 2
+    else:
+        delta_b1 = delta_team_b * (match.player_b1.doubles_rating / total_b)
+        delta_b2 = delta_team_b * (match.player_b2.doubles_rating / total_b)
 
     match.player_a1.doubles_rating += delta_a1
     match.player_a2.doubles_rating += delta_a2
