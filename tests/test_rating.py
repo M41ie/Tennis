@@ -17,6 +17,7 @@ from tennis.rating import (
     FORMAT_6_GAME,
     FORMAT_4_GAME,
     FORMAT_TB11,
+    FORMAT_TB10,
 )
 
 
@@ -296,5 +297,6 @@ def test_format_name_lookup():
     assert format_weight_from_name("6_game") == FORMAT_6_GAME
     assert format_weight_from_name("4_game") == FORMAT_4_GAME
     assert format_weight_from_name("tb11") == FORMAT_TB11
+    assert format_weight_from_name("tb10") == FORMAT_TB10
     with pytest.raises(ValueError):
         format_weight_from_name("bogus")

@@ -24,6 +24,7 @@ Available format names:
 - `6_game` – standard six game set (`weight=1.0`)
 - `4_game` – shortened four game set (`weight=0.7`)
 - `tb11` – tiebreak to 11 (`weight=0.3`)
+- `tb10` – tiebreak to 10 (`weight=0.27`)
 - `tb7` – tiebreak to 7 (`weight=0.2`)
 
 ### Testing
