@@ -8,6 +8,10 @@ from .models import Player, Match, DoublesMatch, Club
 K_FACTOR = 32
 TIME_DECAY = 0.99
 MAX_HISTORY = 20
+EXPERIENCE_BONUS = 0.1
+# Base rate for experience gain. Kept intentionally small so that
+# accumulated experience only nudges the final rating.
+EXPERIENCE_RATE = 0.05
 
 
 def expected_score(rating_a: float, rating_b: float) -> float:
@@ -47,6 +51,16 @@ def update_ratings(match: Match) -> Tuple[float, float]:
     match.player_a.singles_matches.append(match)
     match.player_b.singles_matches.append(match)
 
+    # Experience gain scales with match format and current rating.
+    def _exp_gain(rating: float) -> float:
+        # Convert rating roughly to a 0-7 scale and apply the difficulty factor
+        level = rating / 1000.0
+        difficulty = 7.0 / max(0.1, 7.0 - level)
+        return games_played * match.format_weight * EXPERIENCE_RATE / difficulty
+
+    match.player_a.experience += _exp_gain(a_rating)
+    match.player_b.experience += _exp_gain(b_rating)
+
     return a_rating, b_rating
 
 
@@ -65,10 +79,12 @@ def weighted_rating(player: Player, as_of: datetime.date) -> float:
             ratings.append(m.rating_b_after or player.singles_rating)
 
     if not ratings:
-        return player.singles_rating
+        base = player.singles_rating
+    else:
+        total_weight = sum(weights)
+        base = sum(r * w for r, w in zip(ratings, weights)) / total_weight
 
-    total_weight = sum(weights)
-    return sum(r * w for r, w in zip(ratings, weights)) / total_weight
+    return base + player.experience * EXPERIENCE_BONUS
 
 
 def update_doubles_ratings(match: DoublesMatch) -> Tuple[float, float, float, float]:
@@ -113,6 +129,16 @@ def update_doubles_ratings(match: DoublesMatch) -> Tuple[float, float, float, fl
     match.player_b1.doubles_matches.append(match)
     match.player_b2.doubles_matches.append(match)
 
+    def _exp_gain(rating: float) -> float:
+        level = rating / 1000.0
+        difficulty = 7.0 / max(0.1, 7.0 - level)
+        return games_played * match.format_weight * EXPERIENCE_RATE / difficulty
+
+    match.player_a1.experience += _exp_gain(match.player_a1.doubles_rating)
+    match.player_a2.experience += _exp_gain(match.player_a2.doubles_rating)
+    match.player_b1.experience += _exp_gain(match.player_b1.doubles_rating)
+    match.player_b2.experience += _exp_gain(match.player_b2.doubles_rating)
+
     return (
         match.rating_a1_after,
         match.rating_a2_after,
@@ -140,10 +166,12 @@ def weighted_doubles_rating(player: Player, as_of: datetime.date) -> float:
             ratings.append(m.rating_b2_after or player.doubles_rating)
 
     if not ratings:
-        return player.doubles_rating
+        base = player.doubles_rating
+    else:
+        total_weight = sum(weights)
+        base = sum(r * w for r, w in zip(ratings, weights)) / total_weight
 
-    total_weight = sum(weights)
-    return sum(r * w for r, w in zip(ratings, weights)) / total_weight
+    return base + player.experience * EXPERIENCE_BONUS
 
 
 def initial_rating_from_votes(player: Player, club: Club, default: float = 1000.0) -> float:
