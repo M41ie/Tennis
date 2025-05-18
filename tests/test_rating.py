@@ -10,6 +10,7 @@ from tennis.rating import (
     weighted_doubles_rating,
     expected_score,
     TIME_DECAY,
+    EXPERIENCE_BONUS,
     initial_rating_from_votes,
 )
 
@@ -37,6 +38,8 @@ def test_update_ratings_basic():
 
     assert pytest.approx(new_a, rel=1e-6) == expected_a
     assert pytest.approx(new_b, rel=1e-6) == expected_b
+    assert a.experience == games
+    assert b.experience == games
     assert pytest.approx(a.singles_rating, rel=1e-6) == expected_a
     assert pytest.approx(b.singles_rating, rel=1e-6) == expected_b
 
@@ -64,7 +67,8 @@ def test_update_ratings_weight_and_margin():
 
     assert pytest.approx(new_a, rel=1e-6) == expected_a
     assert pytest.approx(new_b, rel=1e-6) == expected_b
-
+    assert a.experience == games
+    assert b.experience == games
 
 def test_update_doubles_ratings_basic():
     a1 = Player("a1", "A1")
@@ -102,6 +106,10 @@ def test_update_doubles_ratings_basic():
 
     result = update_doubles_ratings(match)
     assert tuple(pytest.approx(x, rel=1e-6) for x in result) == tuple(pytest.approx(x, rel=1e-6) for x in expected)
+    assert a1.experience == games
+    assert a2.experience == games
+    assert b1.experience == games
+    assert b2.experience == games
 
 
 def test_weighted_rating_time_decay():
@@ -139,7 +147,8 @@ def test_weighted_rating_time_decay():
         else:
             ratings.append(m.rating_b_after)
     total_weight = sum(weights)
-    expected = sum(r * w for r, w in zip(ratings, weights)) / total_weight
+    expected_base = sum(r * w for r, w in zip(ratings, weights)) / total_weight
+    expected = expected_base + a.experience * EXPERIENCE_BONUS
 
     assert pytest.approx(weighted_rating(a, as_of), rel=1e-6) == expected
 
@@ -188,7 +197,8 @@ def test_weighted_doubles_rating_time_decay():
         else:
             ratings.append(m.rating_b2_after)
     total_weight = sum(weights)
-    expected = sum(r * w for r, w in zip(ratings, weights)) / total_weight
+    expected_base = sum(r * w for r, w in zip(ratings, weights)) / total_weight
+    expected = expected_base + a1.experience * EXPERIENCE_BONUS
 
     assert pytest.approx(weighted_doubles_rating(a1, as_of), rel=1e-6) == expected
 
@@ -223,3 +233,46 @@ def test_initial_rating_from_votes_weighting():
 
     expected = ((1100.0 * 2) + (900.0 * 1)) / 3
     assert pytest.approx(rating, rel=1e-6) == expected
+
+
+def test_experience_bonus_accumulates():
+    a = Player("a", "A")
+    b = Player("b", "B")
+
+    m1 = Match(
+        date=datetime.date(2023, 1, 1),
+        player_a=a,
+        player_b=b,
+        score_a=6,
+        score_b=4,
+    )
+    update_ratings(m1)
+    expected_first = a.singles_rating + a.experience * EXPERIENCE_BONUS
+    assert pytest.approx(weighted_rating(a, m1.date), rel=1e-6) == expected_first
+
+    m2 = Match(
+        date=datetime.date(2023, 1, 2),
+        player_a=a,
+        player_b=b,
+        score_a=6,
+        score_b=4,
+    )
+    update_ratings(m2)
+
+    as_of = m2.date
+    weights = []
+    ratings = []
+    for m in reversed(a.singles_matches[-20:]):
+        days = (as_of - m.date).days
+        weight = TIME_DECAY ** days
+        weights.append(weight)
+        if m.player_a == a:
+            ratings.append(m.rating_a_after)
+        else:
+            ratings.append(m.rating_b_after)
+    total_weight = sum(weights)
+    base = sum(r * w for r, w in zip(ratings, weights)) / total_weight
+    expected_second = base + a.experience * EXPERIENCE_BONUS
+
+    assert pytest.approx(weighted_rating(a, as_of), rel=1e-6) == expected_second
+    assert expected_second > expected_first
