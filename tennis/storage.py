@@ -22,6 +22,9 @@ def load_data() -> Dict[str, Club]:
                     singles_rating=p.get('singles_rating', 1000.0),
                     doubles_rating=p.get('doubles_rating', 1000.0),
                     experience=p.get('experience', 0.0),
+                    age=p.get('age'),
+                    gender=p.get('gender'),
+                    avatar=p.get('avatar'),
                 )
                 club.members[pid].pre_ratings.update(p.get('pre_ratings', {}))
             for m in c.get('matches', []):
@@ -78,13 +81,19 @@ def save_data(clubs: Dict[str, Club]) -> None:
             'name': club.name,
             'logo': club.logo,
             'region': club.region,
-            'members': {pid: {
-                'name': p.name,
-                'singles_rating': p.singles_rating,
-                'doubles_rating': p.doubles_rating,
-                'experience': p.experience,
-                'pre_ratings': p.pre_ratings,
-            } for pid, p in club.members.items()},
+            'members': {
+                pid: {
+                    'name': p.name,
+                    'singles_rating': p.singles_rating,
+                    'doubles_rating': p.doubles_rating,
+                    'experience': p.experience,
+                    'pre_ratings': p.pre_ratings,
+                    'age': p.age,
+                    'gender': p.gender,
+                    'avatar': p.avatar,
+                }
+                for pid, p in club.members.items()
+            },
             'matches': [],
         }
         for m in club.matches:
