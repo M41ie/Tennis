@@ -22,6 +22,7 @@ def load_data() -> Dict[str, Club]:
                     singles_rating=p.get('singles_rating', 1000.0),
                     doubles_rating=p.get('doubles_rating', 1000.0),
                 )
+                club.members[pid].pre_ratings.update(p.get('pre_ratings', {}))
             for m in c.get('matches', []):
                 date = datetime.date.fromisoformat(m['date'])
                 if m.get('type') == 'doubles':
@@ -80,6 +81,7 @@ def save_data(clubs: Dict[str, Club]) -> None:
                 'name': p.name,
                 'singles_rating': p.singles_rating,
                 'doubles_rating': p.doubles_rating,
+                'pre_ratings': p.pre_ratings,
             } for pid, p in club.members.items()},
             'matches': [],
         }

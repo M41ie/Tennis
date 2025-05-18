@@ -12,6 +12,8 @@ class Player:
     doubles_rating: float = 1000.0
     singles_matches: List['Match'] = field(default_factory=list)
     doubles_matches: List['DoublesMatch'] = field(default_factory=list)
+    # ratings suggested by other players before any official matches
+    pre_ratings: Dict[str, float] = field(default_factory=dict)
 
 @dataclass
 class Club:
