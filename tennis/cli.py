@@ -41,6 +41,8 @@ def record_match(clubs, club_id: str, user_a: str, user_b: str, score_a: int, sc
 
     rating_a = weighted_rating(pa, date)
     rating_b = weighted_rating(pb, date)
+    pa.singles_rating = rating_a
+    pb.singles_rating = rating_b
     print(f"New ratings: {pa.name} {rating_a:.1f}, {pb.name} {rating_b:.1f}")
 
 
@@ -70,6 +72,10 @@ def record_doubles(clubs, club_id: str, a1: str, a2: str, b1: str, b2: str, scor
     rating_a2 = weighted_doubles_rating(pa2, date)
     rating_b1 = weighted_doubles_rating(pb1, date)
     rating_b2 = weighted_doubles_rating(pb2, date)
+    pa1.doubles_rating = rating_a1
+    pa2.doubles_rating = rating_a2
+    pb1.doubles_rating = rating_b1
+    pb2.doubles_rating = rating_b2
     print(
         f"New doubles ratings: {pa1.name} {rating_a1:.1f}, {pa2.name} {rating_a2:.1f}, "
         f"{pb1.name} {rating_b1:.1f}, {pb2.name} {rating_b2:.1f}"
