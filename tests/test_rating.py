@@ -2,7 +2,7 @@ import datetime
 
 import pytest
 
-from tennis.models import Player, Match, DoublesMatch
+from tennis.models import Player, Match, DoublesMatch, Club
 from tennis.rating import (
     update_ratings,
     update_doubles_ratings,
@@ -10,6 +10,7 @@ from tennis.rating import (
     weighted_doubles_rating,
     expected_score,
     TIME_DECAY,
+    initial_rating_from_votes,
 )
 
 
@@ -190,3 +191,35 @@ def test_weighted_doubles_rating_time_decay():
     expected = sum(r * w for r, w in zip(ratings, weights)) / total_weight
 
     assert pytest.approx(weighted_doubles_rating(a1, as_of), rel=1e-6) == expected
+
+
+def test_initial_rating_from_votes_weighting():
+    club = Club(club_id="c", name="Club")
+
+    r1 = Player("r1", "R1", singles_rating=1200.0)
+    r2 = Player("r2", "R2", singles_rating=800.0)
+    new = Player("n", "New")
+
+    club.members[r1.user_id] = r1
+    club.members[r2.user_id] = r2
+    club.members[new.user_id] = new
+
+    # give r1 two matches and r2 one match to weight r1 higher
+    m_dummy = Match(
+        date=datetime.date(2023, 1, 1),
+        player_a=r1,
+        player_b=r2,
+        score_a=6,
+        score_b=0,
+    )
+    r1.singles_matches.append(m_dummy)
+    r1.singles_matches.append(m_dummy)
+    r2.singles_matches.append(m_dummy)
+
+    new.pre_ratings[r1.user_id] = 1100.0
+    new.pre_ratings[r2.user_id] = 900.0
+
+    rating = initial_rating_from_votes(new, club)
+
+    expected = ((1100.0 * 2) + (900.0 * 1)) / 3
+    assert pytest.approx(rating, rel=1e-6) == expected

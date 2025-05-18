@@ -8,6 +8,7 @@ from .rating import (
     update_doubles_ratings,
     weighted_rating,
     weighted_doubles_rating,
+    initial_rating_from_votes,
 )
 from .storage import load_data, save_data
 
@@ -25,6 +26,22 @@ def add_player(clubs, club_id: str, user_id: str, name: str):
     if user_id in club.members:
         raise ValueError('Player already in club')
     club.members[user_id] = Player(user_id=user_id, name=name)
+
+
+def pre_rate(clubs, club_id: str, rater_id: str, target_id: str, rating: float):
+    """Record a pre-rating for ``target_id`` from ``rater_id``."""
+    club = clubs.get(club_id)
+    if not club:
+        raise ValueError('Club not found')
+    rater = club.members.get(rater_id)
+    target = club.members.get(target_id)
+    if not rater or not target:
+        raise ValueError('Both rater and target must be in club')
+
+    target.pre_ratings[rater_id] = rating
+    new_rating = initial_rating_from_votes(target, club)
+    target.singles_rating = new_rating
+    target.doubles_rating = new_rating
 
 
 def record_match(clubs, club_id: str, user_a: str, user_b: str, score_a: int, score_b: int, date: datetime.date, weight: float):
@@ -139,6 +156,12 @@ def main():
     aplayer.add_argument('user_id')
     aplayer.add_argument('name')
 
+    pre = sub.add_parser('pre_rate')
+    pre.add_argument('club_id')
+    pre.add_argument('rater_id')
+    pre.add_argument('target_id')
+    pre.add_argument('rating', type=float)
+
     rmatch = sub.add_parser('record_match')
     rmatch.add_argument('club_id')
     rmatch.add_argument('user_a')
@@ -175,6 +198,8 @@ def main():
         create_club(clubs, args.club_id, args.name, args.logo, args.region)
     elif args.cmd == 'add_player':
         add_player(clubs, args.club_id, args.user_id, args.name)
+    elif args.cmd == 'pre_rate':
+        pre_rate(clubs, args.club_id, args.rater_id, args.target_id, args.rating)
     elif args.cmd == 'record_match':
         record_match(
             clubs,

@@ -3,7 +3,7 @@ from __future__ import annotations
 import datetime
 from typing import List, Tuple
 
-from .models import Player, Match, DoublesMatch
+from .models import Player, Match, DoublesMatch, Club
 
 K_FACTOR = 32
 TIME_DECAY = 0.99
@@ -144,3 +144,30 @@ def weighted_doubles_rating(player: Player, as_of: datetime.date) -> float:
 
     total_weight = sum(weights)
     return sum(r * w for r, w in zip(ratings, weights)) / total_weight
+
+
+def initial_rating_from_votes(player: Player, club: Club, default: float = 1000.0) -> float:
+    """Calculate a player's starting rating from pre-ratings.
+
+    Each rater's vote is weighted by the number of singles matches they have
+    played in the club. Players with no recorded matches contribute weight 1.
+    If the player has no pre-ratings, ``default`` is returned.
+    """
+
+    if not player.pre_ratings:
+        return default
+
+    total = 0.0
+    weight_sum = 0.0
+    for rater_id, rating in player.pre_ratings.items():
+        rater = club.members.get(rater_id)
+        if not rater:
+            continue
+        weight = max(1, len(rater.singles_matches))
+        total += rating * weight
+        weight_sum += weight
+
+    if weight_sum == 0:
+        return default
+
+    return total / weight_sum
