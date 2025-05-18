@@ -13,6 +13,27 @@ EXPERIENCE_BONUS = 0.1
 # accumulated experience only nudges the final rating.
 EXPERIENCE_RATE = 0.05
 
+# Match format weights
+FORMAT_6_GAME = 1.0
+FORMAT_4_GAME = 0.7
+FORMAT_TB11 = 0.3
+FORMAT_TB7 = 0.2
+
+FORMAT_WEIGHTS = {
+    "6_game": FORMAT_6_GAME,
+    "4_game": FORMAT_4_GAME,
+    "tb11": FORMAT_TB11,
+    "tb7": FORMAT_TB7,
+}
+
+
+def format_weight_from_name(name: str) -> float:
+    """Return the weight constant for the given format name."""
+    key = name.lower()
+    if key not in FORMAT_WEIGHTS:
+        raise ValueError(f"Unknown format '{name}'")
+    return FORMAT_WEIGHTS[key]
+
 
 def expected_score(rating_a: float, rating_b: float) -> float:
     return 1 / (1 + 10 ** ((rating_b - rating_a) / 400))

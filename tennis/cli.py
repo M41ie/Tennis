@@ -9,6 +9,8 @@ from .rating import (
     weighted_rating,
     weighted_doubles_rating,
     initial_rating_from_votes,
+    format_weight_from_name,
+    FORMAT_WEIGHTS,
 )
 from .storage import load_data, save_data
 
@@ -169,7 +171,8 @@ def main():
     rmatch.add_argument('score_a', type=int)
     rmatch.add_argument('score_b', type=int)
     rmatch.add_argument('--date', type=lambda s: datetime.datetime.strptime(s, '%Y-%m-%d').date(), default=datetime.date.today())
-    rmatch.add_argument('--weight', type=float, default=1.0)
+    rmatch.add_argument('--format', choices=FORMAT_WEIGHTS.keys())
+    rmatch.add_argument('--weight', type=float)
 
     rdouble = sub.add_parser('record_doubles')
     rdouble.add_argument('club_id')
@@ -180,7 +183,8 @@ def main():
     rdouble.add_argument('score_a', type=int)
     rdouble.add_argument('score_b', type=int)
     rdouble.add_argument('--date', type=lambda s: datetime.datetime.strptime(s, '%Y-%m-%d').date(), default=datetime.date.today())
-    rdouble.add_argument('--weight', type=float, default=1.0)
+    rdouble.add_argument('--format', choices=FORMAT_WEIGHTS.keys())
+    rdouble.add_argument('--weight', type=float)
 
     board = sub.add_parser('leaderboard')
     board.add_argument('club_id')
@@ -201,6 +205,11 @@ def main():
     elif args.cmd == 'pre_rate':
         pre_rate(clubs, args.club_id, args.rater_id, args.target_id, args.rating)
     elif args.cmd == 'record_match':
+        weight = args.weight
+        if args.format:
+            weight = format_weight_from_name(args.format)
+        if weight is None:
+            weight = format_weight_from_name("6_game")
         record_match(
             clubs,
             args.club_id,
@@ -209,9 +218,14 @@ def main():
             args.score_a,
             args.score_b,
             args.date,
-            args.weight,
+            weight,
         )
     elif args.cmd == 'record_doubles':
+        weight = args.weight
+        if args.format:
+            weight = format_weight_from_name(args.format)
+        if weight is None:
+            weight = format_weight_from_name("6_game")
         record_doubles(
             clubs,
             args.club_id,
@@ -222,7 +236,7 @@ def main():
             args.score_a,
             args.score_b,
             args.date,
-            args.weight,
+            weight,
         )
     elif args.cmd == 'leaderboard':
         leaderboard(clubs, args.club_id, args.doubles)
