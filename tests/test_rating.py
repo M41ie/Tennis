@@ -127,6 +127,38 @@ def test_update_doubles_ratings_basic():
     assert pytest.approx(b2.experience, rel=1e-6) == exp_gain
 
 
+def test_update_doubles_ratings_zero_total():
+    a1 = Player("a1", "A1", doubles_rating=0.0)
+    a2 = Player("a2", "A2", doubles_rating=0.0)
+    b1 = Player("b1", "B1", doubles_rating=0.0)
+    b2 = Player("b2", "B2", doubles_rating=0.0)
+    match = DoublesMatch(
+        date=datetime.date(2023, 1, 1),
+        player_a1=a1,
+        player_a2=a2,
+        player_b1=b1,
+        player_b2=b2,
+        score_a=6,
+        score_b=4,
+    )
+
+    games = match.score_a + match.score_b
+    margin = abs(match.score_a - match.score_b) / games
+    exp_a = expected_score(0.0, 0.0)
+    expected_delta = 32 * (1 - exp_a) * (1 + margin) * match.format_weight
+    delta_each = expected_delta / 2
+
+    result = update_doubles_ratings(match)
+
+    expected = (
+        delta_each,
+        delta_each,
+        -delta_each,
+        -delta_each,
+    )
+
+    assert tuple(pytest.approx(x, rel=1e-6) for x in result) == tuple(pytest.approx(x, rel=1e-6) for x in expected)
+
 def test_weighted_rating_time_decay():
     a = Player("a", "A")
     b = Player("b", "B")
