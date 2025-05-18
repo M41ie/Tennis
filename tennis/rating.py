@@ -48,6 +48,9 @@ def update_ratings(match: Match) -> Tuple[float, float]:
     """
     a_rating = match.player_a.singles_rating
     b_rating = match.player_b.singles_rating
+
+    match.rating_a_before = a_rating
+    match.rating_b_before = b_rating
     exp_a = expected_score(a_rating, b_rating)
     exp_b = 1 - exp_a
 
@@ -114,6 +117,11 @@ def update_doubles_ratings(match: DoublesMatch) -> Tuple[float, float, float, fl
     """Update doubles ratings for all players based on a doubles match."""
     team_a_rating = (match.player_a1.doubles_rating + match.player_a2.doubles_rating) / 2
     team_b_rating = (match.player_b1.doubles_rating + match.player_b2.doubles_rating) / 2
+
+    match.rating_a1_before = match.player_a1.doubles_rating
+    match.rating_a2_before = match.player_a2.doubles_rating
+    match.rating_b1_before = match.player_b1.doubles_rating
+    match.rating_b2_before = match.player_b2.doubles_rating
 
     exp_a = expected_score(team_a_rating, team_b_rating)
     exp_b = 1 - exp_a
