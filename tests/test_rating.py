@@ -11,8 +11,15 @@ from tennis.rating import (
     expected_score,
     TIME_DECAY,
     EXPERIENCE_BONUS,
+    EXPERIENCE_RATE,
     initial_rating_from_votes,
 )
+
+
+def expected_experience(rating: float, games: int, weight: float) -> float:
+    level = rating / 1000.0
+    difficulty = 7.0 / max(0.1, 7.0 - level)
+    return games * weight * EXPERIENCE_RATE / difficulty
 
 
 def test_update_ratings_basic():
@@ -38,8 +45,9 @@ def test_update_ratings_basic():
 
     assert pytest.approx(new_a, rel=1e-6) == expected_a
     assert pytest.approx(new_b, rel=1e-6) == expected_b
-    assert a.experience == games
-    assert b.experience == games
+    exp_gain = expected_experience(1000.0, games, 1.0)
+    assert pytest.approx(a.experience, rel=1e-6) == exp_gain
+    assert pytest.approx(b.experience, rel=1e-6) == exp_gain
     assert pytest.approx(a.singles_rating, rel=1e-6) == expected_a
     assert pytest.approx(b.singles_rating, rel=1e-6) == expected_b
 
@@ -67,8 +75,9 @@ def test_update_ratings_weight_and_margin():
 
     assert pytest.approx(new_a, rel=1e-6) == expected_a
     assert pytest.approx(new_b, rel=1e-6) == expected_b
-    assert a.experience == games
-    assert b.experience == games
+    exp_gain = expected_experience(1100.0, games, 0.7)
+    assert pytest.approx(a.experience, rel=1e-6) == exp_gain
+    assert pytest.approx(b.experience, rel=1e-6) == exp_gain
 
 def test_update_doubles_ratings_basic():
     a1 = Player("a1", "A1")
@@ -106,10 +115,11 @@ def test_update_doubles_ratings_basic():
 
     result = update_doubles_ratings(match)
     assert tuple(pytest.approx(x, rel=1e-6) for x in result) == tuple(pytest.approx(x, rel=1e-6) for x in expected)
-    assert a1.experience == games
-    assert a2.experience == games
-    assert b1.experience == games
-    assert b2.experience == games
+    exp_gain = expected_experience(1000.0, games, 1.0)
+    assert pytest.approx(a1.experience, rel=1e-6) == exp_gain
+    assert pytest.approx(a2.experience, rel=1e-6) == exp_gain
+    assert pytest.approx(b1.experience, rel=1e-6) == exp_gain
+    assert pytest.approx(b2.experience, rel=1e-6) == exp_gain
 
 
 def test_weighted_rating_time_decay():
