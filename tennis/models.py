@@ -10,6 +10,7 @@ class Player:
     name: str
     singles_rating: float = 1000.0
     doubles_rating: float = 1000.0
+    experience: float = 0.0
     singles_matches: List['Match'] = field(default_factory=list)
     doubles_matches: List['DoublesMatch'] = field(default_factory=list)
     # ratings suggested by other players before any official matches
