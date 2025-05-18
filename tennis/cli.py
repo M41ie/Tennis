@@ -21,13 +21,27 @@ def create_club(clubs, club_id: str, name: str, logo: Optional[str], region: Opt
     clubs[club_id] = Club(club_id=club_id, name=name, logo=logo, region=region)
 
 
-def add_player(clubs, club_id: str, user_id: str, name: str):
+def add_player(
+    clubs,
+    club_id: str,
+    user_id: str,
+    name: str,
+    age: int | None = None,
+    gender: str | None = None,
+    avatar: str | None = None,
+):
     club = clubs.get(club_id)
     if not club:
         raise ValueError('Club not found')
     if user_id in club.members:
         raise ValueError('Player already in club')
-    club.members[user_id] = Player(user_id=user_id, name=name)
+    club.members[user_id] = Player(
+        user_id=user_id,
+        name=name,
+        age=age,
+        gender=gender,
+        avatar=avatar,
+    )
 
 
 def pre_rate(clubs, club_id: str, rater_id: str, target_id: str, rating: float):
@@ -101,21 +115,74 @@ def record_doubles(clubs, club_id: str, a1: str, a2: str, b1: str, b2: str, scor
     )
 
 
-def leaderboard(clubs, club_id: str, doubles: bool):
-    club = clubs.get(club_id)
-    if not club:
-        raise ValueError('Club not found')
+def get_leaderboard(
+    clubs,
+    club_id: str | None,
+    doubles: bool,
+    min_rating: float | None = None,
+    max_rating: float | None = None,
+    min_age: int | None = None,
+    max_age: int | None = None,
+    gender: str | None = None,
+):
+    """Collect leaderboard data with optional filters."""
+
     today = datetime.date.today()
-    if doubles:
-        players = [
-            (p.name, weighted_doubles_rating(p, today)) for p in club.members.values()
-        ]
+    if club_id is not None:
+        club = clubs.get(club_id)
+        if not club:
+            raise ValueError("Club not found")
+        clubs_to_iter = [club]
     else:
-        players = [
-            (p.name, weighted_rating(p, today)) for p in club.members.values()
-        ]
-    for name, rating in sorted(players, key=lambda x: x[1], reverse=True):
-        print(f"{name}: {rating:.1f}")
+        clubs_to_iter = list(clubs.values())
+
+    players = []
+    for club in clubs_to_iter:
+        for p in club.members.values():
+            rating = (
+                weighted_doubles_rating(p, today)
+                if doubles
+                else weighted_rating(p, today)
+            )
+            if min_rating is not None and rating < min_rating:
+                continue
+            if max_rating is not None and rating > max_rating:
+                continue
+            if min_age is not None and (p.age is None or p.age < min_age):
+                continue
+            if max_age is not None and (p.age is None or p.age > max_age):
+                continue
+            if gender is not None and p.gender != gender:
+                continue
+            players.append((p, rating))
+
+    players.sort(key=lambda x: x[1], reverse=True)
+    return players
+
+
+def leaderboard(
+    clubs,
+    club_id: str,
+    doubles: bool,
+    min_rating: float | None = None,
+    max_rating: float | None = None,
+    min_age: int | None = None,
+    max_age: int | None = None,
+    gender: str | None = None,
+):
+    data = get_leaderboard(
+        clubs,
+        club_id,
+        doubles,
+        min_rating=min_rating,
+        max_rating=max_rating,
+        min_age=min_age,
+        max_age=max_age,
+        gender=gender,
+    )
+    for p, rating in data:
+        avatar = p.avatar or "-"
+        print(f"{avatar} {p.name}: {rating:.1f}")
 
 
 def player_history(clubs, club_id: str, user_id: str, doubles: bool):
@@ -157,6 +224,9 @@ def main():
     aplayer.add_argument('club_id')
     aplayer.add_argument('user_id')
     aplayer.add_argument('name')
+    aplayer.add_argument('--age', type=int)
+    aplayer.add_argument('--gender')
+    aplayer.add_argument('--avatar')
 
     pre = sub.add_parser('pre_rate')
     pre.add_argument('club_id')
@@ -187,8 +257,13 @@ def main():
     rdouble.add_argument('--weight', type=float)
 
     board = sub.add_parser('leaderboard')
-    board.add_argument('club_id')
+    board.add_argument('club_id', nargs='?')
     board.add_argument('--doubles', action='store_true')
+    board.add_argument('--min-rating', type=float)
+    board.add_argument('--max-rating', type=float)
+    board.add_argument('--min-age', type=int)
+    board.add_argument('--max-age', type=int)
+    board.add_argument('--gender')
 
     hist = sub.add_parser('player_history')
     hist.add_argument('club_id')
@@ -201,7 +276,15 @@ def main():
     if args.cmd == 'create_club':
         create_club(clubs, args.club_id, args.name, args.logo, args.region)
     elif args.cmd == 'add_player':
-        add_player(clubs, args.club_id, args.user_id, args.name)
+        add_player(
+            clubs,
+            args.club_id,
+            args.user_id,
+            args.name,
+            age=args.age,
+            gender=args.gender,
+            avatar=args.avatar,
+        )
     elif args.cmd == 'pre_rate':
         pre_rate(clubs, args.club_id, args.rater_id, args.target_id, args.rating)
     elif args.cmd == 'record_match':
@@ -239,7 +322,16 @@ def main():
             weight,
         )
     elif args.cmd == 'leaderboard':
-        leaderboard(clubs, args.club_id, args.doubles)
+        leaderboard(
+            clubs,
+            args.club_id,
+            args.doubles,
+            min_rating=args.min_rating,
+            max_rating=args.max_rating,
+            min_age=args.min_age,
+            max_age=args.max_age,
+            gender=args.gender,
+        )
         return
     elif args.cmd == 'player_history':
         player_history(clubs, args.club_id, args.user_id, args.doubles)

@@ -15,6 +15,10 @@ class Player:
     doubles_matches: List['DoublesMatch'] = field(default_factory=list)
     # ratings suggested by other players before any official matches
     pre_ratings: Dict[str, float] = field(default_factory=dict)
+    # optional demographic fields for leaderboard filtering
+    age: Optional[int] = None
+    gender: Optional[str] = None
+    avatar: Optional[str] = None
 
 @dataclass
 class Club:
