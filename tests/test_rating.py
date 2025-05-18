@@ -13,6 +13,10 @@ from tennis.rating import (
     EXPERIENCE_BONUS,
     EXPERIENCE_RATE,
     initial_rating_from_votes,
+    format_weight_from_name,
+    FORMAT_6_GAME,
+    FORMAT_4_GAME,
+    FORMAT_TB11,
 )
 
 
@@ -286,3 +290,11 @@ def test_experience_bonus_accumulates():
 
     assert pytest.approx(weighted_rating(a, as_of), rel=1e-6) == expected_second
     assert expected_second > expected_first
+
+
+def test_format_name_lookup():
+    assert format_weight_from_name("6_game") == FORMAT_6_GAME
+    assert format_weight_from_name("4_game") == FORMAT_4_GAME
+    assert format_weight_from_name("tb11") == FORMAT_TB11
+    with pytest.raises(ValueError):
+        format_weight_from_name("bogus")
