@@ -22,6 +22,14 @@ def _init_schema(conn: sqlite3.Connection) -> None:
         "CREATE TABLE IF NOT EXISTS clubs (club_id TEXT PRIMARY KEY, name TEXT, logo TEXT, region TEXT)"
     )
     cur.execute(
+        """CREATE TABLE IF NOT EXISTS users (
+        user_id TEXT PRIMARY KEY,
+        name TEXT,
+        password_hash TEXT,
+        can_create_club INTEGER
+    )"""
+    )
+    cur.execute(
         """CREATE TABLE IF NOT EXISTS players (
         club_id TEXT,
         user_id TEXT,
@@ -214,5 +222,35 @@ def save_data(clubs: Dict[str, Club]) -> None:
                         json.dumps(data),
                     ),
                 )
+    conn.commit()
+    conn.close()
+
+
+def load_users() -> Dict[str, User]:
+    """Load user accounts from the database."""
+    conn = _connect()
+    cur = conn.cursor()
+    users: Dict[str, User] = {}
+    for row in cur.execute("SELECT * FROM users"):
+        users[row["user_id"]] = User(
+            user_id=row["user_id"],
+            name=row["name"],
+            password_hash=row["password_hash"],
+            can_create_club=bool(row["can_create_club"]),
+        )
+    conn.close()
+    return users
+
+
+def save_users(users: Dict[str, User]) -> None:
+    """Persist user accounts to the database."""
+    conn = _connect()
+    cur = conn.cursor()
+    cur.execute("DELETE FROM users")
+    for u in users.values():
+        cur.execute(
+            "INSERT INTO users(user_id, name, password_hash, can_create_club) VALUES (?,?,?,?)",
+            (u.user_id, u.name, u.password_hash, int(u.can_create_club)),
+        )
     conn.commit()
     conn.close()

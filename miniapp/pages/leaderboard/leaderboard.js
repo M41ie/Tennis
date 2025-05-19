@@ -29,14 +29,16 @@ Page({
   fetchPlayers() {
     const club = this.data.clubOptions[this.data.clubIndex];
     const that = this;
-    let url = 'http://localhost:8000/clubs';
-    if (club !== 'All') url += '/' + club + '/players';
-    else {
-      // currently API lacks cross-club listing; use first club if available
-      if (this.data.clubOptions.length > 1) {
-        url += '/' + this.data.clubOptions[1] + '/players';
-      }
+    let url;
+    if (club !== 'All') {
+      url = 'http://localhost:8000/clubs/' + club + '/players';
+    } else {
+      url = 'http://localhost:8000/players';
     }
+    const params = [];
+    if (this.data.minRating) params.push('min_rating=' + this.data.minRating);
+    if (this.data.maxRating) params.push('max_rating=' + this.data.maxRating);
+    if (params.length) url += '?' + params.join('&');
     wx.request({
       url,
       success(res) {

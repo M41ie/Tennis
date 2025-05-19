@@ -2,7 +2,14 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import datetime
 
-from .storage import load_data, save_data
+from .storage import load_data, save_data, load_users, save_users
+from .cli import (
+    register_user,
+    login_user,
+    request_join,
+    approve_member,
+    hash_password,
+)
 from .rating import (
     update_ratings,
     update_doubles_ratings,
@@ -15,6 +22,7 @@ from .models import Player, Club
 app = FastAPI()
 
 clubs = load_data()
+users = load_users()
 
 
 class ClubCreate(BaseModel):
@@ -41,6 +49,77 @@ class MatchCreate(BaseModel):
     format: str | None = None
     weight: float | None = None
     location: str | None = None
+
+
+class UserCreate(BaseModel):
+    user_id: str
+    name: str
+    password: str
+    allow_create: bool = False
+
+
+class LoginRequest(BaseModel):
+    user_id: str
+    password: str
+
+
+class JoinRequest(BaseModel):
+    user_id: str
+
+
+class ApproveRequest(BaseModel):
+    approver_id: str
+    user_id: str
+    admin: bool = False
+
+
+@app.post("/users")
+def register_user_api(data: UserCreate):
+    if data.user_id in users:
+        raise HTTPException(400, "User exists")
+    register_user(
+        users,
+        data.user_id,
+        data.name,
+        data.password,
+        allow_create=data.allow_create,
+    )
+    save_users(users)
+    return {"status": "ok"}
+
+
+@app.post("/login")
+def login_api(data: LoginRequest):
+    if login_user(users, data.user_id, data.password):
+        return {"success": True}
+    return {"success": False}
+
+
+@app.post("/clubs/{club_id}/join")
+def join_club(club_id: str, data: JoinRequest):
+    try:
+        request_join(clubs, users, club_id, data.user_id)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    save_data(clubs)
+    return {"status": "ok"}
+
+
+@app.post("/clubs/{club_id}/approve")
+def approve_club_member(club_id: str, data: ApproveRequest):
+    try:
+        approve_member(
+            clubs,
+            users,
+            club_id,
+            data.approver_id,
+            data.user_id,
+            make_admin=data.admin,
+        )
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    save_data(clubs)
+    return {"status": "ok"}
 
 
 @app.get("/clubs")
@@ -76,6 +155,44 @@ def list_players(club_id: str):
         }
         for p in club.members.values()
     ]
+
+
+@app.get("/players")
+def list_all_players(
+    min_rating: float | None = None,
+    max_rating: float | None = None,
+    gender: str | None = None,
+    club: str | None = None,
+):
+    if club:
+        c = clubs.get(club)
+        if not c:
+            raise HTTPException(404, "Club not found")
+        clubs_to_iter = [c]
+    else:
+        clubs_to_iter = clubs.values()
+    today = datetime.date.today()
+    players = []
+    for c in clubs_to_iter:
+        for p in c.members.values():
+            rating = weighted_rating(p, today)
+            if min_rating is not None and rating < min_rating:
+                continue
+            if max_rating is not None and rating > max_rating:
+                continue
+            if gender is not None and p.gender != gender:
+                continue
+            players.append(
+                {
+                    "club_id": c.club_id,
+                    "user_id": p.user_id,
+                    "name": p.name,
+                    "avatar": p.avatar,
+                    "rating": rating,
+                }
+            )
+    players.sort(key=lambda x: x["rating"], reverse=True)
+    return players
 
 
 @app.post("/clubs/{club_id}/players")
