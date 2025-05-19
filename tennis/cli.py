@@ -24,6 +24,71 @@ def check_password(user: User, password: str) -> bool:
     return user.password_hash == hash_password(password)
 
 
+def register_user(
+    users,
+    user_id: str,
+    name: str,
+    password: str,
+    allow_create: bool = False,
+):
+    """Add a new user account."""
+    if user_id in users:
+        raise ValueError("User already exists")
+    users[user_id] = User(
+        user_id=user_id,
+        name=name,
+        password_hash=hash_password(password),
+        can_create_club=allow_create,
+    )
+
+
+def login_user(users, user_id: str, password: str) -> bool:
+    """Verify a user's password."""
+    user = users.get(user_id)
+    if not user:
+        return False
+    return check_password(user, password)
+
+
+def request_join(clubs, users, club_id: str, user_id: str):
+    """User requests to join a club."""
+    club = clubs.get(club_id)
+    if not club:
+        raise ValueError("Club not found")
+    if user_id in club.banned_ids:
+        raise ValueError("User banned")
+    if user_id in club.members:
+        raise ValueError("Already member")
+    if user_id not in users:
+        raise ValueError("User not registered")
+    club.pending_members.add(user_id)
+
+
+def approve_member(
+    clubs,
+    users,
+    club_id: str,
+    approver_id: str,
+    user_id: str,
+    make_admin: bool = False,
+):
+    """Approve a pending member request."""
+    club = clubs.get(club_id)
+    if not club:
+        raise ValueError("Club not found")
+    if approver_id != club.leader_id and approver_id not in club.admin_ids:
+        raise ValueError("Not authorized")
+    if user_id not in club.pending_members:
+        raise ValueError("No request")
+    club.pending_members.remove(user_id)
+    user = users.get(user_id)
+    if not user:
+        raise ValueError("User not registered")
+    club.members[user_id] = Player(user_id=user.user_id, name=user.name)
+    if make_admin:
+        club.admin_ids.add(user_id)
+
+
 def create_club(users, clubs, user_id: str, club_id: str, name: str, logo: Optional[str], region: Optional[str]):
     user = users.get(user_id)
     if not user or not user.can_create_club:
