@@ -14,11 +14,14 @@ python3 -m tennis.cli create_club USER_ID CLUB_ID NAME [--logo LOGO] [--region R
 python3 -m tennis.cli add_player CLUB_ID USER_ID NAME
 python3 -m tennis.cli pre_rate CLUB_ID RATER_ID TARGET_ID RATING
 python3 -m tennis.cli record_match CLUB_ID USER_A USER_B SCORE_A SCORE_B [--date YYYY-MM-DD] [--format NAME | --weight W]
-python3 -m tennis.cli request_join CLUB_ID USER_ID
-python3 -m tennis.cli approve_member CLUB_ID APPROVER_ID USER_ID [--admin]
+python3 -m tennis.cli submit_match CLUB_ID INITIATOR OPPONENT SCORE_I SCORE_O [--date YYYY-MM-DD] [--format NAME | --weight W]
+python3 -m tennis.cli confirm_match CLUB_ID INDEX USER_ID
+python3 -m tennis.cli approve_match CLUB_ID INDEX APPROVER
 ```
 
 Use `pre_rate` for club members to vote on a new player's skill before any matches are recorded. The player's initial rating is the weighted average of these votes based on each rater's match count.
+
+Match results now go through a confirmation process. Use `submit_match` to start a record. The opponent must run `confirm_match`, then a club leader or admin finalizes it with `approve_match`. Ratings are updated only after approval.
 
 Data is stored in a SQLite database `tennis.db` in the repository root.
 
