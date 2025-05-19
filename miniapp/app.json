@@ -3,5 +3,21 @@
     "pages/leaderboard/leaderboard",
     "pages/records/records",
     "pages/profile/profile"
-  ]
+  ],
+  "tabBar": {
+    "list": [
+      {
+        "pagePath": "pages/leaderboard/leaderboard",
+        "text": "\u6392\u884c"
+      },
+      {
+        "pagePath": "pages/records/records",
+        "text": "\u6218\u7ee9"
+      },
+      {
+        "pagePath": "pages/profile/profile",
+        "text": "\u6211\u7684"
+      }
+    ]
+  }
 }
