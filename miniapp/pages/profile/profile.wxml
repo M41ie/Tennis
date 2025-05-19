@@ -1,0 +1,12 @@
+<view>
+  <block wx:if="{{user}}">
+    <image class="avatar" src="{{user.avatar}}" mode="aspectFill"></image>
+    <view>{{user.name}} ({{user.user_id}})</view>
+    <view>Singles: {{user.singles_rating}}</view>
+    <view>Doubles: {{user.doubles_rating}}</view>
+    <button bindtap="manageClubs">Manage Clubs</button>
+  </block>
+  <block wx:else>
+    <button bindtap="login">Login</button>
+  </block>
+</view>
