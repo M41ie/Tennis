@@ -26,8 +26,11 @@ class Club:
     name: str
     logo: str | None = None
     region: str | None = None
+    leader_id: str | None = None
+    admins: List[str] = field(default_factory=list)
     members: Dict[str, Player] = field(default_factory=dict)
     matches: List['Match | DoublesMatch'] = field(default_factory=list)
+    pending_matches: List['Match | DoublesMatch'] = field(default_factory=list)
 
 @dataclass
 class Match:
@@ -43,6 +46,10 @@ class Match:
     rating_b_before: Optional[float] = None
     rating_a_after: Optional[float] = None
     rating_b_after: Optional[float] = None
+    initiator: str | None = None
+    confirmed_a: bool = False
+    confirmed_b: bool = False
+    approved: bool = False
 
 
 @dataclass
@@ -65,3 +72,7 @@ class DoublesMatch:
     rating_a2_after: Optional[float] = None
     rating_b1_after: Optional[float] = None
     rating_b2_after: Optional[float] = None
+    initiator: str | None = None
+    confirmed_a: bool = False
+    confirmed_b: bool = False
+    approved: bool = False
