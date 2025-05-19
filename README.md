@@ -17,7 +17,7 @@ python3 -m tennis.cli record_match CLUB_ID USER_A USER_B SCORE_A SCORE_B [--date
 
 Use `pre_rate` for club members to vote on a new player's skill before any matches are recorded. The player's initial rating is the weighted average of these votes based on each rater's match count.
 
-Data is saved to `data.json` in the repository root.
+Data is stored in a SQLite database `tennis.db` in the repository root.
 
 Available format names:
 
@@ -26,6 +26,16 @@ Available format names:
 - `tb11` – tiebreak to 11 (`weight=0.3`)
 - `tb10` – tiebreak to 10 (`weight=0.27`)
 - `tb7` – tiebreak to 7 (`weight=0.2`)
+
+### REST API
+
+You can run a simple REST server with FastAPI:
+
+```bash
+python3 -m tennis.api
+```
+
+The API exposes endpoints to create clubs, add players and record matches.
 
 ### Testing
 
