@@ -2,7 +2,17 @@ from __future__ import annotations
 
 import datetime
 from dataclasses import dataclass, field
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Set
+
+
+@dataclass
+class User:
+    """Account data for authentication and permissions."""
+
+    user_id: str
+    name: str
+    password_hash: str
+    can_create_club: bool = False
 
 @dataclass
 class Player:
@@ -26,6 +36,10 @@ class Club:
     name: str
     logo: str | None = None
     region: str | None = None
+    leader_id: str | None = None
+    admin_ids: Set[str] = field(default_factory=set)
+    pending_members: Set[str] = field(default_factory=set)
+    banned_ids: Set[str] = field(default_factory=set)
     members: Dict[str, Player] = field(default_factory=dict)
     matches: List['Match | DoublesMatch'] = field(default_factory=list)
 
