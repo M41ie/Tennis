@@ -4,7 +4,7 @@ import sqlite3
 from pathlib import Path
 from typing import Dict
 
-from .models import Player, Club, Match, DoublesMatch
+from .models import Player, Club, Match, DoublesMatch, User
 
 DB_FILE = Path("tennis.db")
 
@@ -19,7 +19,16 @@ def _connect():
 def _init_schema(conn: sqlite3.Connection) -> None:
     cur = conn.cursor()
     cur.execute(
-        "CREATE TABLE IF NOT EXISTS clubs (club_id TEXT PRIMARY KEY, name TEXT, logo TEXT, region TEXT)"
+        """CREATE TABLE IF NOT EXISTS clubs (
+            club_id TEXT PRIMARY KEY,
+            name TEXT,
+            logo TEXT,
+            region TEXT,
+            leader_id TEXT,
+            admin_ids TEXT,
+            pending_members TEXT,
+            banned_ids TEXT
+        )"""
     )
     cur.execute(
         """CREATE TABLE IF NOT EXISTS players (
@@ -39,6 +48,14 @@ def _init_schema(conn: sqlite3.Connection) -> None:
     cur.execute(
         "CREATE TABLE IF NOT EXISTS matches (id INTEGER PRIMARY KEY AUTOINCREMENT, club_id TEXT, type TEXT, date TEXT, data TEXT)"
     )
+    cur.execute(
+        """CREATE TABLE IF NOT EXISTS users (
+            user_id TEXT PRIMARY KEY,
+            name TEXT,
+            password_hash TEXT,
+            can_create_club INTEGER
+        )"""
+    )
     conn.commit()
 
 
@@ -52,6 +69,10 @@ def load_data() -> Dict[str, Club]:
             name=row["name"],
             logo=row["logo"],
             region=row["region"],
+            leader_id=row["leader_id"],
+            admin_ids=set(json.loads(row["admin_ids"] or "[]")),
+            pending_members=set(json.loads(row["pending_members"] or "[]")),
+            banned_ids=set(json.loads(row["banned_ids"] or "[]")),
         )
 
     for row in cur.execute("SELECT * FROM players"):
@@ -139,8 +160,20 @@ def save_data(clubs: Dict[str, Club]) -> None:
     cur.execute("DELETE FROM matches")
     for cid, club in clubs.items():
         cur.execute(
-            "INSERT INTO clubs(club_id, name, logo, region) VALUES (?,?,?,?)",
-            (cid, club.name, club.logo, club.region),
+            """INSERT INTO clubs(
+                club_id, name, logo, region, leader_id, admin_ids,
+                pending_members, banned_ids
+            ) VALUES (?,?,?,?,?,?,?,?)""",
+            (
+                cid,
+                club.name,
+                club.logo,
+                club.region,
+                club.leader_id,
+                json.dumps(list(club.admin_ids)),
+                json.dumps(list(club.pending_members)),
+                json.dumps(list(club.banned_ids)),
+            ),
         )
         for p in club.members.values():
             cur.execute(
@@ -214,5 +247,33 @@ def save_data(clubs: Dict[str, Club]) -> None:
                         json.dumps(data),
                     ),
                 )
+    conn.commit()
+    conn.close()
+
+
+def load_users() -> Dict[str, User]:
+    conn = _connect()
+    cur = conn.cursor()
+    users: Dict[str, User] = {}
+    for row in cur.execute("SELECT * FROM users"):
+        users[row["user_id"]] = User(
+            user_id=row["user_id"],
+            name=row["name"],
+            password_hash=row["password_hash"],
+            can_create_club=bool(row["can_create_club"]),
+        )
+    conn.close()
+    return users
+
+
+def save_users(users: Dict[str, User]) -> None:
+    conn = _connect()
+    cur = conn.cursor()
+    cur.execute("DELETE FROM users")
+    for u in users.values():
+        cur.execute(
+            "INSERT INTO users(user_id, name, password_hash, can_create_club) VALUES (?,?,?,?)",
+            (u.user_id, u.name, u.password_hash, int(u.can_create_club)),
+        )
     conn.commit()
     conn.close()
