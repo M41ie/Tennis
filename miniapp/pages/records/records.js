@@ -30,5 +30,8 @@ Page({
       content: JSON.stringify(rec),
       showCancel: false
     });
+  },
+  addMatch() {
+    wx.navigateTo({ url: '/pages/addmatch/addmatch' });
   }
 });

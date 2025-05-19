@@ -1,0 +1,18 @@
+<view class="form">
+  <picker mode="selector" range="{{clubOptions}}" value="{{clubIndex}}" bindchange="onClubChange">
+    <view>Club: {{clubOptions[clubIndex]}}</view>
+  </picker>
+  <picker mode="selector" range="{{playerNames}}" value="{{opponentIndex}}" bindchange="onOpponentChange">
+    <view>Opponent: {{playerNames[opponentIndex]}}</view>
+  </picker>
+  <picker mode="date" value="{{date}}" bindchange="onDateChange">
+    <view>Date: {{date}}</view>
+  </picker>
+  <input placeholder="Location" bindinput="onLocation" />
+  <picker mode="selector" range="{{formatOptions}}" value="{{formatIndex}}" bindchange="onFormatChange">
+    <view>Format: {{formatOptions[formatIndex]}}</view>
+  </picker>
+  <input type="number" placeholder="Your Score" bindinput="onScoreA" />
+  <input type="number" placeholder="Opponent Score" bindinput="onScoreB" />
+  <button bindtap="submit">Submit</button>
+</view>
