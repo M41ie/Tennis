@@ -1,8 +1,9 @@
 import argparse
 import datetime
+import hashlib
 from typing import Optional
 
-from .models import Player, Club, Match, DoublesMatch
+from .models import Player, Club, Match, DoublesMatch, User
 from .rating import (
     update_ratings,
     update_doubles_ratings,
@@ -12,13 +13,30 @@ from .rating import (
     format_weight_from_name,
     FORMAT_WEIGHTS,
 )
-from .storage import load_data, save_data
+from .storage import load_data, save_data, load_users, save_users
 
 
-def create_club(clubs, club_id: str, name: str, logo: Optional[str], region: Optional[str]):
+def hash_password(password: str) -> str:
+    return hashlib.sha256(password.encode("utf-8")).hexdigest()
+
+
+def check_password(user: User, password: str) -> bool:
+    return user.password_hash == hash_password(password)
+
+
+def create_club(users, clubs, user_id: str, club_id: str, name: str, logo: Optional[str], region: Optional[str]):
+    user = users.get(user_id)
+    if not user or not user.can_create_club:
+        raise ValueError('User not allowed to create club')
     if club_id in clubs:
         raise ValueError('Club already exists')
-    clubs[club_id] = Club(club_id=club_id, name=name, logo=logo, region=region)
+    clubs[club_id] = Club(
+        club_id=club_id,
+        name=name,
+        logo=logo,
+        region=region,
+        leader_id=user_id,
+    )
 
 
 def add_player(
@@ -58,6 +76,87 @@ def pre_rate(clubs, club_id: str, rater_id: str, target_id: str, rating: float):
     new_rating = initial_rating_from_votes(target, club)
     target.singles_rating = new_rating
     target.doubles_rating = new_rating
+
+
+def submit_match(
+    clubs,
+    club_id: str,
+    initiator: str,
+    opponent: str,
+    score_initiator: int,
+    score_opponent: int,
+    date: datetime.date,
+    weight: float,
+    location: str | None = None,
+    format_name: str | None = None,
+):
+    """Start a match record pending confirmation and approval."""
+    club = clubs.get(club_id)
+    if not club:
+        raise ValueError("Club not found")
+    p_init = club.members.get(initiator)
+    p_opp = club.members.get(opponent)
+    if not p_init or not p_opp:
+        raise ValueError("Both players must be in club")
+    match = Match(
+        date=date,
+        player_a=p_init,
+        player_b=p_opp,
+        score_a=score_initiator,
+        score_b=score_opponent,
+        format_weight=weight,
+        location=location,
+        format_name=format_name,
+        initiator=initiator,
+    )
+    if initiator == p_init.user_id:
+        match.confirmed_a = True
+    else:
+        match.confirmed_b = True
+    club.pending_matches.append(match)
+
+
+def confirm_match(clubs, club_id: str, index: int, user_id: str):
+    """Player confirms a pending match."""
+    club = clubs.get(club_id)
+    if not club:
+        raise ValueError("Club not found")
+    if index >= len(club.pending_matches):
+        raise ValueError("Match not found")
+    match = club.pending_matches[index]
+    if match.player_a.user_id == user_id:
+        match.confirmed_a = True
+    elif match.player_b.user_id == user_id:
+        match.confirmed_b = True
+    else:
+        raise ValueError("User not in match")
+
+
+def approve_match(clubs, club_id: str, index: int, approver: str):
+    """Leader or admin approves a confirmed match and apply ratings."""
+    club = clubs.get(club_id)
+    if not club:
+        raise ValueError("Club not found")
+    if index >= len(club.pending_matches):
+        raise ValueError("Match not found")
+    if approver != club.leader_id and approver not in club.admins:
+        raise ValueError("Not authorized")
+    match = club.pending_matches.pop(index)
+    if not (match.confirmed_a and match.confirmed_b):
+        raise ValueError("Match not confirmed")
+    match.approved = True
+    club.matches.append(match)
+    if isinstance(match, DoublesMatch):
+        update_doubles_ratings(match)
+        players = [match.player_a1, match.player_a2, match.player_b1, match.player_b2]
+        for p in players:
+            p.doubles_rating = weighted_doubles_rating(p, match.date)
+    else:
+        update_ratings(match)
+        pa = match.player_a
+        pb = match.player_b
+        pa.singles_rating = weighted_rating(pa, match.date)
+        pb.singles_rating = weighted_rating(pb, match.date)
 
 
 def record_match(
@@ -316,10 +415,31 @@ def main():
     sub = parser.add_subparsers(dest='cmd')
 
     cclub = sub.add_parser('create_club')
+    cclub.add_argument('user_id')
     cclub.add_argument('club_id')
     cclub.add_argument('name')
     cclub.add_argument('--logo')
     cclub.add_argument('--region')
+
+    reg = sub.add_parser('register_user')
+    reg.add_argument('user_id')
+    reg.add_argument('name')
+    reg.add_argument('password')
+    reg.add_argument('--allow-create', action='store_true')
+
+    login = sub.add_parser('login')
+    login.add_argument('user_id')
+    login.add_argument('password')
+
+    join = sub.add_parser('request_join')
+    join.add_argument('club_id')
+    join.add_argument('user_id')
+
+    approve = sub.add_parser('approve_member')
+    approve.add_argument('club_id')
+    approve.add_argument('approver_id')
+    approve.add_argument('user_id')
+    approve.add_argument('--admin', action='store_true')
 
     aplayer = sub.add_parser('add_player')
     aplayer.add_argument('club_id')
@@ -345,6 +465,27 @@ def main():
     rmatch.add_argument('--location')
     rmatch.add_argument('--format', choices=FORMAT_WEIGHTS.keys())
     rmatch.add_argument('--weight', type=float)
+
+    smatch = sub.add_parser('submit_match')
+    smatch.add_argument('club_id')
+    smatch.add_argument('initiator')
+    smatch.add_argument('opponent')
+    smatch.add_argument('score_i', type=int)
+    smatch.add_argument('score_o', type=int)
+    smatch.add_argument('--date', type=lambda s: datetime.datetime.strptime(s, '%Y-%m-%d').date(), default=datetime.date.today())
+    smatch.add_argument('--location')
+    smatch.add_argument('--format', choices=FORMAT_WEIGHTS.keys())
+    smatch.add_argument('--weight', type=float)
+
+    cconfirm = sub.add_parser('confirm_match')
+    cconfirm.add_argument('club_id')
+    cconfirm.add_argument('index', type=int)
+    cconfirm.add_argument('user_id')
+
+    capprove = sub.add_parser('approve_match')
+    capprove.add_argument('club_id')
+    capprove.add_argument('index', type=int)
+    capprove.add_argument('approver')
 
     rdouble = sub.add_parser('record_doubles')
     rdouble.add_argument('club_id')
@@ -375,9 +516,22 @@ def main():
 
     args = parser.parse_args()
     clubs = load_data()
+    users = load_users()
 
     if args.cmd == 'create_club':
-        create_club(clubs, args.club_id, args.name, args.logo, args.region)
+        create_club(users, clubs, args.user_id, args.club_id, args.name, args.logo, args.region)
+    elif args.cmd == 'register_user':
+        register_user(users, args.user_id, args.name, args.password, allow_create=args.allow_create)
+    elif args.cmd == 'login':
+        if login_user(users, args.user_id, args.password):
+            print('Login successful')
+        else:
+            print('Login failed')
+        return
+    elif args.cmd == 'request_join':
+        request_join(clubs, users, args.club_id, args.user_id)
+    elif args.cmd == 'approve_member':
+        approve_member(clubs, users, args.club_id, args.approver_id, args.user_id, make_admin=args.admin)
     elif args.cmd == 'add_player':
         add_player(
             clubs,
@@ -408,6 +562,28 @@ def main():
             location=args.location,
             format_name=args.format,
         )
+    elif args.cmd == 'submit_match':
+        weight = args.weight
+        if args.format:
+            weight = format_weight_from_name(args.format)
+        if weight is None:
+            weight = format_weight_from_name("6_game")
+        submit_match(
+            clubs,
+            args.club_id,
+            args.initiator,
+            args.opponent,
+            args.score_i,
+            args.score_o,
+            args.date,
+            weight,
+            location=args.location,
+            format_name=args.format,
+        )
+    elif args.cmd == 'confirm_match':
+        confirm_match(clubs, args.club_id, args.index, args.user_id)
+    elif args.cmd == 'approve_match':
+        approve_match(clubs, args.club_id, args.index, args.approver)
     elif args.cmd == 'record_doubles':
         weight = args.weight
         if args.format:
@@ -448,6 +624,7 @@ def main():
         return
 
     save_data(clubs)
+    save_users(users)
 
 
 if __name__ == '__main__':
