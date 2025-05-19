@@ -204,7 +204,7 @@ def approve_match(clubs, club_id: str, index: int, approver: str):
         raise ValueError("Club not found")
     if index >= len(club.pending_matches):
         raise ValueError("Match not found")
-    if approver != club.leader_id and approver not in club.admins:
+    if approver != club.leader_id and approver not in club.admin_ids:
         raise ValueError("Not authorized")
     match = club.pending_matches.pop(index)
     if not (match.confirmed_a and match.confirmed_b):
