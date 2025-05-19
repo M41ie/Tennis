@@ -9,7 +9,8 @@ the last 20 matches.
 ## Usage
 
 ```
-python3 -m tennis.cli create_club CLUB_ID NAME [--logo LOGO] [--region REGION]
+python3 -m tennis.cli register_user USER_ID NAME PASSWORD [--allow-create]
+python3 -m tennis.cli create_club USER_ID CLUB_ID NAME [--logo LOGO] [--region REGION]
 python3 -m tennis.cli add_player CLUB_ID USER_ID NAME
 python3 -m tennis.cli pre_rate CLUB_ID RATER_ID TARGET_ID RATING
 python3 -m tennis.cli record_match CLUB_ID USER_A USER_B SCORE_A SCORE_B [--date YYYY-MM-DD] [--format NAME | --weight W]
@@ -23,6 +24,10 @@ Use `pre_rate` for club members to vote on a new player's skill before any match
 Match results now go through a confirmation process. Use `submit_match` to start a record. The opponent must run `confirm_match`, then a club leader or admin finalizes it with `approve_match`. Ratings are updated only after approval.
 
 Data is stored in a SQLite database `tennis.db` in the repository root.
+
+Basic account management is available. Register users with `register_user` and
+only accounts marked with `--allow-create` can create clubs. Players must
+request to join a club and be approved by the club leader or an administrator.
 
 Available format names:
 

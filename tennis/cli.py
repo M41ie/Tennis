@@ -1,8 +1,9 @@
 import argparse
 import datetime
+import hashlib
 from typing import Optional
 
-from .models import Player, Club, Match, DoublesMatch
+from .models import Player, Club, Match, DoublesMatch, User
 from .rating import (
     update_ratings,
     update_doubles_ratings,
@@ -12,13 +13,30 @@ from .rating import (
     format_weight_from_name,
     FORMAT_WEIGHTS,
 )
-from .storage import load_data, save_data
+from .storage import load_data, save_data, load_users, save_users
 
 
-def create_club(clubs, club_id: str, name: str, logo: Optional[str], region: Optional[str]):
+def hash_password(password: str) -> str:
+    return hashlib.sha256(password.encode("utf-8")).hexdigest()
+
+
+def check_password(user: User, password: str) -> bool:
+    return user.password_hash == hash_password(password)
+
+
+def create_club(users, clubs, user_id: str, club_id: str, name: str, logo: Optional[str], region: Optional[str]):
+    user = users.get(user_id)
+    if not user or not user.can_create_club:
+        raise ValueError('User not allowed to create club')
     if club_id in clubs:
         raise ValueError('Club already exists')
-    clubs[club_id] = Club(club_id=club_id, name=name, logo=logo, region=region)
+    clubs[club_id] = Club(
+        club_id=club_id,
+        name=name,
+        logo=logo,
+        region=region,
+        leader_id=user_id,
+    )
 
 
 def add_player(
@@ -397,10 +415,31 @@ def main():
     sub = parser.add_subparsers(dest='cmd')
 
     cclub = sub.add_parser('create_club')
+    cclub.add_argument('user_id')
     cclub.add_argument('club_id')
     cclub.add_argument('name')
     cclub.add_argument('--logo')
     cclub.add_argument('--region')
+
+    reg = sub.add_parser('register_user')
+    reg.add_argument('user_id')
+    reg.add_argument('name')
+    reg.add_argument('password')
+    reg.add_argument('--allow-create', action='store_true')
+
+    login = sub.add_parser('login')
+    login.add_argument('user_id')
+    login.add_argument('password')
+
+    join = sub.add_parser('request_join')
+    join.add_argument('club_id')
+    join.add_argument('user_id')
+
+    approve = sub.add_parser('approve_member')
+    approve.add_argument('club_id')
+    approve.add_argument('approver_id')
+    approve.add_argument('user_id')
+    approve.add_argument('--admin', action='store_true')
 
     aplayer = sub.add_parser('add_player')
     aplayer.add_argument('club_id')
@@ -477,9 +516,22 @@ def main():
 
     args = parser.parse_args()
     clubs = load_data()
+    users = load_users()
 
     if args.cmd == 'create_club':
-        create_club(clubs, args.club_id, args.name, args.logo, args.region)
+        create_club(users, clubs, args.user_id, args.club_id, args.name, args.logo, args.region)
+    elif args.cmd == 'register_user':
+        register_user(users, args.user_id, args.name, args.password, allow_create=args.allow_create)
+    elif args.cmd == 'login':
+        if login_user(users, args.user_id, args.password):
+            print('Login successful')
+        else:
+            print('Login failed')
+        return
+    elif args.cmd == 'request_join':
+        request_join(clubs, users, args.club_id, args.user_id)
+    elif args.cmd == 'approve_member':
+        approve_member(clubs, users, args.club_id, args.approver_id, args.user_id, make_admin=args.admin)
     elif args.cmd == 'add_player':
         add_player(
             clubs,
@@ -572,6 +624,7 @@ def main():
         return
 
     save_data(clubs)
+    save_users(users)
 
 
 if __name__ == '__main__':

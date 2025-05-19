@@ -4,7 +4,7 @@ import sqlite3
 from pathlib import Path
 from typing import Dict
 
-from .models import Player, Club, Match, DoublesMatch
+from .models import Player, Club, Match, DoublesMatch, User
 
 DB_FILE = Path("tennis.db")
 
