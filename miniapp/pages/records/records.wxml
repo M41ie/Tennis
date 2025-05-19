@@ -1,3 +1,4 @@
+<button class="add" bindtap="addMatch">\u5f55\u5165\u6218\u7ee9</button>
 <view class="list">
   <block wx:for="{{records}}" wx:key="index">
     <view class="item" bindtap="viewRecord" data-index="{{index}}">

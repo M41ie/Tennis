@@ -51,6 +51,18 @@ class MatchCreate(BaseModel):
     location: str | None = None
 
 
+class PendingMatchCreate(BaseModel):
+    club_id: str | None = None  # optional alternate clubs
+    initiator: str
+    opponent: str
+    score_initiator: int
+    score_opponent: int
+    date: datetime.date | None = None
+    format: str | None = None
+    weight: float | None = None
+    location: str | None = None
+
+
 class UserCreate(BaseModel):
     user_id: str
     name: str
@@ -274,6 +286,62 @@ def record_match_api(club_id: str, data: MatchCreate):
     club.matches.append(match)
     pa.singles_rating = weighted_rating(pa, date)
     pb.singles_rating = weighted_rating(pb, date)
+    save_data(clubs)
+    return {"status": "ok"}
+
+
+@app.post("/clubs/{club_id}/pending_matches")
+def submit_match_api(club_id: str, data: PendingMatchCreate):
+    from .cli import submit_match
+
+    cid = data.club_id or club_id
+    try:
+        submit_match(
+            clubs,
+            cid,
+            data.initiator,
+            data.opponent,
+            data.score_initiator,
+            data.score_opponent,
+            data.date or datetime.date.today(),
+            data.weight or (format_weight_from_name(data.format) if data.format else format_weight_from_name("6_game")),
+            location=data.location,
+            format_name=data.format,
+        )
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    save_data(clubs)
+    return {"status": "pending"}
+
+
+class ConfirmRequest(BaseModel):
+    user_id: str
+
+
+class ApproveMatchRequest(BaseModel):
+    approver: str
+
+
+@app.post("/clubs/{club_id}/pending_matches/{index}/confirm")
+def confirm_match_api(club_id: str, index: int, data: ConfirmRequest):
+    from .cli import confirm_match
+
+    try:
+        confirm_match(clubs, club_id, index, data.user_id)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    save_data(clubs)
+    return {"status": "ok"}
+
+
+@app.post("/clubs/{club_id}/pending_matches/{index}/approve")
+def approve_match_api(club_id: str, index: int, data: ApproveMatchRequest):
+    from .cli import approve_match
+
+    try:
+        approve_match(clubs, club_id, index, data.approver)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
     save_data(clubs)
     return {"status": "ok"}
 
