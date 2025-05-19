@@ -1,0 +1,15 @@
+<view class="filters">
+  <picker mode="selector" value="0" bindchange="onClubChange" range="{{clubOptions}}">
+    <view>Club: {{clubOptions[clubIndex]}}</view>
+  </picker>
+  <input type="number" placeholder="Min Rating" bindinput="onMinRating" />
+  <input type="number" placeholder="Max Rating" bindinput="onMaxRating" />
+</view>
+<view class="list">
+  <block wx:for="{{players}}" wx:key="user_id">
+    <view class="item" bindtap="viewPlayer" data-id="{{item.user_id}}">
+      <image class="avatar" src="{{item.avatar}}" mode="aspectFill"></image>
+      <text>{{item.name}}: {{item.rating}}</text>
+    </view>
+  </block>
+</view>

@@ -21,13 +21,7 @@ python3 -m tennis.cli approve_match CLUB_ID INDEX APPROVER
 
 Use `pre_rate` for club members to vote on a new player's skill before any matches are recorded. The player's initial rating is the weighted average of these votes based on each rater's match count.
 
-Match results now go through a confirmation process. Use `submit_match` to start a record. The opponent must run `confirm_match`, then a club leader or admin finalizes it with `approve_match`. Ratings are updated only after approval.
-
 Data is stored in a SQLite database `tennis.db` in the repository root.
-
-Basic account management is available. Register users with `register_user` and
-only accounts marked with `--allow-create` can create clubs. Players must
-request to join a club and be approved by the club leader or an administrator.
 
 Available format names:
 
@@ -46,6 +40,19 @@ python3 -m tennis.api
 ```
 
 The API exposes endpoints to create clubs, add players and record matches.
+
+### Mini App
+
+The `miniapp` directory contains a very small WeChat Mini Program that
+demonstrates how a front‑end could consume the REST API. It provides three
+pages:
+
+* **Leaderboard** – displays player ratings with basic club and rating filters
+* **Match Records** – shows the logged in user's recent matches
+* **Profile** – displays user information and links to club management
+
+To run the mini program, build it with the WeChat Developer Tools and start the
+REST API server as shown above.
 
 ### Testing
 

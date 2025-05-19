@@ -1,0 +1,9 @@
+<view class="list">
+  <block wx:for="{{records}}" wx:key="index">
+    <view class="item" bindtap="viewRecord" data-index="{{index}}">
+      <view>{{item.date}} {{item.location}}</view>
+      <view>{{item.format}} {{item.self_score}}-{{item.opponent_score}}</view>
+      <view>{{item.self_rating_after}} ({{item.self_delta}})</view>
+    </view>
+  </block>
+</view>

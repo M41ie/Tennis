@@ -96,6 +96,38 @@ def add_player(club_id: str, data: PlayerCreate):
     return {"status": "ok"}
 
 
+@app.get("/clubs/{club_id}/players/{user_id}")
+def get_player(club_id: str, user_id: str):
+    club = clubs.get(club_id)
+    if not club:
+        raise HTTPException(404, "Club not found")
+    player = club.members.get(user_id)
+    if not player:
+        raise HTTPException(404, "Player not found")
+    today = datetime.date.today()
+    return {
+        "user_id": player.user_id,
+        "name": player.name,
+        "avatar": player.avatar,
+        "singles_rating": weighted_rating(player, today),
+        "doubles_rating": weighted_doubles_rating(player, today),
+    }
+
+
+@app.get("/clubs/{club_id}/players/{user_id}/records")
+def get_player_records(club_id: str, user_id: str):
+    from .cli import get_player_match_cards
+
+    try:
+        cards = get_player_match_cards(clubs, club_id, user_id)
+    except ValueError as e:
+        raise HTTPException(404, str(e))
+    # convert dates to iso strings
+    for c in cards:
+        c["date"] = c["date"].isoformat()
+    return cards
+
+
 @app.post("/clubs/{club_id}/matches")
 def record_match_api(club_id: str, data: MatchCreate):
     club = clubs.get(club_id)

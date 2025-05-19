@@ -1,0 +1,7 @@
+{
+  "pages": [
+    "pages/leaderboard/leaderboard",
+    "pages/records/records",
+    "pages/profile/profile"
+  ]
+}
