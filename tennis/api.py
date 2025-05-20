@@ -8,6 +8,7 @@ from .cli import (
     login_user,
     request_join,
     approve_member,
+    create_club as cli_create_club,
     hash_password,
 )
 from .rating import (
@@ -28,6 +29,7 @@ users = load_users()
 class ClubCreate(BaseModel):
     club_id: str
     name: str
+    user_id: str
     logo: str | None = None
     region: str | None = None
 
@@ -114,6 +116,7 @@ def join_club(club_id: str, data: JoinRequest):
     except ValueError as e:
         raise HTTPException(400, str(e))
     save_data(clubs)
+    save_users(users)
     return {"status": "ok"}
 
 
@@ -131,6 +134,7 @@ def approve_club_member(club_id: str, data: ApproveRequest):
     except ValueError as e:
         raise HTTPException(400, str(e))
     save_data(clubs)
+    save_users(users)
     return {"status": "ok"}
 
 
@@ -141,15 +145,20 @@ def list_clubs():
 
 @app.post("/clubs")
 def create_club(data: ClubCreate):
-    if data.club_id in clubs:
-        raise HTTPException(400, "Club exists")
-    clubs[data.club_id] = Club(
-        club_id=data.club_id,
-        name=data.name,
-        logo=data.logo,
-        region=data.region,
-    )
+    try:
+        cli_create_club(
+            users,
+            clubs,
+            data.user_id,
+            data.club_id,
+            data.name,
+            data.logo,
+            data.region,
+        )
+    except ValueError as e:
+        raise HTTPException(400, str(e))
     save_data(clubs)
+    save_users(users)
     return {"status": "ok"}
 
 
