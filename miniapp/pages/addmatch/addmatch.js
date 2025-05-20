@@ -8,7 +8,7 @@ Page({
     opponentIndex: 0,
     date: '',
     location: '',
-    formatOptions: ['6_game', 'pro_set', '3_set', 'tb11', 'tb10', 'tb7'],
+    formatOptions: ['6_game', '4_game', 'tb11', 'tb10', 'tb7'],
     formatIndex: 0,
     scoreA: '',
     scoreB: ''
