@@ -4,6 +4,10 @@ import datetime
 from dataclasses import dataclass, field
 from typing import List, Dict, Optional, Set
 
+# Limits on how many clubs a user may create or join
+MAX_CREATED_CLUBS = 1
+MAX_JOINED_CLUBS = 5
+
 
 @dataclass
 class User:
@@ -13,6 +17,10 @@ class User:
     name: str
     password_hash: str
     can_create_club: bool = False
+    # Number of clubs this user has created
+    created_clubs: int = 0
+    # Number of clubs the user has joined
+    joined_clubs: int = 0
 
 @dataclass
 class Player:

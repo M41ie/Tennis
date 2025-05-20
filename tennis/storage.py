@@ -26,7 +26,9 @@ def _init_schema(conn: sqlite3.Connection) -> None:
         user_id TEXT PRIMARY KEY,
         name TEXT,
         password_hash TEXT,
-        can_create_club INTEGER
+        can_create_club INTEGER,
+        created_clubs INTEGER DEFAULT 0,
+        joined_clubs INTEGER DEFAULT 0
     )"""
     )
     cur.execute(
@@ -237,6 +239,8 @@ def load_users() -> Dict[str, User]:
             name=row["name"],
             password_hash=row["password_hash"],
             can_create_club=bool(row["can_create_club"]),
+            created_clubs=row["created_clubs"],
+            joined_clubs=row["joined_clubs"],
         )
     conn.close()
     return users
@@ -249,8 +253,15 @@ def save_users(users: Dict[str, User]) -> None:
     cur.execute("DELETE FROM users")
     for u in users.values():
         cur.execute(
-            "INSERT INTO users(user_id, name, password_hash, can_create_club) VALUES (?,?,?,?)",
-            (u.user_id, u.name, u.password_hash, int(u.can_create_club)),
+            "INSERT INTO users(user_id, name, password_hash, can_create_club, created_clubs, joined_clubs) VALUES (?,?,?,?,?,?)",
+            (
+                u.user_id,
+                u.name,
+                u.password_hash,
+                int(u.can_create_club),
+                u.created_clubs,
+                u.joined_clubs,
+            ),
         )
     conn.commit()
     conn.close()
