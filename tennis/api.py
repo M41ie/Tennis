@@ -17,7 +17,7 @@ from .rating import (
     weighted_doubles_rating,
     format_weight_from_name,
 )
-from .models import Player, Club
+from .models import Player, Club, Match
 
 app = FastAPI()
 
