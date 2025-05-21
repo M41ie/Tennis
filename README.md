@@ -33,9 +33,11 @@ Available format names:
 
 ### REST API
 
-You can run a simple REST server with FastAPI:
+You can run a simple REST server with FastAPI. Install the required
+packages first:
 
 ```bash
+python3 -m pip install -r requirements.txt
 python3 -m tennis.api
 ```
 
@@ -59,8 +61,8 @@ REST API server as shown above.
 To run the test suite:
 
 ```bash
-# Install test dependencies
-python3 -m pip install pytest
+# Install dependencies
+python3 -m pip install -r requirements.txt
 
 # Execute the tests from the repository root
 pytest
