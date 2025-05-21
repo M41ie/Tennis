@@ -42,10 +42,10 @@ def test_api_match_flow(tmp_path, monkeypatch):
     assert resp.json()["status"] == "ok"
 
     # add players
-    for pid in ("p1", "p2"):
+    for pid, token in (("p1", token_p1), ("p2", token_p2)):
         resp = client.post(
             f"/clubs/c1/players",
-            json={"user_id": pid, "name": pid.upper()},
+            json={"user_id": pid, "name": pid.upper(), "token": token},
         )
         assert resp.status_code == 200
         assert resp.json()["status"] == "ok"
@@ -131,3 +131,130 @@ def test_invalid_token(tmp_path, monkeypatch):
         json={"club_id": "c1", "name": "Club", "user_id": "u1", "token": token},
     )
     assert resp.status_code == 200
+
+
+def test_prerate_api(tmp_path, monkeypatch):
+    db = tmp_path / "tennis.db"
+    monkeypatch.setattr(storage, "DB_FILE", db)
+
+    api = importlib.reload(importlib.import_module("tennis.api"))
+    client = TestClient(api.app)
+
+    for uid, allow in [("leader", True), ("r1", False), ("r2", False)]:
+        client.post(
+            "/users",
+            json={"user_id": uid, "name": uid.upper(), "password": "pw", "allow_create": allow},
+        )
+
+    token_leader = client.post("/login", json={"user_id": "leader", "password": "pw"}).json()["token"]
+    token_r1 = client.post("/login", json={"user_id": "r1", "password": "pw"}).json()["token"]
+    token_r2 = client.post("/login", json={"user_id": "r2", "password": "pw"}).json()["token"]
+
+    client.post(
+        "/clubs",
+        json={"club_id": "c1", "name": "C1", "user_id": "leader", "token": token_leader},
+    )
+    for pid, tok in (("r1", token_r1), ("r2", token_r2)):
+        client.post(
+            "/clubs/c1/players",
+            json={"user_id": pid, "name": pid.upper(), "token": tok},
+        )
+
+    resp = client.post(
+        "/clubs/c1/prerate",
+        json={"rater_id": "r1", "target_id": "r2", "rating": 1200, "token": token_r1},
+    )
+    assert resp.status_code == 200
+
+    data = storage.load_data()
+    assert data["c1"].members["r2"].pre_ratings["r1"] == 1200
+
+    resp = client.post(
+        "/clubs/c1/prerate",
+        json={"rater_id": "r1", "target_id": "x", "rating": 1000, "token": token_r1},
+    )
+    assert resp.status_code == 400
+
+
+def test_doubles_match_flow(tmp_path, monkeypatch):
+    db = tmp_path / "tennis.db"
+    monkeypatch.setattr(storage, "DB_FILE", db)
+
+    api = importlib.reload(importlib.import_module("tennis.api"))
+    client = TestClient(api.app)
+
+    # register users
+    for uid in ("leader", "p1", "p2", "p3", "p4"):
+        allow = uid == "leader"
+        client.post(
+            "/users",
+            json={"user_id": uid, "name": uid.upper(), "password": "pw", "allow_create": allow},
+        )
+
+    token_leader = client.post("/login", json={"user_id": "leader", "password": "pw"}).json()["token"]
+    tokens = {
+        pid: client.post("/login", json={"user_id": pid, "password": "pw"}).json()["token"]
+        for pid in ("p1", "p2", "p3", "p4")
+    }
+
+    client.post(
+        "/clubs",
+        json={"club_id": "c1", "name": "C1", "user_id": "leader", "token": token_leader},
+    )
+    for pid in ("p1", "p2", "p3", "p4"):
+        client.post(
+            "/clubs/c1/players",
+            json={"user_id": pid, "name": pid.upper(), "token": tokens[pid]},
+        )
+
+    resp = client.post(
+        "/clubs/c1/pending_doubles",
+        json={
+            "initiator": "p1",
+            "a1": "p1",
+            "a2": "p2",
+            "b1": "p3",
+            "b2": "p4",
+            "score_a": 6,
+            "score_b": 3,
+            "date": "2023-01-02",
+            "token": tokens["p1"],
+        },
+    )
+    assert resp.status_code == 200
+
+    resp = client.post(
+        "/clubs/c1/pending_doubles/0/confirm",
+        json={"user_id": "p3", "token": tokens["p3"]},
+    )
+    assert resp.status_code == 200
+
+    resp = client.post(
+        "/clubs/c1/pending_doubles/0/approve",
+        json={"approver": "leader", "token": token_leader},
+    )
+    assert resp.status_code == 200
+
+    data = storage.load_data()
+    club = data["c1"]
+    assert len(club.matches) == 1
+
+
+def test_token_logout_and_expiry(tmp_path, monkeypatch):
+    db = tmp_path / "tennis.db"
+    monkeypatch.setattr(storage, "DB_FILE", db)
+
+    api = importlib.reload(importlib.import_module("tennis.api"))
+    client = TestClient(api.app)
+
+    client.post("/users", json={"user_id": "u", "name": "U", "password": "pw", "allow_create": True})
+    token = client.post("/login", json={"user_id": "u", "password": "pw"}).json()["token"]
+
+    client.post("/logout", json={"token": token})
+    resp = client.post("/clubs", json={"club_id": "c", "name": "C", "user_id": "u", "token": token})
+    assert resp.status_code == 401
+
+    token2 = client.post("/login", json={"user_id": "u", "password": "pw"}).json()["token"]
+    api.tokens[token2] = (api.tokens[token2][0], datetime.datetime.utcnow() - datetime.timedelta(days=2))
+    resp = client.post("/clubs", json={"club_id": "c", "name": "C", "user_id": "u", "token": token2})
+    assert resp.status_code == 401

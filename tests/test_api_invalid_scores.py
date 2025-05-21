@@ -22,18 +22,26 @@ def prepare_basic_club(client):
     token_p1 = client.post("/login", json={"user_id": "p1", "password": "pw"}).json()["token"]
 
     client.post("/clubs", json={"club_id": "c1", "name": "C1", "user_id": "leader", "token": token_leader})
-    client.post("/clubs/c1/players", json={"user_id": "p1", "name": "P1"})
-    client.post("/clubs/c1/players", json={"user_id": "p2", "name": "P2"})
+    client.post("/clubs/c1/players", json={"user_id": "p1", "name": "P1", "token": token_p1})
+    token_p2 = client.post("/login", json={"user_id": "p2", "password": "pw"}).json()["token"]
+    client.post("/clubs/c1/players", json={"user_id": "p2", "name": "P2", "token": token_p2})
     return token_p1
 
 
 @pytest.mark.parametrize("score_a,score_b", [(-1, 0), (1, -1), (1.2, 3)])
 def test_record_match_api_invalid(tmp_path, monkeypatch, score_a, score_b):
     client = setup_api(tmp_path, monkeypatch)
-    prepare_basic_club(client)
+    token_p1 = prepare_basic_club(client)
     resp = client.post(
         "/clubs/c1/matches",
-        json={"user_a": "p1", "user_b": "p2", "score_a": score_a, "score_b": score_b},
+        json={
+            "user_id": "p1",
+            "user_a": "p1",
+            "user_b": "p2",
+            "score_a": score_a,
+            "score_b": score_b,
+            "token": token_p1,
+        },
     )
     assert resp.status_code == 400
 

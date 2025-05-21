@@ -49,12 +49,22 @@ curl -X POST http://localhost:8000/login \
 ```
 
 Include the returned `token` value in the `token` field when calling protected
-endpoints, for example when creating a club:
+endpoints. Creating a club or adding a player requires the caller's token, e.g.:
 
 ```bash
 curl -X POST http://localhost:8000/clubs \
      -H "Content-Type: application/json" \
      -d '{"club_id": "c1", "name": "Club", "user_id": "USER", "token": "TOKEN"}'
+```
+
+To invalidate a token call `/logout` with the token value.
+
+Similarly, recording a match uses:
+
+```bash
+curl -X POST http://localhost:8000/clubs/c1/matches \
+     -H "Content-Type: application/json" \
+     -d '{"user_id":"USER","user_a":"A","user_b":"B","score_a":6,"score_b":4,"token":"TOKEN"}'
 ```
 
 ### Mini App
