@@ -11,6 +11,7 @@ from .cli import (
     approve_member,
     create_club as cli_create_club,
     hash_password,
+    validate_scores,
 )
 from .rating import (
     update_ratings,
@@ -295,6 +296,11 @@ def get_player_records(club_id: str, user_id: str):
 
 @app.post("/clubs/{club_id}/matches")
 def record_match_api(club_id: str, data: MatchCreate):
+    try:
+        validate_scores(data.score_a, data.score_b)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+
     club = clubs.get(club_id)
     if not club:
         raise HTTPException(404, "Club not found")
@@ -336,6 +342,7 @@ def submit_match_api(club_id: str, data: PendingMatchCreate):
 
     cid = data.club_id or club_id
     try:
+        validate_scores(data.score_initiator, data.score_opponent)
         submit_match(
             clubs,
             cid,
