@@ -39,6 +39,24 @@ python3 -m tennis.api
 
 The API exposes endpoints to create clubs, add players and record matches.
 
+Authentication is required for any operation that modifies data. Obtain a token
+by logging in:
+
+```bash
+curl -X POST http://localhost:8000/login \
+     -H "Content-Type: application/json" \
+     -d '{"user_id": "USER", "password": "PW"}'
+```
+
+Include the returned `token` value in the `token` field when calling protected
+endpoints, for example when creating a club:
+
+```bash
+curl -X POST http://localhost:8000/clubs \
+     -H "Content-Type: application/json" \
+     -d '{"club_id": "c1", "name": "Club", "user_id": "USER", "token": "TOKEN"}'
+```
+
 ### Mini App
 
 The `miniapp` directory contains a very small WeChat Mini Program that

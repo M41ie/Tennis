@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException
+import secrets
 from pydantic import BaseModel
 import datetime
 
@@ -25,11 +26,23 @@ app = FastAPI()
 clubs = load_data()
 users = load_users()
 
+# simple in-memory token store mapping user_id -> token
+tokens: dict[str, str] = {}
+
+
+def require_auth(token: str) -> str:
+    """Validate token and return the associated user id."""
+    for uid, tok in tokens.items():
+        if tok == token:
+            return uid
+    raise HTTPException(401, "Invalid token")
+
 
 class ClubCreate(BaseModel):
     club_id: str
     name: str
     user_id: str
+    token: str
     logo: str | None = None
     region: str | None = None
 
@@ -63,6 +76,7 @@ class PendingMatchCreate(BaseModel):
     format: str | None = None
     weight: float | None = None
     location: str | None = None
+    token: str
 
 
 class UserCreate(BaseModel):
@@ -79,12 +93,14 @@ class LoginRequest(BaseModel):
 
 class JoinRequest(BaseModel):
     user_id: str
+    token: str
 
 
 class ApproveRequest(BaseModel):
     approver_id: str
     user_id: str
     admin: bool = False
+    token: str
 
 
 @app.post("/users")
@@ -105,12 +121,17 @@ def register_user_api(data: UserCreate):
 @app.post("/login")
 def login_api(data: LoginRequest):
     if login_user(users, data.user_id, data.password):
-        return {"success": True}
+        token = secrets.token_hex(16)
+        tokens[data.user_id] = token
+        return {"success": True, "token": token}
     return {"success": False}
 
 
 @app.post("/clubs/{club_id}/join")
 def join_club(club_id: str, data: JoinRequest):
+    user = require_auth(data.token)
+    if user != data.user_id:
+        raise HTTPException(401, "Token mismatch")
     try:
         request_join(clubs, users, club_id, data.user_id)
     except ValueError as e:
@@ -122,6 +143,9 @@ def join_club(club_id: str, data: JoinRequest):
 
 @app.post("/clubs/{club_id}/approve")
 def approve_club_member(club_id: str, data: ApproveRequest):
+    user = require_auth(data.token)
+    if user != data.approver_id:
+        raise HTTPException(401, "Token mismatch")
     try:
         approve_member(
             clubs,
@@ -145,6 +169,9 @@ def list_clubs():
 
 @app.post("/clubs")
 def create_club(data: ClubCreate):
+    user = require_auth(data.token)
+    if user != data.user_id:
+        raise HTTPException(401, "Token mismatch")
     try:
         cli_create_club(
             users,
@@ -303,6 +330,10 @@ def record_match_api(club_id: str, data: MatchCreate):
 def submit_match_api(club_id: str, data: PendingMatchCreate):
     from .cli import submit_match
 
+    user = require_auth(data.token)
+    if user != data.initiator:
+        raise HTTPException(401, "Token mismatch")
+
     cid = data.club_id or club_id
     try:
         submit_match(
@@ -325,15 +356,21 @@ def submit_match_api(club_id: str, data: PendingMatchCreate):
 
 class ConfirmRequest(BaseModel):
     user_id: str
+    token: str
 
 
 class ApproveMatchRequest(BaseModel):
     approver: str
+    token: str
 
 
 @app.post("/clubs/{club_id}/pending_matches/{index}/confirm")
 def confirm_match_api(club_id: str, index: int, data: ConfirmRequest):
     from .cli import confirm_match
+
+    user = require_auth(data.token)
+    if user != data.user_id:
+        raise HTTPException(401, "Token mismatch")
 
     try:
         confirm_match(clubs, club_id, index, data.user_id)
@@ -346,6 +383,10 @@ def confirm_match_api(club_id: str, index: int, data: ConfirmRequest):
 @app.post("/clubs/{club_id}/pending_matches/{index}/approve")
 def approve_match_api(club_id: str, index: int, data: ApproveMatchRequest):
     from .cli import approve_match
+
+    user = require_auth(data.token)
+    if user != data.approver:
+        raise HTTPException(401, "Token mismatch")
 
     try:
         approve_match(clubs, club_id, index, data.approver)
