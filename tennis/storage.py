@@ -49,6 +49,9 @@ def _init_schema(conn: sqlite3.Connection) -> None:
     cur.execute(
         "CREATE TABLE IF NOT EXISTS matches (id INTEGER PRIMARY KEY AUTOINCREMENT, club_id TEXT, type TEXT, date TEXT, data TEXT)"
     )
+    cur.execute(
+        "CREATE TABLE IF NOT EXISTS pending_matches (id INTEGER PRIMARY KEY AUTOINCREMENT, club_id TEXT, type TEXT, date TEXT, data TEXT)"
+    )
     conn.commit()
 
 
@@ -137,6 +140,50 @@ def load_data() -> Dict[str, Club]:
             club.matches.append(match)
             pa.singles_matches.append(match)
             pb.singles_matches.append(match)
+    for row in cur.execute("SELECT * FROM pending_matches ORDER BY id"):
+        club = clubs.get(row["club_id"])
+        if not club:
+            continue
+        data = json.loads(row["data"])
+        date = datetime.date.fromisoformat(row["date"])
+        if row["type"] == "doubles":
+            pa1 = club.members[data["a1"]]
+            pa2 = club.members[data["a2"]]
+            pb1 = club.members[data["b1"]]
+            pb2 = club.members[data["b2"]]
+            match = DoublesMatch(
+                date=date,
+                player_a1=pa1,
+                player_a2=pa2,
+                player_b1=pb1,
+                player_b2=pb2,
+                score_a=data["score_a"],
+                score_b=data["score_b"],
+                format_weight=data.get("weight", 1.0),
+                location=data.get("location"),
+                format_name=data.get("format_name"),
+                initiator=data.get("initiator"),
+            )
+            match.confirmed_a = data.get("confirmed_a", False)
+            match.confirmed_b = data.get("confirmed_b", False)
+            club.pending_matches.append(match)
+        else:
+            pa = club.members[data["player_a"]]
+            pb = club.members[data["player_b"]]
+            match = Match(
+                date=date,
+                player_a=pa,
+                player_b=pb,
+                score_a=data["score_a"],
+                score_b=data["score_b"],
+                format_weight=data.get("weight", 1.0),
+                location=data.get("location"),
+                format_name=data.get("format_name"),
+                initiator=data.get("initiator"),
+            )
+            match.confirmed_a = data.get("confirmed_a", False)
+            match.confirmed_b = data.get("confirmed_b", False)
+            club.pending_matches.append(match)
     conn.close()
     return clubs
 
@@ -147,6 +194,7 @@ def save_data(clubs: Dict[str, Club]) -> None:
     cur.execute("DELETE FROM clubs")
     cur.execute("DELETE FROM players")
     cur.execute("DELETE FROM matches")
+    cur.execute("DELETE FROM pending_matches")
     for cid, club in clubs.items():
         cur.execute(
             "INSERT INTO clubs(club_id, name, logo, region) VALUES (?,?,?,?)",
@@ -217,6 +265,53 @@ def save_data(clubs: Dict[str, Club]) -> None:
                 }
                 cur.execute(
                     "INSERT INTO matches(club_id, type, date, data) VALUES (?,?,?,?)",
+                    (
+                        cid,
+                        "singles",
+                        m.date.isoformat(),
+                        json.dumps(data),
+                    ),
+                )
+        for m in club.pending_matches:
+            if isinstance(m, DoublesMatch):
+                data = {
+                    "a1": m.player_a1.user_id,
+                    "a2": m.player_a2.user_id,
+                    "b1": m.player_b1.user_id,
+                    "b2": m.player_b2.user_id,
+                    "score_a": m.score_a,
+                    "score_b": m.score_b,
+                    "weight": m.format_weight,
+                    "location": m.location,
+                    "format_name": m.format_name,
+                    "initiator": m.initiator,
+                    "confirmed_a": m.confirmed_a,
+                    "confirmed_b": m.confirmed_b,
+                }
+                cur.execute(
+                    "INSERT INTO pending_matches(club_id, type, date, data) VALUES (?,?,?,?)",
+                    (
+                        cid,
+                        "doubles",
+                        m.date.isoformat(),
+                        json.dumps(data),
+                    ),
+                )
+            else:
+                data = {
+                    "player_a": m.player_a.user_id,
+                    "player_b": m.player_b.user_id,
+                    "score_a": m.score_a,
+                    "score_b": m.score_b,
+                    "weight": m.format_weight,
+                    "location": m.location,
+                    "format_name": m.format_name,
+                    "initiator": m.initiator,
+                    "confirmed_a": m.confirmed_a,
+                    "confirmed_b": m.confirmed_b,
+                }
+                cur.execute(
+                    "INSERT INTO pending_matches(club_id, type, date, data) VALUES (?,?,?,?)",
                     (
                         cid,
                         "singles",
