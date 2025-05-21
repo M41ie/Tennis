@@ -159,6 +159,23 @@ def test_update_doubles_ratings_zero_total():
 
     assert tuple(pytest.approx(x, rel=1e-6) for x in result) == tuple(pytest.approx(x, rel=1e-6) for x in expected)
 
+
+def test_weighted_rating_zero_score():
+    player = Player("p", "P")
+    opponent = Player("o", "O")
+    match = Match(
+        date=datetime.date(2023, 1, 1),
+        player_a=player,
+        player_b=opponent,
+        score_a=6,
+        score_b=0,
+    )
+    match.rating_a_after = 0.0
+    match.rating_b_after = 1000.0
+    player.singles_matches.append(match)
+
+    assert pytest.approx(weighted_rating(player, match.date), rel=1e-6) == 0.0
+
 def test_weighted_rating_time_decay():
     a = Player("a", "A")
     b = Player("b", "B")

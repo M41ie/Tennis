@@ -100,9 +100,9 @@ def weighted_rating(player: Player, as_of: datetime.date) -> float:
         weight = TIME_DECAY ** days
         weights.append(weight)
         if m.player_a == player:
-            ratings.append(m.rating_a_after or player.singles_rating)
+            ratings.append(m.rating_a_after if m.rating_a_after is not None else player.singles_rating)
         else:
-            ratings.append(m.rating_b_after or player.singles_rating)
+            ratings.append(m.rating_b_after if m.rating_b_after is not None else player.singles_rating)
 
     if not ratings:
         base = player.singles_rating
@@ -197,13 +197,13 @@ def weighted_doubles_rating(player: Player, as_of: datetime.date) -> float:
         weight = TIME_DECAY ** days
         weights.append(weight)
         if m.player_a1 == player:
-            ratings.append(m.rating_a1_after or player.doubles_rating)
+            ratings.append(m.rating_a1_after if m.rating_a1_after is not None else player.doubles_rating)
         elif m.player_a2 == player:
-            ratings.append(m.rating_a2_after or player.doubles_rating)
+            ratings.append(m.rating_a2_after if m.rating_a2_after is not None else player.doubles_rating)
         elif m.player_b1 == player:
-            ratings.append(m.rating_b1_after or player.doubles_rating)
+            ratings.append(m.rating_b1_after if m.rating_b1_after is not None else player.doubles_rating)
         else:
-            ratings.append(m.rating_b2_after or player.doubles_rating)
+            ratings.append(m.rating_b2_after if m.rating_b2_after is not None else player.doubles_rating)
 
     if not ratings:
         base = player.doubles_rating
