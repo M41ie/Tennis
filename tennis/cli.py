@@ -32,6 +32,14 @@ def check_password(user: User, password: str) -> bool:
     return user.password_hash == hash_password(password)
 
 
+def validate_scores(score_a, score_b):
+    """Ensure scores are non-negative integers."""
+    if not (isinstance(score_a, int) and isinstance(score_b, int)):
+        raise ValueError("Invalid score")
+    if score_a < 0 or score_b < 0:
+        raise ValueError("Invalid score")
+
+
 def register_user(
     users,
     user_id: str,
@@ -170,6 +178,7 @@ def submit_match(
     format_name: str | None = None,
 ):
     """Start a match record pending confirmation and approval."""
+    validate_scores(score_initiator, score_opponent)
     club = clubs.get(club_id)
     if not club:
         raise ValueError("Club not found")
@@ -250,6 +259,7 @@ def record_match(
     location: str | None = None,
     format_name: str | None = None,
 ):
+    validate_scores(score_a, score_b)
     club = clubs.get(club_id)
     if not club:
         raise ValueError('Club not found')
@@ -291,6 +301,7 @@ def record_doubles(
     location: str | None = None,
     format_name: str | None = None,
 ):
+    validate_scores(score_a, score_b)
     club = clubs.get(club_id)
     if not club:
         raise ValueError('Club not found')
