@@ -27,16 +27,23 @@ app = FastAPI()
 clubs = load_data()
 users = load_users()
 
-# simple in-memory token store mapping user_id -> token
-tokens: dict[str, str] = {}
+# simple in-memory token store mapping token -> (user_id, timestamp)
+tokens: dict[str, tuple[str, datetime.datetime]] = {}
+
+# tokens expire after 24 hours
+TOKEN_TTL = datetime.timedelta(hours=24)
 
 
 def require_auth(token: str) -> str:
     """Validate token and return the associated user id."""
-    for uid, tok in tokens.items():
-        if tok == token:
-            return uid
-    raise HTTPException(401, "Invalid token")
+    info = tokens.get(token)
+    if not info:
+        raise HTTPException(401, "Invalid token")
+    user_id, ts = info
+    if datetime.datetime.utcnow() - ts > TOKEN_TTL:
+        tokens.pop(token, None)
+        raise HTTPException(401, "Token expired")
+    return user_id
 
 
 class ClubCreate(BaseModel):
@@ -51,12 +58,14 @@ class ClubCreate(BaseModel):
 class PlayerCreate(BaseModel):
     user_id: str
     name: str
+    token: str
     age: int | None = None
     gender: str | None = None
     avatar: str | None = None
 
 
 class MatchCreate(BaseModel):
+    user_id: str
     user_a: str
     user_b: str
     score_a: int
@@ -65,6 +74,7 @@ class MatchCreate(BaseModel):
     format: str | None = None
     weight: float | None = None
     location: str | None = None
+    token: str
 
 
 class PendingMatchCreate(BaseModel):
@@ -73,6 +83,29 @@ class PendingMatchCreate(BaseModel):
     opponent: str
     score_initiator: int
     score_opponent: int
+    date: datetime.date | None = None
+    format: str | None = None
+    weight: float | None = None
+    location: str | None = None
+    token: str
+
+
+class PreRateRequest(BaseModel):
+    rater_id: str
+    target_id: str
+    rating: float
+    token: str
+
+
+class PendingDoublesCreate(BaseModel):
+    club_id: str | None = None
+    initiator: str
+    a1: str
+    a2: str
+    b1: str
+    b2: str
+    score_a: int
+    score_b: int
     date: datetime.date | None = None
     format: str | None = None
     weight: float | None = None
@@ -90,6 +123,10 @@ class UserCreate(BaseModel):
 class LoginRequest(BaseModel):
     user_id: str
     password: str
+
+
+class LogoutRequest(BaseModel):
+    token: str
 
 
 class JoinRequest(BaseModel):
@@ -123,9 +160,15 @@ def register_user_api(data: UserCreate):
 def login_api(data: LoginRequest):
     if login_user(users, data.user_id, data.password):
         token = secrets.token_hex(16)
-        tokens[data.user_id] = token
+        tokens[token] = (data.user_id, datetime.datetime.utcnow())
         return {"success": True, "token": token}
     return {"success": False}
+
+
+@app.post("/logout")
+def logout_api(data: LogoutRequest):
+    tokens.pop(data.token, None)
+    return {"status": "ok"}
 
 
 @app.post("/clubs/{club_id}/join")
@@ -246,6 +289,9 @@ def list_all_players(
 
 @app.post("/clubs/{club_id}/players")
 def add_player(club_id: str, data: PlayerCreate):
+    user = require_auth(data.token)
+    if user != data.user_id:
+        raise HTTPException(401, "Token mismatch")
     club = clubs.get(club_id)
     if not club:
         raise HTTPException(404, "Club not found")
@@ -258,6 +304,21 @@ def add_player(club_id: str, data: PlayerCreate):
         gender=data.gender,
         avatar=data.avatar,
     )
+    save_data(clubs)
+    return {"status": "ok"}
+
+
+@app.post("/clubs/{club_id}/prerate")
+def pre_rate_api(club_id: str, data: PreRateRequest):
+    user = require_auth(data.token)
+    if user != data.rater_id:
+        raise HTTPException(401, "Token mismatch")
+    from .cli import pre_rate
+
+    try:
+        pre_rate(clubs, club_id, data.rater_id, data.target_id, data.rating)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
     save_data(clubs)
     return {"status": "ok"}
 
@@ -296,6 +357,9 @@ def get_player_records(club_id: str, user_id: str):
 
 @app.post("/clubs/{club_id}/matches")
 def record_match_api(club_id: str, data: MatchCreate):
+    user = require_auth(data.token)
+    if user != data.user_id:
+        raise HTTPException(401, "Token mismatch")
     try:
         validate_scores(data.score_a, data.score_b)
     except ValueError as e:
@@ -397,6 +461,74 @@ def approve_match_api(club_id: str, index: int, data: ApproveMatchRequest):
 
     try:
         approve_match(clubs, club_id, index, data.approver)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    save_data(clubs)
+    return {"status": "ok"}
+
+
+@app.post("/clubs/{club_id}/pending_doubles")
+def submit_doubles_api(club_id: str, data: PendingDoublesCreate):
+    from .cli import submit_doubles
+
+    user = require_auth(data.token)
+    if user != data.initiator:
+        raise HTTPException(401, "Token mismatch")
+
+    cid = data.club_id or club_id
+    try:
+        validate_scores(data.score_a, data.score_b)
+        submit_doubles(
+            clubs,
+            cid,
+            data.a1,
+            data.a2,
+            data.b1,
+            data.b2,
+            data.score_a,
+            data.score_b,
+            data.date or datetime.date.today(),
+            data.weight or (
+                format_weight_from_name(data.format)
+                if data.format
+                else format_weight_from_name("6_game")
+            ),
+            initiator=data.initiator,
+            location=data.location,
+            format_name=data.format,
+        )
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    save_data(clubs)
+    return {"status": "pending"}
+
+
+@app.post("/clubs/{club_id}/pending_doubles/{index}/confirm")
+def confirm_doubles_api(club_id: str, index: int, data: ConfirmRequest):
+    from .cli import confirm_doubles
+
+    user = require_auth(data.token)
+    if user != data.user_id:
+        raise HTTPException(401, "Token mismatch")
+
+    try:
+        confirm_doubles(clubs, club_id, index, data.user_id)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    save_data(clubs)
+    return {"status": "ok"}
+
+
+@app.post("/clubs/{club_id}/pending_doubles/{index}/approve")
+def approve_doubles_api(club_id: str, index: int, data: ApproveMatchRequest):
+    from .cli import approve_doubles
+
+    user = require_auth(data.token)
+    if user != data.approver:
+        raise HTTPException(401, "Token mismatch")
+
+    try:
+        approve_doubles(clubs, club_id, index, data.approver)
     except ValueError as e:
         raise HTTPException(400, str(e))
     save_data(clubs)
