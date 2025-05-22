@@ -2,6 +2,9 @@
   <picker mode="selector" value="0" bindchange="onClubChange" range="{{clubOptions}}">
     <view>Club: {{clubOptions[clubIndex]}}</view>
   </picker>
+  <picker mode="selector" value="{{ratingIndex}}" bindchange="onRatingChange" range="{{ratingOptions}}">
+    <view>{{ratingOptions[ratingIndex]}}</view>
+  </picker>
   <input type="number" placeholder="Min Rating" bindinput="onMinRating" />
   <input type="number" placeholder="Max Rating" bindinput="onMaxRating" />
 </view>

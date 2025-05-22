@@ -234,16 +234,17 @@ def create_club(data: ClubCreate):
 
 
 @app.get("/clubs/{club_id}/players")
-def list_players(club_id: str):
+def list_players(club_id: str, doubles: bool = False):
     club = clubs.get(club_id)
     if not club:
         raise HTTPException(404, "Club not found")
     today = datetime.date.today()
+    get_rating = weighted_doubles_rating if doubles else weighted_rating
     return [
         {
             "user_id": p.user_id,
             "name": p.name,
-            "rating": weighted_rating(p, today),
+            "rating": get_rating(p, today),
         }
         for p in club.members.values()
     ]
@@ -255,6 +256,7 @@ def list_all_players(
     max_rating: float | None = None,
     gender: str | None = None,
     club: str | None = None,
+    doubles: bool = False,
 ):
     if club:
         c = clubs.get(club)
@@ -264,10 +266,11 @@ def list_all_players(
     else:
         clubs_to_iter = clubs.values()
     today = datetime.date.today()
+    get_rating = weighted_doubles_rating if doubles else weighted_rating
     players = []
     for c in clubs_to_iter:
         for p in c.members.values():
-            rating = weighted_rating(p, today)
+            rating = get_rating(p, today)
             if min_rating is not None and rating < min_rating:
                 continue
             if max_rating is not None and rating > max_rating:
