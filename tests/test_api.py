@@ -473,3 +473,35 @@ def test_doubles_leaderboard_api(tmp_path, monkeypatch):
     board = resp.json()
     ids = [p["user_id"] for p in board]
     assert ids == ["p3", "p1", "p2", "p4"]
+
+
+def test_token_persistence(tmp_path, monkeypatch):
+    db = tmp_path / "tennis.db"
+    monkeypatch.setattr(storage, "DB_FILE", db)
+
+    api = importlib.reload(importlib.import_module("tennis.api"))
+    client = TestClient(api.app)
+
+    client.post(
+        "/users",
+        json={"user_id": "leader", "name": "L", "password": "pw", "allow_create": True},
+    )
+    client.post("/users", json={"user_id": "p1", "name": "P1", "password": "pw"})
+
+    token = client.post("/login", json={"user_id": "leader", "password": "pw"}).json()["token"]
+
+    client.post(
+        "/clubs",
+        json={"club_id": "c1", "name": "C1", "user_id": "leader", "token": token},
+    )
+
+    # reload module to simulate restart
+    api = importlib.reload(importlib.import_module("tennis.api"))
+    client = TestClient(api.app)
+
+    resp = client.post(
+        "/clubs/c1/players",
+        json={"user_id": "p1", "name": "P1", "token": token},
+    )
+    assert resp.status_code == 200
+    assert resp.json()["status"] == "ok"

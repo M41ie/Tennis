@@ -2,6 +2,8 @@ from fastapi import FastAPI, HTTPException
 import secrets
 from pydantic import BaseModel
 import datetime
+import json
+from pathlib import Path
 
 from .storage import load_data, save_data, load_users, save_users
 from .cli import (
@@ -27,11 +29,34 @@ app = FastAPI()
 clubs = load_data()
 users = load_users()
 
-# simple in-memory token store mapping token -> (user_id, timestamp)
-tokens: dict[str, tuple[str, datetime.datetime]] = {}
+# token persistence file next to the database
+TOKENS_FILE = Path(str(storage.DB_FILE)).with_name("tokens.json")
 
 # tokens expire after 24 hours
 TOKEN_TTL = datetime.timedelta(hours=24)
+
+# simple in-memory token store mapping token -> (user_id, timestamp)
+def _load_tokens() -> dict[str, tuple[str, datetime.datetime]]:
+    try:
+        data = json.loads(TOKENS_FILE.read_text())
+    except FileNotFoundError:
+        return {}
+    now = datetime.datetime.utcnow()
+    result: dict[str, tuple[str, datetime.datetime]] = {}
+    for tok, (uid, ts) in data.items():
+        ts_dt = datetime.datetime.fromisoformat(ts)
+        if now - ts_dt < TOKEN_TTL:
+            result[tok] = (uid, ts_dt)
+    return result
+
+
+def _save_tokens() -> None:
+    TOKENS_FILE.write_text(
+        json.dumps({t: (uid, ts.isoformat()) for t, (uid, ts) in tokens.items()})
+    )
+
+# load tokens on startup
+tokens: dict[str, tuple[str, datetime.datetime]] = _load_tokens()
 
 
 def require_auth(token: str) -> str:
@@ -42,6 +67,7 @@ def require_auth(token: str) -> str:
     user_id, ts = info
     if datetime.datetime.utcnow() - ts > TOKEN_TTL:
         tokens.pop(token, None)
+        _save_tokens()
         raise HTTPException(401, "Token expired")
     return user_id
 
@@ -161,6 +187,7 @@ def login_api(data: LoginRequest):
     if login_user(users, data.user_id, data.password):
         token = secrets.token_hex(16)
         tokens[token] = (data.user_id, datetime.datetime.utcnow())
+        _save_tokens()
         return {"success": True, "token": token}
     return {"success": False}
 
@@ -168,6 +195,7 @@ def login_api(data: LoginRequest):
 @app.post("/logout")
 def logout_api(data: LogoutRequest):
     tokens.pop(data.token, None)
+    _save_tokens()
     return {"status": "ok"}
 
 
