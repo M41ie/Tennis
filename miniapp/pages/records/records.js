@@ -1,6 +1,7 @@
 Page({
   data: {
-    records: []
+    records: [],
+    doubles: false
   },
   onLoad() {
     this.fetchRecords();
@@ -15,8 +16,9 @@ Page({
       success(res) {
         const player = res.data.find(p => p.user_id === userId);
         if (player) {
+          const path = that.data.doubles ? 'doubles_records' : 'records';
           wx.request({
-            url: `http://localhost:8000/clubs/${clubId}/players/${userId}/records`,
+            url: `http://localhost:8000/clubs/${clubId}/players/${userId}/${path}`,
             success(r) { that.setData({ records: r.data }); }
           });
         }

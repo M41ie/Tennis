@@ -382,6 +382,20 @@ def get_player_records(club_id: str, user_id: str):
     return cards
 
 
+@app.get("/clubs/{club_id}/players/{user_id}/doubles_records")
+def get_player_doubles_records(club_id: str, user_id: str):
+    """Return doubles match history cards for a player."""
+    from .cli import get_player_doubles_cards
+
+    try:
+        cards = get_player_doubles_cards(clubs, club_id, user_id)
+    except ValueError as e:
+        raise HTTPException(404, str(e))
+    for c in cards:
+        c["date"] = c["date"].isoformat()
+    return cards
+
+
 @app.post("/clubs/{club_id}/matches")
 def record_match_api(club_id: str, data: MatchCreate):
     user = require_auth(data.token)
