@@ -431,3 +431,45 @@ def test_token_logout_and_expiry(tmp_path, monkeypatch):
     api.tokens[token2] = (api.tokens[token2][0], datetime.datetime.utcnow() - datetime.timedelta(days=2))
     resp = client.post("/clubs", json={"club_id": "c", "name": "C", "user_id": "u", "token": token2})
     assert resp.status_code == 401
+
+
+def test_doubles_leaderboard_api(tmp_path, monkeypatch):
+    db = tmp_path / "tennis.db"
+    monkeypatch.setattr(storage, "DB_FILE", db)
+
+    api = importlib.reload(importlib.import_module("tennis.api"))
+    client = TestClient(api.app)
+
+    for uid in ("leader", "p1", "p2", "p3", "p4"):
+        allow = uid == "leader"
+        client.post(
+            "/users",
+            json={"user_id": uid, "name": uid.upper(), "password": "pw", "allow_create": allow},
+        )
+
+    tokens = {
+        pid: client.post("/login", json={"user_id": pid, "password": "pw"}).json()["token"]
+        for pid in ("leader", "p1", "p2", "p3", "p4")
+    }
+
+    client.post(
+        "/clubs",
+        json={"club_id": "c1", "name": "C1", "user_id": "leader", "token": tokens["leader"]},
+    )
+    for pid in ("p1", "p2", "p3", "p4"):
+        client.post(
+            "/clubs/c1/players",
+            json={"user_id": pid, "name": pid.upper(), "token": tokens[pid]},
+        )
+
+    # adjust doubles ratings for predictable ordering
+    api.clubs["c1"].members["p1"].doubles_rating = 1200
+    api.clubs["c1"].members["p2"].doubles_rating = 1100
+    api.clubs["c1"].members["p3"].doubles_rating = 1300
+    api.clubs["c1"].members["p4"].doubles_rating = 1000
+
+    resp = client.get("/clubs/c1/players?doubles=true")
+    assert resp.status_code == 200
+    board = resp.json()
+    ids = [p["user_id"] for p in board]
+    assert ids == ["p3", "p1", "p2", "p4"]
