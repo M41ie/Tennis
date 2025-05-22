@@ -308,6 +308,33 @@ def add_player(club_id: str, data: PlayerCreate):
     return {"status": "ok"}
 
 
+@app.get("/clubs/{club_id}/pending_doubles")
+def list_pending_doubles(club_id: str):
+    """Return pending doubles matches for a club."""
+    club = clubs.get(club_id)
+    if not club:
+        raise HTTPException(404, "Club not found")
+    from .models import DoublesMatch
+
+    result = []
+    for idx, m in enumerate(club.pending_matches):
+        if not isinstance(m, DoublesMatch):
+            continue
+        result.append(
+            {
+                "index": idx,
+                "date": m.date.isoformat(),
+                "a1": m.player_a1.user_id,
+                "a2": m.player_a2.user_id,
+                "b1": m.player_b1.user_id,
+                "b2": m.player_b2.user_id,
+                "score_a": m.score_a,
+                "score_b": m.score_b,
+            }
+        )
+    return result
+
+
 @app.post("/clubs/{club_id}/prerate")
 def pre_rate_api(club_id: str, data: PreRateRequest):
     user = require_auth(data.token)
@@ -394,6 +421,31 @@ def record_match_api(club_id: str, data: MatchCreate):
     pb.singles_rating = weighted_rating(pb, date)
     save_data(clubs)
     return {"status": "ok"}
+
+
+@app.get("/clubs/{club_id}/pending_matches")
+def list_pending_matches(club_id: str):
+    """Return pending singles matches for a club."""
+    club = clubs.get(club_id)
+    if not club:
+        raise HTTPException(404, "Club not found")
+    result = []
+    for idx, m in enumerate(club.pending_matches):
+        from .models import DoublesMatch
+
+        if isinstance(m, DoublesMatch):
+            continue
+        result.append(
+            {
+                "index": idx,
+                "date": m.date.isoformat(),
+                "player_a": m.player_a.user_id,
+                "player_b": m.player_b.user_id,
+                "score_a": m.score_a,
+                "score_b": m.score_b,
+            }
+        )
+    return result
 
 
 @app.post("/clubs/{club_id}/pending_matches")

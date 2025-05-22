@@ -67,6 +67,15 @@ curl -X POST http://localhost:8000/clubs/c1/matches \
      -d '{"user_id":"USER","user_a":"A","user_b":"B","score_a":6,"score_b":4,"token":"TOKEN"}'
 ```
 
+Pending matches can be reviewed via:
+
+```bash
+curl http://localhost:8000/clubs/c1/pending_matches
+curl http://localhost:8000/clubs/c1/pending_doubles
+```
+
+Each item contains the index to use when confirming or approving the match.
+
 ### Mini App
 
 The `miniapp` directory contains a very small WeChat Mini Program that
