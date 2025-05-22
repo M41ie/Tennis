@@ -20,6 +20,7 @@ Page({
       data: { user_id: this.data.loginId, password: this.data.loginPw },
       success(res) {
         if (res.data.success) {
+          wx.setStorageSync('token', res.data.token);
           wx.setStorageSync('user_id', that.data.loginId);
           that.fetchUser(that.data.loginId);
         } else {
@@ -51,10 +52,11 @@ Page({
       success(res) {
         if (res.data.length > 0) {
           const cid = res.data[0].club_id;
+          const token = wx.getStorageSync('token');
           wx.request({
             url: `http://localhost:8000/clubs/${cid}/join`,
             method: 'POST',
-            data: { user_id: userId },
+            data: { user_id: userId, token },
             success() {
               wx.setStorageSync('club_id', cid);
               wx.showToast({ title: 'Joined ' + cid, icon: 'none' });
@@ -64,5 +66,27 @@ Page({
         }
       }
     });
+  },
+  logout() {
+    const token = wx.getStorageSync('token');
+    const that = this;
+    if (token) {
+      wx.request({
+        url: 'http://localhost:8000/logout',
+        method: 'POST',
+        data: { token },
+        complete() {
+          wx.removeStorageSync('token');
+          wx.removeStorageSync('user_id');
+          wx.removeStorageSync('club_id');
+          that.setData({ user: null, loginId: '', loginPw: '' });
+        }
+      });
+    } else {
+      wx.removeStorageSync('token');
+      wx.removeStorageSync('user_id');
+      wx.removeStorageSync('club_id');
+      this.setData({ user: null, loginId: '', loginPw: '' });
+    }
   }
 });

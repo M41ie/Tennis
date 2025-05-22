@@ -63,7 +63,8 @@ Page({
     const cid = this.data.clubIds[this.data.clubIndex];
     const opponent = this.data.players[this.data.opponentIndex];
     const userId = wx.getStorageSync('user_id');
-    if (!cid || !opponent || !userId) return;
+    const token = wx.getStorageSync('token');
+    if (!cid || !opponent || !userId || !token) return;
     wx.request({
       url: `http://localhost:8000/clubs/${cid}/pending_matches`,
       method: 'POST',
@@ -74,7 +75,8 @@ Page({
         score_opponent: parseInt(this.data.scoreB, 10),
         date: this.data.date,
         format: this.data.formatOptions[this.data.formatIndex],
-        location: this.data.location
+        location: this.data.location,
+        token
       },
       success() {
         wx.showToast({ title: 'Submitted', icon: 'success' });

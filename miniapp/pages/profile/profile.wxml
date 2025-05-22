@@ -5,6 +5,7 @@
     <view>Singles: {{user.singles_rating}}</view>
     <view>Doubles: {{user.doubles_rating}}</view>
     <button bindtap="manageClubs">Manage Clubs</button>
+    <button bindtap="logout">Logout</button>
   </block>
   <block wx:else>
     <input placeholder="User ID" bindinput="onUserId" />
