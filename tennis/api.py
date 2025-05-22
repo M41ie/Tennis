@@ -262,20 +262,48 @@ def create_club(data: ClubCreate):
 
 
 @app.get("/clubs/{club_id}/players")
-def list_players(club_id: str, doubles: bool = False):
+def list_players(
+    club_id: str,
+    doubles: bool = False,
+    min_rating: float | None = None,
+    max_rating: float | None = None,
+    min_age: int | None = None,
+    max_age: int | None = None,
+    gender: str | None = None,
+):
+    """Return members of a club optionally filtered and sorted by rating."""
+
     club = clubs.get(club_id)
     if not club:
         raise HTTPException(404, "Club not found")
+
     today = datetime.date.today()
     get_rating = weighted_doubles_rating if doubles else weighted_rating
-    return [
-        {
-            "user_id": p.user_id,
-            "name": p.name,
-            "rating": get_rating(p, today),
-        }
-        for p in club.members.values()
-    ]
+
+    players = []
+    for p in club.members.values():
+        rating = get_rating(p, today)
+        if min_rating is not None and rating < min_rating:
+            continue
+        if max_rating is not None and rating > max_rating:
+            continue
+        if min_age is not None and (p.age is None or p.age < min_age):
+            continue
+        if max_age is not None and (p.age is None or p.age > max_age):
+            continue
+        if gender is not None and p.gender != gender:
+            continue
+        players.append(
+            {
+                "user_id": p.user_id,
+                "name": p.name,
+                "avatar": p.avatar,
+                "rating": rating,
+            }
+        )
+
+    players.sort(key=lambda x: x["rating"], reverse=True)
+    return players
 
 
 @app.get("/players")

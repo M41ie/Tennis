@@ -505,3 +505,50 @@ def test_token_persistence(tmp_path, monkeypatch):
     )
     assert resp.status_code == 200
     assert resp.json()["status"] == "ok"
+
+
+def test_list_players_filters(tmp_path, monkeypatch):
+    db = tmp_path / "tennis.db"
+    monkeypatch.setattr(storage, "DB_FILE", db)
+
+    api = importlib.reload(importlib.import_module("tennis.api"))
+    client = TestClient(api.app)
+
+    for uid in ("leader", "p1", "p2", "p3"):
+        allow = uid == "leader"
+        client.post(
+            "/users",
+            json={"user_id": uid, "name": uid.upper(), "password": "pw", "allow_create": allow},
+        )
+
+    tokens = {
+        pid: client.post("/login", json={"user_id": pid, "password": "pw"}).json()["token"]
+        for pid in ("leader", "p1", "p2", "p3")
+    }
+
+    client.post(
+        "/clubs",
+        json={"club_id": "c1", "name": "C1", "user_id": "leader", "token": tokens["leader"]},
+    )
+    client.post(
+        "/clubs/c1/players",
+        json={"user_id": "p1", "name": "P1", "age": 20, "gender": "M", "token": tokens["p1"]},
+    )
+    client.post(
+        "/clubs/c1/players",
+        json={"user_id": "p2", "name": "P2", "age": 25, "gender": "F", "token": tokens["p2"]},
+    )
+    client.post(
+        "/clubs/c1/players",
+        json={"user_id": "p3", "name": "P3", "age": 22, "gender": "M", "token": tokens["p3"]},
+    )
+
+    api.clubs["c1"].members["p1"].singles_rating = 1200
+    api.clubs["c1"].members["p2"].singles_rating = 1100
+    api.clubs["c1"].members["p3"].singles_rating = 1300
+
+    resp = client.get("/clubs/c1/players?min_rating=1100&max_age=25&gender=M")
+    assert resp.status_code == 200
+    data = resp.json()
+    ids = [p["user_id"] for p in data]
+    assert ids == ["p3", "p1"]
