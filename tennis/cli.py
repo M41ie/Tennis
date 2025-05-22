@@ -543,6 +543,62 @@ def get_player_match_cards(clubs, club_id: str, user_id: str):
     return cards
 
 
+def get_player_doubles_cards(clubs, club_id: str, user_id: str):
+    """Return a list of doubles match card info for a player."""
+    club = clubs.get(club_id)
+    if not club:
+        raise ValueError("Club not found")
+    player = club.members.get(user_id)
+    if not player:
+        raise ValueError("Player not found")
+
+    cards = []
+    for m in player.doubles_matches:
+        if player in (m.player_a1, m.player_a2):
+            partner = m.player_a2 if m.player_a1 == player else m.player_a1
+            opp1, opp2 = m.player_b1, m.player_b2
+            self_score = m.score_a
+            opp_score = m.score_b
+            if player == m.player_a1:
+                self_after = m.rating_a1_after
+                self_before = m.rating_a1_before
+            else:
+                self_after = m.rating_a2_after
+                self_before = m.rating_a2_before
+        else:
+            partner = m.player_b2 if m.player_b1 == player else m.player_b1
+            opp1, opp2 = m.player_a1, m.player_a2
+            self_score = m.score_b
+            opp_score = m.score_a
+            if player == m.player_b1:
+                self_after = m.rating_b1_after
+                self_before = m.rating_b1_before
+            else:
+                self_after = m.rating_b2_after
+                self_before = m.rating_b2_before
+
+        cards.append(
+            {
+                "date": m.date,
+                "location": m.location,
+                "format": m.format_name,
+                "self_score": self_score,
+                "opponent_score": opp_score,
+                "partner": partner.name,
+                "opponents": f"{opp1.name}/{opp2.name}",
+                "self_rating_after": self_after,
+                "self_delta": (
+                    self_after - self_before
+                    if self_after is not None and self_before is not None
+                    else None
+                ),
+            }
+        )
+
+    cards.sort(key=lambda x: x["date"], reverse=True)
+    return cards
+
+
 def player_history(clubs, club_id: str, user_id: str, doubles: bool):
     club = clubs.get(club_id)
     if not club:

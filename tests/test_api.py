@@ -240,6 +240,73 @@ def test_doubles_match_flow(tmp_path, monkeypatch):
     assert len(club.matches) == 1
 
 
+def test_doubles_records_api(tmp_path, monkeypatch):
+    db = tmp_path / "tennis.db"
+    monkeypatch.setattr(storage, "DB_FILE", db)
+
+    api = importlib.reload(importlib.import_module("tennis.api"))
+    client = TestClient(api.app)
+
+    # register users
+    for uid in ("leader", "p1", "p2", "p3", "p4"):
+        allow = uid == "leader"
+        client.post(
+            "/users",
+            json={"user_id": uid, "name": uid.upper(), "password": "pw", "allow_create": allow},
+        )
+
+    token_leader = client.post("/login", json={"user_id": "leader", "password": "pw"}).json()["token"]
+    tokens = {
+        pid: client.post("/login", json={"user_id": pid, "password": "pw"}).json()["token"]
+        for pid in ("p1", "p2", "p3", "p4")
+    }
+
+    client.post(
+        "/clubs",
+        json={"club_id": "c1", "name": "C1", "user_id": "leader", "token": token_leader},
+    )
+    for pid in ("p1", "p2", "p3", "p4"):
+        client.post(
+            "/clubs/c1/players",
+            json={"user_id": pid, "name": pid.upper(), "token": tokens[pid]},
+        )
+
+    client.post(
+        "/clubs/c1/pending_doubles",
+        json={
+            "initiator": "p1",
+            "a1": "p1",
+            "a2": "p2",
+            "b1": "p3",
+            "b2": "p4",
+            "score_a": 6,
+            "score_b": 3,
+            "date": "2023-01-02",
+            "token": tokens["p1"],
+        },
+    )
+
+    client.post(
+        "/clubs/c1/pending_doubles/0/confirm",
+        json={"user_id": "p3", "token": tokens["p3"]},
+    )
+
+    client.post(
+        "/clubs/c1/pending_doubles/0/approve",
+        json={"approver": "leader", "token": token_leader},
+    )
+
+    resp = client.get("/clubs/c1/players/p1/doubles_records")
+    assert resp.status_code == 200
+    records = resp.json()
+    assert len(records) == 1
+    rec = records[0]
+    assert rec["self_score"] == 6
+    assert rec["opponent_score"] == 3
+    assert rec["partner"] == "P2"
+    assert rec["opponents"] == "P3/P4"
+
+
 def test_pending_match_query(tmp_path, monkeypatch):
     db = tmp_path / "tennis.db"
     monkeypatch.setattr(storage, "DB_FILE", db)
