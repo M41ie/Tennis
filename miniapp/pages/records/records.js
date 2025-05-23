@@ -34,10 +34,10 @@ Page({
   },
   viewRecord(e) {
     const rec = this.data.records[e.currentTarget.dataset.index];
-    wx.showModal({
-      title: 'Match Detail',
-      content: JSON.stringify(rec),
-      showCancel: false
+    wx.navigateTo({
+      url:
+        '/pages/recorddetail/recorddetail?data=' +
+        encodeURIComponent(JSON.stringify(rec))
     });
   },
   addMatch() {

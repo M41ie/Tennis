@@ -5,14 +5,15 @@ Page({
     loginId: '',
     loginPw: '',
     isSelf: false,
-    clubId: ''
+    clubId: '',
+    joinedClubs: []
   },
   onLoad(options) {
     const userId = options.id || wx.getStorageSync('user_id');
     const cid = options.cid || wx.getStorageSync('club_id');
-    if (userId && cid) {
-      this.setData({ clubId: cid, isSelf: userId === wx.getStorageSync('user_id') });
-      this.fetchUser(cid, userId);
+    if (userId) {
+      this.setData({ isSelf: userId === wx.getStorageSync('user_id') });
+      this.fetchJoined(userId, cid);
     }
   },
   onUserId(e) { this.setData({ loginId: e.detail.value }); },
@@ -53,6 +54,12 @@ Page({
   toRegister() {
     wx.navigateTo({ url: '/pages/register/register' });
   },
+  manageClubs() {
+    wx.navigateTo({ url: '/pages/joinclub/joinclub' });
+  },
+  toRegister() {
+    wx.navigateTo({ url: '/pages/register/register' });
+  },
   manageMembers() {
     wx.navigateTo({ url: '/pages/manage/manage' });
   },
@@ -61,6 +68,15 @@ Page({
   },
   toPrerate() {
     wx.navigateTo({ url: '/pages/prerate/prerate' });
+  },
+  selectClub(e) {
+    const cid = e.currentTarget.dataset.id;
+    const uid = wx.getStorageSync('user_id');
+    if (cid && uid) {
+      wx.setStorageSync('club_id', cid);
+      this.setData({ clubId: cid });
+      this.fetchUser(cid, uid);
+    }
   },
   logout() {
     const token = wx.getStorageSync('token');
@@ -83,5 +99,13 @@ Page({
       wx.removeStorageSync('club_id');
       this.setData({ user: null, loginId: '', loginPw: '' });
     }
+  }
+  ,openDetail(e) {
+    const rec = this.data.records[e.currentTarget.dataset.index];
+    wx.navigateTo({
+      url:
+        '/pages/recorddetail/recorddetail?data=' +
+        encodeURIComponent(JSON.stringify(rec))
+    });
   }
 });
