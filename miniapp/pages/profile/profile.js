@@ -54,12 +54,6 @@ Page({
   toRegister() {
     wx.navigateTo({ url: '/pages/register/register' });
   },
-  manageClubs() {
-    wx.navigateTo({ url: '/pages/joinclub/joinclub' });
-  },
-  toRegister() {
-    wx.navigateTo({ url: '/pages/register/register' });
-  },
   manageMembers() {
     wx.navigateTo({ url: '/pages/manage/manage' });
   },
@@ -99,8 +93,8 @@ Page({
       wx.removeStorageSync('club_id');
       this.setData({ user: null, loginId: '', loginPw: '' });
     }
-  }
-  ,openDetail(e) {
+  },
+  openDetail(e) {
     const rec = this.data.records[e.currentTarget.dataset.index];
     wx.navigateTo({
       url:
