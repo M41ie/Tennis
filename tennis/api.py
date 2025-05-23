@@ -508,7 +508,7 @@ def pre_rate_api(club_id: str, data: PreRateRequest):
 
 
 @app.get("/clubs/{club_id}/players/{user_id}")
-def get_player(club_id: str, user_id: str):
+def get_player(club_id: str, user_id: str, recent: int = 0):
     club = clubs.get(club_id)
     if not club:
         raise HTTPException(404, "Club not found")
@@ -516,13 +516,25 @@ def get_player(club_id: str, user_id: str):
     if not player:
         raise HTTPException(404, "Player not found")
     today = datetime.date.today()
-    return {
+    result = {
         "user_id": player.user_id,
         "name": player.name,
         "avatar": player.avatar,
         "singles_rating": weighted_rating(player, today),
         "doubles_rating": weighted_doubles_rating(player, today),
     }
+    if recent > 0:
+        from .cli import get_player_match_cards
+
+        try:
+            cards = get_player_match_cards(clubs, club_id, user_id)
+        except ValueError as e:
+            raise HTTPException(404, str(e))
+        for c in cards:
+            c["date"] = c["date"].isoformat()
+        result["recent_records"] = cards[:recent]
+
+    return result
 
 
 @app.get("/clubs/{club_id}/players/{user_id}/records")

@@ -2,12 +2,18 @@
   <block wx:if="{{user}}">
     <image class="avatar" src="{{user.avatar}}" mode="aspectFill"></image>
     <view>{{user.name}} ({{user.user_id}})</view>
+    <view>Club: {{clubId}}</view>
     <view>Singles: {{user.singles_rating}}</view>
     <view>Doubles: {{user.doubles_rating}}</view>
-    <button bindtap="manageClubs">Manage Clubs</button>
-    <button bindtap="manageMembers">Manage Members</button>
-    <button bindtap="toPrerate">Pre-Rate Member</button>
-    <button bindtap="logout">Logout</button>
+    <view wx:for="{{records}}" wx:key="index" class="record">
+      {{item.date}} {{item.self_score}}-{{item.opponent_score}} vs {{item.opponent}}
+    </view>
+    <block wx:if="{{isSelf}}">
+      <button bindtap="manageClubs">Manage Clubs</button>
+      <button bindtap="manageMembers">Manage Members</button>
+      <button bindtap="toPrerate">Pre-Rate Member</button>
+      <button bindtap="logout">Logout</button>
+    </block>
   </block>
   <block wx:else>
     <input placeholder="User ID" bindinput="onUserId" />

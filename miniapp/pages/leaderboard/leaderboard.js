@@ -63,6 +63,8 @@ Page({
     });
   },
   viewPlayer(e) {
-    wx.navigateTo({ url: '/pages/profile/profile?id=' + e.currentTarget.dataset.id });
+    const id = e.currentTarget.dataset.id;
+    const cid = e.currentTarget.dataset.cid;
+    wx.navigateTo({ url: '/pages/profile/profile?id=' + id + '&cid=' + cid });
   }
 });

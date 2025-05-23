@@ -715,3 +715,57 @@ def test_appointment_flow(tmp_path, monkeypatch):
     club = data["c1"]
     assert len(club.appointments) == 1
     assert not club.appointments[0].signups
+
+
+def test_player_recent_api(tmp_path, monkeypatch):
+    db = tmp_path / "tennis.db"
+    monkeypatch.setattr(storage, "DB_FILE", db)
+
+    api = importlib.reload(importlib.import_module("tennis.api"))
+    client = TestClient(api.app)
+
+    for uid in ("leader", "p1", "p2"):
+        allow = uid == "leader"
+        client.post(
+            "/users",
+            json={"user_id": uid, "name": uid.upper(), "password": "pw", "allow_create": allow},
+        )
+
+    token_leader = client.post("/login", json={"user_id": "leader", "password": "pw"}).json()["token"]
+    token_p1 = client.post("/login", json={"user_id": "p1", "password": "pw"}).json()["token"]
+    token_p2 = client.post("/login", json={"user_id": "p2", "password": "pw"}).json()["token"]
+
+    client.post(
+        "/clubs",
+        json={"club_id": "c1", "name": "C1", "user_id": "leader", "token": token_leader},
+    )
+    client.post(
+        "/clubs/c1/players",
+        json={"user_id": "p1", "name": "P1", "token": token_p1},
+    )
+    client.post(
+        "/clubs/c1/players",
+        json={"user_id": "p2", "name": "P2", "token": token_p2},
+    )
+
+    client.post(
+        "/clubs/c1/matches",
+        json={
+            "user_id": "p1",
+            "user_a": "p1",
+            "user_b": "p2",
+            "score_a": 6,
+            "score_b": 4,
+            "date": "2023-01-01",
+            "token": token_p1,
+        },
+    )
+
+    resp = client.get("/clubs/c1/players/p1?recent=1")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert "recent_records" in data
+    assert len(data["recent_records"]) == 1
+    rec = data["recent_records"][0]
+    assert rec["self_score"] == 6
+    assert rec["opponent_score"] == 4
