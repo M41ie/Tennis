@@ -1,0 +1,7 @@
+<view wx:if="{{record}}" class="detail">
+  <view>{{record.date}} {{record.location}}</view>
+  <view>{{record.format}} {{record.self_score}}-{{record.opponent_score}}</view>
+  <view>vs {{record.opponent || record.opponents}}</view>
+  <view>Rating: {{record.self_rating_after}} ({{record.self_delta}})</view>
+</view>
+<view wx:else>No data</view>
