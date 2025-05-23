@@ -13,7 +13,7 @@
 </view>
 <view class="list">
   <block wx:for="{{players}}" wx:key="user_id">
-    <view class="item" bindtap="viewPlayer" data-id="{{item.user_id}}">
+    <view class="item" bindtap="viewPlayer" data-id="{{item.user_id}}" data-cid="{{item.club_id || clubOptions[clubIndex]}}">
       <image class="avatar" src="{{item.avatar}}" mode="aspectFill"></image>
       <text>{{item.name}}: {{item.rating}}</text>
     </view>
