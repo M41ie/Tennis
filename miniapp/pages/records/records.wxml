@@ -1,5 +1,8 @@
 <button class="add" bindtap="addMatch">\u5f55\u5165\u6218\u7ee9</button>
 <button class="add" bindtap="viewPending">\u5f85\u5ba1\u6838</button>
+<picker mode="selector" range="{{modeOptions}}" value="{{modeIndex}}" bindchange="onModeChange">
+  <view>{{modeOptions[modeIndex]}}</view>
+</picker>
 <view class="list">
   <block wx:for="{{records}}" wx:key="index">
     <view class="item" bindtap="viewRecord" data-index="{{index}}">
