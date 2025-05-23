@@ -39,6 +39,32 @@ Page({
       }
     });
   },
+  wechatLogin() {
+    const that = this;
+    wx.login({
+      success(res) {
+        if (!res.code) return;
+        wx.request({
+          url: 'http://localhost:8000/wechat_login',
+          method: 'POST',
+          data: { code: res.code },
+          success(resp) {
+            if (resp.statusCode === 200 && resp.data.token) {
+              wx.setStorageSync('token', resp.data.token);
+              wx.setStorageSync('user_id', resp.data.user_id);
+              const cid = wx.getStorageSync('club_id');
+              if (cid) {
+                that.setData({ isSelf: true, clubId: cid });
+                that.fetchUser(cid, resp.data.user_id);
+              }
+            } else {
+              wx.showToast({ title: 'Login failed', icon: 'none' });
+            }
+          }
+        });
+      }
+    });
+  },
   fetchUser(cid, id) {
     const that = this;
     wx.request({

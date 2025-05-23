@@ -25,5 +25,26 @@ Page({
         }
       }
     });
+  },
+  wechatLogin() {
+    wx.login({
+      success(res) {
+        if (!res.code) return;
+        wx.request({
+          url: 'http://localhost:8000/wechat_login',
+          method: 'POST',
+          data: { code: res.code },
+          success(resp) {
+            if (resp.statusCode === 200 && resp.data.token) {
+              wx.setStorageSync('token', resp.data.token);
+              wx.setStorageSync('user_id', resp.data.user_id);
+              wx.navigateBack();
+            } else {
+              wx.showToast({ title: 'Failed', icon: 'none' });
+            }
+          }
+        });
+      }
+    });
   }
 });

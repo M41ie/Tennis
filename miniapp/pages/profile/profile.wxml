@@ -35,6 +35,7 @@
     <input placeholder="User ID" bindinput="onUserId" />
     <input password placeholder="Password" bindinput="onPassword" />
     <button bindtap="login">Login</button>
+    <button bindtap="wechatLogin">WeChat Login</button>
     <button bindtap="toRegister">Register</button>
   </block>
 </view>

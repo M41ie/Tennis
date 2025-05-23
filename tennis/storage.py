@@ -26,6 +26,7 @@ def _init_schema(conn: sqlite3.Connection) -> None:
         user_id TEXT PRIMARY KEY,
         name TEXT,
         password_hash TEXT,
+        wechat_openid TEXT,
         can_create_club INTEGER,
         created_clubs INTEGER DEFAULT 0,
         joined_clubs INTEGER DEFAULT 0
@@ -388,10 +389,14 @@ def load_users() -> Dict[str, User]:
     cur = conn.cursor()
     users: Dict[str, User] = {}
     for row in cur.execute("SELECT * FROM users"):
+        wechat_openid = None
+        if "wechat_openid" in row.keys():
+            wechat_openid = row["wechat_openid"]
         users[row["user_id"]] = User(
             user_id=row["user_id"],
             name=row["name"],
             password_hash=row["password_hash"],
+            wechat_openid=wechat_openid,
             can_create_club=bool(row["can_create_club"]),
             created_clubs=row["created_clubs"],
             joined_clubs=row["joined_clubs"],
@@ -417,11 +422,12 @@ def save_users(users: Dict[str, User]) -> None:
     cur.execute("DELETE FROM messages")
     for u in users.values():
         cur.execute(
-            "INSERT INTO users(user_id, name, password_hash, can_create_club, created_clubs, joined_clubs) VALUES (?,?,?,?,?,?)",
+            "INSERT INTO users(user_id, name, password_hash, wechat_openid, can_create_club, created_clubs, joined_clubs) VALUES (?,?,?,?,?,?,?)",
             (
                 u.user_id,
                 u.name,
                 u.password_hash,
+                u.wechat_openid,
                 int(u.can_create_club),
                 u.created_clubs,
                 u.joined_clubs,

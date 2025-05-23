@@ -1,0 +1,27 @@
+import importlib
+from fastapi.testclient import TestClient
+import tennis.storage as storage
+
+
+def test_wechat_login_creates_user(tmp_path, monkeypatch):
+    db = tmp_path / "tennis.db"
+    monkeypatch.setattr(storage, "DB_FILE", db)
+    api = importlib.reload(importlib.import_module("tennis.api"))
+
+    def fake_exchange(code):
+        assert code == "code123"
+        return {"openid": "wx123", "session_key": "sk"}
+
+    monkeypatch.setattr(api, "_exchange_wechat_code", fake_exchange)
+
+    client = TestClient(api.app)
+
+    resp = client.post("/wechat_login", json={"code": "code123"})
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["token"]
+    uid = data["user_id"]
+
+    users = storage.load_users()
+    assert uid in users
+    assert users[uid].wechat_openid == "wx123"

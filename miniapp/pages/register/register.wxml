@@ -3,4 +3,5 @@
   <input placeholder="Name" bindinput="onName" />
   <input password placeholder="Password" bindinput="onPassword" />
   <button bindtap="register">Register</button>
+  <button bindtap="wechatLogin">WeChat Login</button>
 </view>
