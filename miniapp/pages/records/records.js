@@ -35,5 +35,8 @@ Page({
   },
   addMatch() {
     wx.navigateTo({ url: '/pages/addmatch/addmatch' });
+  },
+  viewPending() {
+    wx.navigateTo({ url: '/pages/pending/pending' });
   }
 });
