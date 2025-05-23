@@ -6,7 +6,8 @@
     "pages/prerate/prerate",
     "pages/addmatch/addmatch",
     "pages/appointment/appointment",
-    "pages/pending/pending"
+    "pages/pending/pending",
+    "pages/manage/manage"
   ],
   "tabBar": {
     "list": [

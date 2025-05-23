@@ -67,6 +67,9 @@ Page({
       }
     });
   },
+  manageMembers() {
+    wx.navigateTo({ url: '/pages/manage/manage' });
+  },
   toPrerate() {
     wx.navigateTo({ url: '/pages/prerate/prerate' });
   },

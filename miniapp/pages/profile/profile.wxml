@@ -5,6 +5,7 @@
     <view>Singles: {{user.singles_rating}}</view>
     <view>Doubles: {{user.doubles_rating}}</view>
     <button bindtap="manageClubs">Manage Clubs</button>
+    <button bindtap="manageMembers">Manage Members</button>
     <button bindtap="toPrerate">Pre-Rate Member</button>
     <button bindtap="logout">Logout</button>
   </block>
