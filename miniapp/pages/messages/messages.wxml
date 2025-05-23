@@ -1,0 +1,6 @@
+<view>
+  <block wx:for="{{list}}" wx:key="index">
+    <view>{{item.date}} {{item.text}}</view>
+    <button wx:if="{{!item.read}}" data-index="{{index}}" bindtap="markRead">标记已读</button>
+  </block>
+</view>

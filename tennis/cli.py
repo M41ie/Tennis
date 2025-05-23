@@ -9,6 +9,7 @@ from .models import (
     Match,
     DoublesMatch,
     User,
+    Message,
     MAX_CREATED_CLUBS,
     MAX_JOINED_CLUBS,
 )
@@ -106,6 +107,12 @@ def approve_member(
     user.joined_clubs += 1
     if make_admin:
         club.admin_ids.add(user_id)
+    user.messages.append(
+        Message(
+            date=datetime.date.today(),
+            text=f"Approved to join club {club.name}",
+        )
+    )
 
 
 def create_club(users, clubs, user_id: str, club_id: str, name: str, logo: Optional[str], region: Optional[str]):
@@ -339,7 +346,7 @@ def confirm_doubles(clubs, club_id: str, index: int, user_id: str):
         raise ValueError("User not in match")
 
 
-def approve_doubles(clubs, club_id: str, index: int, approver: str):
+def approve_doubles(clubs, club_id: str, index: int, approver: str, users=None):
     """Approve a pending doubles match and apply ratings."""
     club = clubs.get(club_id)
     if not club:
@@ -349,10 +356,10 @@ def approve_doubles(clubs, club_id: str, index: int, approver: str):
     match = club.pending_matches[index]
     if not isinstance(match, DoublesMatch):
         raise ValueError("Not a doubles match")
-    approve_match(clubs, club_id, index, approver)
+    approve_match(clubs, club_id, index, approver, users)
 
 
-def approve_match(clubs, club_id: str, index: int, approver: str):
+def approve_match(clubs, club_id: str, index: int, approver: str, users=None):
     """Leader or admin approves a confirmed match and apply ratings."""
     club = clubs.get(club_id)
     if not club:
@@ -377,6 +384,18 @@ def approve_match(clubs, club_id: str, index: int, approver: str):
         pb = match.player_b
         pa.singles_rating = weighted_rating(pa, match.date)
         pb.singles_rating = weighted_rating(pb, match.date)
+    if users:
+        date_str = match.date.isoformat()
+        if isinstance(match, DoublesMatch):
+            participant_ids = [match.player_a1.user_id, match.player_a2.user_id, match.player_b1.user_id, match.player_b2.user_id]
+        else:
+            participant_ids = [match.player_a.user_id, match.player_b.user_id]
+        for uid in participant_ids:
+            u = users.get(uid)
+            if u:
+                u.messages.append(
+                    Message(date=match.date, text=f"Match on {date_str} approved in {club.name}")
+                )
 
 
 def record_match(
@@ -861,7 +880,7 @@ def main():
     elif args.cmd == 'confirm_match':
         confirm_match(clubs, args.club_id, args.index, args.user_id)
     elif args.cmd == 'approve_match':
-        approve_match(clubs, args.club_id, args.index, args.approver)
+        approve_match(clubs, args.club_id, args.index, args.approver, users)
     elif args.cmd == 'record_doubles':
         weight = args.weight
         if args.format:

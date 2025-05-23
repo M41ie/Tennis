@@ -1,0 +1,11 @@
+<view>
+  <input placeholder="Search" bindinput="onSearch" />
+  <view class="list">
+    <block wx:for="{{clubs}}" wx:key="club_id">
+      <view class="item">
+        <text>{{item.name}} ({{item.club_id}})</text>
+        <button data-id="{{item.club_id}}" bindtap="join">Join</button>
+      </view>
+    </block>
+  </view>
+</view>

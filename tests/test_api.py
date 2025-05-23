@@ -80,6 +80,10 @@ def test_api_match_flow(tmp_path, monkeypatch):
     )
     assert resp.status_code == 200
     assert resp.json()["status"] == "ok"
+    resp = client.get(f"/users/p1/messages?token={token_p1}")
+    assert len(resp.json()) == 1
+    resp = client.get(f"/users/p2/messages?token={token_p2}")
+    assert len(resp.json()) == 1
 
     # verify persisted ratings
     loaded = storage.load_data()
@@ -769,3 +773,30 @@ def test_player_recent_api(tmp_path, monkeypatch):
     rec = data["recent_records"][0]
     assert rec["self_score"] == 6
     assert rec["opponent_score"] == 4
+
+
+def test_get_user_info_api(tmp_path, monkeypatch):
+    db = tmp_path / "tennis.db"
+    monkeypatch.setattr(storage, "DB_FILE", db)
+
+    api = importlib.reload(importlib.import_module("tennis.api"))
+    client = TestClient(api.app)
+
+    # create user and club
+    client.post("/users", json={"user_id": "u1", "name": "U1", "password": "pw"})
+    client.post("/users", json={"user_id": "leader", "name": "L", "password": "pw", "allow_create": True})
+    token_leader = client.post("/login", json={"user_id": "leader", "password": "pw"}).json()["token"]
+    token_u1 = client.post("/login", json={"user_id": "u1", "password": "pw"}).json()["token"]
+    client.post("/clubs", json={"club_id": "c1", "name": "C1", "user_id": "leader", "token": token_leader})
+    client.post("/clubs/c1/join", json={"user_id": "u1", "token": token_u1})
+    client.post("/clubs/c1/approve", json={"approver_id": "leader", "user_id": "u1", "token": token_leader})
+
+    resp = client.get("/users/u1")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["user_id"] == "u1"
+    assert data["joined_clubs"] == ["c1"]
+    resp = client.get(f"/users/u1/messages?token={token_u1}")
+    assert resp.status_code == 200
+    msgs = resp.json()
+    assert len(msgs) == 1
