@@ -27,7 +27,7 @@ from .rating import (
     weighted_doubles_rating,
     format_weight_from_name,
 )
-from .models import Player, Club, Match
+from .models import Player, Club, Match, Appointment
 
 app = FastAPI()
 
@@ -155,6 +155,19 @@ class PendingDoublesCreate(BaseModel):
     format: str | None = None
     weight: float | None = None
     location: str | None = None
+    token: str
+
+
+class AppointmentCreate(BaseModel):
+    user_id: str
+    date: datetime.date
+    token: str
+    location: str | None = None
+    info: str | None = None
+
+
+class SignupRequest(BaseModel):
+    user_id: str
     token: str
 
 
@@ -723,6 +736,80 @@ def approve_doubles_api(club_id: str, index: int, data: ApproveMatchRequest):
         approve_doubles(clubs, club_id, index, data.approver)
     except ValueError as e:
         raise HTTPException(400, str(e))
+    save_data(clubs)
+    return {"status": "ok"}
+
+
+@app.post("/clubs/{club_id}/appointments")
+def create_appointment(club_id: str, data: AppointmentCreate):
+    """Create a new appointment in a club."""
+    user = require_auth(data.token)
+    if user != data.user_id:
+        raise HTTPException(401, "Token mismatch")
+    club = clubs.get(club_id)
+    if not club:
+        raise HTTPException(404, "Club not found")
+    if data.user_id not in club.members and data.user_id != club.leader_id:
+        raise HTTPException(400, "Not a member")
+    appt = Appointment(
+        date=data.date,
+        creator=data.user_id,
+        location=data.location,
+        info=data.info,
+    )
+    club.appointments.append(appt)
+    save_data(clubs)
+    return {"status": "ok"}
+
+
+@app.get("/clubs/{club_id}/appointments")
+def list_appointments(club_id: str):
+    club = clubs.get(club_id)
+    if not club:
+        raise HTTPException(404, "Club not found")
+    result = []
+    for idx, a in enumerate(club.appointments):
+        result.append(
+            {
+                "index": idx,
+                "date": a.date.isoformat(),
+                "creator": a.creator,
+                "location": a.location,
+                "info": a.info,
+                "signups": list(a.signups),
+            }
+        )
+    return result
+
+
+@app.post("/clubs/{club_id}/appointments/{index}/signup")
+def signup_appointment(club_id: str, index: int, data: SignupRequest):
+    user = require_auth(data.token)
+    if user != data.user_id:
+        raise HTTPException(401, "Token mismatch")
+    club = clubs.get(club_id)
+    if not club:
+        raise HTTPException(404, "Club not found")
+    if index >= len(club.appointments):
+        raise HTTPException(404, "Appointment not found")
+    if data.user_id not in club.members:
+        raise HTTPException(400, "Not a member")
+    club.appointments[index].signups.add(data.user_id)
+    save_data(clubs)
+    return {"status": "ok"}
+
+
+@app.post("/clubs/{club_id}/appointments/{index}/cancel")
+def cancel_signup(club_id: str, index: int, data: SignupRequest):
+    user = require_auth(data.token)
+    if user != data.user_id:
+        raise HTTPException(401, "Token mismatch")
+    club = clubs.get(club_id)
+    if not club:
+        raise HTTPException(404, "Club not found")
+    if index >= len(club.appointments):
+        raise HTTPException(404, "Appointment not found")
+    club.appointments[index].signups.discard(data.user_id)
     save_data(clubs)
     return {"status": "ok"}
 

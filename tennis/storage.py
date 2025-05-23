@@ -4,7 +4,7 @@ import sqlite3
 from pathlib import Path
 from typing import Dict
 
-from .models import Player, Club, Match, DoublesMatch, User
+from .models import Player, Club, Match, DoublesMatch, User, Appointment
 
 DB_FILE = Path("tennis.db")
 
@@ -51,6 +51,17 @@ def _init_schema(conn: sqlite3.Connection) -> None:
     )
     cur.execute(
         "CREATE TABLE IF NOT EXISTS pending_matches (id INTEGER PRIMARY KEY AUTOINCREMENT, club_id TEXT, type TEXT, date TEXT, data TEXT)"
+    )
+    cur.execute(
+        """CREATE TABLE IF NOT EXISTS appointments (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        club_id TEXT,
+        date TEXT,
+        creator TEXT,
+        location TEXT,
+        info TEXT,
+        signups TEXT
+    )"""
     )
     cur.execute(
         "CREATE TABLE IF NOT EXISTS club_meta (club_id TEXT PRIMARY KEY, banned_ids TEXT)"
@@ -193,6 +204,18 @@ def load_data() -> Dict[str, Club]:
             match.confirmed_a = data.get("confirmed_a", False)
             match.confirmed_b = data.get("confirmed_b", False)
             club.pending_matches.append(match)
+    for row in cur.execute("SELECT * FROM appointments ORDER BY id"):
+        club = clubs.get(row["club_id"])
+        if not club:
+            continue
+        appt = Appointment(
+            date=datetime.date.fromisoformat(row["date"]),
+            creator=row["creator"],
+            location=row["location"],
+            info=row["info"],
+        )
+        appt.signups.update(json.loads(row["signups"] or "[]"))
+        club.appointments.append(appt)
     conn.close()
     return clubs
 
@@ -204,6 +227,7 @@ def save_data(clubs: Dict[str, Club]) -> None:
     cur.execute("DELETE FROM players")
     cur.execute("DELETE FROM matches")
     cur.execute("DELETE FROM pending_matches")
+    cur.execute("DELETE FROM appointments")
     cur.execute("DELETE FROM club_meta")
     for cid, club in clubs.items():
         cur.execute(
@@ -333,6 +357,18 @@ def save_data(clubs: Dict[str, Club]) -> None:
                         json.dumps(data),
                     ),
                 )
+        for a in club.appointments:
+            cur.execute(
+                "INSERT INTO appointments(club_id, date, creator, location, info, signups) VALUES (?,?,?,?,?,?)",
+                (
+                    cid,
+                    a.date.isoformat(),
+                    a.creator,
+                    a.location,
+                    a.info,
+                    json.dumps(list(a.signups)),
+                ),
+            )
     conn.commit()
     conn.close()
 
