@@ -52,6 +52,9 @@ def _init_schema(conn: sqlite3.Connection) -> None:
     cur.execute(
         "CREATE TABLE IF NOT EXISTS pending_matches (id INTEGER PRIMARY KEY AUTOINCREMENT, club_id TEXT, type TEXT, date TEXT, data TEXT)"
     )
+    cur.execute(
+        "CREATE TABLE IF NOT EXISTS club_meta (club_id TEXT PRIMARY KEY, banned_ids TEXT)"
+    )
     conn.commit()
 
 
@@ -66,6 +69,12 @@ def load_data() -> Dict[str, Club]:
             logo=row["logo"],
             region=row["region"],
         )
+
+    for row in cur.execute("SELECT * FROM club_meta"):
+        club = clubs.get(row["club_id"])
+        if not club:
+            continue
+        club.banned_ids.update(json.loads(row["banned_ids"] or "[]"))
 
     for row in cur.execute("SELECT * FROM players"):
         club = clubs.get(row["club_id"])
@@ -195,10 +204,15 @@ def save_data(clubs: Dict[str, Club]) -> None:
     cur.execute("DELETE FROM players")
     cur.execute("DELETE FROM matches")
     cur.execute("DELETE FROM pending_matches")
+    cur.execute("DELETE FROM club_meta")
     for cid, club in clubs.items():
         cur.execute(
             "INSERT INTO clubs(club_id, name, logo, region) VALUES (?,?,?,?)",
             (cid, club.name, club.logo, club.region),
+        )
+        cur.execute(
+            "INSERT INTO club_meta(club_id, banned_ids) VALUES (?,?)",
+            (cid, json.dumps(list(club.banned_ids))),
         )
         for p in club.members.values():
             cur.execute(

@@ -14,6 +14,7 @@ from .cli import (
     login_user,
     request_join,
     approve_member,
+    remove_member as cli_remove_member,
     create_club as cli_create_club,
     hash_password,
     validate_scores,
@@ -183,6 +184,12 @@ class ApproveRequest(BaseModel):
     user_id: str
     admin: bool = False
     token: str
+
+
+class RemoveRequest(BaseModel):
+    remover_id: str
+    token: str
+    ban: bool = False
 
 
 @app.post("/users")
@@ -402,6 +409,28 @@ def update_player_api(club_id: str, user_id: str, data: PlayerUpdate):
     except ValueError as e:
         raise HTTPException(400, str(e))
     save_data(clubs)
+    return {"status": "ok"}
+
+
+@app.delete("/clubs/{club_id}/members/{user_id}")
+def remove_member_api(club_id: str, user_id: str, data: RemoveRequest):
+    """Remove a club member (leader or admin only)."""
+    user = require_auth(data.token)
+    if user != data.remover_id:
+        raise HTTPException(401, "Token mismatch")
+    try:
+        cli_remove_member(
+            clubs,
+            users,
+            club_id,
+            data.remover_id,
+            user_id,
+            ban=data.ban,
+        )
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    save_data(clubs)
+    save_users(users)
     return {"status": "ok"}
 
 
