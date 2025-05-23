@@ -48,6 +48,8 @@ def update_ratings(match: Match) -> Tuple[float, float]:
     """
     a_rating = match.player_a.singles_rating
     b_rating = match.player_b.singles_rating
+    pre_a = a_rating
+    pre_b = b_rating
 
     match.rating_a_before = a_rating
     match.rating_b_before = b_rating
@@ -77,15 +79,13 @@ def update_ratings(match: Match) -> Tuple[float, float]:
     match.player_a.singles_matches.append(match)
     match.player_b.singles_matches.append(match)
 
-    # Experience gain scales with match format and current rating.
-    def _exp_gain(rating: float) -> float:
-        # Convert rating roughly to a 0-7 scale and apply the difficulty factor
-        level = rating / 1000.0
-        difficulty = 7.0 / max(0.1, 7.0 - level)
-        return games_played * match.format_weight * EXPERIENCE_RATE / difficulty
-
-    match.player_a.experience += _exp_gain(a_rating)
-    match.player_b.experience += _exp_gain(b_rating)
+    # Experience gain scales with match difficulty based on the highest rating.
+    base = max(pre_a, pre_b)
+    level = base / 1000.0
+    difficulty = 7.0 / max(0.1, 7.0 - level)
+    exp_gain = games_played * match.format_weight * EXPERIENCE_RATE / difficulty
+    match.player_a.experience += exp_gain
+    match.player_b.experience += exp_gain
 
     return a_rating, b_rating
 
@@ -122,6 +122,10 @@ def update_doubles_ratings(match: DoublesMatch) -> Tuple[float, float, float, fl
     match.rating_a2_before = match.player_a2.doubles_rating
     match.rating_b1_before = match.player_b1.doubles_rating
     match.rating_b2_before = match.player_b2.doubles_rating
+    pre_a1 = match.player_a1.doubles_rating
+    pre_a2 = match.player_a2.doubles_rating
+    pre_b1 = match.player_b1.doubles_rating
+    pre_b2 = match.player_b2.doubles_rating
 
     exp_a = expected_score(team_a_rating, team_b_rating)
     exp_b = 1 - exp_a
@@ -169,15 +173,14 @@ def update_doubles_ratings(match: DoublesMatch) -> Tuple[float, float, float, fl
     match.player_b1.doubles_matches.append(match)
     match.player_b2.doubles_matches.append(match)
 
-    def _exp_gain(rating: float) -> float:
-        level = rating / 1000.0
-        difficulty = 7.0 / max(0.1, 7.0 - level)
-        return games_played * match.format_weight * EXPERIENCE_RATE / difficulty
-
-    match.player_a1.experience += _exp_gain(match.player_a1.doubles_rating)
-    match.player_a2.experience += _exp_gain(match.player_a2.doubles_rating)
-    match.player_b1.experience += _exp_gain(match.player_b1.doubles_rating)
-    match.player_b2.experience += _exp_gain(match.player_b2.doubles_rating)
+    base = max(pre_a1, pre_a2, pre_b1, pre_b2)
+    level = base / 1000.0
+    difficulty = 7.0 / max(0.1, 7.0 - level)
+    exp_gain = games_played * match.format_weight * EXPERIENCE_RATE / difficulty
+    match.player_a1.experience += exp_gain
+    match.player_a2.experience += exp_gain
+    match.player_b1.experience += exp_gain
+    match.player_b2.experience += exp_gain
 
     return (
         match.rating_a1_after,

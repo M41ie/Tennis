@@ -552,3 +552,54 @@ def test_list_players_filters(tmp_path, monkeypatch):
     data = resp.json()
     ids = [p["user_id"] for p in data]
     assert ids == ["p3", "p1"]
+
+
+def test_update_player_api(tmp_path, monkeypatch):
+    db = tmp_path / "tennis.db"
+    monkeypatch.setattr(storage, "DB_FILE", db)
+
+    api = importlib.reload(importlib.import_module("tennis.api"))
+    client = TestClient(api.app)
+
+    # register and login
+    client.post(
+        "/users",
+        json={"user_id": "leader", "name": "L", "password": "pw", "allow_create": True},
+    )
+    client.post(
+        "/users",
+        json={"user_id": "p1", "name": "P1", "password": "pw"},
+    )
+
+    token_leader = client.post("/login", json={"user_id": "leader", "password": "pw"}).json()["token"]
+    token_p1 = client.post("/login", json={"user_id": "p1", "password": "pw"}).json()["token"]
+
+    client.post(
+        "/clubs",
+        json={"club_id": "c1", "name": "C1", "user_id": "leader", "token": token_leader},
+    )
+    client.post(
+        "/clubs/c1/players",
+        json={"user_id": "p1", "name": "P1", "token": token_p1},
+    )
+
+    resp = client.patch(
+        "/clubs/c1/players/p1",
+        json={
+            "user_id": "p1",
+            "token": token_p1,
+            "name": "New",
+            "age": 30,
+            "gender": "M",
+            "avatar": "img.png",
+        },
+    )
+    assert resp.status_code == 200
+    assert resp.json()["status"] == "ok"
+
+    data = storage.load_data()
+    p1 = data["c1"].members["p1"]
+    assert p1.name == "New"
+    assert p1.age == 30
+    assert p1.gender == "M"
+    assert p1.avatar == "img.png"
