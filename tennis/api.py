@@ -237,6 +237,16 @@ def logout_api(data: LogoutRequest):
     return {"status": "ok"}
 
 
+@app.get("/users/{user_id}")
+def get_user_info(user_id: str):
+    """Return basic user info including joined clubs."""
+    user = users.get(user_id)
+    if not user:
+        raise HTTPException(404, "User not found")
+    joined = [cid for cid, c in clubs.items() if user_id in c.members]
+    return {"user_id": user.user_id, "name": user.name, "joined_clubs": joined}
+
+
 @app.post("/clubs/{club_id}/join")
 def join_club(club_id: str, data: JoinRequest):
     user = require_auth(data.token)

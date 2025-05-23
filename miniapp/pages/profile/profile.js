@@ -48,29 +48,10 @@ Page({
     });
   },
   manageClubs() {
-    const userId = wx.getStorageSync('user_id');
-    if (!userId) return;
-    const that = this;
-    wx.request({
-      url: 'http://localhost:8000/clubs',
-      success(res) {
-        if (res.data.length > 0) {
-          const cid = res.data[0].club_id;
-          const token = wx.getStorageSync('token');
-          wx.request({
-            url: `http://localhost:8000/clubs/${cid}/join`,
-            method: 'POST',
-            data: { user_id: userId, token },
-            success() {
-              wx.setStorageSync('club_id', cid);
-              wx.showToast({ title: 'Joined ' + cid, icon: 'none' });
-              that.setData({ clubId: cid, isSelf: true });
-              that.fetchUser(cid, userId);
-            }
-          });
-        }
-      }
-    });
+    wx.navigateTo({ url: '/pages/joinclub/joinclub' });
+  },
+  toRegister() {
+    wx.navigateTo({ url: '/pages/register/register' });
   },
   manageMembers() {
     wx.navigateTo({ url: '/pages/manage/manage' });
