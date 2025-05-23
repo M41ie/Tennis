@@ -7,6 +7,9 @@
   </picker>
   <input type="number" placeholder="Min Rating" bindinput="onMinRating" />
   <input type="number" placeholder="Max Rating" bindinput="onMaxRating" />
+  <input type="number" placeholder="Min Age" bindinput="onMinAge" />
+  <input type="number" placeholder="Max Age" bindinput="onMaxAge" />
+  <input placeholder="Gender" bindinput="onGender" />
 </view>
 <view class="list">
   <block wx:for="{{players}}" wx:key="user_id">
