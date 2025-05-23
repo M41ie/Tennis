@@ -1,0 +1,10 @@
+<view>
+  <input placeholder="Target ID" bindinput="onTarget" />
+  <input placeholder="Rating" bindinput="onRating" />
+  <button bindtap="submit">Submit</button>
+  <block wx:if="{{target}}">
+    <view>{{target.name}} ({{target.user_id}})</view>
+    <view>Singles: {{target.singles_rating}}</view>
+    <view>Doubles: {{target.doubles_rating}}</view>
+  </block>
+</view>
