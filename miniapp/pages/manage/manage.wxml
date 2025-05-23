@@ -1,0 +1,21 @@
+<view class="list">
+  <view>Pending Members</view>
+  <block wx:for="{{pending}}" wx:key="uid">
+    <view class="item">
+      <text>{{item}}</text>
+      <button wx:if="{{isAdmin}}" data-uid="{{item}}" bindtap="approve">Approve</button>
+    </view>
+  </block>
+</view>
+<view class="list">
+  <view>Members</view>
+  <block wx:for="{{members}}" wx:key="user_id">
+    <view class="item">
+      <text>{{item.name}} ({{item.user_id}})</text>
+      <view class="actions" wx:if="{{isAdmin}}">
+        <button data-uid="{{item.user_id}}" bindtap="kick">Kick</button>
+        <button data-uid="{{item.user_id}}" bindtap="ban">Ban</button>
+      </view>
+    </view>
+  </block>
+</view>

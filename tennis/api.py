@@ -299,6 +299,24 @@ def create_club(data: ClubCreate):
     return {"status": "ok"}
 
 
+@app.get("/clubs/{club_id}")
+def get_club_info(club_id: str):
+    """Return basic club information including members and pending requests."""
+    club = clubs.get(club_id)
+    if not club:
+        raise HTTPException(404, "Club not found")
+    return {
+        "club_id": club.club_id,
+        "name": club.name,
+        "leader_id": club.leader_id,
+        "admin_ids": list(club.admin_ids),
+        "pending_members": list(club.pending_members),
+        "members": [
+            {"user_id": p.user_id, "name": p.name} for p in club.members.values()
+        ],
+    }
+
+
 @app.get("/clubs/{club_id}/players")
 def list_players(
     club_id: str,
