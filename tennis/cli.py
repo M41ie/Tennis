@@ -149,6 +149,32 @@ def add_player(
     )
 
 
+def update_player(
+    clubs,
+    club_id: str,
+    user_id: str,
+    name: str | None = None,
+    age: int | None = None,
+    gender: str | None = None,
+    avatar: str | None = None,
+):
+    """Modify an existing player's profile."""
+    club = clubs.get(club_id)
+    if not club:
+        raise ValueError('Club not found')
+    player = club.members.get(user_id)
+    if not player:
+        raise ValueError('Player not found')
+    if name is not None:
+        player.name = name
+    if age is not None:
+        player.age = age
+    if gender is not None:
+        player.gender = gender
+    if avatar is not None:
+        player.avatar = avatar
+
+
 def pre_rate(clubs, club_id: str, rater_id: str, target_id: str, rating: float):
     """Record a pre-rating for ``target_id`` from ``rater_id``."""
     club = clubs.get(club_id)

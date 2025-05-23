@@ -1,10 +1,13 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 import secrets
-from pydantic import BaseModel
+from pydantic import BaseModel, StrictInt
 import datetime
 import json
 from pathlib import Path
 
+import tennis.storage as storage
 from .storage import load_data, save_data, load_users, save_users
 from .cli import (
     register_user,
@@ -14,6 +17,7 @@ from .cli import (
     create_club as cli_create_club,
     hash_password,
     validate_scores,
+    update_player as cli_update_player,
 )
 from .rating import (
     update_ratings,
@@ -25,6 +29,11 @@ from .rating import (
 from .models import Player, Club, Match
 
 app = FastAPI()
+
+
+@app.exception_handler(RequestValidationError)
+def validation_exception_handler(request, exc):
+    return JSONResponse(status_code=400, content={"detail": exc.errors()})
 
 clubs = load_data()
 users = load_users()
@@ -90,12 +99,21 @@ class PlayerCreate(BaseModel):
     avatar: str | None = None
 
 
+class PlayerUpdate(BaseModel):
+    user_id: str
+    token: str
+    name: str | None = None
+    age: int | None = None
+    gender: str | None = None
+    avatar: str | None = None
+
+
 class MatchCreate(BaseModel):
     user_id: str
     user_a: str
     user_b: str
-    score_a: int
-    score_b: int
+    score_a: StrictInt
+    score_b: StrictInt
     date: datetime.date | None = None
     format: str | None = None
     weight: float | None = None
@@ -107,8 +125,8 @@ class PendingMatchCreate(BaseModel):
     club_id: str | None = None  # optional alternate clubs
     initiator: str
     opponent: str
-    score_initiator: int
-    score_opponent: int
+    score_initiator: StrictInt
+    score_opponent: StrictInt
     date: datetime.date | None = None
     format: str | None = None
     weight: float | None = None
@@ -130,8 +148,8 @@ class PendingDoublesCreate(BaseModel):
     a2: str
     b1: str
     b2: str
-    score_a: int
-    score_b: int
+    score_a: StrictInt
+    score_b: StrictInt
     date: datetime.date | None = None
     format: str | None = None
     weight: float | None = None
@@ -348,9 +366,7 @@ def list_all_players(
 
 @app.post("/clubs/{club_id}/players")
 def add_player(club_id: str, data: PlayerCreate):
-    user = require_auth(data.token)
-    if user != data.user_id:
-        raise HTTPException(401, "Token mismatch")
+    require_auth(data.token)
     club = clubs.get(club_id)
     if not club:
         raise HTTPException(404, "Club not found")
@@ -363,6 +379,28 @@ def add_player(club_id: str, data: PlayerCreate):
         gender=data.gender,
         avatar=data.avatar,
     )
+    save_data(clubs)
+    return {"status": "ok"}
+
+
+@app.patch("/clubs/{club_id}/players/{user_id}")
+def update_player_api(club_id: str, user_id: str, data: PlayerUpdate):
+    """Update existing player information."""
+    user = require_auth(data.token)
+    if user != data.user_id or data.user_id != user_id:
+        raise HTTPException(401, "Token mismatch")
+    try:
+        cli_update_player(
+            clubs,
+            club_id,
+            user_id,
+            name=data.name,
+            age=data.age,
+            gender=data.gender,
+            avatar=data.avatar,
+        )
+    except ValueError as e:
+        raise HTTPException(400, str(e))
     save_data(clubs)
     return {"status": "ok"}
 
