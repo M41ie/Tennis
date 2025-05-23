@@ -1,5 +1,7 @@
 {
   "pages": [
+    "pages/register/register",
+    "pages/joinclub/joinclub",
     "pages/leaderboard/leaderboard",
     "pages/register/register",
     "pages/joinclub/joinclub",
