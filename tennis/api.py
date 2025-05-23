@@ -205,6 +205,10 @@ class RemoveRequest(BaseModel):
     ban: bool = False
 
 
+class TokenOnly(BaseModel):
+    token: str
+
+
 @app.post("/users")
 def register_user_api(data: UserCreate):
     if data.user_id in users:
@@ -245,6 +249,33 @@ def get_user_info(user_id: str):
         raise HTTPException(404, "User not found")
     joined = [cid for cid, c in clubs.items() if user_id in c.members]
     return {"user_id": user.user_id, "name": user.name, "joined_clubs": joined}
+
+
+@app.get("/users/{user_id}/messages")
+def get_user_messages(user_id: str, token: str):
+    uid = require_auth(token)
+    if uid != user_id:
+        raise HTTPException(401, "Token mismatch")
+    user = users.get(user_id)
+    if not user:
+        raise HTTPException(404, "User not found")
+    return [
+        {"date": m.date.isoformat(), "text": m.text, "read": m.read}
+        for m in user.messages
+    ]
+
+
+@app.post("/users/{user_id}/messages/{index}/read")
+def mark_message_read(user_id: str, index: int, data: TokenOnly):
+    uid = require_auth(data.token)
+    if uid != user_id:
+        raise HTTPException(401, "Token mismatch")
+    user = users.get(user_id)
+    if not user or index >= len(user.messages):
+        raise HTTPException(404, "Message not found")
+    user.messages[index].read = True
+    save_users(users)
+    return {"status": "ok"}
 
 
 @app.post("/clubs/{club_id}/join")
@@ -705,10 +736,11 @@ def approve_match_api(club_id: str, index: int, data: ApproveMatchRequest):
         raise HTTPException(401, "Token mismatch")
 
     try:
-        approve_match(clubs, club_id, index, data.approver)
+        approve_match(clubs, club_id, index, data.approver, users)
     except ValueError as e:
         raise HTTPException(400, str(e))
     save_data(clubs)
+    save_users(users)
     return {"status": "ok"}
 
 
@@ -773,10 +805,11 @@ def approve_doubles_api(club_id: str, index: int, data: ApproveMatchRequest):
         raise HTTPException(401, "Token mismatch")
 
     try:
-        approve_doubles(clubs, club_id, index, data.approver)
+        approve_doubles(clubs, club_id, index, data.approver, users)
     except ValueError as e:
         raise HTTPException(400, str(e))
     save_data(clubs)
+    save_users(users)
     return {"status": "ok"}
 
 

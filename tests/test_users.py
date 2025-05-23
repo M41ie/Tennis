@@ -27,6 +27,7 @@ def test_join_and_approve():
     assert "member" in clubs["c1"].pending_members
     approve_member(clubs, users, "c1", "leader", "member")
     assert "member" in clubs["c1"].members
+    assert len(users["member"].messages) == 1
 
 
 def test_create_club_limit():

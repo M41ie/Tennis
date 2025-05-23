@@ -26,6 +26,7 @@
     <block wx:if="{{isSelf}}">
       <button bindtap="manageClubs">Manage Clubs</button>
       <button bindtap="manageMembers">Manage Members</button>
+      <button bindtap="viewMessages">Messages</button>
       <button bindtap="toPrerate">Pre-Rate Member</button>
       <button bindtap="logout">Logout</button>
     </block>

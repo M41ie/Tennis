@@ -4,7 +4,7 @@ import sqlite3
 from pathlib import Path
 from typing import Dict
 
-from .models import Player, Club, Match, DoublesMatch, User, Appointment
+from .models import Player, Club, Match, DoublesMatch, User, Appointment, Message
 
 DB_FILE = Path("tennis.db")
 
@@ -65,6 +65,15 @@ def _init_schema(conn: sqlite3.Connection) -> None:
     )
     cur.execute(
         "CREATE TABLE IF NOT EXISTS club_meta (club_id TEXT PRIMARY KEY, banned_ids TEXT)"
+    )
+    cur.execute(
+        """CREATE TABLE IF NOT EXISTS messages (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id TEXT,
+        date TEXT,
+        text TEXT,
+        read INTEGER
+    )"""
     )
     conn.commit()
 
@@ -387,6 +396,15 @@ def load_users() -> Dict[str, User]:
             created_clubs=row["created_clubs"],
             joined_clubs=row["joined_clubs"],
         )
+    for row in cur.execute("SELECT * FROM messages ORDER BY id"):
+        msg = Message(
+            date=datetime.date.fromisoformat(row["date"]),
+            text=row["text"],
+            read=bool(row["read"]),
+        )
+        user = users.get(row["user_id"])
+        if user:
+            user.messages.append(msg)
     conn.close()
     return users
 
@@ -396,6 +414,7 @@ def save_users(users: Dict[str, User]) -> None:
     conn = _connect()
     cur = conn.cursor()
     cur.execute("DELETE FROM users")
+    cur.execute("DELETE FROM messages")
     for u in users.values():
         cur.execute(
             "INSERT INTO users(user_id, name, password_hash, can_create_club, created_clubs, joined_clubs) VALUES (?,?,?,?,?,?)",
@@ -408,5 +427,15 @@ def save_users(users: Dict[str, User]) -> None:
                 u.joined_clubs,
             ),
         )
+        for msg in u.messages:
+            cur.execute(
+                "INSERT INTO messages(user_id, date, text, read) VALUES (?,?,?,?)",
+                (
+                    u.user_id,
+                    msg.date.isoformat(),
+                    msg.text,
+                    int(msg.read),
+                ),
+            )
     conn.commit()
     conn.close()

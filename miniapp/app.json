@@ -11,7 +11,7 @@
     "pages/addmatch/addmatch",
     "pages/pending/pending",
     "pages/manage/manage",
-    "pages/recorddetail/recorddetail"
+    "pages/messages/messages"
   ],
   "tabBar": {
     "list": [

@@ -21,6 +21,7 @@ class User:
     created_clubs: int = 0
     # Number of clubs the user has joined
     joined_clubs: int = 0
+    messages: List['Message'] = field(default_factory=list)
 
 @dataclass
 class Player:
@@ -99,6 +100,15 @@ class DoublesMatch:
     confirmed_a: bool = False
     confirmed_b: bool = False
     approved: bool = False
+
+
+@dataclass
+class Message:
+    """A simple notification for a user."""
+
+    date: datetime.date
+    text: str
+    read: bool = False
 
 
 @dataclass

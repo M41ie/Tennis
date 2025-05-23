@@ -48,21 +48,11 @@ Page({
       }
     });
   },
-  fetchJoined(id, cid) {
-    const that = this;
-    wx.request({
-      url: `http://localhost:8000/users/${id}`,
-      success(res) {
-        const joined = res.data.joined_clubs || [];
-        that.setData({ joinedClubs: joined });
-        const clubId = cid || joined[0] || '';
-        if (clubId) {
-          wx.setStorageSync('club_id', clubId);
-          that.setData({ clubId: clubId });
-          that.fetchUser(clubId, id);
-        }
-      }
-    });
+  manageClubs() {
+    wx.navigateTo({ url: '/pages/joinclub/joinclub' });
+  },
+  toRegister() {
+    wx.navigateTo({ url: '/pages/register/register' });
   },
   manageClubs() {
     wx.navigateTo({ url: '/pages/joinclub/joinclub' });
@@ -72,6 +62,9 @@ Page({
   },
   manageMembers() {
     wx.navigateTo({ url: '/pages/manage/manage' });
+  },
+  viewMessages() {
+    wx.navigateTo({ url: '/pages/messages/messages' });
   },
   toPrerate() {
     wx.navigateTo({ url: '/pages/prerate/prerate' });
