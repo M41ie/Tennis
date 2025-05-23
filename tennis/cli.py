@@ -175,6 +175,33 @@ def update_player(
         player.avatar = avatar
 
 
+def remove_member(
+    clubs,
+    users,
+    club_id: str,
+    remover_id: str,
+    user_id: str,
+    ban: bool = False,
+):
+    """Remove a member from a club and optionally ban them."""
+    club = clubs.get(club_id)
+    if not club:
+        raise ValueError("Club not found")
+    if remover_id != club.leader_id and remover_id not in club.admin_ids:
+        raise ValueError("Not authorized")
+    if user_id not in club.members:
+        raise ValueError("Player not found")
+
+    club.members.pop(user_id)
+    club.admin_ids.discard(user_id)
+    if ban:
+        club.banned_ids.add(user_id)
+
+    user = users.get(user_id)
+    if user and user.joined_clubs > 0:
+        user.joined_clubs -= 1
+
+
 def pre_rate(clubs, club_id: str, rater_id: str, target_id: str, rating: float):
     """Record a pre-rating for ``target_id`` from ``rater_id``."""
     club = clubs.get(club_id)

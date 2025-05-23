@@ -603,3 +603,58 @@ def test_update_player_api(tmp_path, monkeypatch):
     assert p1.age == 30
     assert p1.gender == "M"
     assert p1.avatar == "img.png"
+
+
+def test_remove_member_api(tmp_path, monkeypatch):
+    db = tmp_path / "tennis.db"
+    monkeypatch.setattr(storage, "DB_FILE", db)
+
+    api = importlib.reload(importlib.import_module("tennis.api"))
+    client = TestClient(api.app)
+
+    # register users
+    client.post(
+        "/users",
+        json={"user_id": "leader", "name": "L", "password": "pw", "allow_create": True},
+    )
+    client.post(
+        "/users",
+        json={"user_id": "member", "name": "M", "password": "pw"},
+    )
+
+    token_leader = client.post("/login", json={"user_id": "leader", "password": "pw"}).json()["token"]
+    token_member = client.post("/login", json={"user_id": "member", "password": "pw"}).json()["token"]
+
+    client.post(
+        "/clubs",
+        json={"club_id": "c1", "name": "C1", "user_id": "leader", "token": token_leader},
+    )
+
+    # join and approve member
+    client.post(
+        "/clubs/c1/join",
+        json={"user_id": "member", "token": token_member},
+    )
+    client.post(
+        "/clubs/c1/approve",
+        json={"approver_id": "leader", "user_id": "member", "token": token_leader},
+    )
+
+    data = storage.load_data()
+    assert data["c1"].members.get("member")
+    assert storage.load_users()["member"].joined_clubs == 1
+
+    resp = client.request(
+        "DELETE",
+        "/clubs/c1/members/member",
+        json={"remover_id": "leader", "token": token_leader, "ban": True},
+    )
+    assert resp.status_code == 200
+    assert resp.json()["status"] == "ok"
+
+    data = storage.load_data()
+    users = storage.load_users()
+    club = data["c1"]
+    assert "member" not in club.members
+    assert "member" in club.banned_ids
+    assert users["member"].joined_clubs == 0
