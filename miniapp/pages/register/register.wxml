@@ -1,0 +1,6 @@
+<view>
+  <input placeholder="User ID" bindinput="onUserId" />
+  <input placeholder="Name" bindinput="onName" />
+  <input password placeholder="Password" bindinput="onPassword" />
+  <button bindtap="register">Register</button>
+</view>
