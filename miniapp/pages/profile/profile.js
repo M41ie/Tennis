@@ -67,6 +67,9 @@ Page({
       }
     });
   },
+  toPrerate() {
+    wx.navigateTo({ url: '/pages/prerate/prerate' });
+  },
   logout() {
     const token = wx.getStorageSync('token');
     const that = this;
