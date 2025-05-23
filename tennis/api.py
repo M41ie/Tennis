@@ -5,6 +5,9 @@ import secrets
 from pydantic import BaseModel, StrictInt
 import datetime
 import json
+import os
+import urllib.request
+import urllib.parse
 from pathlib import Path
 
 import tennis.storage as storage
@@ -27,7 +30,7 @@ from .rating import (
     weighted_doubles_rating,
     format_weight_from_name,
 )
-from .models import Player, Club, Match, Appointment
+from .models import Player, Club, Match, Appointment, User
 
 app = FastAPI()
 
@@ -67,6 +70,25 @@ def _save_tokens() -> None:
 
 # load tokens on startup
 tokens: dict[str, tuple[str, datetime.datetime]] = _load_tokens()
+
+# WeChat mini program credentials from environment (optional)
+WECHAT_APPID = os.getenv("WECHAT_APPID", "")
+WECHAT_SECRET = os.getenv("WECHAT_SECRET", "")
+
+
+def _exchange_wechat_code(code: str) -> dict:
+    """Call WeChat API to exchange login code for session info."""
+    params = urllib.parse.urlencode(
+        {
+            "appid": WECHAT_APPID,
+            "secret": WECHAT_SECRET,
+            "js_code": code,
+            "grant_type": "authorization_code",
+        }
+    )
+    url = "https://api.weixin.qq.com/sns/jscode2session?" + params
+    with urllib.request.urlopen(url) as resp:
+        return json.loads(resp.read().decode())
 
 
 def require_auth(token: str) -> str:
@@ -187,6 +209,10 @@ class LogoutRequest(BaseModel):
     token: str
 
 
+class WeChatLoginRequest(BaseModel):
+    code: str
+
+
 class JoinRequest(BaseModel):
     user_id: str
     token: str
@@ -232,6 +258,37 @@ def login_api(data: LoginRequest):
         _save_tokens()
         return {"success": True, "token": token}
     return {"success": False}
+
+
+@app.post("/wechat_login")
+def wechat_login_api(data: WeChatLoginRequest):
+    """Login or register using a WeChat mini program code."""
+    info = _exchange_wechat_code(data.code)
+    openid = info.get("openid")
+    if not openid:
+        raise HTTPException(400, "Invalid code")
+
+    user = None
+    for u in users.values():
+        if u.wechat_openid == openid:
+            user = u
+            break
+
+    if not user:
+        uid = openid
+        user = User(
+            user_id=uid,
+            name=info.get("nickname", uid),
+            password_hash="",
+            wechat_openid=openid,
+        )
+        users[uid] = user
+        save_users(users)
+
+    token = secrets.token_hex(16)
+    tokens[token] = (user.user_id, datetime.datetime.utcnow())
+    _save_tokens()
+    return {"token": token, "user_id": user.user_id}
 
 
 @app.post("/logout")

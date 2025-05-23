@@ -16,6 +16,8 @@ class User:
     user_id: str
     name: str
     password_hash: str
+    # optional openid from WeChat mini program
+    wechat_openid: Optional[str] = None
     can_create_club: bool = False
     # Number of clubs this user has created
     created_clubs: int = 0
