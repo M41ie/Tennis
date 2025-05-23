@@ -658,3 +658,60 @@ def test_remove_member_api(tmp_path, monkeypatch):
     assert "member" not in club.members
     assert "member" in club.banned_ids
     assert users["member"].joined_clubs == 0
+
+
+def test_appointment_flow(tmp_path, monkeypatch):
+    db = tmp_path / "tennis.db"
+    monkeypatch.setattr(storage, "DB_FILE", db)
+
+    api = importlib.reload(importlib.import_module("tennis.api"))
+    client = TestClient(api.app)
+
+    for uid in ("leader", "p1"):
+        allow = uid == "leader"
+        client.post(
+            "/users",
+            json={"user_id": uid, "name": uid.upper(), "password": "pw", "allow_create": allow},
+        )
+
+    token_leader = client.post("/login", json={"user_id": "leader", "password": "pw"}).json()["token"]
+    token_p1 = client.post("/login", json={"user_id": "p1", "password": "pw"}).json()["token"]
+
+    client.post(
+        "/clubs",
+        json={"club_id": "c1", "name": "C1", "user_id": "leader", "token": token_leader},
+    )
+    client.post(
+        "/clubs/c1/players",
+        json={"user_id": "p1", "name": "P1", "token": token_p1},
+    )
+
+    resp = client.post(
+        "/clubs/c1/appointments",
+        json={"user_id": "leader", "date": "2023-05-01", "location": "Court", "token": token_leader},
+    )
+    assert resp.status_code == 200
+    assert resp.json()["status"] == "ok"
+
+    resp = client.get("/clubs/c1/appointments")
+    assert resp.status_code == 200
+    apps = resp.json()
+    assert len(apps) == 1
+    assert apps[0]["location"] == "Court"
+
+    resp = client.post(
+        "/clubs/c1/appointments/0/signup",
+        json={"user_id": "p1", "token": token_p1},
+    )
+    assert resp.status_code == 200
+
+    resp = client.post(
+        "/clubs/c1/appointments/0/cancel",
+        json={"user_id": "p1", "token": token_p1},
+    )
+    assert resp.status_code == 200
+
+    data = storage.load_data()
+    club = data["c1"]
+    assert len(club.appointments) == 1
+    assert not club.appointments[0].signups

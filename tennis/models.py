@@ -52,6 +52,8 @@ class Club:
     members: Dict[str, Player] = field(default_factory=dict)
     matches: List['Match | DoublesMatch'] = field(default_factory=list)
     pending_matches: List['Match | DoublesMatch'] = field(default_factory=list)
+    # list of upcoming appointments/meetups
+    appointments: List['Appointment'] = field(default_factory=list)
 
 @dataclass
 class Match:
@@ -97,3 +99,14 @@ class DoublesMatch:
     confirmed_a: bool = False
     confirmed_b: bool = False
     approved: bool = False
+
+
+@dataclass
+class Appointment:
+    """A scheduled meetup that players can sign up for."""
+
+    date: datetime.date
+    creator: str
+    location: Optional[str] = None
+    info: Optional[str] = None
+    signups: Set[str] = field(default_factory=set)

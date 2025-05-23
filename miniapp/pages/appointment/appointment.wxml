@@ -1,0 +1,10 @@
+<view class="create">
+  <input type="date" bindchange="onDate" />
+  <input placeholder="Location" bindinput="onLocation" />
+  <button bindtap="create">Create</button>
+</view>
+<view wx:for="{{appointments}}" wx:key="index" data-idx="{{index}}">
+  <text>{{item.date}} {{item.location}}</text>
+  <button bindtap="signup" data-idx="{{index}}">Signup</button>
+  <button bindtap="cancel" data-idx="{{index}}">Cancel</button>
+</view>
