@@ -1,9 +1,16 @@
 Page({
   data: {
     records: [],
-    doubles: false
+    doubles: false,
+    modeOptions: ['Singles', 'Doubles'],
+    modeIndex: 0
   },
   onLoad() {
+    this.fetchRecords();
+  },
+  onModeChange(e) {
+    const idx = e.detail.value;
+    this.setData({ modeIndex: idx, doubles: idx == 1 });
     this.fetchRecords();
   },
   fetchRecords() {

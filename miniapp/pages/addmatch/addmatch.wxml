@@ -2,9 +2,28 @@
   <picker mode="selector" range="{{clubOptions}}" value="{{clubIndex}}" bindchange="onClubChange">
     <view>Club: {{clubOptions[clubIndex]}}</view>
   </picker>
-  <picker mode="selector" range="{{playerNames}}" value="{{opponentIndex}}" bindchange="onOpponentChange">
-    <view>Opponent: {{playerNames[opponentIndex]}}</view>
+  <picker mode="selector" range="{{modeOptions}}" value="{{modeIndex}}" bindchange="onModeChange">
+    <view>{{modeOptions[modeIndex]}}</view>
   </picker>
+  <block wx:if="{{modeIndex == 0}}">
+    <picker mode="selector" range="{{playerNames}}" value="{{opponentIndex}}" bindchange="onOpponentChange">
+      <view>Opponent: {{playerNames[opponentIndex]}}</view>
+    </picker>
+  </block>
+  <block wx:else>
+    <picker mode="selector" range="{{playerNames}}" value="{{a1Index}}" bindchange="onA1Change">
+      <view>A1: {{playerNames[a1Index]}}</view>
+    </picker>
+    <picker mode="selector" range="{{playerNames}}" value="{{a2Index}}" bindchange="onA2Change">
+      <view>A2: {{playerNames[a2Index]}}</view>
+    </picker>
+    <picker mode="selector" range="{{playerNames}}" value="{{b1Index}}" bindchange="onB1Change">
+      <view>B1: {{playerNames[b1Index]}}</view>
+    </picker>
+    <picker mode="selector" range="{{playerNames}}" value="{{b2Index}}" bindchange="onB2Change">
+      <view>B2: {{playerNames[b2Index]}}</view>
+    </picker>
+  </block>
   <picker mode="date" value="{{date}}" bindchange="onDateChange">
     <view>Date: {{date}}</view>
   </picker>

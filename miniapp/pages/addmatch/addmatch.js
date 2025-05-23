@@ -6,6 +6,12 @@ Page({
     players: [],
     playerNames: [],
     opponentIndex: 0,
+    modeOptions: ['Singles', 'Doubles'],
+    modeIndex: 0,
+    a1Index: 0,
+    a2Index: 0,
+    b1Index: 0,
+    b2Index: 0,
     date: '',
     location: '',
     formatOptions: ['6_game', '4_game', 'tb11', 'tb10', 'tb7'],
@@ -39,7 +45,15 @@ Page({
       url: `http://localhost:8000/clubs/${cid}/players`,
       success(res) {
         const names = res.data.map(p => p.name);
-        that.setData({ players: res.data, playerNames: names, opponentIndex: 0 });
+        that.setData({
+          players: res.data,
+          playerNames: names,
+          opponentIndex: 0,
+          a1Index: 0,
+          a2Index: 0,
+          b1Index: 0,
+          b2Index: 0,
+        });
       }
     });
   },
@@ -52,6 +66,13 @@ Page({
   onOpponentChange(e) {
     this.setData({ opponentIndex: e.detail.value });
   },
+  onModeChange(e) {
+    this.setData({ modeIndex: e.detail.value });
+  },
+  onA1Change(e) { this.setData({ a1Index: e.detail.value }); },
+  onA2Change(e) { this.setData({ a2Index: e.detail.value }); },
+  onB1Change(e) { this.setData({ b1Index: e.detail.value }); },
+  onB2Change(e) { this.setData({ b2Index: e.detail.value }); },
   onDateChange(e) {
     this.setData({ date: e.detail.value });
   },
@@ -61,26 +82,57 @@ Page({
   onScoreB(e) { this.setData({ scoreB: e.detail.value }); },
   submit() {
     const cid = this.data.clubIds[this.data.clubIndex];
-    const opponent = this.data.players[this.data.opponentIndex];
     const userId = wx.getStorageSync('user_id');
     const token = wx.getStorageSync('token');
-    if (!cid || !opponent || !userId || !token) return;
-    wx.request({
-      url: `http://localhost:8000/clubs/${cid}/pending_matches`,
-      method: 'POST',
-      data: {
-        initiator: userId,
-        opponent: opponent.user_id,
-        score_initiator: parseInt(this.data.scoreA, 10),
-        score_opponent: parseInt(this.data.scoreB, 10),
-        date: this.data.date,
-        format: this.data.formatOptions[this.data.formatIndex],
-        location: this.data.location,
-        token
-      },
-      success() {
-        wx.showToast({ title: 'Submitted', icon: 'success' });
-      }
-    });
+    if (!cid || !userId || !token) return;
+    const doubles = this.data.modeIndex === 1;
+    if (doubles) {
+      const players = this.data.players;
+      const a1 = players[this.data.a1Index];
+      const a2 = players[this.data.a2Index];
+      const b1 = players[this.data.b1Index];
+      const b2 = players[this.data.b2Index];
+      if (!a1 || !a2 || !b1 || !b2) return;
+      wx.request({
+        url: `http://localhost:8000/clubs/${cid}/pending_doubles`,
+        method: 'POST',
+        data: {
+          initiator: userId,
+          a1: a1.user_id,
+          a2: a2.user_id,
+          b1: b1.user_id,
+          b2: b2.user_id,
+          score_a: parseInt(this.data.scoreA, 10),
+          score_b: parseInt(this.data.scoreB, 10),
+          date: this.data.date,
+          format: this.data.formatOptions[this.data.formatIndex],
+          location: this.data.location,
+          token
+        },
+        success() {
+          wx.showToast({ title: 'Submitted', icon: 'success' });
+        }
+      });
+    } else {
+      const opponent = this.data.players[this.data.opponentIndex];
+      if (!opponent) return;
+      wx.request({
+        url: `http://localhost:8000/clubs/${cid}/pending_matches`,
+        method: 'POST',
+        data: {
+          initiator: userId,
+          opponent: opponent.user_id,
+          score_initiator: parseInt(this.data.scoreA, 10),
+          score_opponent: parseInt(this.data.scoreB, 10),
+          date: this.data.date,
+          format: this.data.formatOptions[this.data.formatIndex],
+          location: this.data.location,
+          token
+        },
+        success() {
+          wx.showToast({ title: 'Submitted', icon: 'success' });
+        }
+      });
+    }
   }
 });
