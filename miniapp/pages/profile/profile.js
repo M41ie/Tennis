@@ -6,7 +6,13 @@ Page({
     loginPw: '',
     isSelf: false,
     clubId: '',
-    joinedClubs: []
+    joinedClubs: [],
+    unreadCount: 0
+  },
+  onShow() {
+    if (this.data.isSelf) {
+      this.fetchUnread();
+    }
   },
   onLoad(options) {
     const userId = options.id || wx.getStorageSync('user_id');
@@ -38,6 +44,7 @@ Page({
             that.setData({ isSelf: true, clubId: cid });
             that.fetchUser(cid, that.data.loginId);
           }
+          that.fetchUnread();
         } else {
           wx.showToast({ title: 'Login failed', icon: 'none' });
         }
@@ -66,6 +73,7 @@ Page({
                 that.setData({ isSelf: true, clubId: cid });
                 that.fetchUser(cid, resp.data.user_id);
               }
+              that.fetchUnread();
             } else {
               wx.showToast({ title: 'Login failed', icon: 'none' });
             }
@@ -83,6 +91,18 @@ Page({
       url: `http://localhost:8000/clubs/${cid}/players/${id}?recent=5`,
       success(res) {
         that.setData({ user: res.data, records: res.data.recent_records || [] });
+      }
+    });
+  },
+  fetchUnread() {
+    const uid = wx.getStorageSync('user_id');
+    const token = wx.getStorageSync('token');
+    const that = this;
+    if (!uid || !token) return;
+    wx.request({
+      url: `http://localhost:8000/users/${uid}/messages/unread_count?token=${token}`,
+      success(res) {
+        that.setData({ unreadCount: res.data.unread });
       }
     });
   },

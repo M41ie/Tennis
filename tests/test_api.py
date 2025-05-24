@@ -82,8 +82,12 @@ def test_api_match_flow(tmp_path, monkeypatch):
     assert resp.json()["status"] == "ok"
     resp = client.get(f"/users/p1/messages?token={token_p1}")
     assert len(resp.json()) == 1
+    resp = client.get(f"/users/p1/messages/unread_count?token={token_p1}")
+    assert resp.json()["unread"] == 1
     resp = client.get(f"/users/p2/messages?token={token_p2}")
     assert len(resp.json()) == 1
+    resp = client.get(f"/users/p2/messages/unread_count?token={token_p2}")
+    assert resp.json()["unread"] == 1
 
     # verify persisted ratings
     loaded = storage.load_data()
@@ -818,3 +822,5 @@ def test_get_user_info_api(tmp_path, monkeypatch):
     assert resp.status_code == 200
     msgs = resp.json()
     assert len(msgs) == 1
+    resp = client.get(f"/users/u1/messages/unread_count?token={token_u1}")
+    assert resp.json()["unread"] == 1

@@ -5,6 +5,8 @@
       <view class="weui-list__item">
         <text style="flex:1">{{item.name}} ({{item.club_id}})</text>
         <button class="weui-btn weui-btn_primary" data-id="{{item.club_id}}" bindtap="join">Join</button>
+      </view>
+    </block>
   </view>
   </block>
   </view>

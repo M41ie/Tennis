@@ -27,6 +27,18 @@ Page({
         const list = that.data.list.slice();
         if (list[idx]) list[idx].read = true;
         that.setData({ list });
+        wx.request({
+          url: `http://localhost:8000/users/${uid}/messages/unread_count?token=${token}`,
+          success(res2) {
+            const pages = getCurrentPages();
+            if (pages.length > 1) {
+              const prev = pages[pages.length - 2];
+              if (prev && prev.setData) {
+                prev.setData({ unreadCount: res2.data.unread });
+              }
+            }
+          }
+        });
       }
     });
   }
