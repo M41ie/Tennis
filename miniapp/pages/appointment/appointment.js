@@ -1,3 +1,5 @@
+const BASE_URL = getApp().globalData.BASE_URL;
+
 Page({
   data: {
     appointments: [],
@@ -12,7 +14,7 @@ Page({
     const that = this;
     if (!cid) return;
     wx.request({
-      url: `http://localhost:8000/clubs/${cid}/appointments`,
+      url: `${BASE_URL}/clubs/${cid}/appointments`,
       success(res) {
         that.setData({ appointments: res.data });
       }
@@ -27,7 +29,7 @@ Page({
     const that = this;
     if (!cid || !userId || !token) return;
     wx.request({
-      url: `http://localhost:8000/clubs/${cid}/appointments`,
+      url: `${BASE_URL}/clubs/${cid}/appointments`,
       method: 'POST',
       data: { user_id: userId, date: this.data.date, location: this.data.location, token },
       success() { that.fetch(); }
@@ -40,7 +42,7 @@ Page({
     const token = wx.getStorageSync('token');
     const that = this;
     wx.request({
-      url: `http://localhost:8000/clubs/${cid}/appointments/${idx}/signup`,
+      url: `${BASE_URL}/clubs/${cid}/appointments/${idx}/signup`,
       method: 'POST',
       data: { user_id: userId, token },
       success() { that.fetch(); }
@@ -53,7 +55,7 @@ Page({
     const token = wx.getStorageSync('token');
     const that = this;
     wx.request({
-      url: `http://localhost:8000/clubs/${cid}/appointments/${idx}/cancel`,
+      url: `${BASE_URL}/clubs/${cid}/appointments/${idx}/cancel`,
       method: 'POST',
       data: { user_id: userId, token },
       success() { that.fetch(); }

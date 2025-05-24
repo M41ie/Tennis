@@ -1,3 +1,5 @@
+const BASE_URL = getApp().globalData.BASE_URL;
+
 Page({
   data: {
     list: []
@@ -8,7 +10,7 @@ Page({
     const that = this;
     if (!uid || !token) return;
     wx.request({
-      url: `http://localhost:8000/users/${uid}/messages?token=${token}`,
+      url: `${BASE_URL}/users/${uid}/messages?token=${token}`,
       success(res) {
         that.setData({ list: res.data });
       }
@@ -20,7 +22,7 @@ Page({
     const token = wx.getStorageSync('token');
     const that = this;
     wx.request({
-      url: `http://localhost:8000/users/${uid}/messages/${idx}/read`,
+      url: `${BASE_URL}/users/${uid}/messages/${idx}/read`,
       method: 'POST',
       data: { token },
       success() {
@@ -28,7 +30,7 @@ Page({
         if (list[idx]) list[idx].read = true;
         that.setData({ list });
         wx.request({
-          url: `http://localhost:8000/users/${uid}/messages/unread_count?token=${token}`,
+          url: `${BASE_URL}/users/${uid}/messages/unread_count?token=${token}`,
           success(res2) {
             const pages = getCurrentPages();
             if (pages.length > 1) {

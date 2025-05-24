@@ -1,6 +1,9 @@
+const BASE_URL = 'http://localhost:8000';
+
 App({
   globalData: {
-    userId: null
+    userId: null,
+    BASE_URL
   },
   onLaunch() {
     const token = wx.getStorageSync('token');
@@ -8,7 +11,7 @@ App({
     if (token && uid) {
       const that = this;
       wx.request({
-        url: 'http://localhost:8000/check_token',
+        url: `${BASE_URL}/check_token`,
         method: 'POST',
         data: { token },
         timeout: 5000,
@@ -27,3 +30,7 @@ App({
     }
   }
 });
+
+module.exports = {
+  BASE_URL
+};

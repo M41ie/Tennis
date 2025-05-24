@@ -1,3 +1,5 @@
+const BASE_URL = getApp().globalData.BASE_URL;
+
 Page({
     data: {
       clubOptions: ['All'],
@@ -17,7 +19,7 @@ Page({
   fetchClubs() {
     const that = this;
     wx.request({
-      url: 'http://localhost:8000/clubs',
+      url: `${BASE_URL}/clubs`,
       success(res) {
         const options = ['All'].concat(res.data.map(c => c.club_id));
         that.setData({ clubOptions: options });
@@ -43,9 +45,9 @@ Page({
     const that = this;
     let url;
     if (club !== 'All') {
-      url = 'http://localhost:8000/clubs/' + club + '/players';
+      url = `${BASE_URL}/clubs/` + club + '/players';
     } else {
-      url = 'http://localhost:8000/players';
+      url = `${BASE_URL}/players`;
     }
     const params = [];
     if (this.data.minRating) params.push('min_rating=' + this.data.minRating);

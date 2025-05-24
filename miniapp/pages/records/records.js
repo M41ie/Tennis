@@ -1,3 +1,5 @@
+const BASE_URL = getApp().globalData.BASE_URL;
+
 Page({
   data: {
     records: [],
@@ -19,13 +21,13 @@ Page({
     const that = this;
     if (!userId || !clubId) return;
     wx.request({
-      url: `http://localhost:8000/clubs/${clubId}/players`,
+      url: `${BASE_URL}/clubs/${clubId}/players`,
       success(res) {
         const player = res.data.find(p => p.user_id === userId);
         if (player) {
           const path = that.data.doubles ? 'doubles_records' : 'records';
           wx.request({
-            url: `http://localhost:8000/clubs/${clubId}/players/${userId}/${path}`,
+            url: `${BASE_URL}/clubs/${clubId}/players/${userId}/${path}`,
             success(r) { that.setData({ records: r.data }); }
           });
         }

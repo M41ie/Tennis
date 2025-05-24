@@ -1,3 +1,5 @@
+const BASE_URL = getApp().globalData.BASE_URL;
+
 Page({
   data: {
     clubIds: [],
@@ -25,7 +27,7 @@ Page({
   fetchClubs() {
     const that = this;
     wx.request({
-      url: 'http://localhost:8000/clubs',
+      url: `${BASE_URL}/clubs`,
       success(res) {
         const ids = res.data.map(c => c.club_id);
         const names = res.data.map(c => c.name);
@@ -42,7 +44,7 @@ Page({
   fetchPlayers(cid) {
     const that = this;
     wx.request({
-      url: `http://localhost:8000/clubs/${cid}/players`,
+      url: `${BASE_URL}/clubs/${cid}/players`,
       success(res) {
         const names = res.data.map(p => p.name);
         that.setData({
@@ -94,7 +96,7 @@ Page({
       const b2 = players[this.data.b2Index];
       if (!a1 || !a2 || !b1 || !b2) return;
       wx.request({
-        url: `http://localhost:8000/clubs/${cid}/pending_doubles`,
+        url: `${BASE_URL}/clubs/${cid}/pending_doubles`,
         method: 'POST',
         data: {
           initiator: userId,
@@ -117,7 +119,7 @@ Page({
       const opponent = this.data.players[this.data.opponentIndex];
       if (!opponent) return;
       wx.request({
-        url: `http://localhost:8000/clubs/${cid}/pending_matches`,
+        url: `${BASE_URL}/clubs/${cid}/pending_matches`,
         method: 'POST',
         data: {
           initiator: userId,
