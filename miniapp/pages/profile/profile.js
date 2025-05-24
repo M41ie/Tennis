@@ -1,3 +1,5 @@
+const BASE_URL = getApp().globalData.BASE_URL;
+
 Page({
   data: {
     user: null,
@@ -31,7 +33,7 @@ Page({
     }
     const that = this;
     wx.request({
-      url: 'http://localhost:8000/login',
+      url: `${BASE_URL}/login`,
       method: 'POST',
       data: { user_id: this.data.loginId, password: this.data.loginPw },
       timeout: 5000,
@@ -60,7 +62,7 @@ Page({
       success(res) {
         if (!res.code) return;
         wx.request({
-          url: 'http://localhost:8000/wechat_login',
+          url: `${BASE_URL}/wechat_login`,
           method: 'POST',
           data: { code: res.code },
           timeout: 5000,
@@ -88,7 +90,7 @@ Page({
   fetchUser(cid, id) {
     const that = this;
     wx.request({
-      url: `http://localhost:8000/clubs/${cid}/players/${id}?recent=5`,
+      url: `${BASE_URL}/clubs/${cid}/players/${id}?recent=5`,
       success(res) {
         that.setData({ user: res.data, records: res.data.recent_records || [] });
       }
@@ -100,7 +102,7 @@ Page({
     const that = this;
     if (!uid || !token) return;
     wx.request({
-      url: `http://localhost:8000/users/${uid}/messages/unread_count?token=${token}`,
+      url: `${BASE_URL}/users/${uid}/messages/unread_count?token=${token}`,
       success(res) {
         that.setData({ unreadCount: res.data.unread });
       }
@@ -135,7 +137,7 @@ Page({
     const that = this;
     if (token) {
       wx.request({
-        url: 'http://localhost:8000/logout',
+        url: `${BASE_URL}/logout`,
         method: 'POST',
         data: { token },
         complete() {

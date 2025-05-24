@@ -1,3 +1,5 @@
+const BASE_URL = getApp().globalData.BASE_URL;
+
 Page({
   data: {
     clubs: [],
@@ -13,7 +15,7 @@ Page({
   fetchClubs() {
     const that = this;
     wx.request({
-      url: 'http://localhost:8000/clubs',
+      url: `${BASE_URL}/clubs`,
       success(res) {
         let list = res.data;
         const q = that.data.query;
@@ -31,14 +33,14 @@ Page({
     const that = this;
     if (!userId || !token) return;
     wx.request({
-      url: `http://localhost:8000/users/${userId}`,
+      url: `${BASE_URL}/users/${userId}`,
       success(res) {
         if (res.data.joined_clubs && res.data.joined_clubs.length >= 5) {
           wx.showToast({ title: 'Limit reached', icon: 'none' });
           return;
         }
         wx.request({
-          url: `http://localhost:8000/clubs/${cid}/join`,
+          url: `${BASE_URL}/clubs/${cid}/join`,
           method: 'POST',
           data: { user_id: userId, token },
           success(r) {

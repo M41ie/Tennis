@@ -1,3 +1,5 @@
+const BASE_URL = getApp().globalData.BASE_URL;
+
 Page({
   data: {
     userId: '',
@@ -13,7 +15,7 @@ Page({
       return;
     }
     wx.request({
-      url: 'http://localhost:8000/users',
+      url: `${BASE_URL}/users`,
       method: 'POST',
       data: {
         user_id: this.data.userId,
@@ -35,7 +37,7 @@ Page({
       success(res) {
         if (!res.code) return;
         wx.request({
-          url: 'http://localhost:8000/wechat_login',
+          url: `${BASE_URL}/wechat_login`,
           method: 'POST',
           data: { code: res.code },
           timeout: 5000,

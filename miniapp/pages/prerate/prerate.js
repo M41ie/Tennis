@@ -1,3 +1,5 @@
+const BASE_URL = getApp().globalData.BASE_URL;
+
 Page({
   data: {
     targetId: '',
@@ -15,7 +17,7 @@ Page({
     const that = this;
     if (!clubId || !raterId || !token || !targetId || isNaN(rating)) return;
     wx.request({
-      url: `http://localhost:8000/clubs/${clubId}/prerate`,
+      url: `${BASE_URL}/clubs/${clubId}/prerate`,
       method: 'POST',
       data: { rater_id: raterId, target_id: targetId, rating, token },
       success() {
@@ -29,7 +31,7 @@ Page({
     const that = this;
     if (!clubId || !id) return;
     wx.request({
-      url: `http://localhost:8000/clubs/${clubId}/players/${id}`,
+      url: `${BASE_URL}/clubs/${clubId}/players/${id}`,
       success(res) { that.setData({ target: res.data }); }
     });
   }
