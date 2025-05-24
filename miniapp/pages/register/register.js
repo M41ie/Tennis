@@ -38,6 +38,7 @@ Page({
           url: 'http://localhost:8000/wechat_login',
           method: 'POST',
           data: { code: res.code },
+          timeout: 5000,
           success(resp) {
             if (resp.statusCode === 200 && resp.data.token) {
               wx.setStorageSync('token', resp.data.token);
@@ -46,6 +47,9 @@ Page({
             } else {
               wx.showToast({ title: 'Failed', icon: 'none' });
             }
+          },
+          fail() {
+            wx.showToast({ title: '网络错误', icon: 'none' });
           }
         });
       }

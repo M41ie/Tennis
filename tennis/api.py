@@ -298,6 +298,18 @@ def logout_api(data: LogoutRequest):
     return {"status": "ok"}
 
 
+@app.post("/check_token")
+def check_token_api(data: TokenOnly):
+    """Validate and refresh a token."""
+    info = tokens.get(data.token)
+    if not info:
+        raise HTTPException(401, "Invalid token")
+    uid, _ = info
+    tokens[data.token] = (uid, datetime.datetime.utcnow())
+    _save_tokens()
+    return {"status": "ok", "user_id": uid}
+
+
 @app.get("/users/{user_id}")
 def get_user_info(user_id: str):
     """Return basic user info including joined clubs."""
