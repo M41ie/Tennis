@@ -3,5 +3,6 @@
   <view>{{record.format}} {{record.self_score}}-{{record.opponent_score}}</view>
   <view>vs {{record.opponent || record.opponents}}</view>
   <view>Rating: {{record.self_rating_after}} ({{record.self_delta}})</view>
+  <button class="weui-btn weui-btn_disabled" bindtap="noAccess" disabled>\u5bf9\u6218\u7b14\u8bb0</button>
 </view>
 <view wx:else>No data</view>
