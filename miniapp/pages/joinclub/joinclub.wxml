@@ -8,7 +8,5 @@
       </view>
     </block>
   </view>
-  </block>
-  </view>
   <button class="weui-btn" bindtap="createClub">创建俱乐部</button>
 </view>
