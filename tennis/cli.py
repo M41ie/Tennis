@@ -21,6 +21,7 @@ from .rating import (
     initial_rating_from_votes,
     format_weight_from_name,
     FORMAT_WEIGHTS,
+    expected_score,
 )
 from .storage import load_data, save_data, load_users, save_users
 
@@ -627,6 +628,14 @@ def get_player_match_cards(clubs, club_id: str, user_id: str):
             opp_after = m.rating_a_after
             opp_before = m.rating_a_before
 
+        # calculate expected and actual scoring rates
+        if self_before is not None and opp_before is not None:
+            exp_rate = expected_score(self_before, opp_before)
+        else:
+            exp_rate = None
+        total = self_score + opp_score
+        actual_rate = self_score / total if total > 0 else None
+
         cards.append(
             {
                 "date": m.date,
@@ -635,6 +644,8 @@ def get_player_match_cards(clubs, club_id: str, user_id: str):
                 "self_score": self_score,
                 "opponent_score": opp_score,
                 "opponent": opp.name,
+                "expected_score": exp_rate,
+                "actual_rate": actual_rate,
                 "self_rating_after": self_after,
                 "self_delta": (
                     self_after - self_before
@@ -688,6 +699,25 @@ def get_player_doubles_cards(clubs, club_id: str, user_id: str):
                 self_after = m.rating_b2_after
                 self_before = m.rating_b2_before
 
+        # expected and actual scoring rates for the player's team
+        if (
+            m.rating_a1_before is not None
+            and m.rating_a2_before is not None
+            and m.rating_b1_before is not None
+            and m.rating_b2_before is not None
+        ):
+            team_a_before = (m.rating_a1_before + m.rating_a2_before) / 2
+            team_b_before = (m.rating_b1_before + m.rating_b2_before) / 2
+            if player in (m.player_a1, m.player_a2):
+                exp_rate = expected_score(team_a_before, team_b_before)
+            else:
+                exp_rate = expected_score(team_b_before, team_a_before)
+        else:
+            exp_rate = None
+
+        total = self_score + opp_score
+        actual_rate = self_score / total if total > 0 else None
+
         cards.append(
             {
                 "date": m.date,
@@ -697,6 +727,8 @@ def get_player_doubles_cards(clubs, club_id: str, user_id: str):
                 "opponent_score": opp_score,
                 "partner": partner.name,
                 "opponents": f"{opp1.name}/{opp2.name}",
+                "expected_score": exp_rate,
+                "actual_rate": actual_rate,
                 "self_rating_after": self_after,
                 "self_delta": (
                     self_after - self_before
