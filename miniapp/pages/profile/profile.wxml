@@ -16,20 +16,28 @@
     </view>
     <view wx:if="{{clubId}}">Current: {{clubId}}</view>
     <view>Singles: {{user.singles_rating}}</view>
-    <view>Doubles: {{user.doubles_rating}}</view>
+      <view>Doubles: {{user.doubles_rating}}</view>
+      <view>Age: {{user.age}}</view>
+      <view>Gender: {{user.gender}}</view>
     <view wx:if="{{isSelf && !records.length}}" class="record">
       \u6682\u65e0\u6218\u7ee9\uff0c\u53ef\u9080\u8bf7\u4f1a\u5458\u5bf9\u4f60\u8fdb\u884c\u9884\u8bc4。
     </view>
     <view wx:for="{{records}}" wx:key="index" class="record" bindtap="openDetail" data-index="{{index}}">
       {{item.date}} {{item.self_score}}-{{item.opponent_score}} vs {{item.opponent || item.opponents}}
     </view>
-    <block wx:if="{{isSelf}}">
-      <button bindtap="manageClubs">Manage Clubs</button>
-      <button bindtap="manageMembers">Manage Members</button>
-      <button bindtap="viewMessages">Messages{{unreadCount>0 ? '('+unreadCount+')' : ''}}</button>
-      <button bindtap="toPrerate">Pre-Rate Member</button>
-      <button bindtap="logout">Logout</button>
-    </block>
+      <block wx:if="{{isSelf}}">
+        <view class="edit">
+          <input class="weui-input" type="number" placeholder="Age" value="{{user.age}}" bindinput="onAge" />
+          <input class="weui-input" placeholder="Gender" value="{{user.gender}}" bindinput="onGender" />
+          <button bindtap="chooseAvatar">Change Avatar</button>
+          <button bindtap="updateProfile">Save</button>
+        </view>
+        <button bindtap="manageClubs">Manage Clubs</button>
+        <button bindtap="manageMembers">Manage Members</button>
+        <button bindtap="viewMessages">Messages{{unreadCount>0 ? '('+unreadCount+')' : ''}}</button>
+        <button bindtap="toPrerate">Pre-Rate Member</button>
+        <button bindtap="logout">Logout</button>
+      </block>
   </block>
   <block wx:else>
     <view class="weui-cells weui-cells_form">
