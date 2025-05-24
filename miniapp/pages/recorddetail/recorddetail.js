@@ -9,5 +9,8 @@ Page({
         this.setData({ record: rec });
       } catch (e) {}
     }
+  },
+  noAccess() {
+    wx.showToast({ title: '暂无权限', icon: 'none' });
   }
 });

@@ -1,21 +1,21 @@
 <view class="filters">
   <picker mode="selector" value="0" bindchange="onClubChange" range="{{clubOptions}}">
-    <view>Club: {{clubOptions[clubIndex]}}</view>
+    <view class="weui-cell">Club: {{clubOptions[clubIndex]}}</view>
   </picker>
   <picker mode="selector" value="{{ratingIndex}}" bindchange="onRatingChange" range="{{ratingOptions}}">
-    <view>{{ratingOptions[ratingIndex]}}</view>
+    <view class="weui-cell">{{ratingOptions[ratingIndex]}}</view>
   </picker>
-  <input type="number" placeholder="Min Rating" bindinput="onMinRating" />
-  <input type="number" placeholder="Max Rating" bindinput="onMaxRating" />
-  <input type="number" placeholder="Min Age" bindinput="onMinAge" />
-  <input type="number" placeholder="Max Age" bindinput="onMaxAge" />
-  <input placeholder="Gender" bindinput="onGender" />
+  <input class="weui-input" type="number" placeholder="Min Rating" bindinput="onMinRating" />
+  <input class="weui-input" type="number" placeholder="Max Rating" bindinput="onMaxRating" />
+  <input class="weui-input" type="number" placeholder="Min Age" bindinput="onMinAge" />
+  <input class="weui-input" type="number" placeholder="Max Age" bindinput="onMaxAge" />
+  <input class="weui-input" placeholder="Gender" bindinput="onGender" />
 </view>
-<view class="list">
+<view class="weui-list">
   <block wx:for="{{players}}" wx:key="user_id">
-    <view class="item" bindtap="viewPlayer" data-id="{{item.user_id}}" data-cid="{{item.club_id || clubOptions[clubIndex]}}">
+    <view class="weui-list__item item" bindtap="viewPlayer" data-id="{{item.user_id}}" data-cid="{{item.club_id || clubOptions[clubIndex]}}">
       <image class="avatar" src="{{item.avatar}}" mode="aspectFill"></image>
-      <text>{{item.name}}: {{item.rating}}</text>
+      <text style="flex:1">{{item.name}}: {{item.rating}}</text>
     </view>
   </block>
 </view>
