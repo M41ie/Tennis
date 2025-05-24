@@ -775,10 +775,12 @@ def submit_match_api(club_id: str, data: PendingMatchCreate):
             data.weight or (format_weight_from_name(data.format) if data.format else format_weight_from_name("6_game")),
             location=data.location,
             format_name=data.format,
+            users=users,
         )
     except ValueError as e:
         raise HTTPException(400, str(e))
     save_data(clubs)
+    save_users(users)
     return {"status": "pending"}
 
 
@@ -854,10 +856,12 @@ def submit_doubles_api(club_id: str, data: PendingDoublesCreate):
             initiator=data.initiator,
             location=data.location,
             format_name=data.format,
+            users=users,
         )
     except ValueError as e:
         raise HTTPException(400, str(e))
     save_data(clubs)
+    save_users(users)
     return {"status": "pending"}
 
 
