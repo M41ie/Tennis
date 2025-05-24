@@ -322,6 +322,18 @@ def get_user_messages(user_id: str, token: str):
     ]
 
 
+@app.get("/users/{user_id}/messages/unread_count")
+def get_unread_count(user_id: str, token: str):
+    """Return the number of unread messages for the user."""
+    uid = require_auth(token)
+    if uid != user_id:
+        raise HTTPException(401, "Token mismatch")
+    user = users.get(user_id)
+    if not user:
+        raise HTTPException(404, "User not found")
+    return {"unread": sum(1 for m in user.messages if not m.read)}
+
+
 @app.post("/users/{user_id}/messages/{index}/read")
 def mark_message_read(user_id: str, index: int, data: TokenOnly):
     uid = require_auth(data.token)

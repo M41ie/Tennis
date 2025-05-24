@@ -1,12 +1,12 @@
-<button class="add" bindtap="addMatch">\u5f55\u5165\u6218\u7ee9</button>
-<button class="add" bindtap="viewPending">\u5f85\u5ba1\u6838</button>
+<button class="weui-btn weui-btn_primary add" bindtap="addMatch">\u5f55\u5165\u6218\u7ee9</button>
+<button class="weui-btn add" bindtap="viewPending">\u5f85\u5ba1\u6838</button>
 <picker mode="selector" range="{{modeOptions}}" value="{{modeIndex}}" bindchange="onModeChange">
-  <view>{{modeOptions[modeIndex]}}</view>
+  <view class="weui-cell">{{modeOptions[modeIndex]}}</view>
 </picker>
-<view class="list">
+<view class="weui-list">
   <block wx:for="{{records}}" wx:key="index">
-    <view class="item" bindtap="viewRecord" data-index="{{index}}">
-      <view>{{item.date}} {{item.location}}</view>
+    <view class="weui-list__item item" bindtap="viewRecord" data-index="{{index}}">
+      <view style="flex:1">{{item.date}} {{item.location}}</view>
       <view>{{item.format}} {{item.self_score}}-{{item.opponent_score}}</view>
       <view>{{item.self_rating_after}} ({{item.self_delta}})</view>
     </view>

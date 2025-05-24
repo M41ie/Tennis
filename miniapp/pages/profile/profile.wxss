@@ -1,1 +1,2 @@
 .avatar { width: 80px; height: 80px; border-radius: 50%; }
+.club-list button { margin: 2px 0; }

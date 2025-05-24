@@ -8,6 +8,10 @@ Page({
   onName(e) { this.setData({ name: e.detail.value }); },
   onPassword(e) { this.setData({ password: e.detail.value }); },
   register() {
+    if (!this.data.userId || !this.data.name || !this.data.password) {
+      wx.showToast({ title: '信息不完整', icon: 'none' });
+      return;
+    }
     wx.request({
       url: 'http://localhost:8000/users',
       method: 'POST',
