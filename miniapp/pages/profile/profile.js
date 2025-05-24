@@ -19,6 +19,10 @@ Page({
   onUserId(e) { this.setData({ loginId: e.detail.value }); },
   onPassword(e) { this.setData({ loginPw: e.detail.value }); },
   login() {
+    if (!this.data.loginId || !this.data.loginPw) {
+      wx.showToast({ title: '信息不完整', icon: 'none' });
+      return;
+    }
     const that = this;
     wx.request({
       url: 'http://localhost:8000/login',

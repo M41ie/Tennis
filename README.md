@@ -100,3 +100,8 @@ python3 -m pip install -r requirements.txt
 # Execute the tests from the repository root
 pytest
 ```
+
+### Deployment
+
+See [DEPLOYMENT.md](DEPLOYMENT.md) for instructions on running the API server, initializing the database and building the mini program.
+
