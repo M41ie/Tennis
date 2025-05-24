@@ -1,7 +1,16 @@
-<view>
-  <input placeholder="User ID" bindinput="onUserId" />
-  <input placeholder="Name" bindinput="onName" />
-  <input password placeholder="Password" bindinput="onPassword" />
-  <button bindtap="register">Register</button>
-  <button bindtap="wechatLogin">WeChat Login</button>
+<view class="weui-cells weui-cells_form">
+  <view class="weui-cell">
+    <view class="weui-label">ID</view>
+    <input class="weui-input" placeholder="User ID" bindinput="onUserId" />
+  </view>
+  <view class="weui-cell">
+    <view class="weui-label">Name</view>
+    <input class="weui-input" placeholder="Name" bindinput="onName" />
+  </view>
+  <view class="weui-cell">
+    <view class="weui-label">Password</view>
+    <input class="weui-input" password placeholder="Password" bindinput="onPassword" />
+  </view>
 </view>
+<button class="weui-btn weui-btn_primary" bindtap="register">注册</button>
+<button class="weui-btn" bindtap="wechatLogin">微信登录</button>
