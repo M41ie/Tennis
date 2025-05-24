@@ -59,3 +59,24 @@ def test_join_club_limit():
     request_join(clubs, users, "cx", "joiner")
     with pytest.raises(ValueError):
         approve_member(clubs, users, "cx", "extra_leader", "joiner")
+
+
+def test_admin_limit():
+    users = {}
+    clubs = {}
+    register_user(users, "leader", "Leader", "pw", allow_create=True)
+    create_club(users, clubs, "leader", "c1", "Club1", None, None)
+
+    # add three admins
+    for i in range(3):
+        uid = f"admin{i}"
+        register_user(users, uid, f"A{i}", "pw")
+        request_join(clubs, users, "c1", uid)
+        approve_member(clubs, users, "c1", "leader", uid, make_admin=True)
+        assert uid in clubs["c1"].admin_ids
+
+    # fourth admin should fail
+    register_user(users, "extra", "Extra", "pw")
+    request_join(clubs, users, "c1", "extra")
+    with pytest.raises(ValueError):
+        approve_member(clubs, users, "c1", "leader", "extra", make_admin=True)

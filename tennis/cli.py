@@ -106,6 +106,8 @@ def approve_member(
     club.members[user_id] = Player(user_id=user.user_id, name=user.name)
     user.joined_clubs += 1
     if make_admin:
+        if len(club.admin_ids) >= 3:
+            raise ValueError("Admin limit reached")
         club.admin_ids.add(user_id)
     user.messages.append(
         Message(
