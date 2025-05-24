@@ -437,6 +437,24 @@ def test_token_logout_and_expiry(tmp_path, monkeypatch):
     assert resp.status_code == 401
 
 
+def test_check_token_endpoint(tmp_path, monkeypatch):
+    db = tmp_path / "tennis.db"
+    monkeypatch.setattr(storage, "DB_FILE", db)
+
+    api = importlib.reload(importlib.import_module("tennis.api"))
+    client = TestClient(api.app)
+
+    client.post("/users", json={"user_id": "u", "name": "U", "password": "pw", "allow_create": True})
+    token = client.post("/login", json={"user_id": "u", "password": "pw"}).json()["token"]
+
+    resp = client.post("/check_token", json={"token": token})
+    assert resp.status_code == 200
+    assert resp.json()["user_id"] == "u"
+
+    resp = client.post("/check_token", json={"token": "bad"})
+    assert resp.status_code == 401
+
+
 def test_doubles_leaderboard_api(tmp_path, monkeypatch):
     db = tmp_path / "tennis.db"
     monkeypatch.setattr(storage, "DB_FILE", db)
