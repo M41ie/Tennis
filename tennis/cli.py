@@ -80,6 +80,17 @@ def request_join(clubs, users, club_id: str, user_id: str):
         raise ValueError("User not registered")
     club.pending_members.add(user_id)
 
+    # notify leader and admins of pending request
+    today = datetime.date.today()
+    for uid in [club.leader_id, *club.admin_ids]:
+        if not uid:
+            continue
+        u = users.get(uid)
+        if u is not None:
+            u.messages.append(
+                Message(date=today, text=f"Join request from {user_id} for club {club.name}")
+            )
+
 
 def approve_member(
     clubs,
@@ -238,6 +249,8 @@ def submit_match(
     weight: float,
     location: str | None = None,
     format_name: str | None = None,
+    *,
+    users: dict | None = None,
 ):
     """Start a match record pending confirmation and approval."""
     validate_scores(score_initiator, score_opponent)
@@ -264,6 +277,17 @@ def submit_match(
     else:
         match.confirmed_b = True
     club.pending_matches.append(match)
+
+    if users is not None:
+        today = datetime.date.today()
+        for uid in [club.leader_id, *club.admin_ids]:
+            if not uid:
+                continue
+            u = users.get(uid)
+            if u:
+                u.messages.append(
+                    Message(date=today, text=f"Match pending approval in {club.name}")
+                )
 
 
 def confirm_match(clubs, club_id: str, index: int, user_id: str):
@@ -296,6 +320,8 @@ def submit_doubles(
     initiator: str,
     location: str | None = None,
     format_name: str | None = None,
+    *,
+    users: dict | None = None,
 ):
     """Start a doubles match pending confirmation and approval."""
     validate_scores(score_a, score_b)
@@ -328,6 +354,17 @@ def submit_doubles(
     else:
         raise ValueError("Initiator not in match")
     club.pending_matches.append(match)
+
+    if users is not None:
+        today = datetime.date.today()
+        for uid in [club.leader_id, *club.admin_ids]:
+            if not uid:
+                continue
+            u = users.get(uid)
+            if u:
+                u.messages.append(
+                    Message(date=today, text=f"Doubles match pending approval in {club.name}")
+                )
 
 
 def confirm_doubles(clubs, club_id: str, index: int, user_id: str):
@@ -878,6 +915,7 @@ def main():
             weight,
             location=args.location,
             format_name=args.format,
+            users=users,
         )
     elif args.cmd == 'confirm_match':
         confirm_match(clubs, args.club_id, args.index, args.user_id)
