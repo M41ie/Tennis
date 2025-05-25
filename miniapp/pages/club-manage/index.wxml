@@ -1,0 +1,35 @@
+<view class="search-box">
+  <input placeholder="搜索俱乐部" bindinput="onSearch" value="{{query}}" />
+  <scroll-view scroll-y class="result-list" wx:if="{{searchResults.length}}">
+    <block wx:for="{{searchResults}}" wx:key="club_id">
+      <view class="club-card">
+        <view class="info">
+          <view class="name">{{item.name}}</view>
+          <view class="extra">人数 {{item.member_count || '--'}} · 部长 {{item.leader || item.leader_id || '--'}}</view>
+        </view>
+        <button class="apply-btn" data-id="{{item.club_id}}" bindtap="joinClub" disabled="{{item.joined}}">
+          {{item.joined ? '已加入' : '申请加入'}}
+        </button>
+      </view>
+    </block>
+  </scroll-view>
+</view>
+<view class="section-title">我加入的俱乐部</view>
+<scroll-view scroll-y class="my-clubs">
+  <block wx:for="{{myClubs}}" wx:key="club_id">
+    <view class="my-card">
+      <view class="main" data-id="{{item.club_id}}" bindtap="openClub">
+        <view class="name">{{item.name}}</view>
+        <view class="role">{{item.role}}</view>
+      </view>
+      <view class="actions">
+        <button wx:if="{{item.role=='member'}}" data-id="{{item.club_id}}" bindtap="quitClub">退出俱乐部</button>
+        <button wx:if="{{item.role=='admin'}}" data-id="{{item.club_id}}" bindtap="resignAdmin">卸任管理员</button>
+        <block wx:if="{{item.role=='leader'}}">
+          <button data-id="{{item.club_id}}" bindtap="toggleAdmin">设置/取消管理员</button>
+          <button data-id="{{item.club_id}}" bindtap="transferLeader">转移部长</button>
+        </block>
+      </view>
+    </view>
+  </block>
+</scroll-view>

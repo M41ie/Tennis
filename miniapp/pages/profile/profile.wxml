@@ -1,57 +1,30 @@
-<view>
-  <block wx:if="{{user}}">
-    <image class="avatar" src="{{user.avatar}}" mode="aspectFill"></image>
-    <view>{{user.name}} ({{user.user_id}})</view>
-    <view wx:if="{{joinedClubs.length}}">
-      <view>Clubs:</view>
-      <view class="club-list">
-        <block wx:for="{{joinedClubs}}" wx:key="index">
-          <button data-id="{{item}}" bindtap="selectClub">{{item}}</button>
-        </block>
-      </view>
+<!-- 顶部用户卡片 -->
+<view class="user-card" bindtap="onCardTap">
+  <block wx:if="{{loggedIn}}">
+    <image class="avatar" src="{{user.avatar || placeholderAvatar}}" />
+    <view class="info">
+      <view class="name">{{user.name}}</view>
+      <view class="uid">ID：{{user.user_id}}</view>
+      <view class="rating">Singles {{user.singles_rating || '--'}} ・ Doubles {{user.doubles_rating || '--'}}</view>
     </view>
-    <view wx:else>
-      <view>\u672a\u52a0\u5165\u4efb\u4f55\u4ff1\u4e50\u90e8</view>
-      <button bindtap="manageClubs">Join Club</button>
-    </view>
-    <view wx:if="{{clubId}}">Current: {{clubId}}</view>
-    <view>Singles: {{user.singles_rating}}</view>
-      <view>Doubles: {{user.doubles_rating}}</view>
-      <view>Age: {{user.age}}</view>
-      <view>Gender: {{user.gender}}</view>
-    <view wx:if="{{isSelf && !records.length}}" class="record">
-      \u6682\u65e0\u6218\u7ee9\uff0c\u53ef\u9080\u8bf7\u4f1a\u5458\u5bf9\u4f60\u8fdb\u884c\u9884\u8bc4。
-    </view>
-    <view wx:for="{{records}}" wx:key="index" class="record" bindtap="openDetail" data-index="{{index}}">
-      {{item.date}} {{item.self_score}}-{{item.opponent_score}} vs {{item.opponent || item.opponents}}
-    </view>
-      <block wx:if="{{isSelf}}">
-        <view class="edit">
-          <input class="weui-input" type="number" placeholder="Age" value="{{user.age}}" bindinput="onAge" />
-          <input class="weui-input" placeholder="Gender" value="{{user.gender}}" bindinput="onGender" />
-          <button bindtap="chooseAvatar">Change Avatar</button>
-          <button bindtap="updateProfile">Save</button>
-        </view>
-        <button bindtap="manageClubs">Manage Clubs</button>
-        <button bindtap="manageMembers">Manage Members</button>
-        <button bindtap="viewMessages">Messages{{unreadCount>0 ? '('+unreadCount+')' : ''}}</button>
-        <button bindtap="toPrerate">Pre-Rate Member</button>
-        <button bindtap="logout">Logout</button>
-      </block>
   </block>
   <block wx:else>
-    <view class="weui-cells weui-cells_form">
-      <view class="weui-cell">
-        <view class="weui-label">ID</view>
-        <input class="weui-input" placeholder="User ID" bindinput="onUserId" />
-      </view>
-      <view class="weui-cell">
-        <view class="weui-label">Password</view>
-        <input class="weui-input" password placeholder="Password" bindinput="onPassword" />
-      </view>
-    </view>
-    <button class="weui-btn weui-btn_primary" bindtap="login">Login</button>
-    <button class="weui-btn" bindtap="wechatLogin">WeChat Login</button>
-    <button class="weui-btn" bindtap="toRegister">Register</button>
+    <image class="avatar placeholder" src="{{loginPlaceholder}}" />
+    <view class="login-tip">点击登录 / 注册</view>
   </block>
+</view>
+
+<!-- 无评分提醒卡片 -->
+<view wx:if="{{loggedIn && !user.singles_rating && !user.doubles_rating}}" class="hint-card" bindtap="goClub">
+  还没有评分？加入俱乐部并邀请成员为你预评分 &gt;
+</view>
+
+<!-- 功能按钮列表 -->
+<view class="menu-list">
+  <button class="menu-item" bindtap="goClub">
+    <image class="icon" src="{{iconClub}}" /> 我的俱乐部
+  </button>
+  <button class="menu-item disabled">
+    <image class="icon" src="{{iconComing}}" /> 敬请期待
+  </button>
 </view>
