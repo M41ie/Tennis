@@ -1,4 +1,5 @@
 const BASE_URL = getApp().globalData.BASE_URL;
+const IMAGES = require('../../assets/base64.js');
 
 Page({
   data: {

@@ -167,12 +167,11 @@ class PreRateRequest(BaseModel):
 class PendingDoublesCreate(BaseModel):
     club_id: str | None = None
     initiator: str
-    a1: str
-    a2: str
-    b1: str
-    b2: str
-    score_a: StrictInt
-    score_b: StrictInt
+    partner: str
+    opponent1: str
+    opponent2: str
+    score_initiator: StrictInt
+    score_opponent: StrictInt
     date: datetime.date | None = None
     format: str | None = None
     weight: float | None = None
@@ -221,6 +220,7 @@ class JoinRequest(BaseModel):
 class ApproveRequest(BaseModel):
     approver_id: str
     user_id: str
+    rating: float
     admin: bool = False
     token: str
 
@@ -390,6 +390,7 @@ def approve_club_member(club_id: str, data: ApproveRequest):
             club_id,
             data.approver_id,
             data.user_id,
+            data.rating,
             make_admin=data.admin,
         )
     except ValueError as e:
@@ -842,23 +843,22 @@ def submit_doubles_api(club_id: str, data: PendingDoublesCreate):
 
     cid = data.club_id or club_id
     try:
-        validate_scores(data.score_a, data.score_b)
+        validate_scores(data.score_initiator, data.score_opponent)
         submit_doubles(
             clubs,
             cid,
-            data.a1,
-            data.a2,
-            data.b1,
-            data.b2,
-            data.score_a,
-            data.score_b,
+            data.initiator,
+            data.partner,
+            data.opponent1,
+            data.opponent2,
+            data.score_initiator,
+            data.score_opponent,
             data.date or datetime.date.today(),
             data.weight or (
                 format_weight_from_name(data.format)
                 if data.format
                 else format_weight_from_name("6_game")
             ),
-            initiator=data.initiator,
             location=data.location,
             format_name=data.format,
             users=users,

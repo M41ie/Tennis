@@ -69,7 +69,6 @@ def test_submit_match_and_doubles_notify_staff():
         3,
         today,
         1.0,
-        initiator="p1",
         users=users,
     )
     assert any("Doubles match pending approval" in m.text for m in users["leader"].messages)

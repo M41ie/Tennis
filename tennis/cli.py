@@ -99,9 +99,10 @@ def approve_member(
     club_id: str,
     approver_id: str,
     user_id: str,
+    rating: float,
     make_admin: bool = False,
 ):
-    """Approve a pending member request."""
+    """Approve a pending member request and assign an initial rating."""
     club = clubs.get(club_id)
     if not club:
         raise ValueError("Club not found")
@@ -115,7 +116,12 @@ def approve_member(
     if user.joined_clubs >= MAX_JOINED_CLUBS:
         raise ValueError("Club membership limit reached")
     club.pending_members.remove(user_id)
-    club.members[user_id] = Player(user_id=user.user_id, name=user.name)
+    club.members[user_id] = Player(
+        user_id=user.user_id,
+        name=user.name,
+        singles_rating=rating,
+        doubles_rating=rating,
+    )
     user.joined_clubs += 1
     if make_admin:
         if len(club.admin_ids) >= 3:
@@ -310,50 +316,50 @@ def confirm_match(clubs, club_id: str, index: int, user_id: str):
 def submit_doubles(
     clubs,
     club_id: str,
-    a1: str,
-    a2: str,
-    b1: str,
-    b2: str,
-    score_a: int,
-    score_b: int,
+    initiator: str,
+    partner: str,
+    opponent1: str,
+    opponent2: str,
+    score_initiator: int,
+    score_opponent: int,
     date: datetime.date,
     weight: float,
-    initiator: str,
     location: str | None = None,
     format_name: str | None = None,
     *,
     users: dict | None = None,
 ):
-    """Start a doubles match pending confirmation and approval."""
-    validate_scores(score_a, score_b)
+    """Start a doubles match pending confirmation and approval.
+
+    The initiator is automatically placed on team A along with ``partner``. The
+    opponents form team B. Only the initiator's team is pre-confirmed.
+    """
+    validate_scores(score_initiator, score_opponent)
     club = clubs.get(club_id)
     if not club:
         raise ValueError("Club not found")
-    pa1 = club.members.get(a1)
-    pa2 = club.members.get(a2)
-    pb1 = club.members.get(b1)
-    pb2 = club.members.get(b2)
+
+    pa1 = club.members.get(initiator)
+    pa2 = club.members.get(partner)
+    pb1 = club.members.get(opponent1)
+    pb2 = club.members.get(opponent2)
     if not all([pa1, pa2, pb1, pb2]):
         raise ValueError("All players must be in club")
+
     match = DoublesMatch(
         date=date,
         player_a1=pa1,
         player_a2=pa2,
         player_b1=pb1,
         player_b2=pb2,
-        score_a=score_a,
-        score_b=score_b,
+        score_a=score_initiator,
+        score_b=score_opponent,
         format_weight=weight,
         location=location,
         format_name=format_name,
         initiator=initiator,
     )
-    if initiator in (a1, a2):
-        match.confirmed_a = True
-    elif initiator in (b1, b2):
-        match.confirmed_b = True
-    else:
-        raise ValueError("Initiator not in match")
+    match.confirmed_a = True
     club.pending_matches.append(match)
 
     if users is not None:
@@ -807,6 +813,7 @@ def main():
     approve.add_argument('club_id')
     approve.add_argument('approver_id')
     approve.add_argument('user_id')
+    approve.add_argument('rating', type=float)
     approve.add_argument('--admin', action='store_true')
 
     aplayer = sub.add_parser('add_player')
@@ -899,7 +906,15 @@ def main():
     elif args.cmd == 'request_join':
         request_join(clubs, users, args.club_id, args.user_id)
     elif args.cmd == 'approve_member':
-        approve_member(clubs, users, args.club_id, args.approver_id, args.user_id, make_admin=args.admin)
+        approve_member(
+            clubs,
+            users,
+            args.club_id,
+            args.approver_id,
+            args.user_id,
+            args.rating,
+            make_admin=args.admin,
+        )
     elif args.cmd == 'add_player':
         add_player(
             clubs,
