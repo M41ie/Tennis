@@ -11,17 +11,14 @@
     </picker>
   </block>
   <block wx:else>
-    <picker mode="selector" range="{{playerNames}}" value="{{a1Index}}" bindchange="onA1Change">
-      <view class="weui-cell">A1: {{playerNames[a1Index]}}</view>
+    <picker mode="selector" range="{{playerNames}}" value="{{partnerIndex}}" bindchange="onPartnerChange">
+      <view class="weui-cell">Partner: {{playerNames[partnerIndex]}}</view>
     </picker>
-    <picker mode="selector" range="{{playerNames}}" value="{{a2Index}}" bindchange="onA2Change">
-      <view class="weui-cell">A2: {{playerNames[a2Index]}}</view>
+    <picker mode="selector" range="{{playerNames}}" value="{{opp1Index}}" bindchange="onOpp1Change">
+      <view class="weui-cell">Opponent 1: {{playerNames[opp1Index]}}</view>
     </picker>
-    <picker mode="selector" range="{{playerNames}}" value="{{b1Index}}" bindchange="onB1Change">
-      <view class="weui-cell">B1: {{playerNames[b1Index]}}</view>
-    </picker>
-    <picker mode="selector" range="{{playerNames}}" value="{{b2Index}}" bindchange="onB2Change">
-      <view class="weui-cell">B2: {{playerNames[b2Index]}}</view>
+    <picker mode="selector" range="{{playerNames}}" value="{{opp2Index}}" bindchange="onOpp2Change">
+      <view class="weui-cell">Opponent 2: {{playerNames[opp2Index]}}</view>
     </picker>
   </block>
   <picker mode="date" value="{{date}}" bindchange="onDateChange">
