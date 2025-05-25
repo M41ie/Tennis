@@ -1,0 +1,20 @@
+<view class="weui-cells weui-cells_form">
+  <view class="weui-cell">
+    <view class="weui-label">ID</view>
+    <input class="weui-input" placeholder="Club ID" bindinput="onClubId" />
+  </view>
+  <view class="weui-cell">
+    <view class="weui-label">Name</view>
+    <input class="weui-input" placeholder="Name" bindinput="onName" />
+  </view>
+  <view class="weui-cell">
+    <view class="weui-label">Region</view>
+    <input class="weui-input" placeholder="Region" bindinput="onRegion" />
+  </view>
+  <view class="weui-cell">
+    <view class="weui-label">Logo</view>
+    <button bindtap="chooseLogo">Select</button>
+  </view>
+  <image wx:if="{{logo}}" class="image-preview" mode="aspectFit" src="{{logo}}"></image>
+</view>
+<button class="weui-btn weui-btn_primary" bindtap="submit">创建</button>

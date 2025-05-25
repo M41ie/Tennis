@@ -312,12 +312,17 @@ def check_token_api(data: TokenOnly):
 
 @app.get("/users/{user_id}")
 def get_user_info(user_id: str):
-    """Return basic user info including joined clubs."""
+    """Return basic user info including joined clubs and permissions."""
     user = users.get(user_id)
     if not user:
         raise HTTPException(404, "User not found")
     joined = [cid for cid, c in clubs.items() if user_id in c.members]
-    return {"user_id": user.user_id, "name": user.name, "joined_clubs": joined}
+    return {
+        "user_id": user.user_id,
+        "name": user.name,
+        "joined_clubs": joined,
+        "can_create_club": user.can_create_club,
+    }
 
 
 @app.get("/users/{user_id}/messages")

@@ -8,5 +8,5 @@
       </view>
     </block>
   </view>
-  <button class="weui-btn" bindtap="createClub">创建俱乐部</button>
+  <button class="weui-btn" bindtap="createClub" disabled="{{!allowCreate}}">创建俱乐部</button>
 </view>
