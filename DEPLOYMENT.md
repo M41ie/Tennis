@@ -1,33 +1,33 @@
 # Deployment Guide
 
-This document explains how to start the REST API, initialize the database and build the WeChat Mini Program for production.
+This walkthrough covers installing dependencies, running tests, starting the API and deploying the WeChat mini program.
 
-## Install dependencies
+## 1. Install dependencies
 
 ```bash
 python3 -m pip install -r requirements.txt
 ```
 
-## Starting the API server
+## 2. Run tests
 
-Run the built-in FastAPI app. On first launch a `tennis.db` SQLite database will be created automatically in the repository root.
+```bash
+pytest
+```
+
+## 3. Start the API server
+
+Launch the FastAPI application. A local `tennis.db` SQLite database will be created automatically if it does not exist.
 
 ```bash
 python3 -m tennis.api
 ```
 
-The server listens on `http://localhost:8000` by default. Set `WECHAT_APPID` and `WECHAT_SECRET` environment variables if WeChat login is required.
+The server listens on `http://localhost:8000` by default. Set the `WECHAT_APPID` and `WECHAT_SECRET` environment variables if you need WeChat login support.
 
-## Database initialization
+## 4. Import the mini program
 
-No manual steps are necessary. The server creates all required tables when it starts. To reset the data simply remove `tennis.db` before launching.
-
-## Building the mini program
-
-1. Open WeChat Developer Tools and choose "Import".
-2. Select the `miniapp` directory of this repository as the project path.
-3. Update the request domain in the developer tools to match the API server URL.
-4. (Optional) Search the JavaScript files for `http://localhost:8000` and replace it with your production domain.
+1. Open WeChat Developer Tools and choose **Import**.
+2. Select the `miniapp` directory from this repository.
+3. Configure the request domain to point to the API server URL.
+4. For production deployments edit `miniapp/app.js` and change the `BASE_URL` constant from `http://localhost:8000` to your production domain.
 5. Build and upload the mini program through the developer tools.
-
-
