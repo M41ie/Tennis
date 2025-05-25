@@ -71,6 +71,13 @@ class Client:
         self.cookies = cookies or {}
         self.follow_redirects = follow_redirects
 
+    # Starlette >=0.36 expects httpx.Client to provide `_merge_url`.  The real
+    # httpx implementation delegates this to `._build_url`, which is already
+    # available in this lightweight stub.  Implementing this method keeps the
+    # interface compatible with Starlette's TestClient used in the tests.
+    def _merge_url(self, url: str | URL):
+        return self._build_url(url)
+
     def _build_url(self, url: str | URL) -> URL:
         if isinstance(url, URL):
             return url
