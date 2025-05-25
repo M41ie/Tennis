@@ -18,11 +18,24 @@ Page({
   },
   fetchClubs() {
     const that = this;
+    const uid = wx.getStorageSync('user_id');
+    if (!uid) {
+      that.setData({ clubOptions: ['All'], clubIndex: 0 });
+      that.fetchPlayers();
+      return;
+    }
     wx.request({
-      url: `${BASE_URL}/clubs`,
+      url: `${BASE_URL}/users/${uid}`,
       success(res) {
-        const options = ['All'].concat(res.data.map(c => c.club_id));
-        that.setData({ clubOptions: options });
+        const list = res.data.joined_clubs || [];
+        const options = ['All'].concat(list);
+        const stored = wx.getStorageSync('club_id');
+        let idx = 0;
+        if (stored) {
+          const i = list.indexOf(stored);
+          if (i >= 0) idx = i + 1;
+        }
+        that.setData({ clubOptions: options, clubIndex: idx });
         that.fetchPlayers();
       }
     });
