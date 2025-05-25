@@ -1,7 +1,7 @@
 <!-- 顶部用户卡片 -->
 <view class="user-card" bindtap="onCardTap">
   <block wx:if="{{loggedIn}}">
-    <image class="avatar" src="{{user.avatar || avatarPlaceholder}}" />
+    <image class="avatar" src="{{user.avatar || placeholderAvatar}}" />
     <view class="info">
       <view class="name">{{user.name}}</view>
       <view class="uid">ID：{{user.user_id}}</view>

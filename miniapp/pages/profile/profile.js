@@ -14,10 +14,10 @@ Page({
     unreadCount: 0,
     genders: ['M', 'F'],
     genderIndex: 0,
-    avatarPlaceholder: IMAGES.DEFAULT_AVATAR,
-    loginPlaceholder: IMAGES.LOGIN_PLACEHOLDER,
-    iconClub: IMAGES.ICON_CLUB,
-    iconComing: IMAGES.ICON_COMING
+    placeholderAvatar: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/5+BMwAIAwGRAAGuIwVxAAAAAElFTkSuQmCC',
+    loginPlaceholder: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/5+BMwAIAwGRAAGuIwVxAAAAAElFTkSuQmCC',
+    iconClub: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/5+BMwAIAwGRAAGuIwVxAAAAAElFTkSuQmCC',
+    iconComing: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/5+BMwAIAwGRAAGuIwVxAAAAAElFTkSuQmCC'
   },
   onShow() {
     const uid = wx.getStorageSync('user_id');
