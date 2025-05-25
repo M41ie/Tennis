@@ -1,4 +1,3 @@
-<!-- ⭐️ 用两个小按钮替换原来的大块 -->
 <view class="btn-wrapper">
   <button class="record-btn primary" bindtap="addMatch">录入战绩</button>
   <button class="record-btn secondary" bindtap="viewPending">待确认战绩</button>
