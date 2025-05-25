@@ -1,4 +1,5 @@
-fastapi
-pydantic
-uvicorn
-pytest
+fastapi>=0.110,<0.111
+pydantic>=2.7,<2.8          # 与 FastAPI 0.110 兼容
+httpx>=0.27,<0.29           # Starlette 0.37 需要
+uvicorn[standard]>=0.29
+pytest>=8.0,<9.0
