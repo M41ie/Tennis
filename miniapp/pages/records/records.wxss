@@ -1,6 +1,5 @@
 .item { padding: 10px 0; border-bottom: 1px solid #ddd; }
 
-/* 新增 / 覆盖样式 */
 .btn-wrapper{
   display:flex;
   flex-direction:column;
