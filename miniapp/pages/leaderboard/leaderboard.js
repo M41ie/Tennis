@@ -2,16 +2,18 @@ const BASE_URL = getApp().globalData.BASE_URL;
 
 Page({
     data: {
-      clubOptions: ['All'],
-      clubIndex: 0,
+      clubOptions: [],
+      selectedClubs: [],
+      showClubSel: false,
       players: [],
-      minRating: null,
-      maxRating: null,
+      minRating: '',
+      maxRating: '',
       ratingOptions: ['Singles', 'Doubles'],
       ratingIndex: 0,
-      minAge: null,
-      maxAge: null,
-      gender: '',
+      genderOptions: ['All', 'M', 'F'],
+      genderIndex: 0,
+      minAge: '',
+      maxAge: '',
     },
   onLoad() {
     this.fetchClubs();
@@ -20,7 +22,7 @@ Page({
     const that = this;
     const uid = wx.getStorageSync('user_id');
     if (!uid) {
-      that.setData({ clubOptions: ['All'], clubIndex: 0 });
+      that.setData({ clubOptions: [], selectedClubs: [] });
       that.fetchPlayers();
       return;
     }
@@ -28,20 +30,19 @@ Page({
       url: `${BASE_URL}/users/${uid}`,
       success(res) {
         const list = res.data.joined_clubs || [];
-        const options = ['All'].concat(list);
-        const stored = wx.getStorageSync('club_id');
-        let idx = 0;
-        if (stored) {
-          const i = list.indexOf(stored);
-          if (i >= 0) idx = i + 1;
-        }
-        that.setData({ clubOptions: options, clubIndex: idx });
+        that.setData({ clubOptions: list, selectedClubs: list.slice() });
         that.fetchPlayers();
       }
     });
   },
-  onClubChange(e) {
-    this.setData({ clubIndex: e.detail.value });
+  toggleClubSel() {
+    this.setData({ showClubSel: !this.data.showClubSel });
+  },
+  onClubsChange(e) {
+    this.setData({ selectedClubs: e.detail.value });
+  },
+  closeClubSel() {
+    this.setData({ showClubSel: false });
     this.fetchPlayers();
   },
   onRatingChange(e) {
@@ -52,29 +53,53 @@ Page({
   onMaxRating(e) { this.setData({ maxRating: e.detail.value }); },
   onMinAge(e) { this.setData({ minAge: e.detail.value }); },
   onMaxAge(e) { this.setData({ maxAge: e.detail.value }); },
-  onGender(e) { this.setData({ gender: e.detail.value }); },
+  onGenderChange(e) {
+    this.setData({ genderIndex: e.detail.value });
+    this.fetchPlayers();
+  },
   fetchPlayers() {
-    const club = this.data.clubOptions[this.data.clubIndex];
+    const clubs = this.data.selectedClubs;
     const that = this;
-    let url;
-    if (club !== 'All') {
-      url = `${BASE_URL}/clubs/` + club + '/players';
-    } else {
-      url = `${BASE_URL}/players`;
-    }
     const params = [];
     if (this.data.minRating) params.push('min_rating=' + this.data.minRating);
     if (this.data.maxRating) params.push('max_rating=' + this.data.maxRating);
     if (this.data.minAge) params.push('min_age=' + this.data.minAge);
     if (this.data.maxAge) params.push('max_age=' + this.data.maxAge);
-    if (this.data.gender) params.push('gender=' + this.data.gender);
+    const gender = this.data.genderOptions[this.data.genderIndex];
+    if (gender !== 'All') params.push('gender=' + gender);
     if (this.data.ratingIndex === 1) params.push('doubles=true');
-    if (params.length) url += '?' + params.join('&');
-    wx.request({
-      url,
-      success(res) {
-        that.setData({ players: res.data });
-      }
+    const query = params.length ? '?' + params.join('&') : '';
+
+    if (!clubs.length || clubs.length === this.data.clubOptions.length) {
+      wx.request({
+        url: `${BASE_URL}/players` + query,
+        success(res) {
+          that.setData({ players: res.data });
+        }
+      });
+      return;
+    }
+
+    const promises = clubs.map((c) => {
+      return new Promise((resolve) => {
+        wx.request({
+          url: `${BASE_URL}/clubs/` + c + '/players' + query,
+          success(res) {
+            const data = res.data.map((p) => {
+              p.club_id = c;
+              return p;
+            });
+            resolve(data);
+          },
+          fail() { resolve([]); }
+        });
+      });
+    });
+    Promise.all(promises).then((results) => {
+      let all = [];
+      results.forEach((r) => { all = all.concat(r); });
+      all.sort((a, b) => b.rating - a.rating);
+      that.setData({ players: all });
     });
   },
   viewPlayer(e) {

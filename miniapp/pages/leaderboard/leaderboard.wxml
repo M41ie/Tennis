@@ -1,19 +1,31 @@
 <view class="filters">
-  <picker mode="selector" value="0" bindchange="onClubChange" range="{{clubOptions}}">
-    <view class="weui-cell">Club: {{clubOptions[clubIndex]}}</view>
-  </picker>
+  <button class="filter-btn" bindtap="toggleClubSel">Clubs</button>
   <picker mode="selector" value="{{ratingIndex}}" bindchange="onRatingChange" range="{{ratingOptions}}">
     <view class="weui-cell">{{ratingOptions[ratingIndex]}}</view>
   </picker>
-  <input class="weui-input" type="number" placeholder="Min Rating" bindinput="onMinRating" />
-  <input class="weui-input" type="number" placeholder="Max Rating" bindinput="onMaxRating" />
-  <input class="weui-input" type="number" placeholder="Min Age" bindinput="onMinAge" />
-  <input class="weui-input" type="number" placeholder="Max Age" bindinput="onMaxAge" />
-  <input class="weui-input" placeholder="Gender" bindinput="onGender" />
+  <view class="range">
+    <input class="weui-input" type="digit" placeholder="Rating Min" bindinput="onMinRating" />
+    <input class="weui-input" type="digit" placeholder="Rating Max" bindinput="onMaxRating" />
+  </view>
+  <picker mode="selector" value="{{genderIndex}}" bindchange="onGenderChange" range="{{genderOptions}}">
+    <view class="weui-cell">{{genderOptions[genderIndex]}}</view>
+  </picker>
+  <view class="range">
+    <input class="weui-input" type="number" placeholder="Age Min" bindinput="onMinAge" />
+    <input class="weui-input" type="number" placeholder="Age Max" bindinput="onMaxAge" />
+  </view>
+</view>
+<view wx:if="{{showClubSel}}" class="club-options">
+  <checkbox-group bindchange="onClubsChange">
+    <label wx:for="{{clubOptions}}" wx:key="club">
+      <checkbox value="{{item}}" checked="{{selectedClubs.indexOf(item) != -1}}" />{{item}}
+    </label>
+  </checkbox-group>
+  <button size="mini" bindtap="closeClubSel">OK</button>
 </view>
 <view class="weui-list">
   <block wx:for="{{players}}" wx:key="user_id">
-    <view class="weui-list__item item" bindtap="viewPlayer" data-id="{{item.user_id}}" data-cid="{{item.club_id || clubOptions[clubIndex]}}">
+    <view class="weui-list__item item" bindtap="viewPlayer" data-id="{{item.user_id}}" data-cid="{{item.club_id}}">
       <image class="avatar" src="{{item.avatar}}" mode="aspectFill"></image>
       <text style="flex:1">{{item.name}}: {{item.rating}}</text>
     </view>
