@@ -40,6 +40,9 @@ Page({
   },
   onClubsChange(e) {
     this.setData({ selectedClubs: e.detail.value });
+  },
+  closeClubSel() {
+    this.setData({ showClubSel: false });
     this.fetchPlayers();
   },
   onRatingChange(e) {

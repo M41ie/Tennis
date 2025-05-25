@@ -21,6 +21,7 @@
       <checkbox value="{{item}}" checked="{{selectedClubs.indexOf(item) != -1}}" />{{item}}
     </label>
   </checkbox-group>
+  <button size="mini" bindtap="closeClubSel">OK</button>
 </view>
 <view class="weui-list">
   <block wx:for="{{players}}" wx:key="user_id">
