@@ -1,5 +1,8 @@
-<button class="weui-btn weui-btn_primary add" bindtap="addMatch">\u5f55\u5165\u6218\u7ee9</button>
-<button class="weui-btn add" bindtap="viewPending">\u5f85\u5ba1\u6838</button>
+<!-- ⭐️ 用两个小按钮替换原来的大块 -->
+<view class="btn-wrapper">
+  <button class="record-btn primary" bindtap="addMatch">录入战绩</button>
+  <button class="record-btn secondary" bindtap="viewPending">待确认战绩</button>
+</view>
 <picker mode="selector" range="{{modeOptions}}" value="{{modeIndex}}" bindchange="onModeChange">
   <view class="weui-cell">{{modeOptions[modeIndex]}}</view>
 </picker>
