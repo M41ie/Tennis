@@ -25,9 +25,10 @@ def test_join_and_approve():
     create_club(users, clubs, "leader", "c1", "Club1", None, None)
     request_join(clubs, users, "c1", "member")
     assert "member" in clubs["c1"].pending_members
-    approve_member(clubs, users, "c1", "leader", "member")
+    approve_member(clubs, users, "c1", "leader", "member", 1100.0)
     assert "member" in clubs["c1"].members
     assert len(users["member"].messages) == 1
+    assert clubs["c1"].members["member"].singles_rating == 1100.0
 
 
 def test_create_club_limit():
@@ -51,14 +52,14 @@ def test_join_club_limit():
         register_user(users, lid, f"L{i}", "pw", allow_create=True)
         create_club(users, clubs, lid, cid, f"Club{i}", None, None)
         request_join(clubs, users, cid, "joiner")
-        approve_member(clubs, users, cid, lid, "joiner")
+        approve_member(clubs, users, cid, lid, "joiner", 1000.0)
 
     # attempt to join one more club
     register_user(users, "extra_leader", "EL", "pw", allow_create=True)
     create_club(users, clubs, "extra_leader", "cx", "ClubX", None, None)
     request_join(clubs, users, "cx", "joiner")
     with pytest.raises(ValueError):
-        approve_member(clubs, users, "cx", "extra_leader", "joiner")
+        approve_member(clubs, users, "cx", "extra_leader", "joiner", 1000.0)
 
 
 def test_admin_limit():
@@ -72,11 +73,11 @@ def test_admin_limit():
         uid = f"admin{i}"
         register_user(users, uid, f"A{i}", "pw")
         request_join(clubs, users, "c1", uid)
-        approve_member(clubs, users, "c1", "leader", uid, make_admin=True)
+        approve_member(clubs, users, "c1", "leader", uid, 1000.0, make_admin=True)
         assert uid in clubs["c1"].admin_ids
 
     # fourth admin should fail
     register_user(users, "extra", "Extra", "pw")
     request_join(clubs, users, "c1", "extra")
     with pytest.raises(ValueError):
-        approve_member(clubs, users, "c1", "leader", "extra", make_admin=True)
+        approve_member(clubs, users, "c1", "leader", "extra", 1000.0, make_admin=True)
