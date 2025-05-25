@@ -4,6 +4,8 @@
     "pages/register/register",
     "pages/joinclub/joinclub",
     "pages/createclub/createclub",
+    "pages/login/index",
+    "pages/club-manage/index",
     "pages/records/records",
     "pages/profile/profile",
     "pages/prerate/prerate",

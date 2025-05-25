@@ -1,7 +1,9 @@
 const BASE_URL = getApp().globalData.BASE_URL;
+const IMAGES = require('../../assets/base64.js');
 
 Page({
   data: {
+    loggedIn: false,
     user: null,
     records: [],
     loginId: '',
@@ -11,11 +13,21 @@ Page({
     joinedClubs: [],
     unreadCount: 0,
     genders: ['M', 'F'],
-    genderIndex: 0
+    genderIndex: 0,
+    avatarPlaceholder: IMAGES.DEFAULT_AVATAR,
+    loginPlaceholder: IMAGES.LOGIN_PLACEHOLDER,
+    iconClub: IMAGES.ICON_CLUB,
+    iconComing: IMAGES.ICON_COMING
   },
   onShow() {
-    if (this.data.isSelf) {
+    const uid = wx.getStorageSync('user_id');
+    const cid = wx.getStorageSync('club_id');
+    if (uid) {
+      this.setData({ loggedIn: true, isSelf: true });
+      this.fetchJoined(uid, cid);
       this.fetchUnread();
+    } else {
+      this.setData({ loggedIn: false, user: null });
     }
   },
   onLoad(options) {
@@ -25,6 +37,14 @@ Page({
       this.setData({ isSelf: userId === wx.getStorageSync('user_id') });
       this.fetchJoined(userId, cid);
     }
+  },
+  onCardTap() {
+    if (!this.data.loggedIn) {
+      wx.navigateTo({ url: '/pages/login/index' });
+    }
+  },
+  goClub() {
+    wx.navigateTo({ url: '/pages/club-manage/index' });
   },
   onUserId(e) { this.setData({ loginId: e.detail.value }); },
   onPassword(e) { this.setData({ loginPw: e.detail.value }); },
@@ -210,14 +230,14 @@ Page({
           wx.removeStorageSync('token');
           wx.removeStorageSync('user_id');
           wx.removeStorageSync('club_id');
-          that.setData({ user: null, loginId: '', loginPw: '' });
+          that.setData({ loggedIn: false, user: null, loginId: '', loginPw: '' });
         }
       });
     } else {
       wx.removeStorageSync('token');
       wx.removeStorageSync('user_id');
       wx.removeStorageSync('club_id');
-      this.setData({ user: null, loginId: '', loginPw: '' });
+      this.setData({ loggedIn: false, user: null, loginId: '', loginPw: '' });
     }
   },
   openDetail(e) {
