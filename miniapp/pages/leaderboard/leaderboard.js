@@ -1,60 +1,111 @@
 const BASE_URL = getApp().globalData.BASE_URL;
 
 Page({
-    data: {
-      clubOptions: ['All'],
-      clubIndex: 0,
-      players: [],
-      minRating: null,
-      maxRating: null,
-      ratingOptions: ['Singles', 'Doubles'],
-      ratingIndex: 0,
-      minAge: null,
-      maxAge: null,
-      gender: '',
+  data: {
+    clubs: [],
+    players: [],
+    filter: {
+      clubs: [],
+      mode: 'Singles',
+      minLevel: '',
+      maxLevel: '',
+      gender: 'All',
+      minAge: '',
+      maxAge: ''
     },
+    showClubDialog: false,
+    showLevelDialog: false,
+    showAgeDialog: false,
+    selectedClubs: [],
+    levelMin: '',
+    levelMax: '',
+    ageMin: '',
+    ageMax: ''
+  },
   onLoad() {
     this.fetchClubs();
   },
   fetchClubs() {
     const that = this;
-    const uid = wx.getStorageSync('user_id');
-    if (!uid) {
-      that.setData({ clubOptions: ['All'], clubIndex: 0 });
-      that.fetchPlayers();
-      return;
-    }
     wx.request({
-      url: `${BASE_URL}/users/${uid}`,
+      url: `${BASE_URL}/clubs`,
       success(res) {
-        const list = res.data.joined_clubs || [];
-        const options = ['All'].concat(list);
-        const stored = wx.getStorageSync('club_id');
-        let idx = 0;
-        if (stored) {
-          const i = list.indexOf(stored);
-          if (i >= 0) idx = i + 1;
-        }
-        that.setData({ clubOptions: options, clubIndex: idx });
-        that.fetchPlayers();
+        const list = res.data.map(c => c.club_id || c.name);
+        that.setData({
+          clubs: list,
+          selectedClubs: list.slice(),
+          filter: { ...that.data.filter, clubs: list.slice() }
+        });
+        that.fetchList(that.data.filter);
       }
     });
   },
-  onClubChange(e) {
-    this.setData({ clubIndex: e.detail.value });
-    this.fetchPlayers();
+  openClub() { this.setData({ showClubDialog: true }); },
+  onClubsChange(e) { this.setData({ selectedClubs: e.detail.value }); },
+  confirmClub() {
+    const filter = { ...this.data.filter, clubs: this.data.selectedClubs };
+    this.setData({ filter, showClubDialog: false });
+    this.fetchList(filter);
   },
-  onRatingChange(e) {
-    this.setData({ ratingIndex: e.detail.value });
-    this.fetchPlayers();
+  chooseMode() {
+    const that = this;
+    wx.showActionSheet({
+      itemList: ['Singles', 'Doubles'],
+      success(res) {
+        if (res.tapIndex >= 0) {
+          const mode = res.tapIndex === 1 ? 'Doubles' : 'Singles';
+          const filter = { ...that.data.filter, mode };
+          that.setData({ filter });
+          that.fetchList(filter);
+        }
+      }
+    });
   },
-  onMinRating(e) { this.setData({ minRating: e.detail.value }); },
-  onMaxRating(e) { this.setData({ maxRating: e.detail.value }); },
-  onMinAge(e) { this.setData({ minAge: e.detail.value }); },
-  onMaxAge(e) { this.setData({ maxAge: e.detail.value }); },
-  onGender(e) { this.setData({ gender: e.detail.value }); },
-  fetchPlayers() {
-    const club = this.data.clubOptions[this.data.clubIndex];
+  openLevel() {
+    this.setData({
+      showLevelDialog: true,
+      levelMin: this.data.filter.minLevel,
+      levelMax: this.data.filter.maxLevel
+    });
+  },
+  onLevelMin(e) { this.setData({ levelMin: e.detail.value }); },
+  onLevelMax(e) { this.setData({ levelMax: e.detail.value }); },
+  confirmLevel() {
+    const filter = { ...this.data.filter, minLevel: this.data.levelMin, maxLevel: this.data.levelMax };
+    this.setData({ filter, showLevelDialog: false });
+    this.fetchList(filter);
+  },
+  chooseGender() {
+    const that = this;
+    wx.showActionSheet({
+      itemList: ['All', 'Male', 'Female'],
+      success(res) {
+        if (res.tapIndex >= 0) {
+          const gender = ['All', 'Male', 'Female'][res.tapIndex];
+          const filter = { ...that.data.filter, gender };
+          that.setData({ filter });
+          that.fetchList(filter);
+        }
+      }
+    });
+  },
+  openAge() {
+    this.setData({
+      showAgeDialog: true,
+      ageMin: this.data.filter.minAge,
+      ageMax: this.data.filter.maxAge
+    });
+  },
+  onAgeMin(e) { this.setData({ ageMin: e.detail.value }); },
+  onAgeMax(e) { this.setData({ ageMax: e.detail.value }); },
+  confirmAge() {
+    const filter = { ...this.data.filter, minAge: this.data.ageMin, maxAge: this.data.ageMax };
+    this.setData({ filter, showAgeDialog: false });
+    this.fetchList(filter);
+  },
+  fetchList(filter) {
+    const clubs = filter.clubs && filter.clubs.length ? filter.clubs : ['All'];
+    const club = clubs[0];
     const that = this;
     let url;
     if (club !== 'All') {
@@ -63,12 +114,12 @@ Page({
       url = `${BASE_URL}/players`;
     }
     const params = [];
-    if (this.data.minRating) params.push('min_rating=' + this.data.minRating);
-    if (this.data.maxRating) params.push('max_rating=' + this.data.maxRating);
-    if (this.data.minAge) params.push('min_age=' + this.data.minAge);
-    if (this.data.maxAge) params.push('max_age=' + this.data.maxAge);
-    if (this.data.gender) params.push('gender=' + this.data.gender);
-    if (this.data.ratingIndex === 1) params.push('doubles=true');
+    if (filter.minLevel) params.push('min_rating=' + filter.minLevel);
+    if (filter.maxLevel) params.push('max_rating=' + filter.maxLevel);
+    if (filter.minAge) params.push('min_age=' + filter.minAge);
+    if (filter.maxAge) params.push('max_age=' + filter.maxAge);
+    if (filter.gender && filter.gender !== 'All') params.push('gender=' + filter.gender);
+    if (filter.mode === 'Doubles') params.push('doubles=true');
     if (params.length) url += '?' + params.join('&');
     wx.request({
       url,

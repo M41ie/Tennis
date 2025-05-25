@@ -1,19 +1,34 @@
-<view class="filters">
-  <picker mode="selector" value="0" bindchange="onClubChange" range="{{clubOptions}}">
-    <view class="weui-cell">Club: {{clubOptions[clubIndex]}}</view>
-  </picker>
-  <picker mode="selector" value="{{ratingIndex}}" bindchange="onRatingChange" range="{{ratingOptions}}">
-    <view class="weui-cell">{{ratingOptions[ratingIndex]}}</view>
-  </picker>
-  <input class="weui-input" type="number" placeholder="Min Rating" bindinput="onMinRating" />
-  <input class="weui-input" type="number" placeholder="Max Rating" bindinput="onMaxRating" />
-  <input class="weui-input" type="number" placeholder="Min Age" bindinput="onMinAge" />
-  <input class="weui-input" type="number" placeholder="Max Age" bindinput="onMaxAge" />
-  <input class="weui-input" placeholder="Gender" bindinput="onGender" />
+<view class="filter-bar">
+  <view class="filter-item" bindtap="openClub">俱乐部</view>
+  <view class="filter-item" bindtap="chooseMode">{{filter.mode}}</view>
+  <view class="filter-item" bindtap="openLevel">级别</view>
+  <view class="filter-item" bindtap="chooseGender">{{filter.gender}}</view>
+  <view class="filter-item" bindtap="openAge">年龄</view>
+</view>
+
+<view wx:if="{{showClubDialog}}" class="dialog">
+  <checkbox-group bindchange="onClubsChange">
+    <label wx:for="{{clubs}}" wx:key="index" class="chk">
+      <checkbox value="{{item}}" checked="{{selectedClubs.indexOf(item) >= 0}}">{{item}}</checkbox>
+    </label>
+  </checkbox-group>
+  <button bindtap="confirmClub">确定</button>
+</view>
+
+<view wx:if="{{showLevelDialog}}" class="dialog">
+  <input type="digit" placeholder="Min" value="{{levelMin}}" bindinput="onLevelMin" />
+  <input type="digit" placeholder="Max" value="{{levelMax}}" bindinput="onLevelMax" />
+  <button bindtap="confirmLevel">确定</button>
+</view>
+
+<view wx:if="{{showAgeDialog}}" class="dialog">
+  <input type="number" placeholder="Min" value="{{ageMin}}" bindinput="onAgeMin" />
+  <input type="number" placeholder="Max" value="{{ageMax}}" bindinput="onAgeMax" />
+  <button bindtap="confirmAge">确定</button>
 </view>
 <view class="weui-list">
   <block wx:for="{{players}}" wx:key="user_id">
-    <view class="weui-list__item item" bindtap="viewPlayer" data-id="{{item.user_id}}" data-cid="{{item.club_id || clubOptions[clubIndex]}}">
+    <view class="weui-list__item item" bindtap="viewPlayer" data-id="{{item.user_id}}" data-cid="{{item.club_id || filter.clubs[0]}}">
       <image class="avatar" src="{{item.avatar}}" mode="aspectFill"></image>
       <text style="flex:1">{{item.name}}: {{item.rating}}</text>
     </view>

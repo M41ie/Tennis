@@ -29,11 +29,18 @@ class ByteStream:
         return self._data
 
 
+class Headers(dict):
+    """Minimal headers container used by Request and Response."""
+
+    def multi_items(self):
+        return list(self.items())
+
+
 class Request:
     def __init__(self, method: str, url: URL, headers: typing.Dict[str, str] | None = None, content: bytes | None = None):
         self.method = method.upper()
         self.url = url if isinstance(url, URL) else URL(url)
-        self.headers = headers or {}
+        self.headers = Headers(headers or {})
         self._content = content or b""
 
     def read(self) -> bytes:
@@ -43,7 +50,7 @@ class Request:
 class Response:
     def __init__(self, status_code: int = 200, headers: typing.Iterable[tuple[str, str]] | None = None, stream: ByteStream | None = None, request: Request | None = None):
         self.status_code = status_code
-        self.headers = dict(headers or [])
+        self.headers = Headers(dict(headers or []))
         self.stream = stream or ByteStream(b"")
         self.request = request
 
