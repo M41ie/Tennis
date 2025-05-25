@@ -660,11 +660,17 @@ def test_remove_member_api(tmp_path, monkeypatch):
     )
     client.post(
         "/clubs/c1/approve",
-        json={"approver_id": "leader", "user_id": "member", "token": token_leader},
+        json={
+            "approver_id": "leader",
+            "user_id": "member",
+            "rating": 1200.0,
+            "token": token_leader,
+        },
     )
 
     data = storage.load_data()
     assert data["c1"].members.get("member")
+    assert data["c1"].members["member"].singles_rating == 1200.0
     assert storage.load_users()["member"].joined_clubs == 1
 
     resp = client.request(
@@ -808,7 +814,16 @@ def test_get_user_info_api(tmp_path, monkeypatch):
     token_u1 = client.post("/login", json={"user_id": "u1", "password": "pw"}).json()["token"]
     client.post("/clubs", json={"club_id": "c1", "name": "C1", "user_id": "leader", "token": token_leader})
     client.post("/clubs/c1/join", json={"user_id": "u1", "token": token_u1})
-    client.post("/clubs/c1/approve", json={"approver_id": "leader", "user_id": "u1", "token": token_leader})
+    client.post(
+        "/clubs/c1/approve",
+        json={
+            "approver_id": "leader",
+            "user_id": "u1",
+            "rating": 1300.0,
+            "token": token_leader,
+        },
+    )
+    assert storage.load_data()["c1"].members["u1"].singles_rating == 1300.0
 
     resp = client.get("/users/u1")
     assert resp.status_code == 200

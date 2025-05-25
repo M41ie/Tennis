@@ -220,6 +220,7 @@ class JoinRequest(BaseModel):
 class ApproveRequest(BaseModel):
     approver_id: str
     user_id: str
+    rating: float
     admin: bool = False
     token: str
 
@@ -389,6 +390,7 @@ def approve_club_member(club_id: str, data: ApproveRequest):
             club_id,
             data.approver_id,
             data.user_id,
+            data.rating,
             make_admin=data.admin,
         )
     except ValueError as e:

@@ -99,9 +99,10 @@ def approve_member(
     club_id: str,
     approver_id: str,
     user_id: str,
+    rating: float,
     make_admin: bool = False,
 ):
-    """Approve a pending member request."""
+    """Approve a pending member request and assign an initial rating."""
     club = clubs.get(club_id)
     if not club:
         raise ValueError("Club not found")
@@ -115,7 +116,12 @@ def approve_member(
     if user.joined_clubs >= MAX_JOINED_CLUBS:
         raise ValueError("Club membership limit reached")
     club.pending_members.remove(user_id)
-    club.members[user_id] = Player(user_id=user.user_id, name=user.name)
+    club.members[user_id] = Player(
+        user_id=user.user_id,
+        name=user.name,
+        singles_rating=rating,
+        doubles_rating=rating,
+    )
     user.joined_clubs += 1
     if make_admin:
         if len(club.admin_ids) >= 3:
@@ -807,6 +813,7 @@ def main():
     approve.add_argument('club_id')
     approve.add_argument('approver_id')
     approve.add_argument('user_id')
+    approve.add_argument('rating', type=float)
     approve.add_argument('--admin', action='store_true')
 
     aplayer = sub.add_parser('add_player')
@@ -899,7 +906,15 @@ def main():
     elif args.cmd == 'request_join':
         request_join(clubs, users, args.club_id, args.user_id)
     elif args.cmd == 'approve_member':
-        approve_member(clubs, users, args.club_id, args.approver_id, args.user_id, make_admin=args.admin)
+        approve_member(
+            clubs,
+            users,
+            args.club_id,
+            args.approver_id,
+            args.user_id,
+            args.rating,
+            make_admin=args.admin,
+        )
     elif args.cmd == 'add_player':
         add_player(
             clubs,
