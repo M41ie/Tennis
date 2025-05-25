@@ -107,12 +107,6 @@ Page({
     const clubs = filter.clubs && filter.clubs.length ? filter.clubs : ['All'];
     const club = clubs[0];
     const that = this;
-    let url;
-    if (club !== 'All') {
-      url = `${BASE_URL}/clubs/` + club + '/players';
-    } else {
-      url = `${BASE_URL}/players`;
-    }
     const params = [];
     if (filter.minLevel) params.push('min_rating=' + filter.minLevel);
     if (filter.maxLevel) params.push('max_rating=' + filter.maxLevel);
