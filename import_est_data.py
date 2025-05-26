@@ -40,7 +40,7 @@ def parse_csv(path: str):
     return player_rows, match_rows
 
 
-def main(csv_path="est_data.csv"):
+def main(csv_path="test_data.csv"):
     clubs = storage.load_data()
     users = storage.load_users()
 
@@ -100,7 +100,7 @@ def main(csv_path="est_data.csv"):
 
 
 if __name__ == "__main__":
-    path = "est_data.csv"
+    path = "test_data.csv"
     if not Path(path).exists():
         print(f"CSV file '{path}' not found")
     else:
