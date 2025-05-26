@@ -1,7 +1,8 @@
 import datetime
-from tennis.models import Club, Player
+import pytest
+from tennis.models import Club, Player, Match
 from tennis.cli import submit_match, confirm_match, approve_match
-from tennis.rating import weighted_rating
+from tennis.rating import weighted_rating, update_ratings
 
 
 def test_match_approval_workflow():
@@ -27,5 +28,20 @@ def test_match_approval_workflow():
     approve_match(clubs, "c", 0, "leader")
     assert len(club.pending_matches) == 0
     assert len(club.matches) == 1
-    assert p1.singles_rating == weighted_rating(p1, date)
-    assert p2.singles_rating == weighted_rating(p2, date)
+
+    # compute expected ratings using a fresh reference calculation
+    ref_p1 = Player("p1", "P1")
+    ref_p2 = Player("p2", "P2")
+    ref_match = Match(
+        date=date,
+        player_a=ref_p1,
+        player_b=ref_p2,
+        score_a=6,
+        score_b=4,
+    )
+    update_ratings(ref_match)
+    expected_p1 = weighted_rating(ref_p1, date)
+    expected_p2 = weighted_rating(ref_p2, date)
+
+    assert pytest.approx(p1.singles_rating, rel=1e-6) == expected_p1
+    assert pytest.approx(p2.singles_rating, rel=1e-6) == expected_p2

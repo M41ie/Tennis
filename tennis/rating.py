@@ -91,30 +91,9 @@ def update_ratings(match: Match) -> Tuple[float, float]:
 
 
 def weighted_rating(player: Player, as_of: datetime.date) -> float:
-    """Return the weighted average singles rating based on recent matches.
+    """Return the player's current singles rating with experience bonus."""
 
-    The latest match contributes 60% and up to four earlier matches each
-    contribute 10% of the final value.
-    """
-
-    weights: List[float] = []
-    ratings: List[float] = []
-
-    for idx, m in enumerate(reversed(player.singles_matches[-MAX_HISTORY:])):
-        weight = 0.6 if idx == 0 else 0.1
-        weights.append(weight)
-        if m.player_a == player:
-            rating = m.rating_a_after if m.rating_a_after is not None else player.singles_rating
-        else:
-            rating = m.rating_b_after if m.rating_b_after is not None else player.singles_rating
-        ratings.append(rating)
-
-    if not ratings:
-        base = player.singles_rating
-    else:
-        total_weight = sum(weights)
-        base = sum(r * w for r, w in zip(ratings, weights)) / total_weight
-
+    base = player.singles_rating
     return base + player.experience * EXPERIENCE_BONUS
 
 
@@ -196,30 +175,9 @@ def update_doubles_ratings(match: DoublesMatch) -> Tuple[float, float, float, fl
 
 
 def weighted_doubles_rating(player: Player, as_of: datetime.date) -> float:
-    """Return the weighted average doubles rating based on recent matches."""
+    """Return the player's current doubles rating with experience bonus."""
 
-    weights: List[float] = []
-    ratings: List[float] = []
-
-    for idx, m in enumerate(reversed(player.doubles_matches[-MAX_HISTORY:])):
-        weight = 0.6 if idx == 0 else 0.1
-        weights.append(weight)
-        if m.player_a1 == player:
-            rating = m.rating_a1_after if m.rating_a1_after is not None else player.doubles_rating
-        elif m.player_a2 == player:
-            rating = m.rating_a2_after if m.rating_a2_after is not None else player.doubles_rating
-        elif m.player_b1 == player:
-            rating = m.rating_b1_after if m.rating_b1_after is not None else player.doubles_rating
-        else:
-            rating = m.rating_b2_after if m.rating_b2_after is not None else player.doubles_rating
-        ratings.append(rating)
-
-    if not ratings:
-        base = player.doubles_rating
-    else:
-        total_weight = sum(weights)
-        base = sum(r * w for r, w in zip(ratings, weights)) / total_weight
-
+    base = player.doubles_rating
     return base + player.experience * EXPERIENCE_BONUS
 
 
