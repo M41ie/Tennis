@@ -38,7 +38,15 @@ def format_weight_from_name(name: str) -> float:
 
 
 def expected_score(rating_a: float, rating_b: float) -> float:
-    return 1 / (1 + 10 ** ((rating_b - rating_a) / 400))
+    """Return the expected win ratio for ``rating_a`` against ``rating_b``.
+
+    This mirrors the spreadsheet logic which uses a logistic function with base
+    :math:`e` and a fixed slope of ``4``.
+    """
+
+    import math
+
+    return 1 / (1 + math.exp(-4 * (rating_a - rating_b)))
 
 
 def update_ratings(match: Match) -> Tuple[float, float]:
@@ -53,22 +61,29 @@ def update_ratings(match: Match) -> Tuple[float, float]:
 
     match.rating_a_before = a_rating
     match.rating_b_before = b_rating
-    exp_a = expected_score(a_rating, b_rating)
-    exp_b = 1 - exp_a
 
     games_played = match.score_a + match.score_b
     if games_played == 0:
         return a_rating, b_rating
-    margin = abs(match.score_a - match.score_b) / games_played
 
-    actual_a = 1 if match.score_a > match.score_b else 0
-    actual_b = 1 - actual_a
+    exp_a = expected_score(a_rating, b_rating)
+    actual_a = match.score_a / games_played
 
-    delta_a = K_FACTOR * (actual_a - exp_a) * (1 + margin) * match.format_weight
-    delta_b = K_FACTOR * (actual_b - exp_b) * (1 + margin) * match.format_weight
+    # competitive skill adjustment
+    delta_a = match.format_weight * 0.25 * (actual_a - exp_a)
+    delta_b = -delta_a
 
-    a_rating += delta_a
-    b_rating += delta_b
+    def _exp_gain(rating: float) -> float:
+        denom = (125 / (7 / rating - 1)) * ((6 + 12) / 2)
+        if match.format_weight not in (FORMAT_6_GAME, FORMAT_4_GAME):
+            denom *= ((4 + 7) / 2)
+        return 0.5 / denom * games_played
+
+    gain_a = _exp_gain(a_rating)
+    gain_b = _exp_gain(b_rating)
+
+    a_rating += delta_a + gain_a
+    b_rating += delta_b + gain_b
 
     match.player_a.singles_rating = a_rating
     match.player_b.singles_rating = b_rating
@@ -79,13 +94,10 @@ def update_ratings(match: Match) -> Tuple[float, float]:
     match.player_a.singles_matches.append(match)
     match.player_b.singles_matches.append(match)
 
-    # Experience gain scales with match difficulty based on the highest rating.
-    base = max(pre_a, pre_b)
-    level = base / 1000.0
-    difficulty = 7.0 / max(0.1, 7.0 - level)
-    exp_gain = games_played * match.format_weight * EXPERIENCE_RATE / difficulty
-    match.player_a.experience += exp_gain
-    match.player_b.experience += exp_gain
+    # record experience gained separately so ``weighted_rating`` can apply a
+    # bonus on top of the base rating.
+    match.player_a.experience += gain_a
+    match.player_b.experience += gain_b
 
     return a_rating, b_rating
 
