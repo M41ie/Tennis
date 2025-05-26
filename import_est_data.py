@@ -15,7 +15,7 @@ FORMAT_MAP = {
 
 CLUB_ID = "weekday_warriors"
 CLUB_NAME = "工作日战神"
-ADMIN_ID = "admin"
+ADMIN_ID = "马烈"
 
 
 def parse_csv(path: str):
@@ -40,13 +40,14 @@ def parse_csv(path: str):
     return player_rows, match_rows
 
 
-def main(csv_path="est_data.csv"):
+def main(csv_path="test_data.csv"):
     clubs = storage.load_data()
     users = storage.load_users()
 
     # create admin account
     if ADMIN_ID not in users:
-        cli.register_user(users, ADMIN_ID, "Admin", "admin", allow_create=True)
+        # Register club leader account
+        cli.register_user(users, ADMIN_ID, ADMIN_ID, "123", allow_create=True)
 
     # create club
     if CLUB_ID not in clubs:
@@ -99,7 +100,7 @@ def main(csv_path="est_data.csv"):
 
 
 if __name__ == "__main__":
-    path = "est_data.csv"
+    path = "test_data.csv"
     if not Path(path).exists():
         print(f"CSV file '{path}' not found")
     else:
