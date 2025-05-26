@@ -1,6 +1,6 @@
 # Tennis Rating Prototype
 
-This repository contains a prototype implementation of a tennis rating system based on the requirements in the `Original Requirement` file. It allows creation of clubs, registration of players and recording of match scores. Ratings are updated with a simplified Elo style algorithm and are time weighted according to the last 20 matches.
+This repository contains a prototype implementation of a tennis rating system based on the requirements in the `Original Requirement` file. It allows creation of clubs, registration of players and recording of match scores. Ratings are updated with a simplified Elo style algorithm and the final value is a weighted average of the most recent five matches (60% from the latest match and 10% from each of the previous four).
 
 ## Usage
 

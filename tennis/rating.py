@@ -7,7 +7,7 @@ from .models import Player, Match, DoublesMatch, Club
 
 K_FACTOR = 32
 TIME_DECAY = 0.99
-MAX_HISTORY = 20
+MAX_HISTORY = 5
 EXPERIENCE_BONUS = 0.1
 # Base rate for experience gain. Kept intentionally small so that
 # accumulated experience only nudges the final rating.
@@ -91,18 +91,23 @@ def update_ratings(match: Match) -> Tuple[float, float]:
 
 
 def weighted_rating(player: Player, as_of: datetime.date) -> float:
-    """Calculate the time-decayed weighted average rating of a player's singles matches."""
+    """Return the weighted average singles rating based on recent matches.
+
+    The latest match contributes 60% and up to four earlier matches each
+    contribute 10% of the final value.
+    """
+
     weights: List[float] = []
     ratings: List[float] = []
 
-    for m in reversed(player.singles_matches[-MAX_HISTORY:]):
-        days = (as_of - m.date).days
-        weight = TIME_DECAY ** days
+    for idx, m in enumerate(reversed(player.singles_matches[-MAX_HISTORY:])):
+        weight = 0.6 if idx == 0 else 0.1
         weights.append(weight)
         if m.player_a == player:
-            ratings.append(m.rating_a_after if m.rating_a_after is not None else player.singles_rating)
+            rating = m.rating_a_after if m.rating_a_after is not None else player.singles_rating
         else:
-            ratings.append(m.rating_b_after if m.rating_b_after is not None else player.singles_rating)
+            rating = m.rating_b_after if m.rating_b_after is not None else player.singles_rating
+        ratings.append(rating)
 
     if not ratings:
         base = player.singles_rating
@@ -191,22 +196,23 @@ def update_doubles_ratings(match: DoublesMatch) -> Tuple[float, float, float, fl
 
 
 def weighted_doubles_rating(player: Player, as_of: datetime.date) -> float:
-    """Calculate time-decayed weighted average doubles rating of a player."""
+    """Return the weighted average doubles rating based on recent matches."""
+
     weights: List[float] = []
     ratings: List[float] = []
 
-    for m in reversed(player.doubles_matches[-MAX_HISTORY:]):
-        days = (as_of - m.date).days
-        weight = TIME_DECAY ** days
+    for idx, m in enumerate(reversed(player.doubles_matches[-MAX_HISTORY:])):
+        weight = 0.6 if idx == 0 else 0.1
         weights.append(weight)
         if m.player_a1 == player:
-            ratings.append(m.rating_a1_after if m.rating_a1_after is not None else player.doubles_rating)
+            rating = m.rating_a1_after if m.rating_a1_after is not None else player.doubles_rating
         elif m.player_a2 == player:
-            ratings.append(m.rating_a2_after if m.rating_a2_after is not None else player.doubles_rating)
+            rating = m.rating_a2_after if m.rating_a2_after is not None else player.doubles_rating
         elif m.player_b1 == player:
-            ratings.append(m.rating_b1_after if m.rating_b1_after is not None else player.doubles_rating)
+            rating = m.rating_b1_after if m.rating_b1_after is not None else player.doubles_rating
         else:
-            ratings.append(m.rating_b2_after if m.rating_b2_after is not None else player.doubles_rating)
+            rating = m.rating_b2_after if m.rating_b2_after is not None else player.doubles_rating
+        ratings.append(rating)
 
     if not ratings:
         base = player.doubles_rating

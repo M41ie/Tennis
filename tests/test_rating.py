@@ -9,7 +9,6 @@ from tennis.rating import (
     weighted_rating,
     weighted_doubles_rating,
     expected_score,
-    TIME_DECAY,
     EXPERIENCE_BONUS,
     EXPERIENCE_RATE,
     initial_rating_from_votes,
@@ -202,9 +201,8 @@ def test_weighted_rating_time_decay():
     as_of = datetime.date(2023, 1, 3)
     weights = []
     ratings = []
-    for m in reversed(a.singles_matches[-20:]):
-        days = (as_of - m.date).days
-        weight = TIME_DECAY ** days
+    for idx, m in enumerate(reversed(a.singles_matches[-5:])):
+        weight = 0.6 if idx == 0 else 0.1
         weights.append(weight)
         if m.player_a == a:
             ratings.append(m.rating_a_after)
@@ -248,9 +246,8 @@ def test_weighted_doubles_rating_time_decay():
     as_of = datetime.date(2023, 1, 3)
     weights = []
     ratings = []
-    for m in reversed(a1.doubles_matches[-20:]):
-        days = (as_of - m.date).days
-        weight = TIME_DECAY ** days
+    for idx, m in enumerate(reversed(a1.doubles_matches[-5:])):
+        weight = 0.6 if idx == 0 else 0.1
         weights.append(weight)
         if m.player_a1 == a1:
             ratings.append(m.rating_a1_after)
@@ -326,9 +323,8 @@ def test_experience_bonus_accumulates():
     as_of = m2.date
     weights = []
     ratings = []
-    for m in reversed(a.singles_matches[-20:]):
-        days = (as_of - m.date).days
-        weight = TIME_DECAY ** days
+    for idx, m in enumerate(reversed(a.singles_matches[-5:])):
+        weight = 0.6 if idx == 0 else 0.1
         weights.append(weight)
         if m.player_a == a:
             ratings.append(m.rating_a_after)
