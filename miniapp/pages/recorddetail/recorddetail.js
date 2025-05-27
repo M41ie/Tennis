@@ -12,6 +12,15 @@ Page({
         if (rec.actual_rate != null) {
           rec.actual_rate = (rec.actual_rate * 100).toFixed(1) + '%';
         }
+        const d = rec.self_delta;
+        if (d != null) {
+          const abs = Math.abs(d).toFixed(3);
+          rec.deltaDisplay = (d > 0 ? '+' : d < 0 ? '-' : '') + abs;
+          rec.deltaClass = d > 0 ? 'pos' : d < 0 ? 'neg' : 'neutral';
+        } else {
+          rec.deltaDisplay = '';
+          rec.deltaClass = 'neutral';
+        }
         this.setData({ record: rec });
       } catch (e) {}
     }

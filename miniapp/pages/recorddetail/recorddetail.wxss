@@ -1,1 +1,4 @@
 .detail { padding: 10px; }
+.pos{color:green;font-size:24rpx;}
+.neg{color:red;font-size:24rpx;}
+.neutral{color:gray;font-size:24rpx;}
