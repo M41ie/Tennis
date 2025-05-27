@@ -74,8 +74,6 @@ def update_ratings(match: Match) -> Tuple[float, float]:
     delta_b = -delta_a
 
     def _exp_gain(rating: float) -> float:
-        if rating <= 0:
-            return 0.0
         denom = (125 / (7 / rating - 1)) * ((6 + 12) / 2)
         if match.format_weight not in (FORMAT_6_GAME, FORMAT_4_GAME):
             denom *= ((4 + 7) / 2)
@@ -112,7 +110,13 @@ def weighted_rating(player: Player, as_of: datetime.date) -> float:
 
 
 def update_doubles_ratings(match: DoublesMatch) -> Tuple[float, float, float, float]:
-    """Update doubles ratings for all players based on a doubles match."""
+    """Update doubles ratings for all players based on a doubles match.
+
+    The logic mirrors :func:`update_ratings` but operates on the team averages
+    and then distributes the adjustment to each partner proportionally by their
+    pre-match rating. Experience gain also uses the same formula as singles.
+    """
+
     team_a_rating = (match.player_a1.doubles_rating + match.player_a2.doubles_rating) / 2
     team_b_rating = (match.player_b1.doubles_rating + match.player_b2.doubles_rating) / 2
 
@@ -121,34 +125,34 @@ def update_doubles_ratings(match: DoublesMatch) -> Tuple[float, float, float, fl
     match.rating_b1_before = match.player_b1.doubles_rating
     match.rating_b2_before = match.player_b2.doubles_rating
 
-    exp_a = expected_score(team_a_rating, team_b_rating)
-
     games_played = match.score_a + match.score_b
     if games_played == 0:
         return team_a_rating, team_a_rating, team_b_rating, team_b_rating
 
+    exp_a = expected_score(team_a_rating, team_b_rating)
     actual_a = match.score_a / games_played
 
-    # competitive skill adjustment for the team
-    delta_team_a = match.format_weight * 0.25 * (actual_a - exp_a)
-    delta_team_b = -delta_team_a
+    # competitive skill adjustment computed on the team averages
+    delta_team = match.format_weight * 0.25 * (actual_a - exp_a)
+    total_delta_a = delta_team * 2
+    total_delta_b = -total_delta_a
 
     total_a = match.player_a1.doubles_rating + match.player_a2.doubles_rating
     total_b = match.player_b1.doubles_rating + match.player_b2.doubles_rating
 
     if total_a == 0:
-        delta_a1 = delta_team_a / 2
-        delta_a2 = delta_team_a / 2
+        delta_a1 = total_delta_a / 2
+        delta_a2 = total_delta_a / 2
     else:
-        delta_a1 = delta_team_a * (match.player_a1.doubles_rating / total_a)
-        delta_a2 = delta_team_a * (match.player_a2.doubles_rating / total_a)
+        delta_a1 = total_delta_a * (match.player_a1.doubles_rating / total_a)
+        delta_a2 = total_delta_a * (match.player_a2.doubles_rating / total_a)
 
     if total_b == 0:
-        delta_b1 = delta_team_b / 2
-        delta_b2 = delta_team_b / 2
+        delta_b1 = total_delta_b / 2
+        delta_b2 = total_delta_b / 2
     else:
-        delta_b1 = delta_team_b * (match.player_b1.doubles_rating / total_b)
-        delta_b2 = delta_team_b * (match.player_b2.doubles_rating / total_b)
+        delta_b1 = total_delta_b * (match.player_b1.doubles_rating / total_b)
+        delta_b2 = total_delta_b * (match.player_b2.doubles_rating / total_b)
 
     def _exp_gain(rating: float) -> float:
         if rating <= 0:
@@ -158,10 +162,10 @@ def update_doubles_ratings(match: DoublesMatch) -> Tuple[float, float, float, fl
             denom *= ((4 + 7) / 2)
         return 0.5 / denom * games_played
 
-    gain_a1 = _exp_gain(match.player_a1.doubles_rating)
-    gain_a2 = _exp_gain(match.player_a2.doubles_rating)
-    gain_b1 = _exp_gain(match.player_b1.doubles_rating)
-    gain_b2 = _exp_gain(match.player_b2.doubles_rating)
+    gain_a1 = _exp_gain(pre_a1)
+    gain_a2 = _exp_gain(pre_a2)
+    gain_b1 = _exp_gain(pre_b1)
+    gain_b2 = _exp_gain(pre_b2)
 
     match.player_a1.doubles_rating += delta_a1 + gain_a1
     match.player_a2.doubles_rating += delta_a2 + gain_a2
@@ -178,8 +182,6 @@ def update_doubles_ratings(match: DoublesMatch) -> Tuple[float, float, float, fl
     match.player_b1.doubles_matches.append(match)
     match.player_b2.doubles_matches.append(match)
 
-    # record experience gained for each player so ``weighted_doubles_rating`` can
-    # apply a bonus on top of the base rating.
     match.player_a1.experience += gain_a1
     match.player_a2.experience += gain_a2
     match.player_b1.experience += gain_b1
