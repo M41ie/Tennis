@@ -19,6 +19,10 @@ Page({
       url: `${BASE_URL}/clubs/${cid}/pending_matches`,
       data: { token },
       success(res) {
+        if (res.statusCode >= 300) {
+          wx.showToast({ title: 'Failed to load', icon: 'none' });
+          return;
+        }
         const uid = that.data.userId;
         const list = res.data.map(it => {
           const isA = it.player_a === uid;
@@ -39,12 +43,19 @@ Page({
           return it;
         });
         that.setData({ singles: list });
+      },
+      fail() {
+        wx.showToast({ title: 'Request error', icon: 'none' });
       }
     });
     wx.request({
       url: `${BASE_URL}/clubs/${cid}/pending_doubles`,
       data: { token },
       success(res) {
+        if (res.statusCode >= 300) {
+          wx.showToast({ title: 'Failed to load', icon: 'none' });
+          return;
+        }
         const uid = that.data.userId;
         const list = res.data.map(it => {
           const participants = [it.a1, it.a2, it.b1, it.b2];
@@ -67,6 +78,9 @@ Page({
           return it;
         });
         that.setData({ doubles: list });
+      },
+      fail() {
+        wx.showToast({ title: 'Request error', icon: 'none' });
       }
     });
   },
@@ -79,6 +93,12 @@ Page({
       url: `${BASE_URL}/clubs/${cid}/pending_matches/${idx}/confirm`,
       method: 'POST',
       data: { user_id: this.data.userId, token },
+      success(res) {
+        if (res.statusCode >= 300) {
+          wx.showToast({ title: 'Error', icon: 'none' });
+        }
+      },
+      fail() { wx.showToast({ title: 'Request error', icon: 'none' }); },
       complete() { that.fetchPendings(); }
     });
   },
@@ -91,6 +111,12 @@ Page({
       url: `${BASE_URL}/clubs/${cid}/pending_matches/${idx}/approve`,
       method: 'POST',
       data: { approver: this.data.userId, token },
+      success(res) {
+        if (res.statusCode >= 300) {
+          wx.showToast({ title: 'Error', icon: 'none' });
+        }
+      },
+      fail() { wx.showToast({ title: 'Request error', icon: 'none' }); },
       complete() { that.fetchPendings(); }
     });
   },
@@ -103,6 +129,12 @@ Page({
       url: `${BASE_URL}/clubs/${cid}/pending_matches/${idx}/reject`,
       method: 'POST',
       data: { user_id: this.data.userId, token },
+      success(res) {
+        if (res.statusCode >= 300) {
+          wx.showToast({ title: 'Error', icon: 'none' });
+        }
+      },
+      fail() { wx.showToast({ title: 'Request error', icon: 'none' }); },
       complete() { that.fetchPendings(); }
     });
   },
@@ -115,6 +147,12 @@ Page({
       url: `${BASE_URL}/clubs/${cid}/pending_doubles/${idx}/confirm`,
       method: 'POST',
       data: { user_id: this.data.userId, token },
+      success(res) {
+        if (res.statusCode >= 300) {
+          wx.showToast({ title: 'Error', icon: 'none' });
+        }
+      },
+      fail() { wx.showToast({ title: 'Request error', icon: 'none' }); },
       complete() { that.fetchPendings(); }
     });
   },
@@ -127,6 +165,12 @@ Page({
       url: `${BASE_URL}/clubs/${cid}/pending_doubles/${idx}/approve`,
       method: 'POST',
       data: { approver: this.data.userId, token },
+      success(res) {
+        if (res.statusCode >= 300) {
+          wx.showToast({ title: 'Error', icon: 'none' });
+        }
+      },
+      fail() { wx.showToast({ title: 'Request error', icon: 'none' }); },
       complete() { that.fetchPendings(); }
     });
   },
@@ -139,6 +183,12 @@ Page({
       url: `${BASE_URL}/clubs/${cid}/pending_doubles/${idx}/reject`,
       method: 'POST',
       data: { user_id: this.data.userId, token },
+      success(res) {
+        if (res.statusCode >= 300) {
+          wx.showToast({ title: 'Error', icon: 'none' });
+        }
+      },
+      fail() { wx.showToast({ title: 'Request error', icon: 'none' }); },
       complete() { that.fetchPendings(); }
     });
   }
