@@ -522,6 +522,61 @@ def test_reject_pending_doubles(tmp_path, monkeypatch):
     assert resp.json() == []
 
 
+def test_pending_visibility_rules(tmp_path, monkeypatch):
+    db = tmp_path / "tennis.db"
+    monkeypatch.setattr(storage, "DB_FILE", db)
+
+    api = importlib.reload(importlib.import_module("tennis.api"))
+    client = TestClient(api.app)
+
+    # register users and login
+    for uid in ("leader", "p1", "p2", "p3"):
+        allow = uid == "leader"
+        client.post(
+            "/users",
+            json={"user_id": uid, "name": uid.upper(), "password": "pw", "allow_create": allow},
+        )
+
+    tokens = {u: client.post("/login", json={"user_id": u, "password": "pw"}).json()["token"] for u in ("leader", "p1", "p2", "p3")}
+
+    # create club and add players
+    client.post("/clubs", json={"club_id": "c1", "name": "C1", "user_id": "leader", "token": tokens["leader"]})
+    for pid in ("p1", "p2", "p3"):
+        client.post(
+            "/clubs/c1/players",
+            json={"user_id": pid, "name": pid.upper(), "token": tokens[pid]},
+        )
+
+    # submit pending match p1 vs p2
+    client.post(
+        "/clubs/c1/pending_matches",
+        json={
+            "initiator": "p1",
+            "opponent": "p2",
+            "score_initiator": 6,
+            "score_opponent": 4,
+            "token": tokens["p1"],
+        },
+    )
+
+    # only participants see the unconfirmed match
+    assert len(client.get(f"/clubs/c1/pending_matches?token={tokens['p1']}").json()) == 1
+    assert len(client.get(f"/clubs/c1/pending_matches?token={tokens['p2']}").json()) == 1
+    assert client.get(f"/clubs/c1/pending_matches?token={tokens['p3']}").json() == []
+    assert client.get(f"/clubs/c1/pending_matches?token={tokens['leader']}").json() == []
+
+    # opponent confirms; now both participants confirmed
+    client.post(
+        "/clubs/c1/pending_matches/0/confirm",
+        json={"user_id": "p2", "token": tokens["p2"]},
+    )
+
+    # admin can now see the record
+    assert len(client.get(f"/clubs/c1/pending_matches?token={tokens['leader']}").json()) == 1
+    # non-participant still cannot
+    assert client.get(f"/clubs/c1/pending_matches?token={tokens['p3']}").json() == []
+
+
 def test_token_logout_and_expiry(tmp_path, monkeypatch):
     db = tmp_path / "tennis.db"
     monkeypatch.setattr(storage, "DB_FILE", db)

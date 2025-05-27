@@ -313,7 +313,7 @@ def confirm_match(clubs, club_id: str, index: int, user_id: str):
         raise ValueError("User not in match")
 
 
-def reject_match(clubs, club_id: str, index: int, user_id: str):
+def reject_match(clubs, club_id: str, index: int, user_id: str, users=None):
     """Participant rejects a pending singles match."""
     club = clubs.get(club_id)
     if not club:
@@ -325,6 +325,15 @@ def reject_match(clubs, club_id: str, index: int, user_id: str):
     if user_id not in participants:
         raise ValueError("User not in match")
     club.pending_matches.pop(index)
+    if users is not None and match.initiator:
+        initiator = users.get(match.initiator)
+        if initiator:
+            initiator.messages.append(
+                Message(
+                    date=datetime.date.today(),
+                    text=f"Match on {match.date.isoformat()} rejected in {club.name}",
+                )
+            )
 
 
 def submit_doubles(
@@ -406,7 +415,7 @@ def confirm_doubles(clubs, club_id: str, index: int, user_id: str):
         raise ValueError("User not in match")
 
 
-def reject_doubles(clubs, club_id: str, index: int, user_id: str):
+def reject_doubles(clubs, club_id: str, index: int, user_id: str, users=None):
     """Participant rejects a pending doubles match."""
     club = clubs.get(club_id)
     if not club:
@@ -425,6 +434,15 @@ def reject_doubles(clubs, club_id: str, index: int, user_id: str):
     if user_id not in participants:
         raise ValueError("User not in match")
     club.pending_matches.pop(index)
+    if users is not None and match.initiator:
+        initiator = users.get(match.initiator)
+        if initiator:
+            initiator.messages.append(
+                Message(
+                    date=datetime.date.today(),
+                    text=f"Match on {match.date.isoformat()} rejected in {club.name}",
+                )
+            )
 
 
 def approve_doubles(clubs, club_id: str, index: int, approver: str, users=None):
