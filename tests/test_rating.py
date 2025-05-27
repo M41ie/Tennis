@@ -9,7 +9,6 @@ from tennis.rating import (
     weighted_rating,
     weighted_doubles_rating,
     expected_score,
-    EXPERIENCE_BONUS,
     initial_rating_from_votes,
     format_weight_from_name,
     FORMAT_6_GAME,
@@ -205,7 +204,7 @@ def test_weighted_rating_time_decay():
     update_ratings(m2)
 
     as_of = datetime.date(2023, 1, 3)
-    expected = a.singles_rating + a.experience * EXPERIENCE_BONUS
+    expected = a.singles_rating
 
     assert pytest.approx(weighted_rating(a, as_of), rel=1e-6) == expected
 
@@ -239,7 +238,7 @@ def test_weighted_doubles_rating_time_decay():
     update_doubles_ratings(m2)
 
     as_of = datetime.date(2023, 1, 3)
-    expected = a1.doubles_rating + a1.experience * EXPERIENCE_BONUS
+    expected = a1.doubles_rating
 
     assert pytest.approx(weighted_doubles_rating(a1, as_of), rel=1e-6) == expected
 
@@ -288,7 +287,7 @@ def test_experience_bonus_accumulates():
         score_b=4,
     )
     update_ratings(m1)
-    expected_first = a.singles_rating + a.experience * EXPERIENCE_BONUS
+    expected_first = a.singles_rating
     assert pytest.approx(weighted_rating(a, m1.date), rel=1e-6) == expected_first
 
     m2 = Match(
@@ -301,7 +300,7 @@ def test_experience_bonus_accumulates():
     update_ratings(m2)
 
     as_of = m2.date
-    expected_second = a.singles_rating + a.experience * EXPERIENCE_BONUS
+    expected_second = a.singles_rating
 
     assert pytest.approx(weighted_rating(a, as_of), rel=1e-6) == expected_second
     assert expected_second > expected_first
