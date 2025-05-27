@@ -45,9 +45,11 @@ Page({
     wx.request({
       url: `${BASE_URL}/clubs/${cid}/players`,
       success(res) {
-        const names = res.data.map(p => p.name);
+        const uid = wx.getStorageSync('user_id');
+        const filtered = res.data.filter(p => p.user_id !== uid);
+        const names = filtered.map(p => p.name);
         that.setData({
-          players: res.data,
+          players: filtered,
           playerNames: names,
           opponentIndex: 0,
           partnerIndex: 0,
