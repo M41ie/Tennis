@@ -4,9 +4,11 @@ import sqlite3
 from pathlib import Path
 from typing import Dict
 
-from .models import Player, Club, Match, DoublesMatch, User, Appointment, Message
+# Absolute path to the repository root database file. Using a fixed location
+# ensures scripts behave the same regardless of the working directory.
+DB_FILE = Path(__file__).resolve().parent.parent / "tennis.db"
 
-DB_FILE = Path("tennis.db")
+from .models import Player, Club, Match, DoublesMatch, User, Appointment, Message
 
 
 def _connect():
