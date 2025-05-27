@@ -74,7 +74,7 @@ curl "http://localhost:8000/clubs/c1/pending_matches?token=TOKEN"
 curl "http://localhost:8000/clubs/c1/pending_doubles?token=TOKEN"
 ```
 
-Each item contains the index to use when confirming or approving the match.
+Each item contains the index to use when confirming, rejecting or approving the match.
 
 ### Mini App
 

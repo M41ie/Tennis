@@ -628,6 +628,8 @@ def list_pending_doubles(club_id: str, token: str):
                 "b2": m.player_b2.user_id,
                 "score_a": m.score_a,
                 "score_b": m.score_b,
+                "confirmed_a": m.confirmed_a,
+                "confirmed_b": m.confirmed_b,
             }
         )
     return result
@@ -775,6 +777,8 @@ def list_pending_matches(club_id: str, token: str):
                 "player_b": m.player_b.user_id,
                 "score_a": m.score_a,
                 "score_b": m.score_b,
+                "confirmed_a": m.confirmed_a,
+                "confirmed_b": m.confirmed_b,
             }
         )
     return result
@@ -835,6 +839,23 @@ def confirm_match_api(club_id: str, index: int, data: ConfirmRequest):
         raise HTTPException(400, str(e))
     save_data(clubs)
     return {"status": "ok"}
+
+
+@app.post("/clubs/{club_id}/pending_matches/{index}/reject")
+def reject_match_api(club_id: str, index: int, data: ConfirmRequest):
+    """Participant rejects a pending singles match."""
+    from .cli import reject_match
+
+    user = require_auth(data.token)
+    if user != data.user_id:
+        raise HTTPException(401, "Token mismatch")
+
+    try:
+        reject_match(clubs, club_id, index, data.user_id)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    save_data(clubs)
+    return {"status": "rejected"}
 
 
 @app.post("/clubs/{club_id}/pending_matches/{index}/approve")
@@ -905,6 +926,23 @@ def confirm_doubles_api(club_id: str, index: int, data: ConfirmRequest):
         raise HTTPException(400, str(e))
     save_data(clubs)
     return {"status": "ok"}
+
+
+@app.post("/clubs/{club_id}/pending_doubles/{index}/reject")
+def reject_doubles_api(club_id: str, index: int, data: ConfirmRequest):
+    """Participant rejects a pending doubles match."""
+    from .cli import reject_doubles
+
+    user = require_auth(data.token)
+    if user != data.user_id:
+        raise HTTPException(401, "Token mismatch")
+
+    try:
+        reject_doubles(clubs, club_id, index, data.user_id)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    save_data(clubs)
+    return {"status": "rejected"}
 
 
 @app.post("/clubs/{club_id}/pending_doubles/{index}/approve")
