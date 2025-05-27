@@ -76,6 +76,22 @@ curl "http://localhost:8000/clubs/c1/pending_doubles?token=TOKEN"
 
 Each item contains the index to use when confirming, rejecting or approving the match.
 
+Use the following authenticated endpoints to respond:
+
+```bash
+curl -X POST http://localhost:8000/clubs/c1/pending_matches/INDEX/confirm \
+     -H "Content-Type: application/json" \
+     -d '{"user_id":"USER","token":"TOKEN"}'
+curl -X POST http://localhost:8000/clubs/c1/pending_matches/INDEX/reject \
+     -H "Content-Type: application/json" \
+     -d '{"user_id":"USER","token":"TOKEN"}'
+curl -X POST http://localhost:8000/clubs/c1/pending_matches/INDEX/approve \
+     -H "Content-Type: application/json" \
+     -d '{"approver":"ADMIN","token":"TOKEN"}'
+```
+
+Doubles matches use the corresponding `/pending_doubles/...` routes.
+
 ### Mini App
 
 The `miniapp` directory contains a very small WeChat Mini Program that

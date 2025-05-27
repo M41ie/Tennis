@@ -851,10 +851,11 @@ def reject_match_api(club_id: str, index: int, data: ConfirmRequest):
         raise HTTPException(401, "Token mismatch")
 
     try:
-        reject_match(clubs, club_id, index, data.user_id)
+        reject_match(clubs, club_id, index, data.user_id, users)
     except ValueError as e:
         raise HTTPException(400, str(e))
     save_data(clubs)
+    save_users(users)
     return {"status": "rejected"}
 
 
@@ -938,10 +939,11 @@ def reject_doubles_api(club_id: str, index: int, data: ConfirmRequest):
         raise HTTPException(401, "Token mismatch")
 
     try:
-        reject_doubles(clubs, club_id, index, data.user_id)
+        reject_doubles(clubs, club_id, index, data.user_id, users)
     except ValueError as e:
         raise HTTPException(400, str(e))
     save_data(clubs)
+    save_users(users)
     return {"status": "rejected"}
 
 
