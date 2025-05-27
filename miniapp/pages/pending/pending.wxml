@@ -4,8 +4,10 @@
     <view class="item">
       <view>{{item.date}} {{item.player_a}} vs {{item.player_b}}</view>
       <view>{{item.score_a}}-{{item.score_b}}</view>
+      <view class="status">{{item.status}}</view>
       <view class="actions">
         <button wx:if="{{item.canConfirm}}" data-index="{{item.index}}" bindtap="confirmSingle">Confirm</button>
+        <button wx:if="{{item.canReject}}" data-index="{{item.index}}" bindtap="rejectSingle">Reject</button>
         <button wx:if="{{item.canApprove}}" data-index="{{item.index}}" bindtap="approveSingle">Approve</button>
       </view>
     </view>
@@ -17,8 +19,10 @@
     <view class="item">
       <view>{{item.date}} {{item.a1}}/{{item.a2}} vs {{item.b1}}/{{item.b2}}</view>
       <view>{{item.score_a}}-{{item.score_b}}</view>
+      <view class="status">{{item.status}}</view>
       <view class="actions">
         <button wx:if="{{item.canConfirm}}" data-index="{{item.index}}" bindtap="confirmDouble">Confirm</button>
+        <button wx:if="{{item.canReject}}" data-index="{{item.index}}" bindtap="rejectDouble">Reject</button>
         <button wx:if="{{item.canApprove}}" data-index="{{item.index}}" bindtap="approveDouble">Approve</button>
       </view>
     </view>

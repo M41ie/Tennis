@@ -313,6 +313,20 @@ def confirm_match(clubs, club_id: str, index: int, user_id: str):
         raise ValueError("User not in match")
 
 
+def reject_match(clubs, club_id: str, index: int, user_id: str):
+    """Participant rejects a pending singles match."""
+    club = clubs.get(club_id)
+    if not club:
+        raise ValueError("Club not found")
+    if index >= len(club.pending_matches):
+        raise ValueError("Match not found")
+    match = club.pending_matches[index]
+    participants = {match.player_a.user_id, match.player_b.user_id}
+    if user_id not in participants:
+        raise ValueError("User not in match")
+    club.pending_matches.pop(index)
+
+
 def submit_doubles(
     clubs,
     club_id: str,
@@ -390,6 +404,27 @@ def confirm_doubles(clubs, club_id: str, index: int, user_id: str):
         match.confirmed_b = True
     else:
         raise ValueError("User not in match")
+
+
+def reject_doubles(clubs, club_id: str, index: int, user_id: str):
+    """Participant rejects a pending doubles match."""
+    club = clubs.get(club_id)
+    if not club:
+        raise ValueError("Club not found")
+    if index >= len(club.pending_matches):
+        raise ValueError("Match not found")
+    match = club.pending_matches[index]
+    if not isinstance(match, DoublesMatch):
+        raise ValueError("Not a doubles match")
+    participants = {
+        match.player_a1.user_id,
+        match.player_a2.user_id,
+        match.player_b1.user_id,
+        match.player_b2.user_id,
+    }
+    if user_id not in participants:
+        raise ValueError("User not in match")
+    club.pending_matches.pop(index)
 
 
 def approve_doubles(clubs, club_id: str, index: int, approver: str, users=None):

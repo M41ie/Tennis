@@ -353,7 +353,7 @@ def test_pending_match_query(tmp_path, monkeypatch):
         },
     )
 
-    resp = client.get("/clubs/c1/pending_matches")
+    resp = client.get(f"/clubs/c1/pending_matches?token={tokens['p1']}")
     assert resp.status_code == 200
     records = resp.json()
     assert len(records) == 1
@@ -361,6 +361,8 @@ def test_pending_match_query(tmp_path, monkeypatch):
     assert rec["index"] == 0
     assert rec["player_a"] == "p1"
     assert rec["player_b"] == "p2"
+    assert rec["confirmed_a"] is True
+    assert rec["confirmed_b"] is False
 
 
 def test_pending_doubles_query(tmp_path, monkeypatch):
@@ -406,7 +408,7 @@ def test_pending_doubles_query(tmp_path, monkeypatch):
         },
     )
 
-    resp = client.get("/clubs/c1/pending_doubles")
+    resp = client.get(f"/clubs/c1/pending_doubles?token={tokens['p1']}")
     assert resp.status_code == 200
     records = resp.json()
     assert len(records) == 1
@@ -416,6 +418,108 @@ def test_pending_doubles_query(tmp_path, monkeypatch):
     assert rec["a2"] == "p2"
     assert rec["b1"] == "p3"
     assert rec["b2"] == "p4"
+    assert rec["confirmed_a"] is True
+    assert rec["confirmed_b"] is False
+
+
+def test_reject_pending_match(tmp_path, monkeypatch):
+    db = tmp_path / "tennis.db"
+    monkeypatch.setattr(storage, "DB_FILE", db)
+
+    api = importlib.reload(importlib.import_module("tennis.api"))
+    client = TestClient(api.app)
+
+    for uid in ("leader", "p1", "p2"):
+        allow = uid == "leader"
+        client.post(
+            "/users",
+            json={"user_id": uid, "name": uid.upper(), "password": "pw", "allow_create": allow},
+        )
+
+    tokens = {pid: client.post("/login", json={"user_id": pid, "password": "pw"}).json()["token"] for pid in ("leader", "p1", "p2")}
+
+    client.post(
+        "/clubs",
+        json={"club_id": "c1", "name": "C1", "user_id": "leader", "token": tokens["leader"]},
+    )
+    for pid in ("p1", "p2"):
+        client.post(
+            "/clubs/c1/players",
+            json={"user_id": pid, "name": pid.upper(), "token": tokens[pid]},
+        )
+
+    client.post(
+        "/clubs/c1/pending_matches",
+        json={
+            "initiator": "p1",
+            "opponent": "p2",
+            "score_initiator": 6,
+            "score_opponent": 4,
+            "token": tokens["p1"],
+        },
+    )
+
+    resp = client.post(
+        "/clubs/c1/pending_matches/0/reject",
+        json={"user_id": "p2", "token": tokens["p2"]},
+    )
+    assert resp.status_code == 200
+    assert resp.json()["status"] == "rejected"
+
+    resp = client.get(f"/clubs/c1/pending_matches?token={tokens['p1']}")
+    assert resp.status_code == 200
+    assert resp.json() == []
+
+
+def test_reject_pending_doubles(tmp_path, monkeypatch):
+    db = tmp_path / "tennis.db"
+    monkeypatch.setattr(storage, "DB_FILE", db)
+
+    api = importlib.reload(importlib.import_module("tennis.api"))
+    client = TestClient(api.app)
+
+    for uid in ("leader", "p1", "p2", "p3", "p4"):
+        allow = uid == "leader"
+        client.post(
+            "/users",
+            json={"user_id": uid, "name": uid.upper(), "password": "pw", "allow_create": allow},
+        )
+
+    tokens = {pid: client.post("/login", json={"user_id": pid, "password": "pw"}).json()["token"] for pid in ("leader", "p1", "p2", "p3", "p4")}
+
+    client.post(
+        "/clubs",
+        json={"club_id": "c1", "name": "C1", "user_id": "leader", "token": tokens["leader"]},
+    )
+    for pid in ("p1", "p2", "p3", "p4"):
+        client.post(
+            "/clubs/c1/players",
+            json={"user_id": pid, "name": pid.upper(), "token": tokens[pid]},
+        )
+
+    client.post(
+        "/clubs/c1/pending_doubles",
+        json={
+            "initiator": "p1",
+            "partner": "p2",
+            "opponent1": "p3",
+            "opponent2": "p4",
+            "score_initiator": 6,
+            "score_opponent": 3,
+            "token": tokens["p1"],
+        },
+    )
+
+    resp = client.post(
+        "/clubs/c1/pending_doubles/0/reject",
+        json={"user_id": "p3", "token": tokens["p3"]},
+    )
+    assert resp.status_code == 200
+    assert resp.json()["status"] == "rejected"
+
+    resp = client.get(f"/clubs/c1/pending_doubles?token={tokens['p1']}")
+    assert resp.status_code == 200
+    assert resp.json() == []
 
 
 def test_token_logout_and_expiry(tmp_path, monkeypatch):

@@ -594,16 +594,29 @@ def remove_member_api(club_id: str, user_id: str, data: RemoveRequest):
 
 
 @app.get("/clubs/{club_id}/pending_doubles")
-def list_pending_doubles(club_id: str):
-    """Return pending doubles matches for a club."""
+def list_pending_doubles(club_id: str, token: str):
+    """Return pending doubles matches for a club visible to the caller."""
+    uid = require_auth(token)
     club = clubs.get(club_id)
     if not club:
         raise HTTPException(404, "Club not found")
     from .models import DoublesMatch
 
+    admins = {club.leader_id, *club.admin_ids}
     result = []
     for idx, m in enumerate(club.pending_matches):
         if not isinstance(m, DoublesMatch):
+            continue
+        participants = {
+            m.player_a1.user_id,
+            m.player_a2.user_id,
+            m.player_b1.user_id,
+            m.player_b2.user_id,
+        }
+        if not (m.confirmed_a and m.confirmed_b):
+            if uid not in participants:
+                continue
+        elif uid not in participants and uid not in admins:
             continue
         result.append(
             {
@@ -615,6 +628,8 @@ def list_pending_doubles(club_id: str):
                 "b2": m.player_b2.user_id,
                 "score_a": m.score_a,
                 "score_b": m.score_b,
+                "confirmed_a": m.confirmed_a,
+                "confirmed_b": m.confirmed_b,
             }
         )
     return result
@@ -735,16 +750,24 @@ def record_match_api(club_id: str, data: MatchCreate):
 
 
 @app.get("/clubs/{club_id}/pending_matches")
-def list_pending_matches(club_id: str):
-    """Return pending singles matches for a club."""
+def list_pending_matches(club_id: str, token: str):
+    """Return pending singles matches for a club visible to the caller."""
+    uid = require_auth(token)
     club = clubs.get(club_id)
     if not club:
         raise HTTPException(404, "Club not found")
     result = []
+    admins = {club.leader_id, *club.admin_ids}
     for idx, m in enumerate(club.pending_matches):
         from .models import DoublesMatch
 
         if isinstance(m, DoublesMatch):
+            continue
+        participants = {m.player_a.user_id, m.player_b.user_id}
+        if not (m.confirmed_a and m.confirmed_b):
+            if uid not in participants:
+                continue
+        elif uid not in participants and uid not in admins:
             continue
         result.append(
             {
@@ -754,6 +777,8 @@ def list_pending_matches(club_id: str):
                 "player_b": m.player_b.user_id,
                 "score_a": m.score_a,
                 "score_b": m.score_b,
+                "confirmed_a": m.confirmed_a,
+                "confirmed_b": m.confirmed_b,
             }
         )
     return result
@@ -814,6 +839,23 @@ def confirm_match_api(club_id: str, index: int, data: ConfirmRequest):
         raise HTTPException(400, str(e))
     save_data(clubs)
     return {"status": "ok"}
+
+
+@app.post("/clubs/{club_id}/pending_matches/{index}/reject")
+def reject_match_api(club_id: str, index: int, data: ConfirmRequest):
+    """Participant rejects a pending singles match."""
+    from .cli import reject_match
+
+    user = require_auth(data.token)
+    if user != data.user_id:
+        raise HTTPException(401, "Token mismatch")
+
+    try:
+        reject_match(clubs, club_id, index, data.user_id)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    save_data(clubs)
+    return {"status": "rejected"}
 
 
 @app.post("/clubs/{club_id}/pending_matches/{index}/approve")
@@ -884,6 +926,23 @@ def confirm_doubles_api(club_id: str, index: int, data: ConfirmRequest):
         raise HTTPException(400, str(e))
     save_data(clubs)
     return {"status": "ok"}
+
+
+@app.post("/clubs/{club_id}/pending_doubles/{index}/reject")
+def reject_doubles_api(club_id: str, index: int, data: ConfirmRequest):
+    """Participant rejects a pending doubles match."""
+    from .cli import reject_doubles
+
+    user = require_auth(data.token)
+    if user != data.user_id:
+        raise HTTPException(401, "Token mismatch")
+
+    try:
+        reject_doubles(clubs, club_id, index, data.user_id)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    save_data(clubs)
+    return {"status": "rejected"}
 
 
 @app.post("/clubs/{club_id}/pending_doubles/{index}/approve")
