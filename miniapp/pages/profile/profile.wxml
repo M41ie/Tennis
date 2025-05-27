@@ -28,3 +28,6 @@
     <image class="icon" src="{{iconComing}}" /> 敬请期待
   </button>
 </view>
+
+<!-- 退出登录按钮 -->
+<button wx:if="{{loggedIn}}" class="weui-btn" bindtap="logout">退出登录</button>

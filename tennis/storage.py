@@ -67,8 +67,14 @@ def _init_schema(conn: sqlite3.Connection) -> None:
     )"""
     )
     cur.execute(
-        "CREATE TABLE IF NOT EXISTS club_meta (club_id TEXT PRIMARY KEY, banned_ids TEXT)"
+        "CREATE TABLE IF NOT EXISTS club_meta (club_id TEXT PRIMARY KEY, banned_ids TEXT, leader_id TEXT, admin_ids TEXT)"
     )
+    # add new columns if an older database is missing them
+    cols = {row[1] for row in cur.execute("PRAGMA table_info('club_meta')")}
+    if 'leader_id' not in cols:
+        cur.execute("ALTER TABLE club_meta ADD COLUMN leader_id TEXT")
+    if 'admin_ids' not in cols:
+        cur.execute("ALTER TABLE club_meta ADD COLUMN admin_ids TEXT")
     cur.execute(
         """CREATE TABLE IF NOT EXISTS messages (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -98,6 +104,8 @@ def load_data() -> Dict[str, Club]:
         if not club:
             continue
         club.banned_ids.update(json.loads(row["banned_ids"] or "[]"))
+        club.leader_id = row["leader_id"]
+        club.admin_ids.update(json.loads(row["admin_ids"] or "[]"))
 
     for row in cur.execute("SELECT * FROM players"):
         club = clubs.get(row["club_id"])
@@ -247,8 +255,13 @@ def save_data(clubs: Dict[str, Club]) -> None:
             (cid, club.name, club.logo, club.region),
         )
         cur.execute(
-            "INSERT INTO club_meta(club_id, banned_ids) VALUES (?,?)",
-            (cid, json.dumps(list(club.banned_ids))),
+            "INSERT INTO club_meta(club_id, banned_ids, leader_id, admin_ids) VALUES (?,?,?,?)",
+            (
+                cid,
+                json.dumps(list(club.banned_ids)),
+                club.leader_id,
+                json.dumps(list(club.admin_ids)),
+            ),
         )
         for p in club.members.values():
             cur.execute(

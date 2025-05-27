@@ -114,6 +114,12 @@ Page({
     if (filter.maxAge) params.push('max_age=' + filter.maxAge);
     if (filter.gender && filter.gender !== 'All') params.push('gender=' + filter.gender);
     if (filter.mode === 'Doubles') params.push('doubles=true');
+    let url = '';
+    if (club === 'All') {
+      url = `${BASE_URL}/players`;
+    } else {
+      url = `${BASE_URL}/clubs/${club}/players`;
+    }
     if (params.length) url += '?' + params.join('&');
     wx.request({
       url,
