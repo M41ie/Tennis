@@ -2,9 +2,12 @@
   <view>{{record.date}} {{record.location}}</view>
   <view>{{record.format}} {{record.self_score}}-{{record.opponent_score}}</view>
   <view>vs {{record.opponent || record.opponents}}</view>
-  <view>\u9884\u671f\u5f97\u5206\u7387: {{record.expected_score}}</view>
-  <view>\u5b9e\u9645\u5f97\u5206\u7387: {{record.actual_rate}}</view>
-  <view>Rating: {{record.self_rating_after}} ({{record.self_delta}})</view>
-  <button class="weui-btn weui-btn_disabled" bindtap="noAccess" disabled>\u5bf9\u6218\u7b14\u8bb0</button>
+  <view>预期得分率: {{record.expected_score}}</view>
+  <view>实际得分率: {{record.actual_rate}}</view>
+  <view>
+    Rating: {{record.self_rating_after}}
+    <text class="delta {{record.deltaClass}}">{{record.deltaDisplay}}</text>
+  </view>
+  <button class="weui-btn weui-btn_disabled" bindtap="noAccess" disabled>对战笔记</button>
 </view>
 <view wx:else>No data</view>

@@ -28,7 +28,18 @@ Page({
           const path = that.data.doubles ? 'doubles_records' : 'records';
           wx.request({
             url: `${BASE_URL}/clubs/${clubId}/players/${userId}/${path}`,
-            success(r) { that.setData({ records: r.data }); }
+            success(r) {
+              const records = r.data.map(rec => {
+                if (rec.self_delta != null) {
+                  const d = rec.self_delta;
+                  rec.deltaClass = d > 0 ? 'pos' : d < 0 ? 'neg' : 'neutral';
+                  const sign = d > 0 ? '+' : d < 0 ? '' : '';
+                  rec.deltaDisplay = sign + d.toFixed(3);
+                }
+                return rec;
+              });
+              that.setData({ records });
+            }
           });
         }
       }
