@@ -14,8 +14,10 @@ Page({
     const cid = wx.getStorageSync('club_id');
     const that = this;
     if (!cid) return;
+    const token = wx.getStorageSync('token');
     wx.request({
       url: `${BASE_URL}/clubs/${cid}/pending_matches`,
+      data: { token },
       success(res) {
         const uid = that.data.userId;
         const list = res.data.map(it => {
@@ -28,6 +30,7 @@ Page({
     });
     wx.request({
       url: `${BASE_URL}/clubs/${cid}/pending_doubles`,
+      data: { token },
       success(res) {
         const uid = that.data.userId;
         const list = res.data.map(it => {
