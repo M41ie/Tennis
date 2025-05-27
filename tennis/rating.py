@@ -114,7 +114,13 @@ def weighted_rating(player: Player, as_of: datetime.date) -> float:
 
 
 def update_doubles_ratings(match: DoublesMatch) -> Tuple[float, float, float, float]:
-    """Update doubles ratings for all players based on a doubles match."""
+    """Update doubles ratings for all players based on a doubles match.
+
+    The logic mirrors :func:`update_ratings` but operates on the team averages
+    and then distributes the adjustment to each partner proportionally by their
+    pre-match rating. Experience gain also uses the same formula as singles.
+    """
+
     team_a_rating = (match.player_a1.doubles_rating + match.player_a2.doubles_rating) / 2
     team_b_rating = (match.player_b1.doubles_rating + match.player_b2.doubles_rating) / 2
 
@@ -143,23 +149,36 @@ def update_doubles_ratings(match: DoublesMatch) -> Tuple[float, float, float, fl
     total_b = match.player_b1.doubles_rating + match.player_b2.doubles_rating
 
     if total_a == 0:
-        delta_a1 = delta_team_a / 2
-        delta_a2 = delta_team_a / 2
+        delta_a1 = total_delta_a / 2
+        delta_a2 = total_delta_a / 2
     else:
-        delta_a1 = delta_team_a * (match.player_a1.doubles_rating / total_a)
-        delta_a2 = delta_team_a * (match.player_a2.doubles_rating / total_a)
+        delta_a1 = total_delta_a * (match.player_a1.doubles_rating / total_a)
+        delta_a2 = total_delta_a * (match.player_a2.doubles_rating / total_a)
 
     if total_b == 0:
-        delta_b1 = delta_team_b / 2
-        delta_b2 = delta_team_b / 2
+        delta_b1 = total_delta_b / 2
+        delta_b2 = total_delta_b / 2
     else:
-        delta_b1 = delta_team_b * (match.player_b1.doubles_rating / total_b)
-        delta_b2 = delta_team_b * (match.player_b2.doubles_rating / total_b)
+        delta_b1 = total_delta_b * (match.player_b1.doubles_rating / total_b)
+        delta_b2 = total_delta_b * (match.player_b2.doubles_rating / total_b)
 
-    match.player_a1.doubles_rating += delta_a1
-    match.player_a2.doubles_rating += delta_a2
-    match.player_b1.doubles_rating += delta_b1
-    match.player_b2.doubles_rating += delta_b2
+    def _exp_gain(rating: float) -> float:
+        if rating <= 0:
+            return 0.0
+        denom = (125 / (7 / rating - 1)) * ((6 + 12) / 2)
+        if match.format_weight not in (FORMAT_6_GAME, FORMAT_4_GAME):
+            denom *= ((4 + 7) / 2)
+        return 0.5 / denom * games_played
+
+    gain_a1 = _exp_gain(pre_a1)
+    gain_a2 = _exp_gain(pre_a2)
+    gain_b1 = _exp_gain(pre_b1)
+    gain_b2 = _exp_gain(pre_b2)
+
+    match.player_a1.doubles_rating += delta_a1 + gain_a1
+    match.player_a2.doubles_rating += delta_a2 + gain_a2
+    match.player_b1.doubles_rating += delta_b1 + gain_b1
+    match.player_b2.doubles_rating += delta_b2 + gain_b2
 
     def _exp_gain(rating: float) -> float:
         if rating <= 0:
