@@ -12,7 +12,7 @@
       <view>{{item.format}} {{item.self_score}}-{{item.opponent_score}}</view>
       <view>
         {{item.self_rating_after}}
-        <text class="delta {{item.deltaClass}}">{{item.deltaDisplay}}</text>
+        <text class="{{item.deltaClass}}">({{item.deltaDisplay}})</text>
       </view>
     </view>
   </block>

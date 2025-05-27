@@ -25,7 +25,7 @@
   color:#333;
   border:2rpx solid #d9d9d9;
 }
-.delta{font-size:24rpx;margin-left:10rpx;}
-.delta.pos{color:#07C160;}
-.delta.neg{color:#e64340;}
-.delta.neutral{color:#888;}
+
+.pos{color:#07C160;}
+.neg{color:#E64340;}
+.neutral{color:#888;}

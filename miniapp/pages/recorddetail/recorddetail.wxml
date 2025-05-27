@@ -6,7 +6,11 @@
   <view>实际得分率: {{record.actual_rate}}</view>
   <view>
     Rating: {{record.self_rating_after}}
-    <text class="delta {{record.deltaClass}}">{{record.deltaDisplay}}</text>
+    <text class="{{record.selfDeltaClass}}">({{record.selfDeltaDisplay}})</text>
+  </view>
+  <view wx:if="{{record.opponent_rating_after}}">
+    {{record.opponent}}: {{record.opponent_rating_after}}
+    <text class="{{record.opponentDeltaClass}}">({{record.opponentDeltaDisplay}})</text>
   </view>
   <button class="weui-btn weui-btn_disabled" bindtap="noAccess" disabled>对战笔记</button>
 </view>

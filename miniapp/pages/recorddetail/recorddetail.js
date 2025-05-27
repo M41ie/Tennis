@@ -14,9 +14,15 @@ Page({
         }
         if (rec.self_delta != null) {
           const d = rec.self_delta;
-          rec.deltaClass = d > 0 ? 'pos' : d < 0 ? 'neg' : 'neutral';
-          const sign = d > 0 ? '+' : d < 0 ? '' : '';
-          rec.deltaDisplay = sign + d.toFixed(3);
+          const abs = Math.abs(d).toFixed(3);
+          rec.selfDeltaDisplay = (d > 0 ? '+' : d < 0 ? '-' : '') + abs;
+          rec.selfDeltaClass = d > 0 ? 'pos' : d < 0 ? 'neg' : 'neutral';
+        }
+        if (rec.opponent_delta != null) {
+          const d = rec.opponent_delta;
+          const abs = Math.abs(d).toFixed(3);
+          rec.opponentDeltaDisplay = (d > 0 ? '+' : d < 0 ? '-' : '') + abs;
+          rec.opponentDeltaClass = d > 0 ? 'pos' : d < 0 ? 'neg' : 'neutral';
         }
         this.setData({ record: rec });
       } catch (e) {}

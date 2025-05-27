@@ -29,16 +29,18 @@ Page({
           wx.request({
             url: `${BASE_URL}/clubs/${clubId}/players/${userId}/${path}`,
             success(r) {
-              const records = r.data.map(rec => {
-                if (rec.self_delta != null) {
-                  const d = rec.self_delta;
+              r.data.forEach(rec => {
+                const d = rec.self_delta;
+                if (d != null) {
+                  const abs = Math.abs(d).toFixed(3);
+                  rec.deltaDisplay = (d > 0 ? '+' : d < 0 ? '-' : '') + abs;
                   rec.deltaClass = d > 0 ? 'pos' : d < 0 ? 'neg' : 'neutral';
-                  const sign = d > 0 ? '+' : d < 0 ? '' : '';
-                  rec.deltaDisplay = sign + d.toFixed(3);
+                } else {
+                  rec.deltaDisplay = '';
+                  rec.deltaClass = 'neutral';
                 }
-                return rec;
               });
-              that.setData({ records });
+              that.setData({ records: r.data });
             }
           });
         }
