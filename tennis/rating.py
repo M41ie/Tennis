@@ -74,9 +74,13 @@ def update_ratings(match: Match) -> Tuple[float, float]:
     delta_b = -delta_a
 
     def _exp_gain(rating: float) -> float:
+        if rating <= 0:
+            return 0.0
         denom = (125 / (7 / rating - 1)) * ((6 + 12) / 2)
         if match.format_weight not in (FORMAT_6_GAME, FORMAT_4_GAME):
             denom *= ((4 + 7) / 2)
+        if denom == 0:
+            return 0.0
         return 0.5 / denom * games_played
 
     gain_a = _exp_gain(a_rating)
@@ -124,18 +128,22 @@ def update_doubles_ratings(match: DoublesMatch) -> Tuple[float, float, float, fl
     match.rating_a2_before = match.player_a2.doubles_rating
     match.rating_b1_before = match.player_b1.doubles_rating
     match.rating_b2_before = match.player_b2.doubles_rating
+    pre_a1 = match.player_a1.doubles_rating
+    pre_a2 = match.player_a2.doubles_rating
+    pre_b1 = match.player_b1.doubles_rating
+    pre_b2 = match.player_b2.doubles_rating
+
+    exp_a = expected_score(team_a_rating, team_b_rating)
 
     games_played = match.score_a + match.score_b
     if games_played == 0:
         return team_a_rating, team_a_rating, team_b_rating, team_b_rating
 
-    exp_a = expected_score(team_a_rating, team_b_rating)
     actual_a = match.score_a / games_played
 
-    # competitive skill adjustment computed on the team averages
-    delta_team = match.format_weight * 0.25 * (actual_a - exp_a)
-    total_delta_a = delta_team * 2
-    total_delta_b = -total_delta_a
+    # competitive skill adjustment on team averages
+    delta_team_a = match.format_weight * 0.25 * (actual_a - exp_a)
+    delta_team_b = -delta_team_a
 
     total_a = match.player_a1.doubles_rating + match.player_a2.doubles_rating
     total_b = match.player_b1.doubles_rating + match.player_b2.doubles_rating
@@ -172,6 +180,31 @@ def update_doubles_ratings(match: DoublesMatch) -> Tuple[float, float, float, fl
     match.player_b1.doubles_rating += delta_b1 + gain_b1
     match.player_b2.doubles_rating += delta_b2 + gain_b2
 
+    def _exp_gain(rating: float) -> float:
+        if rating <= 0:
+            return 0.0
+        denom = (125 / (7 / rating - 1)) * ((6 + 12) / 2)
+        if match.format_weight not in (FORMAT_6_GAME, FORMAT_4_GAME):
+            denom *= ((4 + 7) / 2)
+        if denom == 0:
+            return 0.0
+        return 0.5 / denom * games_played
+
+    gain_a1 = _exp_gain(pre_a1)
+    gain_a2 = _exp_gain(pre_a2)
+    gain_b1 = _exp_gain(pre_b1)
+    gain_b2 = _exp_gain(pre_b2)
+
+    match.player_a1.doubles_rating += gain_a1
+    match.player_a2.doubles_rating += gain_a2
+    match.player_b1.doubles_rating += gain_b1
+    match.player_b2.doubles_rating += gain_b2
+
+    match.player_a1.experience += gain_a1
+    match.player_a2.experience += gain_a2
+    match.player_b1.experience += gain_b1
+    match.player_b2.experience += gain_b2
+
     match.rating_a1_after = match.player_a1.doubles_rating
     match.rating_a2_after = match.player_a2.doubles_rating
     match.rating_b1_after = match.player_b1.doubles_rating
@@ -181,11 +214,6 @@ def update_doubles_ratings(match: DoublesMatch) -> Tuple[float, float, float, fl
     match.player_a2.doubles_matches.append(match)
     match.player_b1.doubles_matches.append(match)
     match.player_b2.doubles_matches.append(match)
-
-    match.player_a1.experience += gain_a1
-    match.player_a2.experience += gain_a2
-    match.player_b1.experience += gain_b1
-    match.player_b2.experience += gain_b2
 
     return (
         match.rating_a1_after,

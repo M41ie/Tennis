@@ -25,6 +25,8 @@ def expected_experience(rating: float, games: int, weight: float) -> float:
     denom = (125 / (7 / rating - 1)) * ((6 + 12) / 2)
     if weight not in (FORMAT_6_GAME, FORMAT_4_GAME):
         denom *= ((4 + 7) / 2)
+    if denom == 0:
+        return 0.0
     return 0.5 / denom * games
 
 
@@ -109,30 +111,31 @@ def test_update_doubles_ratings_basic():
     team_b_rating = (b1.doubles_rating + b2.doubles_rating) / 2
     exp_a = expected_score(team_a_rating, team_b_rating)
     actual_a = match.score_a / games
-    delta_team = match.format_weight * 0.25 * (actual_a - exp_a)
-    total_delta_a = delta_team * 2
-    total_delta_b = -total_delta_a
-    total_a = a1.doubles_rating + a2.doubles_rating
-    total_b = b1.doubles_rating + b2.doubles_rating
-    delta_a1 = total_delta_a * (a1.doubles_rating / total_a)
-    delta_a2 = total_delta_a * (a2.doubles_rating / total_a)
-    delta_b1 = total_delta_b * (b1.doubles_rating / total_b)
-    delta_b2 = total_delta_b * (b2.doubles_rating / total_b)
-    gain = expected_experience(3.0, games, match.format_weight)
+    comp = match.format_weight * 0.25 * (actual_a - exp_a)
+
+    delta_a1 = comp * (a1.doubles_rating / (a1.doubles_rating + a2.doubles_rating))
+    delta_a2 = comp * (a2.doubles_rating / (a1.doubles_rating + a2.doubles_rating))
+    delta_b1 = -comp * (b1.doubles_rating / (b1.doubles_rating + b2.doubles_rating))
+    delta_b2 = -comp * (b2.doubles_rating / (b1.doubles_rating + b2.doubles_rating))
+
+    gain_a1 = expected_experience(a1.doubles_rating, games, match.format_weight)
+    gain_a2 = expected_experience(a2.doubles_rating, games, match.format_weight)
+    gain_b1 = expected_experience(b1.doubles_rating, games, match.format_weight)
+    gain_b2 = expected_experience(b2.doubles_rating, games, match.format_weight)
+
     expected = (
-        a1.doubles_rating + delta_a1 + gain,
-        a2.doubles_rating + delta_a2 + gain,
-        b1.doubles_rating + delta_b1 + gain,
-        b2.doubles_rating + delta_b2 + gain,
+        a1.doubles_rating + delta_a1 + gain_a1,
+        a2.doubles_rating + delta_a2 + gain_a2,
+        b1.doubles_rating + delta_b1 + gain_b1,
+        b2.doubles_rating + delta_b2 + gain_b2,
     )
 
     result = update_doubles_ratings(match)
     assert tuple(pytest.approx(x, rel=1e-6) for x in result) == tuple(pytest.approx(x, rel=1e-6) for x in expected)
-    exp_gain = expected_experience(3.0, games, 1.0)
-    assert pytest.approx(a1.experience, rel=1e-6) == exp_gain
-    assert pytest.approx(a2.experience, rel=1e-6) == exp_gain
-    assert pytest.approx(b1.experience, rel=1e-6) == exp_gain
-    assert pytest.approx(b2.experience, rel=1e-6) == exp_gain
+    assert pytest.approx(a1.experience, rel=1e-6) == gain_a1
+    assert pytest.approx(a2.experience, rel=1e-6) == gain_a2
+    assert pytest.approx(b1.experience, rel=1e-6) == gain_b1
+    assert pytest.approx(b2.experience, rel=1e-6) == gain_b2
 
 
 def test_update_doubles_ratings_zero_total():
@@ -153,8 +156,8 @@ def test_update_doubles_ratings_zero_total():
     games = match.score_a + match.score_b
     exp_a = expected_score(0.0, 0.0)
     actual_a = match.score_a / games
-    delta_team = match.format_weight * 0.25 * (actual_a - exp_a)
-    delta_each = delta_team
+    comp = match.format_weight * 0.25 * (actual_a - exp_a)
+    delta_each = comp / 2
     gain = expected_experience(0.0, games, match.format_weight)
 
     result = update_doubles_ratings(match)
