@@ -353,7 +353,7 @@ def test_pending_match_query(tmp_path, monkeypatch):
         },
     )
 
-    resp = client.get("/clubs/c1/pending_matches")
+    resp = client.get(f"/clubs/c1/pending_matches?token={tokens['p1']}")
     assert resp.status_code == 200
     records = resp.json()
     assert len(records) == 1
@@ -406,7 +406,7 @@ def test_pending_doubles_query(tmp_path, monkeypatch):
         },
     )
 
-    resp = client.get("/clubs/c1/pending_doubles")
+    resp = client.get(f"/clubs/c1/pending_doubles?token={tokens['p1']}")
     assert resp.status_code == 200
     records = resp.json()
     assert len(records) == 1
