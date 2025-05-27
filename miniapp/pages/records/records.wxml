@@ -10,7 +10,10 @@
     <view class="weui-list__item item" bindtap="viewRecord" data-index="{{index}}">
       <view style="flex:1">{{item.date}} {{item.location}}</view>
       <view>{{item.format}} {{item.self_score}}-{{item.opponent_score}}</view>
-      <view>{{item.self_rating_after}} ({{item.self_delta}})</view>
+      <view>
+        {{item.self_rating_after}}
+        <text class="{{item.deltaClass}}">({{item.deltaDisplay}})</text>
+      </view>
     </view>
   </block>
 </view>

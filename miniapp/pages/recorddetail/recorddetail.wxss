@@ -1,1 +1,4 @@
 .detail { padding: 10px; }
+.pos{color:#07C160;}
+.neg{color:#E64340;}
+.neutral{color:#888;}
