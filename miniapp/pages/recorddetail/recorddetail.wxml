@@ -4,7 +4,10 @@
   <view>vs {{record.opponent || record.opponents}}</view>
   <view>预期得分率: {{record.expected_score}}</view>
   <view>实际得分率: {{record.actual_rate}}</view>
-  <view>Rating: {{record.self_rating_after}} ({{record.self_delta}})</view>
+  <view>
+    Rating: {{record.self_rating_after}}
+    <text class="delta {{record.deltaClass}}">{{record.deltaDisplay}}</text>
+  </view>
   <button class="weui-btn weui-btn_disabled" bindtap="noAccess" disabled>对战笔记</button>
 </view>
 <view wx:else>No data</view>

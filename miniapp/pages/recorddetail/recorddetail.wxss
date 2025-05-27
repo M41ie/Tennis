@@ -1,1 +1,5 @@
 .detail { padding: 10px; }
+.delta { font-size: 24rpx; margin-left: 10rpx; }
+.delta.pos { color: #07C160; }
+.delta.neg { color: #e64340; }
+.delta.neutral { color: #888; }
