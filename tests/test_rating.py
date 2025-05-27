@@ -10,7 +10,6 @@ from tennis.rating import (
     weighted_doubles_rating,
     expected_score,
     EXPERIENCE_BONUS,
-    EXPERIENCE_RATE,
     initial_rating_from_votes,
     format_weight_from_name,
     FORMAT_6_GAME,

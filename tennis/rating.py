@@ -124,10 +124,6 @@ def update_doubles_ratings(match: DoublesMatch) -> Tuple[float, float, float, fl
     match.rating_a2_before = match.player_a2.doubles_rating
     match.rating_b1_before = match.player_b1.doubles_rating
     match.rating_b2_before = match.player_b2.doubles_rating
-    pre_a1 = match.player_a1.doubles_rating
-    pre_a2 = match.player_a2.doubles_rating
-    pre_b1 = match.player_b1.doubles_rating
-    pre_b2 = match.player_b2.doubles_rating
 
     games_played = match.score_a + match.score_b
     if games_played == 0:
