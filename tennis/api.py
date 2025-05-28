@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from fastapi import FastAPI, HTTPException
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
@@ -30,7 +32,7 @@ from .rating import (
     weighted_doubles_rating,
     format_weight_from_name,
 )
-from .models import Player, Club, Match, Appointment, User
+from .models import Player, Club, Match, DoublesMatch, Appointment, User
 
 app = FastAPI()
 
@@ -102,6 +104,82 @@ def require_auth(token: str) -> str:
         _save_tokens()
         raise HTTPException(401, "Token expired")
     return user_id
+
+
+def _pending_status_for_user(
+    user_id: str, match: Match | DoublesMatch, club: Club
+) -> dict[str, object]:
+    """Return status information for the given user viewing a pending match."""
+
+    admins = {club.leader_id, *club.admin_ids}
+
+    if user_id == match.initiator:
+        role = "submitter"
+    else:
+        if isinstance(match, DoublesMatch):
+            participants = {
+                match.player_a1.user_id,
+                match.player_a2.user_id,
+                match.player_b1.user_id,
+                match.player_b2.user_id,
+            }
+        else:
+            participants = {match.player_a.user_id, match.player_b.user_id}
+
+        if user_id in participants:
+            role = "opponent"
+        elif user_id in admins:
+            role = "admin"
+        else:
+            role = "viewer"
+
+    confirmed_self = None
+    confirmed_opp = None
+    if isinstance(match, DoublesMatch):
+        if user_id in {match.player_a1.user_id, match.player_a2.user_id}:
+            confirmed_self = match.confirmed_a
+            confirmed_opp = match.confirmed_b
+        elif user_id in {match.player_b1.user_id, match.player_b2.user_id}:
+            confirmed_self = match.confirmed_b
+            confirmed_opp = match.confirmed_a
+    else:
+        if user_id == match.player_a.user_id:
+            confirmed_self = match.confirmed_a
+            confirmed_opp = match.confirmed_b
+        elif user_id == match.player_b.user_id:
+            confirmed_self = match.confirmed_b
+            confirmed_opp = match.confirmed_a
+
+    can_confirm = False
+    can_decline = False
+    status_text = ""
+
+    if role == "submitter":
+        if not (match.confirmed_a and match.confirmed_b):
+            status_text = "您已提交，等待对手确认"
+        else:
+            status_text = "对手已确认，等待管理员批准"
+    elif role == "opponent":
+        if confirmed_self is False:
+            can_confirm = True
+            can_decline = True
+            status_text = "请确认比赛结果"
+        elif confirmed_self and not confirmed_opp:
+            status_text = "您已确认，等待对手确认"
+        else:
+            status_text = "对手已确认，等待管理员批准"
+    else:
+        if match.confirmed_a and match.confirmed_b:
+            status_text = "等待管理员批准"
+        else:
+            status_text = "待确认"
+
+    return {
+        "display_status_text": status_text,
+        "can_confirm": can_confirm,
+        "can_decline": can_decline,
+        "current_user_role_in_match": role,
+    }
 
 
 class ClubCreate(BaseModel):
@@ -632,57 +710,9 @@ def list_pending_doubles(club_id: str, token: str):
             "confirmed_b": m.confirmed_b,
         }
 
-        if uid == m.initiator:
-            role = "submitter"
-        elif uid in participants:
-            role = "opponent"
-        elif uid in admins:
-            role = "admin"
-        else:
-            role = "viewer"
-
-        confirmed_self = None
-        confirmed_opp = None
-        if uid in {m.player_a1.user_id, m.player_a2.user_id}:
-            confirmed_self = m.confirmed_a
-            confirmed_opp = m.confirmed_b
-        elif uid in {m.player_b1.user_id, m.player_b2.user_id}:
-            confirmed_self = m.confirmed_b
-            confirmed_opp = m.confirmed_a
-
-        can_confirm = False
-        can_decline = False
-        status_text = ""
-
-        if role == "submitter":
-            if not (m.confirmed_a and m.confirmed_b):
-                status_text = "您已提交，等待对手确认"
-            else:
-                status_text = "对手已确认，等待管理员批准"
-        elif role == "opponent":
-            if confirmed_self is False:
-                can_confirm = True
-                can_decline = True
-                status_text = "请确认比赛结果"
-            elif confirmed_self and not confirmed_opp:
-                status_text = "您已确认，等待对手确认"
-            else:
-                status_text = "对手已确认，等待管理员批准"
-        else:
-            if m.confirmed_a and m.confirmed_b:
-                status_text = "等待管理员批准"
-            else:
-                status_text = "待确认"
-
-        entry.update(
-            {
-                "display_status_text": status_text,
-                "can_confirm": can_confirm,
-                "can_decline": can_decline,
-                "current_user_role_in_match": role,
-                "submitted_by_player_id": m.initiator,
-            }
-        )
+        status_info = _pending_status_for_user(uid, m, club)
+        entry.update(status_info)
+        entry["submitted_by_player_id"] = m.initiator
 
         a1 = club.members.get(m.player_a1.user_id)
         a2 = club.members.get(m.player_a2.user_id)
@@ -846,57 +876,9 @@ def list_pending_matches(club_id: str, token: str):
             "confirmed_b": m.confirmed_b,
         }
 
-        if uid == m.initiator:
-            role = "submitter"
-        elif uid in participants:
-            role = "opponent"
-        elif uid in admins:
-            role = "admin"
-        else:
-            role = "viewer"
-
-        confirmed_self = None
-        confirmed_opp = None
-        if uid == m.player_a.user_id:
-            confirmed_self = m.confirmed_a
-            confirmed_opp = m.confirmed_b
-        elif uid == m.player_b.user_id:
-            confirmed_self = m.confirmed_b
-            confirmed_opp = m.confirmed_a
-
-        can_confirm = False
-        can_decline = False
-        status_text = ""
-
-        if role == "submitter":
-            if not (m.confirmed_a and m.confirmed_b):
-                status_text = "您已提交，等待对手确认"
-            else:
-                status_text = "对手已确认，等待管理员批准"
-        elif role == "opponent":
-            if confirmed_self is False:
-                can_confirm = True
-                can_decline = True
-                status_text = "请确认比赛结果"
-            elif confirmed_self and not confirmed_opp:
-                status_text = "您已确认，等待对手确认"
-            else:
-                status_text = "对手已确认，等待管理员批准"
-        else:  # admin or viewer seeing a fully confirmed match
-            if m.confirmed_a and m.confirmed_b:
-                status_text = "等待管理员批准"
-            else:
-                status_text = "待确认"
-
-        entry.update(
-            {
-                "display_status_text": status_text,
-                "can_confirm": can_confirm,
-                "can_decline": can_decline,
-                "current_user_role_in_match": role,
-                "submitted_by_player_id": m.initiator,
-            }
-        )
+        status_info = _pending_status_for_user(uid, m, club)
+        entry.update(status_info)
+        entry["submitted_by_player_id"] = m.initiator
 
         pa = club.members.get(m.player_a.user_id)
         pb = club.members.get(m.player_b.user_id)
