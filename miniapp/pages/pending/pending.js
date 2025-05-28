@@ -25,21 +25,11 @@ Page({
         }
         const uid = that.data.userId;
         const list = res.data.map(it => {
-          const isA = it.player_a === uid;
-          const isB = it.player_b === uid;
-          const isParticipant = isA || isB;
-          const confirmedSelf = (isA && it.confirmed_a) || (isB && it.confirmed_b);
-          const confirmedOpp = (isA && it.confirmed_b) || (isB && it.confirmed_a);
-          it.canConfirm = isParticipant && !confirmedSelf;
-          it.canReject = isParticipant && !confirmedSelf;
+          it.canConfirm = it.can_confirm;
+          it.canReject = it.can_decline;
+          it.status = it.display_status_text || '';
+          const isParticipant = it.player_a === uid || it.player_b === uid;
           it.canApprove = !isParticipant && it.confirmed_a && it.confirmed_b;
-          if (isParticipant && confirmedSelf && !confirmedOpp) {
-            it.status = 'Waiting for opponent';
-          } else if (it.confirmed_a && it.confirmed_b) {
-            it.status = 'Pending approval';
-          } else {
-            it.status = '';
-          }
           return it;
         });
         that.setData({ singles: list });
@@ -58,23 +48,12 @@ Page({
         }
         const uid = that.data.userId;
         const list = res.data.map(it => {
+          it.canConfirm = it.can_confirm;
+          it.canReject = it.can_decline;
+          it.status = it.display_status_text || '';
           const participants = [it.a1, it.a2, it.b1, it.b2];
           const isParticipant = participants.includes(uid);
-          let confirmedSelf = false;
-          if (uid === it.a1 || uid === it.a2) confirmedSelf = it.confirmed_a;
-          if (uid === it.b1 || uid === it.b2) confirmedSelf = it.confirmed_b;
-          const confirmedOpp =
-            (uid === it.a1 || uid === it.a2) ? it.confirmed_b : it.confirmed_a;
-          it.canConfirm = isParticipant && !confirmedSelf;
-          it.canReject = isParticipant && !confirmedSelf;
           it.canApprove = !isParticipant && it.confirmed_a && it.confirmed_b;
-          if (isParticipant && confirmedSelf && !confirmedOpp) {
-            it.status = 'Waiting for opponent';
-          } else if (it.confirmed_a && it.confirmed_b) {
-            it.status = 'Pending approval';
-          } else {
-            it.status = '';
-          }
           return it;
         });
         that.setData({ doubles: list });
