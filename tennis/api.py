@@ -741,8 +741,6 @@ def list_pending_doubles(club_id: str, token: str):
                 status_text = "请确认比赛结果"
             elif confirmed_self and not confirmed_opp:
                 status_text = "您已确认，等待对手确认"
-            elif confirmed_self and confirmed_opp:
-                status_text = "您已确认，等待管理员批准"
             else:
                 status_text = "对手已确认，等待管理员批准"
         else:
@@ -954,8 +952,6 @@ def list_pending_matches(club_id: str, token: str):
                 status_text = "请确认比赛结果"
             elif confirmed_self and not confirmed_opp:
                 status_text = "您已确认，等待对手确认"
-            elif confirmed_self and confirmed_opp:
-                status_text = "您已确认，等待管理员批准"
             else:
                 status_text = "对手已确认，等待管理员批准"
         else:  # admin or viewer seeing a fully confirmed match
