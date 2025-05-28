@@ -420,6 +420,16 @@ def test_pending_doubles_query(tmp_path, monkeypatch):
     assert rec["b2"] == "p4"
     assert rec["confirmed_a"] is True
     assert rec["confirmed_b"] is False
+    assert rec["display_status_text"] == "您已提交，等待对手确认"
+    assert rec["can_confirm"] is False
+    assert rec["can_decline"] is False
+
+    resp = client.get(f"/clubs/c1/pending_doubles?token={tokens['p3']}")
+    assert resp.status_code == 200
+    rec = resp.json()[0]
+    assert rec["display_status_text"] == "请确认比赛结果"
+    assert rec["can_confirm"] is True
+    assert rec["can_decline"] is True
 
 
 def test_reject_pending_match(tmp_path, monkeypatch):
@@ -458,6 +468,22 @@ def test_reject_pending_match(tmp_path, monkeypatch):
             "token": tokens["p1"],
         },
     )
+
+    # status as seen by initiator
+    resp = client.get(f"/clubs/c1/pending_matches?token={tokens['p1']}")
+    assert resp.status_code == 200
+    rec = resp.json()[0]
+    assert rec["display_status_text"] == "您已提交，等待对手确认"
+    assert rec["can_confirm"] is False
+    assert rec["can_decline"] is False
+
+    # status as seen by opponent
+    resp = client.get(f"/clubs/c1/pending_matches?token={tokens['p2']}")
+    assert resp.status_code == 200
+    rec = resp.json()[0]
+    assert rec["display_status_text"] == "请确认比赛结果"
+    assert rec["can_confirm"] is True
+    assert rec["can_decline"] is True
 
     resp = client.post(
         "/clubs/c1/pending_matches/0/reject",
