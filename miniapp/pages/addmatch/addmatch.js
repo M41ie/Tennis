@@ -69,7 +69,8 @@ Page({
     this.setData({ opponentIndex: e.detail.value });
   },
   onModeChange(e) {
-    this.setData({ modeIndex: e.detail.value });
+    // picker values are strings; convert to number for strict comparisons
+    this.setData({ modeIndex: Number(e.detail.value) });
   },
   onPartnerChange(e) { this.setData({ partnerIndex: e.detail.value }); },
   onOpp1Change(e) { this.setData({ opp1Index: e.detail.value }); },
