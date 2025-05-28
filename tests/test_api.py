@@ -365,6 +365,67 @@ def test_pending_match_query(tmp_path, monkeypatch):
     assert rec["confirmed_b"] is False
 
 
+def test_pending_match_role_fields(tmp_path, monkeypatch):
+    db = tmp_path / "tennis.db"
+    monkeypatch.setattr(storage, "DB_FILE", db)
+
+    api = importlib.reload(importlib.import_module("tennis.api"))
+    client = TestClient(api.app)
+
+    for uid, allow in [("leader", True), ("p1", False), ("p2", False)]:
+        client.post(
+            "/users",
+            json={"user_id": uid, "name": uid.upper(), "password": "pw", "allow_create": allow},
+        )
+
+    tokens = {
+        pid: client.post("/login", json={"user_id": pid, "password": "pw"}).json()["token"]
+        for pid in ("leader", "p1", "p2")
+    }
+
+    client.post(
+        "/clubs",
+        json={"club_id": "c1", "name": "C1", "user_id": "leader", "token": tokens["leader"]},
+    )
+    for pid in ("p1", "p2"):
+        client.post(
+            "/clubs/c1/players",
+            json={"user_id": pid, "name": pid.upper(), "token": tokens[pid]},
+        )
+
+    client.post(
+        "/clubs/c1/pending_matches",
+        json={
+            "initiator": "p1",
+            "opponent": "p2",
+            "score_initiator": 6,
+            "score_opponent": 4,
+            "token": tokens["p1"],
+        },
+    )
+
+    rec = client.get(f"/clubs/c1/pending_matches?token={tokens['p1']}").json()[0]
+    assert rec["display_status_text"] == "您已提交，等待对手确认"
+    assert rec["can_confirm"] is False
+    assert rec["can_decline"] is False
+    assert rec["current_user_role_in_match"] == "submitter"
+
+    rec = client.get(f"/clubs/c1/pending_matches?token={tokens['p2']}").json()[0]
+    assert rec["display_status_text"] == "请确认比赛结果"
+    assert rec["can_confirm"] is True
+    assert rec["can_decline"] is True
+    assert rec["current_user_role_in_match"] == "opponent"
+
+    client.post(
+        "/clubs/c1/pending_matches/0/confirm",
+        json={"user_id": "p2", "token": tokens["p2"]},
+    )
+
+    rec = client.get(f"/clubs/c1/pending_matches?token={tokens['leader']}").json()[0]
+    assert rec["display_status_text"] == "等待管理员批准"
+    assert rec["current_user_role_in_match"] == "admin"
+
+
 def test_pending_doubles_query(tmp_path, monkeypatch):
     db = tmp_path / "tennis.db"
     monkeypatch.setattr(storage, "DB_FILE", db)
