@@ -691,8 +691,11 @@ def list_pending_doubles(club_id: str, token: str):
             m.player_b1.user_id,
             m.player_b2.user_id,
         }
-        if uid not in participants and uid not in admins:
-            continue
+        if uid not in participants:
+            if uid in admins and m.confirmed_a and m.confirmed_b:
+                pass
+            else:
+                continue
 
         entry = {
             "index": idx,
@@ -904,8 +907,11 @@ def list_pending_matches(club_id: str, token: str):
         if isinstance(m, DoublesMatch):
             continue
         participants = {m.player_a.user_id, m.player_b.user_id}
-        if uid not in participants and uid not in admins:
-            continue
+        if uid not in participants:
+            if uid in admins and m.confirmed_a and m.confirmed_b:
+                pass
+            else:
+                continue
 
         entry = {
             "index": idx,
@@ -1032,7 +1038,7 @@ def confirm_match_api(club_id: str, index: int, data: ConfirmRequest):
         raise HTTPException(401, "Token mismatch")
 
     try:
-        confirm_match(clubs, club_id, index, data.user_id)
+        confirm_match(clubs, club_id, index, data.user_id, users)
     except ValueError as e:
         raise HTTPException(400, str(e))
     save_data(clubs)
@@ -1120,7 +1126,7 @@ def confirm_doubles_api(club_id: str, index: int, data: ConfirmRequest):
         raise HTTPException(401, "Token mismatch")
 
     try:
-        confirm_doubles(clubs, club_id, index, data.user_id)
+        confirm_doubles(clubs, club_id, index, data.user_id, users)
     except ValueError as e:
         raise HTTPException(400, str(e))
     save_data(clubs)

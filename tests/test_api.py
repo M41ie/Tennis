@@ -646,11 +646,11 @@ def test_pending_visibility_rules(tmp_path, monkeypatch):
         },
     )
 
-    # participants and admins see the unconfirmed match
+    # Only participants see the unconfirmed match
     assert len(client.get(f"/clubs/c1/pending_matches?token={tokens['p1']}").json()) == 1
     assert len(client.get(f"/clubs/c1/pending_matches?token={tokens['p2']}").json()) == 1
     assert client.get(f"/clubs/c1/pending_matches?token={tokens['p3']}").json() == []
-    assert len(client.get(f"/clubs/c1/pending_matches?token={tokens['leader']}").json()) == 1
+    assert client.get(f"/clubs/c1/pending_matches?token={tokens['leader']}").json() == []
 
     # opponent confirms; now both participants confirmed
     client.post(

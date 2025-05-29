@@ -6,6 +6,8 @@ from tennis.cli import (
     request_join,
     submit_match,
     submit_doubles,
+    confirm_match,
+    confirm_doubles,
 )
 from tennis.models import Player
 
@@ -55,6 +57,10 @@ def test_submit_match_and_doubles_notify_staff():
         1.0,
         users=users,
     )
+    # no notifications until opponent confirms
+    assert not users["leader"].messages
+    assert not users["admin"].messages
+    confirm_match(clubs, "c1", 0, "p2", users)
     assert any("Match pending approval" in m.text for m in users["leader"].messages)
     assert any("Match pending approval" in m.text for m in users["admin"].messages)
 
@@ -71,6 +77,12 @@ def test_submit_match_and_doubles_notify_staff():
         1.0,
         users=users,
     )
-    assert any("Doubles match pending approval" in m.text for m in users["leader"].messages)
-    assert any("Doubles match pending approval" in m.text for m in users["admin"].messages)
+    # still only previous notifications
+    leader_msgs_before = len(users["leader"].messages)
+    admin_msgs_before = len(users["admin"].messages)
+    assert leader_msgs_before == 2  # from singles confirmation (leader/admin)
+    assert admin_msgs_before == 2
+    confirm_doubles(clubs, "c1", 1, "p3", users)
+    assert any("Doubles match pending approval" in m.text for m in users["leader"].messages[leader_msgs_before:])
+    assert any("Doubles match pending approval" in m.text for m in users["admin"].messages[admin_msgs_before:])
 

@@ -285,19 +285,10 @@ def submit_match(
         match.confirmed_b = True
     club.pending_matches.append(match)
 
-    if users is not None:
-        today = datetime.date.today()
-        for uid in [club.leader_id, *club.admin_ids]:
-            if not uid:
-                continue
-            u = users.get(uid)
-            if u:
-                u.messages.append(
-                    Message(date=today, text=f"Match pending approval in {club.name}")
-                )
+    # Do not notify admins until all participants have confirmed
 
 
-def confirm_match(clubs, club_id: str, index: int, user_id: str):
+def confirm_match(clubs, club_id: str, index: int, user_id: str, users=None):
     """Player confirms a pending match."""
     club = clubs.get(club_id)
     if not club:
@@ -311,6 +302,17 @@ def confirm_match(clubs, club_id: str, index: int, user_id: str):
         match.confirmed_b = True
     else:
         raise ValueError("User not in match")
+
+    if match.confirmed_a and match.confirmed_b and users is not None:
+        today = datetime.date.today()
+        for uid in [club.leader_id, *club.admin_ids]:
+            if not uid:
+                continue
+            u = users.get(uid)
+            if u:
+                u.messages.append(
+                    Message(date=today, text=f"Match pending approval in {club.name}")
+                )
 
 
 def reject_match(clubs, club_id: str, index: int, user_id: str, users=None):
@@ -397,7 +399,7 @@ def submit_doubles(
                 )
 
 
-def confirm_doubles(clubs, club_id: str, index: int, user_id: str):
+def confirm_doubles(clubs, club_id: str, index: int, user_id: str, users=None):
     """Confirm a pending doubles match."""
     club = clubs.get(club_id)
     if not club:
@@ -413,6 +415,17 @@ def confirm_doubles(clubs, club_id: str, index: int, user_id: str):
         match.confirmed_b = True
     else:
         raise ValueError("User not in match")
+
+    if match.confirmed_a and match.confirmed_b and users is not None:
+        today = datetime.date.today()
+        for uid in [club.leader_id, *club.admin_ids]:
+            if not uid:
+                continue
+            u = users.get(uid)
+            if u:
+                u.messages.append(
+                    Message(date=today, text=f"Doubles match pending approval in {club.name}")
+                )
 
 
 def reject_doubles(clubs, club_id: str, index: int, user_id: str, users=None):
