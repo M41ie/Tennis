@@ -1,7 +1,14 @@
 import datetime
 import pytest
 from tennis.models import Club, Player, Match
-from tennis.cli import submit_match, confirm_match, approve_match
+from tennis.cli import (
+    submit_match,
+    confirm_match,
+    approve_match,
+    submit_doubles,
+    confirm_doubles,
+    approve_doubles,
+)
 from tennis.rating import weighted_rating, update_ratings
 
 
@@ -45,3 +52,56 @@ def test_match_approval_workflow():
 
     assert pytest.approx(p1.singles_rating, rel=1e-6) == expected_p1
     assert pytest.approx(p2.singles_rating, rel=1e-6) == expected_p2
+
+
+def test_approve_requires_confirmation():
+    club = Club(club_id="c", name="Club", leader_id="leader")
+    p1 = Player("p1", "P1")
+    p2 = Player("p2", "P2")
+    club.members[p1.user_id] = p1
+    club.members[p2.user_id] = p2
+    club.members["leader"] = Player("leader", "L")
+    clubs = {"c": club}
+
+    date = datetime.date(2023, 1, 1)
+    submit_match(clubs, "c", "p1", "p2", 6, 4, date, 1.0)
+
+    with pytest.raises(ValueError):
+        approve_match(clubs, "c", 0, "leader")
+
+    assert len(club.pending_matches) == 1
+
+    confirm_match(clubs, "c", 0, "p2")
+    approve_match(clubs, "c", 0, "leader")
+    assert len(club.pending_matches) == 0
+
+
+def test_doubles_approve_requires_confirmation():
+    club = Club(club_id="c", name="Club", leader_id="leader")
+    players = {pid: Player(pid, pid.upper()) for pid in ("p1", "p2", "p3", "p4")}
+    club.members.update(players)
+    club.members["leader"] = Player("leader", "L")
+    clubs = {"c": club}
+
+    date = datetime.date(2023, 1, 2)
+    submit_doubles(
+        clubs,
+        "c",
+        "p1",
+        "p2",
+        "p3",
+        "p4",
+        6,
+        3,
+        date,
+        1.0,
+    )
+
+    with pytest.raises(ValueError):
+        approve_doubles(clubs, "c", 0, "leader")
+
+    assert len(club.pending_matches) == 1
+
+    confirm_doubles(clubs, "c", 0, "p3")
+    approve_doubles(clubs, "c", 0, "leader")
+    assert len(club.pending_matches) == 0
