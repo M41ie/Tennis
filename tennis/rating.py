@@ -16,14 +16,12 @@ EXPERIENCE_RATE = 0.05
 # Match format weights
 FORMAT_6_GAME = 1.0
 FORMAT_4_GAME = 0.7
-FORMAT_TB11 = 0.3
 FORMAT_TB10 = 0.27
 FORMAT_TB7 = 0.2
 
 FORMAT_WEIGHTS = {
     "6_game": FORMAT_6_GAME,
     "4_game": FORMAT_4_GAME,
-    "tb11": FORMAT_TB11,
     "tb10": FORMAT_TB10,
     "tb7": FORMAT_TB7,
 }

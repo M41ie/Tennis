@@ -8,7 +8,6 @@ from tennis.rating import (
     update_ratings,
     FORMAT_6_GAME,
     FORMAT_4_GAME,
-    FORMAT_TB11,
     FORMAT_TB10,
     FORMAT_TB7,
 )
@@ -16,7 +15,6 @@ from tennis.rating import (
 FORMAT_MAP = {
     "6局": FORMAT_6_GAME,
     "4局": FORMAT_4_GAME,
-    "抢11": FORMAT_TB11,
     "抢10": FORMAT_TB10,
     "抢7": FORMAT_TB7,
 }
