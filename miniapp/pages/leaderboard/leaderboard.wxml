@@ -5,8 +5,8 @@
 
 <view class="filter-bar">
   <view class="filter-item" bindtap="openClub">俱乐部</view>
+  <view class="filter-item" bindtap="chooseGender">{{genderText}}</view>
   <view class="filter-item" bindtap="openLevel">级别</view>
-  <view class="filter-item" bindtap="chooseGender">{{filter.gender}}</view>
   <view class="filter-item" bindtap="openAge">年龄</view>
 </view>
 
@@ -20,14 +20,14 @@
 </view>
 
 <view wx:if="{{showLevelDialog}}" class="dialog">
-  <input type="digit" placeholder="Min" value="{{levelMin}}" bindinput="onLevelMin" />
-  <input type="digit" placeholder="Max" value="{{levelMax}}" bindinput="onLevelMax" />
+  <view>{{levelMin}} - {{levelMax}}</view>
+  <slider range min="0" max="28" step="1" value="{{[levelMin*4, levelMax*4]}}" bindchange="onLevelChange" />
   <button bindtap="confirmLevel">确定</button>
 </view>
 
 <view wx:if="{{showAgeDialog}}" class="dialog">
-  <input type="number" placeholder="Min" value="{{ageMin}}" bindinput="onAgeMin" />
-  <input type="number" placeholder="Max" value="{{ageMax}}" bindinput="onAgeMax" />
+  <view>{{ageMin}} - {{ageMax}}</view>
+  <slider range min="0" max="100" step="5" value="{{[ageMin, ageMax]}}" bindchange="onAgeChange" />
   <button bindtap="confirmAge">确定</button>
 </view>
 <view class="weui-list">
