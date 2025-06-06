@@ -53,8 +53,15 @@ TOKEN_TTL = datetime.timedelta(hours=24)
 # simple in-memory token store mapping token -> (user_id, timestamp)
 def _load_tokens() -> dict[str, tuple[str, datetime.datetime]]:
     try:
-        data = json.loads(TOKENS_FILE.read_text())
+        text = TOKENS_FILE.read_text()
     except FileNotFoundError:
+        return {}
+    except OSError:
+        # if the file is unreadable we simply skip loading tokens
+        return {}
+    try:
+        data = json.loads(text)
+    except json.JSONDecodeError:
         return {}
     now = datetime.datetime.utcnow()
     result: dict[str, tuple[str, datetime.datetime]] = {}
@@ -66,9 +73,13 @@ def _load_tokens() -> dict[str, tuple[str, datetime.datetime]]:
 
 
 def _save_tokens() -> None:
-    TOKENS_FILE.write_text(
-        json.dumps({t: (uid, ts.isoformat()) for t, (uid, ts) in tokens.items()})
-    )
+    try:
+        TOKENS_FILE.write_text(
+            json.dumps({t: (uid, ts.isoformat()) for t, (uid, ts) in tokens.items()})
+        )
+    except OSError:
+        # Failing to persist tokens should not block authentication
+        pass
 
 # load tokens on startup
 tokens: dict[str, tuple[str, datetime.datetime]] = _load_tokens()
