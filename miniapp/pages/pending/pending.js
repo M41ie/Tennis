@@ -4,11 +4,27 @@ Page({
   data: {
     singles: [],
     doubles: [],
-    userId: ''
+    userId: '',
+    isAdmin: false
   },
   onLoad() {
     this.setData({ userId: wx.getStorageSync('user_id') });
-    this.fetchPendings();
+    this.fetchClubInfo();
+  },
+  fetchClubInfo() {
+    const cid = wx.getStorageSync('club_id');
+    if (!cid) return;
+    const that = this;
+    wx.request({
+      url: `${BASE_URL}/clubs/${cid}`,
+      success(res) {
+        const info = res.data;
+        const admin = info.leader_id === that.data.userId ||
+          (info.admin_ids && info.admin_ids.includes(that.data.userId));
+        that.setData({ isAdmin: admin });
+      },
+      complete() { that.fetchPendings(); }
+    });
   },
   fetchPendings() {
     const cid = wx.getStorageSync('club_id');
@@ -24,12 +40,13 @@ Page({
           return;
         }
         const uid = that.data.userId;
+        const isAdmin = that.data.isAdmin;
         const list = res.data.map(it => {
           it.canConfirm = it.can_confirm;
           it.canReject = it.can_decline;
           it.status = it.display_status_text || '';
           const isParticipant = it.player_a === uid || it.player_b === uid;
-          it.canApprove = !isParticipant && it.confirmed_a && it.confirmed_b;
+          it.canApprove = isAdmin && it.confirmed_a && it.confirmed_b;
           return it;
         });
         that.setData({ singles: list });
@@ -47,13 +64,14 @@ Page({
           return;
         }
         const uid = that.data.userId;
+        const isAdmin = that.data.isAdmin;
         const list = res.data.map(it => {
           it.canConfirm = it.can_confirm;
           it.canReject = it.can_decline;
           it.status = it.display_status_text || '';
           const participants = [it.a1, it.a2, it.b1, it.b2];
           const isParticipant = participants.includes(uid);
-          it.canApprove = !isParticipant && it.confirmed_a && it.confirmed_b;
+          it.canApprove = isAdmin && it.confirmed_a && it.confirmed_b;
           return it;
         });
         that.setData({ doubles: list });
