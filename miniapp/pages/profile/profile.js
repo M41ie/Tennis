@@ -14,6 +14,7 @@ Page({
     unreadCount: 0,
     genders: ['M', 'F'],
     genderIndex: 0,
+    editing: false,
     placeholderAvatar: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/5+BMwAIAwGRAAGuIwVxAAAAAElFTkSuQmCC',
     loginPlaceholder: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/5+BMwAIAwGRAAGuIwVxAAAAAElFTkSuQmCC',
     iconClub: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/5+BMwAIAwGRAAGuIwVxAAAAAElFTkSuQmCC',
@@ -170,6 +171,9 @@ Page({
   onGender(e) {
     this.setData({ 'user.gender': e.detail.value });
   },
+  onName(e) {
+    this.setData({ 'user.name': e.detail.value });
+  },
   chooseAvatar() {
     const that = this;
     wx.chooseImage({
@@ -178,6 +182,21 @@ Page({
         that.setData({ 'user.avatar': res.tempFilePaths[0] });
       }
     });
+  },
+  startEdit() {
+    this.setData({ editing: true });
+  },
+  cancelEdit() {
+    this.setData({ editing: false });
+    const cid = this.data.clubId;
+    const uid = this.data.user ? this.data.user.user_id : wx.getStorageSync('user_id');
+    if (cid && uid) {
+      this.fetchUser(cid, uid);
+    }
+  },
+  saveProfile() {
+    this.updateProfile();
+    this.setData({ editing: false });
   },
   updateProfile() {
     const cid = this.data.clubId;
@@ -191,6 +210,7 @@ Page({
       data: {
         user_id: uid,
         token,
+        name: this.data.user.name,
         age: this.data.user.age,
         gender: this.data.user.gender,
         avatar: this.data.user.avatar
