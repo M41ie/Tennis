@@ -14,6 +14,37 @@
   </block>
 </view>
 
+<!-- 编辑表单 -->
+<view wx:if="{{loggedIn && editing}}" class="weui-cells weui-cells_form">
+  <view class="weui-cell">
+    <view class="weui-label">昵称</view>
+    <input class="weui-input" value="{{user.name}}" bindinput="onName" />
+  </view>
+  <view class="weui-cell">
+    <view class="weui-label">年龄</view>
+    <input class="weui-input" type="number" value="{{user.age}}" bindinput="onAge" />
+  </view>
+  <view class="weui-cell">
+    <view class="weui-label">性别</view>
+    <picker class="weui-input" range="{{genders}}" value="{{genderIndex}}" bindchange="onGender">
+      <view>{{user.gender || '请选择'}}</view>
+    </picker>
+  </view>
+  <view class="weui-cell" bindtap="chooseAvatar">
+    <view class="weui-label">头像</view>
+    <image class="avatar" src="{{user.avatar || placeholderAvatar}}" />
+  </view>
+</view>
+
+<!-- 编辑/保存按钮 -->
+<block wx:if="{{loggedIn && isSelf}}">
+  <button wx:if="{{!editing}}" class="weui-btn" bindtap="startEdit">编辑资料</button>
+  <block wx:if="{{editing}}">
+    <button class="weui-btn weui-btn_primary" bindtap="saveProfile">保存</button>
+    <button class="weui-btn" bindtap="cancelEdit">取消</button>
+  </block>
+</block>
+
 <!-- 无评分提醒卡片 -->
 <view wx:if="{{loggedIn && !user.singles_rating && !user.doubles_rating}}" class="hint-card" bindtap="goClub">
   还没有评分？加入俱乐部并邀请成员为你预评分 &gt;
