@@ -6,6 +6,14 @@ App({
     BASE_URL
   },
   onLaunch() {
+    // inject Accept-Language header for all requests
+    const origRequest = wx.request
+    wx.request = function(options) {
+      options = options || {}
+      options.header = options.header || {}
+      options.header['Accept-Language'] = 'zh-CN'
+      return origRequest(options)
+    }
     const token = wx.getStorageSync('token');
     const uid = wx.getStorageSync('user_id');
     if (token && uid) {

@@ -36,7 +36,7 @@ Page({
       data: { token },
       success(res) {
         if (res.statusCode >= 300) {
-          wx.showToast({ title: 'Failed to load', icon: 'none' });
+          wx.showToast({ title: '加载失败', icon: 'none' });
           return;
         }
         const uid = that.data.userId;
@@ -52,7 +52,7 @@ Page({
         that.setData({ singles: list });
       },
       fail() {
-        wx.showToast({ title: 'Request error', icon: 'none' });
+        wx.showToast({ title: '网络错误', icon: 'none' });
       }
     });
     wx.request({
@@ -60,7 +60,7 @@ Page({
       data: { token },
       success(res) {
         if (res.statusCode >= 300) {
-          wx.showToast({ title: 'Failed to load', icon: 'none' });
+          wx.showToast({ title: '加载失败', icon: 'none' });
           return;
         }
         const uid = that.data.userId;
@@ -77,7 +77,7 @@ Page({
         that.setData({ doubles: list });
       },
       fail() {
-        wx.showToast({ title: 'Request error', icon: 'none' });
+        wx.showToast({ title: '网络错误', icon: 'none' });
       }
     });
   },
@@ -92,10 +92,10 @@ Page({
       data: { user_id: this.data.userId, token },
       success(res) {
         if (res.statusCode >= 300) {
-          wx.showToast({ title: 'Error', icon: 'none' });
+          wx.showToast({ title: '错误', icon: 'none' });
         }
       },
-      fail() { wx.showToast({ title: 'Request error', icon: 'none' }); },
+      fail() { wx.showToast({ title: '网络错误', icon: 'none' }); },
       complete() { that.fetchPendings(); }
     });
   },
@@ -110,10 +110,10 @@ Page({
       data: { approver: this.data.userId, token },
       success(res) {
         if (res.statusCode >= 300) {
-          wx.showToast({ title: 'Error', icon: 'none' });
+          wx.showToast({ title: '错误', icon: 'none' });
         }
       },
-      fail() { wx.showToast({ title: 'Request error', icon: 'none' }); },
+      fail() { wx.showToast({ title: '网络错误', icon: 'none' }); },
       complete() { that.fetchPendings(); }
     });
   },
@@ -128,10 +128,10 @@ Page({
       data: { user_id: this.data.userId, token },
       success(res) {
         if (res.statusCode >= 300) {
-          wx.showToast({ title: 'Error', icon: 'none' });
+          wx.showToast({ title: '错误', icon: 'none' });
         }
       },
-      fail() { wx.showToast({ title: 'Request error', icon: 'none' }); },
+      fail() { wx.showToast({ title: '网络错误', icon: 'none' }); },
       complete() { that.fetchPendings(); }
     });
   },
@@ -146,10 +146,10 @@ Page({
       data: { user_id: this.data.userId, token },
       success(res) {
         if (res.statusCode >= 300) {
-          wx.showToast({ title: 'Error', icon: 'none' });
+          wx.showToast({ title: '错误', icon: 'none' });
         }
       },
-      fail() { wx.showToast({ title: 'Request error', icon: 'none' }); },
+      fail() { wx.showToast({ title: '网络错误', icon: 'none' }); },
       complete() { that.fetchPendings(); }
     });
   },
@@ -164,10 +164,10 @@ Page({
       data: { approver: this.data.userId, token },
       success(res) {
         if (res.statusCode >= 300) {
-          wx.showToast({ title: 'Error', icon: 'none' });
+          wx.showToast({ title: '错误', icon: 'none' });
         }
       },
-      fail() { wx.showToast({ title: 'Request error', icon: 'none' }); },
+      fail() { wx.showToast({ title: '网络错误', icon: 'none' }); },
       complete() { that.fetchPendings(); }
     });
   },
@@ -182,10 +182,10 @@ Page({
       data: { user_id: this.data.userId, token },
       success(res) {
         if (res.statusCode >= 300) {
-          wx.showToast({ title: 'Error', icon: 'none' });
+          wx.showToast({ title: '错误', icon: 'none' });
         }
       },
-      fail() { wx.showToast({ title: 'Request error', icon: 'none' }); },
+      fail() { wx.showToast({ title: '网络错误', icon: 'none' }); },
       complete() { that.fetchPendings(); }
     });
   }

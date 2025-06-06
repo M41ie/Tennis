@@ -40,7 +40,7 @@ Page({
       },
       success(res) {
         if (res.statusCode === 200) {
-          wx.showToast({ title: 'Created', icon: 'success' });
+          wx.showToast({ title: '已创建', icon: 'success' });
           wx.navigateBack();
         } else {
           const msg = (res.data && res.data.detail) || 'Failed';

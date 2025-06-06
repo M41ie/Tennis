@@ -1,7 +1,9 @@
 const BASE_URL = getApp().globalData.BASE_URL;
+const { zh_CN } = require('../../utils/locales.js');
 
 Page({
   data: {
+    t: zh_CN,
     clubIds: [],
     clubOptions: [],
     clubIndex: 0,
@@ -110,7 +112,7 @@ Page({
           token
         },
         success() {
-          wx.showToast({ title: 'Submitted', icon: 'success' });
+          wx.showToast({ title: '已提交', icon: 'success' });
         }
       });
     } else {
@@ -130,7 +132,7 @@ Page({
           token
         },
         success() {
-          wx.showToast({ title: 'Submitted', icon: 'success' });
+          wx.showToast({ title: '已提交', icon: 'success' });
         }
       });
     }
