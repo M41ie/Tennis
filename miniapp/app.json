@@ -27,10 +27,6 @@
         "text": "比赛"
       },
       {
-        "pagePath": "pages/manage/manage",
-        "text": "俱乐部"
-      },
-      {
         "pagePath": "pages/profile/profile",
         "text": "我的"
       }
