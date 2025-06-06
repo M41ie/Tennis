@@ -8,7 +8,6 @@ from tennis import cli, rating, storage
 FORMAT_MAP = {
     "6局": rating.FORMAT_6_GAME,
     "4局": rating.FORMAT_4_GAME,
-    "抢11": rating.FORMAT_TB11,
     "抢10": rating.FORMAT_TB10,
     "抢7": rating.FORMAT_TB7,
 }
