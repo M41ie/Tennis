@@ -66,6 +66,10 @@ Page({
     const [min, max] = e.detail.value;
     this.setData({ levelMin: min, levelMax: max });
   },
+  onLevelChanging(e) {
+    const [min, max] = e.detail.value;
+    this.setData({ levelMin: min, levelMax: max });
+  },
   confirmLevel() {
     let min = this.data.levelMin;
     let max = this.data.levelMax;
@@ -105,6 +109,10 @@ Page({
     });
   },
   onAgeChange(e) {
+    const [min, max] = e.detail.value;
+    this.setData({ ageMin: min, ageMax: max });
+  },
+  onAgeChanging(e) {
     const [min, max] = e.detail.value;
     this.setData({ ageMin: min, ageMax: max });
   },
