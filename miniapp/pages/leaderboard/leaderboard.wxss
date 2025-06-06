@@ -1,6 +1,9 @@
 .filter-bar{display:flex;white-space:nowrap;overflow-x:auto;background:#fff;}
 .filter-item{padding:10rpx 24rpx;font-size:26rpx;color:#666;}
 .filter-item.active{color:#07C160;border-bottom:4rpx solid #07C160;}
+.mode-switch{display:flex;background:#f7f7f7;margin-bottom:10rpx;border-radius:32rpx;overflow:hidden;}
+.mode-item{flex:1;padding:12rpx 0;text-align:center;font-size:28rpx;color:#333;}
+.mode-item.active{background:#07C160;color:#fff;}
 .item { display: flex; align-items: center; padding: 10px 0; }
 .avatar { width: 40px; height: 40px; margin-right: 10px; }
 .dialog{position:fixed;left:0;right:0;bottom:0;background:#fff;padding:20rpx;}

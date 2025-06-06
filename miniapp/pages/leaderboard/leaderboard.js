@@ -47,19 +47,12 @@ Page({
     this.setData({ filter, showClubDialog: false });
     this.fetchList(filter);
   },
-  chooseMode() {
-    const that = this;
-    wx.showActionSheet({
-      itemList: ['Singles', 'Doubles'],
-      success(res) {
-        if (res.tapIndex >= 0) {
-          const mode = res.tapIndex === 1 ? 'Doubles' : 'Singles';
-          const filter = { ...that.data.filter, mode };
-          that.setData({ filter });
-          that.fetchList(filter);
-        }
-      }
-    });
+  switchMode(e) {
+    const mode = e.currentTarget.dataset.mode;
+    if (mode === this.data.filter.mode) return;
+    const filter = { ...this.data.filter, mode };
+    this.setData({ filter });
+    this.fetchList(filter);
   },
   openLevel() {
     this.setData({

@@ -1,6 +1,10 @@
+<view class="mode-switch">
+  <view class="mode-item {{filter.mode === 'Singles' ? 'active' : ''}}" data-mode="Singles" bindtap="switchMode">Singles</view>
+  <view class="mode-item {{filter.mode === 'Doubles' ? 'active' : ''}}" data-mode="Doubles" bindtap="switchMode">Doubles</view>
+</view>
+
 <view class="filter-bar">
   <view class="filter-item" bindtap="openClub">俱乐部</view>
-  <view class="filter-item" bindtap="chooseMode">{{filter.mode}}</view>
   <view class="filter-item" bindtap="openLevel">级别</view>
   <view class="filter-item" bindtap="chooseGender">{{filter.gender}}</view>
   <view class="filter-item" bindtap="openAge">年龄</view>
