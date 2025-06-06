@@ -752,11 +752,14 @@ def list_pending_doubles(club_id: str, token: str):
             else:
                 status_text = "待确认"
 
+        can_approve = uid in admins and m.confirmed_a and m.confirmed_b
+
         entry.update(
             {
                 "display_status_text": status_text,
                 "can_confirm": can_confirm,
                 "can_decline": can_decline,
+                "can_approve": can_approve,
                 "current_user_role_in_match": role,
                 "submitted_by_player_id": m.initiator,
             }
@@ -966,11 +969,14 @@ def list_pending_matches(club_id: str, token: str):
             else:
                 status_text = "待确认"
 
+        can_approve = uid in admins and m.confirmed_a and m.confirmed_b
+
         entry.update(
             {
                 "display_status_text": status_text,
                 "can_confirm": can_confirm,
                 "can_decline": can_decline,
+                "can_approve": can_approve,
                 "current_user_role_in_match": role,
                 "submitted_by_player_id": m.initiator,
             }

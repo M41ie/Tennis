@@ -39,14 +39,11 @@ Page({
           wx.showToast({ title: 'Failed to load', icon: 'none' });
           return;
         }
-        const uid = that.data.userId;
-        const isAdmin = that.data.isAdmin;
         const list = res.data.map(it => {
           it.canConfirm = it.can_confirm;
           it.canReject = it.can_decline;
           it.status = it.display_status_text || '';
-          const isParticipant = it.player_a === uid || it.player_b === uid;
-          it.canApprove = isAdmin && it.confirmed_a && it.confirmed_b;
+          it.canApprove = it.can_approve;
           return it;
         });
         that.setData({ singles: list });
@@ -63,15 +60,11 @@ Page({
           wx.showToast({ title: 'Failed to load', icon: 'none' });
           return;
         }
-        const uid = that.data.userId;
-        const isAdmin = that.data.isAdmin;
         const list = res.data.map(it => {
           it.canConfirm = it.can_confirm;
           it.canReject = it.can_decline;
           it.status = it.display_status_text || '';
-          const participants = [it.a1, it.a2, it.b1, it.b2];
-          const isParticipant = participants.includes(uid);
-          it.canApprove = isAdmin && it.confirmed_a && it.confirmed_b;
+          it.canApprove = it.can_approve;
           return it;
         });
         that.setData({ doubles: list });
