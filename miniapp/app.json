@@ -20,15 +20,19 @@
     "list": [
       {
         "pagePath": "pages/leaderboard/leaderboard",
-        "text": "\u6392\u884c"
+        "text": "排行榜"
       },
       {
         "pagePath": "pages/records/records",
-        "text": "\u6218\u7ee9"
+        "text": "比赛"
+      },
+      {
+        "pagePath": "pages/manage/manage",
+        "text": "俱乐部"
       },
       {
         "pagePath": "pages/profile/profile",
-        "text": "\u6211\u7684"
+        "text": "我的"
       }
     ]
   }

@@ -24,7 +24,7 @@ Page({
           wx.setStorageSync('user_id', that.data.loginId);
           wx.navigateBack();
         } else {
-          wx.showToast({ title: 'Login failed', icon: 'none' });
+          wx.showToast({ title: '登录失败', icon: 'none' });
         }
       },
       fail() {
@@ -48,7 +48,7 @@ Page({
               wx.setStorageSync('user_id', resp.data.user_id);
               wx.navigateBack();
             } else {
-              wx.showToast({ title: 'Login failed', icon: 'none' });
+              wx.showToast({ title: '登录失败', icon: 'none' });
             }
           },
           fail() {

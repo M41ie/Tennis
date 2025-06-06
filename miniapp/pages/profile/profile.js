@@ -71,7 +71,7 @@ Page({
           }
           that.fetchUnread();
         } else {
-          wx.showToast({ title: 'Login failed', icon: 'none' });
+          wx.showToast({ title: '登录失败', icon: 'none' });
         }
       },
       fail() {
@@ -100,7 +100,7 @@ Page({
               }
               that.fetchUnread();
             } else {
-              wx.showToast({ title: 'Login failed', icon: 'none' });
+              wx.showToast({ title: '登录失败', icon: 'none' });
             }
           },
           fail() {
@@ -217,10 +217,10 @@ Page({
       },
       success(res) {
         if (res.statusCode === 200) {
-          wx.showToast({ title: 'Updated', icon: 'success' });
+          wx.showToast({ title: '已更新', icon: 'success' });
           that.fetchUser(cid, uid);
         } else {
-          wx.showToast({ title: 'Failed', icon: 'none' });
+          wx.showToast({ title: '失败', icon: 'none' });
         }
       }
     });

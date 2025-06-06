@@ -1,43 +1,43 @@
 <view class="weui-cells weui-cells_form">
   <picker mode="selector" range="{{clubOptions}}" value="{{clubIndex}}" bindchange="onClubChange">
-    <view class="weui-cell">Club: {{clubOptions[clubIndex]}}</view>
+    <view class="weui-cell">{{t.club}}: {{clubOptions[clubIndex]}}</view>
   </picker>
   <picker mode="selector" range="{{modeOptions}}" value="{{modeIndex}}" bindchange="onModeChange">
-    <view class="weui-cell">{{modeOptions[modeIndex]}}</view>
+    <view class="weui-cell">{{modeIndex == 0 ? t.singles : t.doubles}}</view>
   </picker>
   <block wx:if="{{modeIndex == 0}}">
     <picker mode="selector" range="{{playerNames}}" value="{{opponentIndex}}" bindchange="onOpponentChange">
-      <view class="weui-cell">Opponent: {{playerNames[opponentIndex]}}</view>
+      <view class="weui-cell">{{t.opponent}}: {{playerNames[opponentIndex]}}</view>
     </picker>
   </block>
   <block wx:else>
     <picker mode="selector" range="{{playerNames}}" value="{{partnerIndex}}" bindchange="onPartnerChange">
-      <view class="weui-cell">Partner: {{playerNames[partnerIndex]}}</view>
+      <view class="weui-cell">{{t.partner}}: {{playerNames[partnerIndex]}}</view>
     </picker>
     <picker mode="selector" range="{{playerNames}}" value="{{opp1Index}}" bindchange="onOpp1Change">
-      <view class="weui-cell">Opponent 1: {{playerNames[opp1Index]}}</view>
+      <view class="weui-cell">{{t.opponent1}}: {{playerNames[opp1Index]}}</view>
     </picker>
     <picker mode="selector" range="{{playerNames}}" value="{{opp2Index}}" bindchange="onOpp2Change">
-      <view class="weui-cell">Opponent 2: {{playerNames[opp2Index]}}</view>
+      <view class="weui-cell">{{t.opponent2}}: {{playerNames[opp2Index]}}</view>
     </picker>
   </block>
   <picker mode="date" value="{{date}}" bindchange="onDateChange">
-    <view class="weui-cell">Date: {{date}}</view>
+    <view class="weui-cell">{{t.date}}: {{date}}</view>
   </picker>
   <view class="weui-cell">
-    <view class="weui-label">Location</view>
-    <input class="weui-input" placeholder="Location" bindinput="onLocation" />
+    <view class="weui-label">{{t.location}}</view>
+    <input class="weui-input" placeholder="{{t.location}}" bindinput="onLocation" />
   </view>
   <picker mode="selector" range="{{formatOptions}}" value="{{formatIndex}}" bindchange="onFormatChange">
-    <view class="weui-cell">Format: {{formatOptions[formatIndex]}}</view>
+    <view class="weui-cell">{{t.format}}: {{formatOptions[formatIndex]}}</view>
   </picker>
   <view class="weui-cell">
-    <view class="weui-label">Your Score</view>
-    <input class="weui-input" type="number" placeholder="Score" bindinput="onScoreA" />
+    <view class="weui-label">{{t.yourScore}}</view>
+    <input class="weui-input" type="number" placeholder="{{t.yourScore}}" bindinput="onScoreA" />
   </view>
   <view class="weui-cell">
-    <view class="weui-label">Opponent</view>
-    <input class="weui-input" type="number" placeholder="Score" bindinput="onScoreB" />
+    <view class="weui-label">{{t.opponent}}</view>
+    <input class="weui-input" type="number" placeholder="{{t.oppScore}}" bindinput="onScoreB" />
   </view>
 </view>
-<button class="weui-btn weui-btn_primary" bindtap="submit">Submit</button>
+<button class="weui-btn weui-btn_primary" bindtap="submit">{{t.submit}}</button>

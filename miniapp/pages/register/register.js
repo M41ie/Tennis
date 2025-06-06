@@ -24,10 +24,10 @@ Page({
       },
       success(res) {
         if (res.statusCode === 200) {
-          wx.showToast({ title: 'Registered', icon: 'success' });
+          wx.showToast({ title: '注册成功', icon: 'success' });
           wx.navigateBack();
         } else {
-          wx.showToast({ title: 'Failed', icon: 'none' });
+          wx.showToast({ title: '失败', icon: 'none' });
         }
       }
     });
@@ -47,7 +47,7 @@ Page({
               wx.setStorageSync('user_id', resp.data.user_id);
               wx.navigateBack();
             } else {
-              wx.showToast({ title: 'Failed', icon: 'none' });
+              wx.showToast({ title: '失败', icon: 'none' });
             }
           },
           fail() {

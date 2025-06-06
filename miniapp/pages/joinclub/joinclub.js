@@ -49,7 +49,7 @@ Page({
       url: `${BASE_URL}/users/${userId}`,
       success(res) {
         if (res.data.joined_clubs && res.data.joined_clubs.length >= 5) {
-          wx.showToast({ title: 'Limit reached', icon: 'none' });
+          wx.showToast({ title: '达到上限', icon: 'none' });
           return;
         }
         wx.request({
@@ -59,9 +59,9 @@ Page({
           success(r) {
             if (r.statusCode === 200) {
               wx.setStorageSync('club_id', cid);
-              wx.showToast({ title: 'Joined', icon: 'success' });
+              wx.showToast({ title: '已加入', icon: 'success' });
             } else {
-              wx.showToast({ title: 'Failed', icon: 'none' });
+              wx.showToast({ title: '失败', icon: 'none' });
             }
           }
         });

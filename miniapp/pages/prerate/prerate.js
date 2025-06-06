@@ -21,7 +21,7 @@ Page({
       method: 'POST',
       data: { rater_id: raterId, target_id: targetId, rating, token },
       success() {
-        wx.showToast({ title: 'Submitted', icon: 'success' });
+        wx.showToast({ title: '已提交', icon: 'success' });
         that.fetchTarget(targetId);
       }
     });
