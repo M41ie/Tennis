@@ -1,0 +1,5 @@
+<view class="range-slider">
+  <view class="values">{{innerMin}} - {{innerMax}}</view>
+  <slider range="{{true}}" min="{{min}}" max="{{max}}" step="{{step}}"
+          value="{{[innerMin, innerMax]}}" bindchanging="onChanging" bindchange="onChange" />
+</view>

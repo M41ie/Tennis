@@ -1,0 +1,7 @@
+.range-slider {
+  padding: 10px 0;
+}
+.range-slider .values {
+  text-align: center;
+  margin-bottom: 5px;
+}
