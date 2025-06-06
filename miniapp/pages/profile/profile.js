@@ -133,9 +133,20 @@ Page({
       url: `${BASE_URL}/clubs/${cid}/players/${id}?recent=5`,
       success(res) {
         const idx = that.data.genders.indexOf(res.data.gender);
+        const userData = res.data;
+        if (userData.singles_rating != null)
+          userData.singles_rating = userData.singles_rating.toFixed(3);
+        if (userData.doubles_rating != null)
+          userData.doubles_rating = userData.doubles_rating.toFixed(3);
+        if (userData.recent_records) {
+          userData.recent_records.forEach(r => {
+            if (r.self_rating_after != null)
+              r.self_rating_after = r.self_rating_after.toFixed(3);
+          });
+        }
         that.setData({
-          user: res.data,
-          records: res.data.recent_records || [],
+          user: userData,
+          records: userData.recent_records || [],
           genderIndex: idx >= 0 ? idx : 0
         });
       }

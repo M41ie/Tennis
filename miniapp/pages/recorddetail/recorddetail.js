@@ -21,6 +21,8 @@ Page({
           rec.deltaDisplay = '';
           rec.deltaClass = 'neutral';
         }
+        if (rec.self_rating_after != null)
+          rec.self_rating_after = rec.self_rating_after.toFixed(3);
         this.setData({ record: rec });
       } catch (e) {}
     }

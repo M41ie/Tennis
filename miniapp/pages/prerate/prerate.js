@@ -32,7 +32,14 @@ Page({
     if (!clubId || !id) return;
     wx.request({
       url: `${BASE_URL}/clubs/${clubId}/players/${id}`,
-      success(res) { that.setData({ target: res.data }); }
+      success(res) {
+        const data = res.data;
+        if (data.singles_rating != null)
+          data.singles_rating = data.singles_rating.toFixed(3);
+        if (data.doubles_rating != null)
+          data.doubles_rating = data.doubles_rating.toFixed(3);
+        that.setData({ target: data });
+      }
     });
   }
 });
