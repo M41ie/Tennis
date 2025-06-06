@@ -28,7 +28,7 @@
 </view>
 <view class="weui-list">
   <block wx:for="{{players}}" wx:key="user_id">
-    <view class="weui-list__item item" bindtap="viewPlayer" data-id="{{item.user_id}}" data-cid="{{item.club_id || filter.clubs[0]}}">
+    <view class="weui-list__item item" bindtap="viewPlayer" data-id="{{item.user_id}}" data-cid="{{item.club_id}}">
       <image class="avatar" src="{{item.avatar}}" mode="aspectFill"></image>
       <text style="flex:1">{{item.name}}: {{item.rating}}</text>
     </view>

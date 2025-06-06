@@ -104,8 +104,7 @@ Page({
     this.fetchList(filter);
   },
   fetchList(filter) {
-    const clubs = filter.clubs && filter.clubs.length ? filter.clubs : ['All'];
-    const club = clubs[0];
+    const clubs = filter.clubs && filter.clubs.length ? filter.clubs : [];
     const that = this;
     const params = [];
     if (filter.minLevel) params.push('min_rating=' + filter.minLevel);
@@ -114,13 +113,11 @@ Page({
     if (filter.maxAge) params.push('max_age=' + filter.maxAge);
     if (filter.gender && filter.gender !== 'All') params.push('gender=' + filter.gender);
     if (filter.mode === 'Doubles') params.push('doubles=true');
-    let url = '';
-    if (club === 'All') {
-      url = `${BASE_URL}/players`;
-    } else {
-      url = `${BASE_URL}/clubs/${club}/players`;
-    }
+
+    let url = `${BASE_URL}/players`;
+    if (clubs.length) params.push('club=' + clubs.join(','));
     if (params.length) url += '?' + params.join('&');
+
     wx.request({
       url,
       success(res) {
