@@ -1,19 +1,64 @@
-<view class="btn-wrapper">
-  <button class="record-btn primary" bindtap="addMatch">录入战绩</button>
-  <button class="record-btn secondary" bindtap="viewPending">待确认战绩</button>
+<view class="page-header">
+  <text class="title">战绩</text>
+  <button class="add-btn" bindtap="addMatch">＋</button>
 </view>
-<picker mode="selector" range="{{modeOptions}}" value="{{modeIndex}}" bindchange="onModeChange">
-  <view class="weui-cell">{{modeOptions[modeIndex]}}</view>
-</picker>
-<view class="weui-list">
-  <block wx:for="{{records}}" wx:key="index">
-    <view class="weui-list__item item" bindtap="viewRecord" data-index="{{index}}">
-      <view style="flex:1">{{item.date}} {{item.location}}</view>
-      <view>{{item.format}} {{item.self_score}}-{{item.opponent_score}}</view>
-      <view>
-        {{item.self_rating_after}}
-        <text class="{{item.deltaClass}}">({{item.deltaDisplay}})</text>
+<view class="tab-bar">
+  <view class="tab-item {{tabIndex==0?'active':''}}" data-index="0" bindtap="switchTab">
+    <text class="icon">📄</text>
+    <text>战绩记录</text>
+  </view>
+  <view class="tab-item {{tabIndex==1?'active':''}}" data-index="1" bindtap="switchTab">
+    <text class="icon">⏳</text>
+    <text>待确认战绩</text>
+  </view>
+</view>
+<view wx:if="{{tabIndex==0}}">
+  <view class="mode-switch">
+    <view class="mode-item {{modeIndex==0?'active':''}}" data-index="0" bindtap="switchMode">Singles</view>
+    <view class="mode-item {{modeIndex==1?'active':''}}" data-index="1" bindtap="switchMode">Doubles</view>
+  </view>
+  <view class="weui-list">
+    <block wx:for="{{records}}" wx:key="index">
+      <view class="weui-list__item item" bindtap="viewRecord" data-index="{{index}}">
+        <view style="flex:1">{{item.date}} {{item.location}}</view>
+        <view>{{item.format}} {{item.self_score}}-{{item.opponent_score}}</view>
+        <view>
+          {{item.self_rating_after}}
+          <text class="{{item.deltaClass}}">({{item.deltaDisplay}})</text>
+        </view>
       </view>
-    </view>
-  </block>
+    </block>
+  </view>
+</view>
+<view wx:elif="{{tabIndex==1}}">
+  <view class="list">
+    <view>Singles Pending</view>
+    <block wx:for="{{pendingSingles}}" wx:key="index">
+      <view class="item">
+        <view>{{item.date}} {{item.player_a}} vs {{item.player_b}}</view>
+        <view>{{item.score_a}}-{{item.score_b}}</view>
+        <view class="status">{{item.status}}</view>
+        <view class="actions">
+          <button wx:if="{{item.canConfirm}}" data-index="{{item.index}}" bindtap="confirmSingle">Confirm</button>
+          <button wx:if="{{item.canReject}}" data-index="{{item.index}}" bindtap="rejectSingle">Reject</button>
+          <button wx:if="{{item.canApprove}}" data-index="{{item.index}}" bindtap="approveSingle">Approve</button>
+        </view>
+      </view>
+    </block>
+  </view>
+  <view class="list">
+    <view>Doubles Pending</view>
+    <block wx:for="{{pendingDoubles}}" wx:key="index">
+      <view class="item">
+        <view>{{item.date}} {{item.a1}}/{{item.a2}} vs {{item.b1}}/{{item.b2}}</view>
+        <view>{{item.score_a}}-{{item.score_b}}</view>
+        <view class="status">{{item.status}}</view>
+        <view class="actions">
+          <button wx:if="{{item.canConfirm}}" data-index="{{item.index}}" bindtap="confirmDouble">Confirm</button>
+          <button wx:if="{{item.canReject}}" data-index="{{item.index}}" bindtap="rejectDouble">Reject</button>
+          <button wx:if="{{item.canApprove}}" data-index="{{item.index}}" bindtap="approveDouble">Approve</button>
+        </view>
+      </view>
+    </block>
+  </view>
 </view>
