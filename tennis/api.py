@@ -572,15 +572,22 @@ def list_players(
 def list_all_players(
     min_rating: float | None = None,
     max_rating: float | None = None,
+    min_age: int | None = None,
+    max_age: int | None = None,
     gender: str | None = None,
     club: str | None = None,
     doubles: bool = False,
 ):
+    """Return players from one or more clubs optionally filtered and sorted."""
+
     if club:
-        c = clubs.get(club)
-        if not c:
-            raise HTTPException(404, "Club not found")
-        clubs_to_iter = [c]
+        club_ids = club.split(",")
+        clubs_to_iter = []
+        for cid in club_ids:
+            c = clubs.get(cid)
+            if not c:
+                raise HTTPException(404, "Club not found")
+            clubs_to_iter.append(c)
     else:
         clubs_to_iter = clubs.values()
     today = datetime.date.today()
@@ -592,6 +599,10 @@ def list_all_players(
             if min_rating is not None and rating < min_rating:
                 continue
             if max_rating is not None and rating > max_rating:
+                continue
+            if min_age is not None and (p.age is None or p.age < min_age):
+                continue
+            if max_age is not None and (p.age is None or p.age > max_age):
                 continue
             if gender is not None and p.gender != gender:
                 continue

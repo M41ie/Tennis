@@ -823,6 +823,63 @@ def test_list_players_filters(tmp_path, monkeypatch):
     assert ids == ["p3", "p1"]
 
 
+def test_list_all_players_multi_club(tmp_path, monkeypatch):
+    db = tmp_path / "tennis.db"
+    monkeypatch.setattr(storage, "DB_FILE", db)
+
+    api = importlib.reload(importlib.import_module("tennis.api"))
+    client = TestClient(api.app)
+
+    for uid in ("leader1", "leader2", "p1", "p2", "p3", "p4"):
+        allow = uid.startswith("leader")
+        client.post(
+            "/users",
+            json={"user_id": uid, "name": uid.upper(), "password": "pw", "allow_create": allow},
+        )
+
+    tokens = {
+        pid: client.post("/login", json={"user_id": pid, "password": "pw"}).json()["token"]
+        for pid in ("leader1", "leader2", "p1", "p2", "p3", "p4")
+    }
+
+    client.post(
+        "/clubs",
+        json={"club_id": "c1", "name": "C1", "user_id": "leader1", "token": tokens["leader1"]},
+    )
+    client.post(
+        "/clubs",
+        json={"club_id": "c2", "name": "C2", "user_id": "leader2", "token": tokens["leader2"]},
+    )
+
+    client.post(
+        "/clubs/c1/players",
+        json={"user_id": "p1", "name": "P1", "token": tokens["p1"]},
+    )
+    client.post(
+        "/clubs/c2/players",
+        json={"user_id": "p2", "name": "P2", "token": tokens["p2"]},
+    )
+    client.post(
+        "/clubs/c1/players",
+        json={"user_id": "p3", "name": "P3", "token": tokens["p3"]},
+    )
+    client.post(
+        "/clubs/c2/players",
+        json={"user_id": "p4", "name": "P4", "token": tokens["p4"]},
+    )
+
+    api.clubs["c1"].members["p1"].singles_rating = 1200
+    api.clubs["c2"].members["p2"].singles_rating = 1100
+    api.clubs["c1"].members["p3"].singles_rating = 1300
+    api.clubs["c2"].members["p4"].singles_rating = 1250
+
+    resp = client.get("/players?club=c1,c2&min_rating=1200")
+    assert resp.status_code == 200
+    board = resp.json()
+    ids = [p["user_id"] for p in board]
+    assert ids == ["p3", "p4", "p1"]
+
+
 def test_update_player_api(tmp_path, monkeypatch):
     db = tmp_path / "tennis.db"
     monkeypatch.setattr(storage, "DB_FILE", db)
