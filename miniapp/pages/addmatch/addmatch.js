@@ -17,7 +17,10 @@ Page({
     opp2Index: 0,
     date: '',
     location: '',
-    formatOptions: ['6_game', '4_game', 'tb11', 'tb10', 'tb7'],
+    // Display names for match formats
+    formatOptions: ['6局', '4局', '抢11', '抢10', '抢7'],
+    // Codes sent to the backend when submitting a result
+    formatCodes: ['6_game', '4_game', 'tb11', 'tb10', 'tb7'],
     formatIndex: 0,
     scoreA: '',
     scoreB: ''
@@ -107,7 +110,7 @@ Page({
           score_initiator: parseInt(this.data.scoreA, 10),
           score_opponent: parseInt(this.data.scoreB, 10),
           date: this.data.date,
-          format: this.data.formatOptions[this.data.formatIndex],
+          format: this.data.formatCodes[this.data.formatIndex],
           location: this.data.location,
           token
         },
@@ -127,7 +130,7 @@ Page({
           score_initiator: parseInt(this.data.scoreA, 10),
           score_opponent: parseInt(this.data.scoreB, 10),
           date: this.data.date,
-          format: this.data.formatOptions[this.data.formatIndex],
+          format: this.data.formatCodes[this.data.formatIndex],
           location: this.data.location,
           token
         },
