@@ -66,9 +66,13 @@ def _load_tokens() -> dict[str, tuple[str, datetime.datetime]]:
 
 
 def _save_tokens() -> None:
-    TOKENS_FILE.write_text(
-        json.dumps({t: (uid, ts.isoformat()) for t, (uid, ts) in tokens.items()})
-    )
+    try:
+        TOKENS_FILE.write_text(
+            json.dumps({t: (uid, ts.isoformat()) for t, (uid, ts) in tokens.items()})
+        )
+    except OSError:
+        # Failing to persist tokens should not block authentication
+        pass
 
 # load tokens on startup
 tokens: dict[str, tuple[str, datetime.datetime]] = _load_tokens()
