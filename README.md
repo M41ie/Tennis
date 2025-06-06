@@ -15,6 +15,9 @@ python3 -m tennis.cli confirm_match CLUB_ID INDEX USER_ID
 python3 -m tennis.cli approve_match CLUB_ID INDEX APPROVER
 ```
 
+Creating a club automatically makes the creator a member. This also counts
+toward their joined club limit (default 5).
+
 Use `pre_rate` for club members to vote on a new player's skill before any matches are recorded. The player's initial rating is the weighted average of these votes based on each rater's match count.
 
 Data is stored in a SQLite database `tennis.db` in the repository root.

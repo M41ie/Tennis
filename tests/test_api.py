@@ -741,7 +741,7 @@ def test_doubles_leaderboard_api(tmp_path, monkeypatch):
     assert resp.status_code == 200
     board = resp.json()
     ids = [p["user_id"] for p in board]
-    assert ids == ["p3", "p1", "p2", "p4"]
+    assert ids == ["p3", "p1", "p2", "leader", "p4"]
 
 
 def test_token_persistence(tmp_path, monkeypatch):
