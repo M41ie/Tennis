@@ -53,8 +53,15 @@ TOKEN_TTL = datetime.timedelta(hours=24)
 # simple in-memory token store mapping token -> (user_id, timestamp)
 def _load_tokens() -> dict[str, tuple[str, datetime.datetime]]:
     try:
-        data = json.loads(TOKENS_FILE.read_text())
+        text = TOKENS_FILE.read_text()
     except FileNotFoundError:
+        return {}
+    except OSError:
+        # if the file is unreadable we simply skip loading tokens
+        return {}
+    try:
+        data = json.loads(text)
+    except json.JSONDecodeError:
         return {}
     now = datetime.datetime.utcnow()
     result: dict[str, tuple[str, datetime.datetime]] = {}
