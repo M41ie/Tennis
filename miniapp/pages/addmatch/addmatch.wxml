@@ -36,7 +36,7 @@
     <input class="weui-input" type="number" placeholder="{{t.yourScore}}" bindinput="onScoreA" />
   </view>
   <view class="weui-cell">
-    <view class="weui-label">{{t.opponent}}</view>
+    <view class="weui-label">{{t.oppScore}}</view>
     <input class="weui-input" type="number" placeholder="{{t.oppScore}}" bindinput="onScoreB" />
   </view>
 </view>
