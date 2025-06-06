@@ -3,7 +3,9 @@ Component({
     min: { type: Number, value: 0 },
     max: { type: Number, value: 100 },
     step: { type: Number, value: 1 },
-    value: { type: Array, value: [] }
+    value: { type: Array, value: [] },
+    activeColor: { type: String, value: '#07C160' },
+    backgroundColor: { type: String, value: '#ccc' }
   },
   data: {
     innerMin: 0,
