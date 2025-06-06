@@ -64,7 +64,7 @@ Page({
   },
   onLevelChange(e) {
     const [min, max] = e.detail.value;
-    this.setData({ levelMin: min / 4, levelMax: max / 4 });
+    this.setData({ levelMin: min, levelMax: max });
   },
   confirmLevel() {
     let min = this.data.levelMin;
