@@ -124,7 +124,11 @@ Page({
     wx.request({
       url,
       success(res) {
-        that.setData({ players: res.data });
+        const list = res.data || [];
+        list.forEach(p => {
+          if (p.rating != null) p.rating = p.rating.toFixed(3);
+        });
+        that.setData({ players: list });
       }
     });
   },
