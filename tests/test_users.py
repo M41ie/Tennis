@@ -40,6 +40,15 @@ def test_create_club_limit():
         create_club(users, clubs, "leader", "c2", "Club2", None, None)
 
 
+def test_creator_is_member():
+    users = {}
+    clubs = {}
+    register_user(users, "leader", "Leader", "pw", allow_create=True)
+    create_club(users, clubs, "leader", "c1", "Club1", None, None)
+    assert "leader" in clubs["c1"].members
+    assert users["leader"].joined_clubs == 1
+
+
 def test_join_club_limit():
     users = {}
     clubs = {}

@@ -141,6 +141,8 @@ def create_club(users, clubs, user_id: str, club_id: str, name: str, logo: Optio
         raise ValueError('User not allowed to create club')
     if user.created_clubs >= MAX_CREATED_CLUBS:
         raise ValueError('Club creation limit reached')
+    if user.joined_clubs >= MAX_JOINED_CLUBS:
+        raise ValueError('Club membership limit reached')
     if club_id in clubs:
         raise ValueError('Club already exists')
     clubs[club_id] = Club(
@@ -150,7 +152,10 @@ def create_club(users, clubs, user_id: str, club_id: str, name: str, logo: Optio
         region=region,
         leader_id=user_id,
     )
+    club = clubs[club_id]
+    club.members[user_id] = Player(user_id=user_id, name=user.name)
     user.created_clubs += 1
+    user.joined_clubs += 1
 
 
 def add_player(
