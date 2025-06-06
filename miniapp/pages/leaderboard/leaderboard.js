@@ -59,16 +59,18 @@ Page({
     this.setData({
       showLevelDialog: true,
       levelMin: this.data.filter.minLevel === '' ? 0 : this.data.filter.minLevel,
-      levelMax: this.data.filter.maxLevel === '' ? 7.5 : this.data.filter.maxLevel
+      levelMax: this.data.filter.maxLevel === '' ? 7 : this.data.filter.maxLevel
     });
   },
-  onLevelMin(e) { this.setData({ levelMin: parseInt(e.detail.value) / 4 }); },
-  onLevelMax(e) { this.setData({ levelMax: parseInt(e.detail.value) / 4 }); },
+  onLevelChange(e) {
+    const [min, max] = e.detail.value;
+    this.setData({ levelMin: min / 4, levelMax: max / 4 });
+  },
   confirmLevel() {
     let min = this.data.levelMin;
     let max = this.data.levelMax;
     const filter = { ...this.data.filter };
-    if (min === 0 && max === 7.5) {
+    if (min === 0 && max === 7) {
       filter.minLevel = '';
       filter.maxLevel = '';
     } else {
@@ -102,8 +104,10 @@ Page({
       ageMax: this.data.filter.maxAge === '' ? 100 : this.data.filter.maxAge
     });
   },
-  onAgeMin(e) { this.setData({ ageMin: parseInt(e.detail.value) }); },
-  onAgeMax(e) { this.setData({ ageMax: parseInt(e.detail.value) }); },
+  onAgeChange(e) {
+    const [min, max] = e.detail.value;
+    this.setData({ ageMin: min, ageMax: max });
+  },
   confirmAge() {
     let min = this.data.ageMin;
     let max = this.data.ageMax;

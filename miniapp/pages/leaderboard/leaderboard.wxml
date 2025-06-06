@@ -20,18 +20,14 @@
 </view>
 
 <view wx:if="{{showLevelDialog}}" class="dialog">
-  <view>Min: {{levelMin}}</view>
-  <slider min="0" max="30" step="1" value="{{levelMin*4}}" bindchange="onLevelMin" />
-  <view>Max: {{levelMax}}</view>
-  <slider min="0" max="30" step="1" value="{{levelMax*4}}" bindchange="onLevelMax" />
+  <view>{{levelMin}} - {{levelMax}}</view>
+  <slider range min="0" max="28" step="1" value="{{[levelMin*4, levelMax*4]}}" bindchange="onLevelChange" />
   <button bindtap="confirmLevel">确定</button>
 </view>
 
 <view wx:if="{{showAgeDialog}}" class="dialog">
-  <view>Min: {{ageMin}}</view>
-  <slider min="0" max="100" step="5" value="{{ageMin}}" bindchange="onAgeMin" />
-  <view>Max: {{ageMax}}</view>
-  <slider min="0" max="100" step="5" value="{{ageMax}}" bindchange="onAgeMax" />
+  <view>{{ageMin}} - {{ageMax}}</view>
+  <slider range min="0" max="100" step="5" value="{{[ageMin, ageMax]}}" bindchange="onAgeChange" />
   <button bindtap="confirmAge">确定</button>
 </view>
 <view class="weui-list">
