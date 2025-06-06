@@ -16,6 +16,7 @@ Page({
     showClubDialog: false,
     showLevelDialog: false,
     showAgeDialog: false,
+    genderText: '全性别',
     selectedClubs: [],
     levelMin: '',
     levelMax: '',
@@ -57,26 +58,38 @@ Page({
   openLevel() {
     this.setData({
       showLevelDialog: true,
-      levelMin: this.data.filter.minLevel,
-      levelMax: this.data.filter.maxLevel
+      levelMin: this.data.filter.minLevel === '' ? 0 : this.data.filter.minLevel,
+      levelMax: this.data.filter.maxLevel === '' ? 7.5 : this.data.filter.maxLevel
     });
   },
-  onLevelMin(e) { this.setData({ levelMin: e.detail.value }); },
-  onLevelMax(e) { this.setData({ levelMax: e.detail.value }); },
+  onLevelMin(e) { this.setData({ levelMin: parseInt(e.detail.value) / 4 }); },
+  onLevelMax(e) { this.setData({ levelMax: parseInt(e.detail.value) / 4 }); },
   confirmLevel() {
-    const filter = { ...this.data.filter, minLevel: this.data.levelMin, maxLevel: this.data.levelMax };
+    let min = this.data.levelMin;
+    let max = this.data.levelMax;
+    const filter = { ...this.data.filter };
+    if (min === 0 && max === 7.5) {
+      filter.minLevel = '';
+      filter.maxLevel = '';
+    } else {
+      filter.minLevel = min;
+      filter.maxLevel = max;
+    }
     this.setData({ filter, showLevelDialog: false });
     this.fetchList(filter);
   },
   chooseGender() {
     const that = this;
     wx.showActionSheet({
-      itemList: ['All', 'Male', 'Female'],
+      itemList: ['全性别', '男性', '女性'],
       success(res) {
         if (res.tapIndex >= 0) {
-          const gender = ['All', 'Male', 'Female'][res.tapIndex];
+          const genders = ['All', 'Male', 'Female'];
+          const texts = ['全性别', '男性', '女性'];
+          const gender = genders[res.tapIndex];
+          const genderText = texts[res.tapIndex];
           const filter = { ...that.data.filter, gender };
-          that.setData({ filter });
+          that.setData({ filter, genderText });
           that.fetchList(filter);
         }
       }
@@ -85,14 +98,23 @@ Page({
   openAge() {
     this.setData({
       showAgeDialog: true,
-      ageMin: this.data.filter.minAge,
-      ageMax: this.data.filter.maxAge
+      ageMin: this.data.filter.minAge === '' ? 0 : this.data.filter.minAge,
+      ageMax: this.data.filter.maxAge === '' ? 100 : this.data.filter.maxAge
     });
   },
-  onAgeMin(e) { this.setData({ ageMin: e.detail.value }); },
-  onAgeMax(e) { this.setData({ ageMax: e.detail.value }); },
+  onAgeMin(e) { this.setData({ ageMin: parseInt(e.detail.value) }); },
+  onAgeMax(e) { this.setData({ ageMax: parseInt(e.detail.value) }); },
   confirmAge() {
-    const filter = { ...this.data.filter, minAge: this.data.ageMin, maxAge: this.data.ageMax };
+    let min = this.data.ageMin;
+    let max = this.data.ageMax;
+    const filter = { ...this.data.filter };
+    if (min === 0 && max === 100) {
+      filter.minAge = '';
+      filter.maxAge = '';
+    } else {
+      filter.minAge = min;
+      filter.maxAge = max;
+    }
     this.setData({ filter, showAgeDialog: false });
     this.fetchList(filter);
   },
