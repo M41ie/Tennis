@@ -207,7 +207,15 @@ Page({
       complete() { that.fetchPendings(); }
     });
   },
-  onShareAppMessage() {
+  onShareAppMessage(options) {
+    if (options.from === 'button') {
+      const { index, type } = options.target.dataset;
+      const tab = type === 'double' ? 1 : 0;
+      return {
+        title: '待确认战绩',
+        path: `/pages/pending/pending?tab=${tab}`,
+      };
+    }
     return { title: '待确认战绩', path: '/pages/pending/pending' };
   }
 });
