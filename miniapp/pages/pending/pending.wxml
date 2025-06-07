@@ -5,7 +5,7 @@
 
 <view wx:if="{{tabIndex==0}}" class="list">
   <block wx:for="{{singles}}" wx:key="index">
-    <view class="pending-card-wrapper">
+    <view class="pending-card-wrapper {{item.highlight?'highlight':''}}" id="single-{{item.index}}">
       <view class="pending-card">
         <view class="card-left score-section">{{item.score_a}}-{{item.score_b}}</view>
         <view class="card-right info-section">
@@ -30,7 +30,7 @@
 
 <view wx:elif="{{tabIndex==1}}" class="list">
   <block wx:for="{{doubles}}" wx:key="index">
-    <view class="pending-card-wrapper">
+    <view class="pending-card-wrapper {{item.highlight?'highlight':''}}" id="double-{{item.index}}">
       <view class="pending-card">
         <view class="card-left score-section">{{item.score_a}}-{{item.score_b}}</view>
         <view class="card-right info-section">
