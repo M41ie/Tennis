@@ -1,5 +1,5 @@
 <view class="list">
-  <view>Singles Pending</view>
+  <view>单打 Pending</view>
   <block wx:for="{{singles}}" wx:key="index">
     <view class="item">
       <view>{{item.date}} {{item.player_a}} vs {{item.player_b}}</view>
@@ -14,7 +14,7 @@
   </block>
 </view>
 <view class="list">
-  <view>Doubles Pending</view>
+  <view>双打 Pending</view>
   <block wx:for="{{doubles}}" wx:key="index">
     <view class="item">
       <view>{{item.date}} {{item.a1}}/{{item.a2}} vs {{item.b1}}/{{item.b2}}</view>

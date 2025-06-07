@@ -14,8 +14,8 @@
 </view>
 <view wx:if="{{tabIndex==0}}">
   <view class="mode-switch">
-    <view class="mode-item {{modeIndex==0?'active':''}}" data-index="0" bindtap="switchMode">Singles</view>
-    <view class="mode-item {{modeIndex==1?'active':''}}" data-index="1" bindtap="switchMode">Doubles</view>
+    <view class="mode-item {{modeIndex==0?'active':''}}" data-index="0" bindtap="switchMode">单打</view>
+    <view class="mode-item {{modeIndex==1?'active':''}}" data-index="1" bindtap="switchMode">双打</view>
   </view>
   <view>
     <block wx:for="{{records}}" wx:key="index">
@@ -27,7 +27,7 @@
 </view>
 <view wx:elif="{{tabIndex==1}}">
   <view class="list">
-    <view>Singles Pending</view>
+    <view>单打 Pending</view>
     <block wx:for="{{pendingSingles}}" wx:key="index">
       <view class="item">
         <view>{{item.date}} {{item.player_a}} vs {{item.player_b}}</view>
@@ -42,7 +42,7 @@
     </block>
   </view>
   <view class="list">
-    <view>Doubles Pending</view>
+    <view>双打 Pending</view>
     <block wx:for="{{pendingDoubles}}" wx:key="index">
       <view class="item">
         <view>{{item.date}} {{item.a1}}/{{item.a2}} vs {{item.b1}}/{{item.b2}}</view>

@@ -10,7 +10,7 @@ Page({
     players: [],
     playerNames: [],
     opponentIndex: 0,
-    modeOptions: ['Singles', 'Doubles'],
+    modeOptions: [zh_CN.singles, zh_CN.doubles],
     modeIndex: 0,
     partnerIndex: 0,
     opp1Index: 0,
