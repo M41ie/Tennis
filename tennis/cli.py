@@ -343,30 +343,6 @@ def reject_match(clubs, club_id: str, index: int, user_id: str, users=None):
             )
 
 
-def veto_doubles(clubs, club_id: str, index: int, approver: str, users=None):
-    """Admin vetoes a pending doubles match without approval."""
-    club = clubs.get(club_id)
-    if not club:
-        raise ValueError("Club not found")
-    if index >= len(club.pending_matches):
-        raise ValueError("Match not found")
-    if approver != club.leader_id and approver not in club.admin_ids:
-        raise ValueError("Not authorized")
-    match = club.pending_matches[index]
-    if not isinstance(match, DoublesMatch): # Ensure it's a DoublesMatch
-        raise ValueError("Not a doubles match")
-    club.pending_matches.pop(index)
-    if users is not None and match.initiator:
-        initiator_user = users.get(match.initiator)
-        if initiator_user:
-            initiator_user.messages.append(
-                Message(
-                    date=datetime.date.today(),
-                    text=f"Doubles match on {match.date.isoformat()} vetoed in {club.name}",
-                )
-            )
-
-
 def veto_match(clubs, club_id: str, index: int, approver: str, users=None):
     """Admin vetoes a pending singles match without approval."""
     club = clubs.get(club_id)
