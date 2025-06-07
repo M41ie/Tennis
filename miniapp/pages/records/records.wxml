@@ -17,15 +17,10 @@
     <view class="mode-item {{modeIndex==0?'active':''}}" data-index="0" bindtap="switchMode">Singles</view>
     <view class="mode-item {{modeIndex==1?'active':''}}" data-index="1" bindtap="switchMode">Doubles</view>
   </view>
-  <view class="weui-list">
+  <view>
     <block wx:for="{{records}}" wx:key="index">
-      <view class="weui-list__item item" bindtap="viewRecord" data-index="{{index}}">
-        <view style="flex:1">{{item.date}} {{item.location}}</view>
-        <view>{{item.format}} {{item.self_score}}-{{item.opponent_score}}</view>
-        <view>
-          {{item.self_rating_after}}
-          <text class="{{item.deltaClass}}">({{item.deltaDisplay}})</text>
-        </view>
+      <view data-index="{{index}}" bindtap="viewRecord">
+        <record-card record="{{item}}" />
       </view>
     </block>
   </view>

@@ -1,0 +1,38 @@
+<view class="record-card">
+  <view class="header">
+    <text class="date">{{record.date}}</text>
+    <text class="format">{{record.format}}</text>
+    <view class="location">
+      <text class="icon">📍</text>
+      <text>{{record.location}}</text>
+    </view>
+  </view>
+  <view class="player">
+    <view class="player-info">
+      <image class="avatar" src="{{record.playerAAvatar}}" mode="aspectFill"></image>
+      <view class="meta">
+        <text class="name">{{record.playerAName}}</text>
+        <text class="gender">{{record.playerAGender}}</text>
+      </view>
+    </view>
+    <view class="score">{{record.scoreA}}</view>
+    <view class="rating">
+      <text>{{record.ratingA}}</text>
+      <text class="{{record.deltaClassA}}">{{record.deltaDisplayA}}</text>
+    </view>
+  </view>
+  <view class="player">
+    <view class="player-info">
+      <image class="avatar" src="{{record.playerBAvatar}}" mode="aspectFill"></image>
+      <view class="meta">
+        <text class="name">{{record.playerBName}}</text>
+        <text class="gender">{{record.playerBGender}}</text>
+      </view>
+    </view>
+    <view class="score">{{record.scoreB}}</view>
+    <view class="rating">
+      <text>{{record.ratingB}}</text>
+      <text class="{{record.deltaClassB}}">{{record.deltaDisplayB}}</text>
+    </view>
+  </view>
+</view>
