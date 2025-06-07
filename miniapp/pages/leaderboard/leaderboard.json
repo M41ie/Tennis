@@ -1,6 +1,4 @@
 {
   "navigationBarTitleText": "排行榜",
-  "usingComponents": {
-    "range-slider": "../../components/range-slider/range-slider"
-  }
+  "usingComponents": {}
 }

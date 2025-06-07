@@ -6,8 +6,7 @@
 <view class="filter-bar">
   <view class="filter-item" bindtap="openClub">俱乐部</view>
   <view class="filter-item" bindtap="chooseGender">{{genderText}}</view>
-  <view class="filter-item" bindtap="openLevel">级别</view>
-  <view class="filter-item" bindtap="openAge">年龄</view>
+  <!-- Level and age filters removed -->
 </view>
 
 <view wx:if="{{showClubDialog}}" class="dialog">
@@ -19,21 +18,7 @@
   <button bindtap="confirmClub">确定</button>
 </view>
 
-<view wx:if="{{showLevelDialog}}" class="dialog">
-  <view>{{levelMin}} - {{levelMax}}</view>
-  <range-slider min="0" max="7" step="0.25" value="{{[levelMin, levelMax]}}"
-                activeColor="#07C160" backgroundColor="#e5e5e5"
-                bindchange="onLevelChange" bindchanging="onLevelChanging" />
-  <button bindtap="confirmLevel">确定</button>
-</view>
-
-<view wx:if="{{showAgeDialog}}" class="dialog">
-  <view>{{ageMin}} - {{ageMax}}</view>
-  <range-slider min="0" max="100" step="5" value="{{[ageMin, ageMax]}}"
-                activeColor="#07C160" backgroundColor="#e5e5e5"
-                bindchange="onAgeChange" bindchanging="onAgeChanging" />
-  <button bindtap="confirmAge">确定</button>
-</view>
+<!-- Dialogs for level and age filters removed -->
 <view class="weui-list">
   <block wx:for="{{players}}" wx:key="user_id">
     <view class="weui-list__item item" bindtap="viewPlayer" data-id="{{item.user_id}}" data-cid="{{item.club_id}}">
