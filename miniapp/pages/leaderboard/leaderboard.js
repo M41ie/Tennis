@@ -10,7 +10,7 @@ Page({
       gender: 'All'
     },
     showClubDialog: false,
-    genderText: '全性别'
+    genderText: '性别'
   },
   onLoad() {
     this.fetchClubs();
@@ -104,11 +104,11 @@ Page({
   chooseGender() {
     const that = this;
     wx.showActionSheet({
-      itemList: ['全性别', '男性', '女性'],
+      itemList: ['性别', '男', '女'],
       success(res) {
         if (res.tapIndex >= 0) {
           const genders = ['All', 'Male', 'Female'];
-          const texts = ['全性别', '男性', '女性'];
+          const texts = ['性别', '男', '女'];
           const gender = genders[res.tapIndex];
           const genderText = texts[res.tapIndex];
           const filter = { ...that.data.filter, gender };
