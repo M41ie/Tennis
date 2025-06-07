@@ -591,16 +591,18 @@ def list_all_players(
 ):
     """Return players from one or more clubs optionally filtered and sorted."""
 
-    if club:
-        club_ids = club.split(",")
-        clubs_to_iter = []
-        for cid in club_ids:
-            c = clubs.get(cid)
-            if not c:
-                raise HTTPException(404, "Club not found")
-            clubs_to_iter.append(c)
-    else:
-        clubs_to_iter = clubs.values()
+    # When no club parameter is provided, return an empty list so the
+    # leaderboard correctly shows no players selected.
+    if not club:
+        return []
+
+    club_ids = club.split(",")
+    clubs_to_iter = []
+    for cid in club_ids:
+        c = clubs.get(cid)
+        if not c:
+            raise HTTPException(404, "Club not found")
+        clubs_to_iter.append(c)
     today = datetime.date.today()
     get_rating = weighted_doubles_rating if doubles else weighted_rating
     players = []
