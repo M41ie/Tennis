@@ -9,7 +9,7 @@
   </view>
   <view class="row">
     <view class="score">{{record.scoreA}}</view>
-    <view class="info" wx:if="{{!doubles}}">
+    <view class="info singles" wx:if="{{!doubles}}">
       <image class="avatar" src="{{record.playerAAvatar}}" mode="aspectFill"></image>
       <text class="name">{{record.playerAName}}</text>
       <text class="rating">{{record.ratingA}}</text>
@@ -32,7 +32,7 @@
   </view>
   <view class="row">
     <view class="score">{{record.scoreB}}</view>
-    <view class="info" wx:if="{{!doubles}}">
+    <view class="info singles" wx:if="{{!doubles}}">
       <image class="avatar" src="{{record.playerBAvatar}}" mode="aspectFill"></image>
       <text class="name">{{record.playerBName}}</text>
       <text class="rating">{{record.ratingB}}</text>
