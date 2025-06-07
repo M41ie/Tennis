@@ -22,8 +22,36 @@ Page({
       url: `${BASE_URL}/clubs`,
       success(res) {
         const list = res.data.map(c => c.club_id || c.name);
+        that.setData({ clubs: list });
+        that.fetchJoined(list);
+      }
+    });
+  },
+  fetchJoined(list) {
+    const uid = wx.getStorageSync('user_id');
+    const that = this;
+    if (!uid) {
+      that.setData({
+        selectedClubs: list.slice(),
+        filter: { ...that.data.filter, clubs: list.slice() }
+      });
+      that.fetchList(that.data.filter);
+      return;
+    }
+    wx.request({
+      url: `${BASE_URL}/users/${uid}`,
+      success(res) {
+        const joined = res.data.joined_clubs || [];
+        const sel = list.filter(c => joined.includes(c));
+        const selected = sel.length ? sel : list.slice();
         that.setData({
-          clubs: list,
+          selectedClubs: selected,
+          filter: { ...that.data.filter, clubs: selected }
+        });
+        that.fetchList(that.data.filter);
+      },
+      fail() {
+        that.setData({
           selectedClubs: list.slice(),
           filter: { ...that.data.filter, clubs: list.slice() }
         });
@@ -37,6 +65,12 @@ Page({
     const filter = { ...this.data.filter, clubs: this.data.selectedClubs };
     this.setData({ filter, showClubDialog: false });
     this.fetchList(filter);
+  },
+  selectAllClubs() {
+    this.setData({ selectedClubs: this.data.clubs.slice() });
+  },
+  clearClubs() {
+    this.setData({ selectedClubs: [] });
   },
   switchMode(e) {
     const mode = e.currentTarget.dataset.mode;
