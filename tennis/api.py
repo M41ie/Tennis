@@ -125,98 +125,72 @@ def _pending_status_for_user(
     """Return status information for the given user viewing a pending match."""
 
     admins = {club.leader_id, *club.admin_ids}
-    is_admin = user_id in admins
 
-    # Determine role
     if user_id == match.initiator:
         role = "submitter"
-    elif isinstance(match, DoublesMatch):
-        if user_id in {
-            match.player_a1.user_id,
-            match.player_a2.user_id,
-            match.player_b1.user_id,
-            match.player_b2.user_id,
-        }:
-            role = "opponent"
-        elif is_admin:
-            role = "admin"
+    else:
+        if isinstance(match, DoublesMatch):
+            participants = {
+                match.player_a1.user_id,
+                match.player_a2.user_id,
+                match.player_b1.user_id,
+                match.player_b2.user_id,
+            }
         else:
-            role = "viewer"
-    else:  # Singles Match
-        if user_id in {match.player_a.user_id, match.player_b.user_id}:
+            participants = {match.player_a.user_id, match.player_b.user_id}
+
+        if user_id in participants:
             role = "opponent"
-        elif is_admin:
+        elif user_id in admins:
             role = "admin"
         else:
             role = "viewer"
 
-    # Determine confirmation status for the current user's team/side
     confirmed_self = None
+    confirmed_opp = None
     if isinstance(match, DoublesMatch):
         if user_id in {match.player_a1.user_id, match.player_a2.user_id}:
             confirmed_self = match.confirmed_a
+            confirmed_opp = match.confirmed_b
         elif user_id in {match.player_b1.user_id, match.player_b2.user_id}:
             confirmed_self = match.confirmed_b
-    else:  # Singles
+            confirmed_opp = match.confirmed_a
+    else:
         if user_id == match.player_a.user_id:
             confirmed_self = match.confirmed_a
+            confirmed_opp = match.confirmed_b
         elif user_id == match.player_b.user_id:
             confirmed_self = match.confirmed_b
+            confirmed_opp = match.confirmed_a
 
-    all_players_confirmed = match.confirmed_a and match.confirmed_b
-
-    status_text = "待确认"  # Default status
     can_confirm = False
     can_decline = False
-    can_approve = False
-    can_veto = False
+    status_text = ""
 
     if role == "submitter":
-        if not all_players_confirmed:
-            status_text = "等待对手确认"
+        if not (match.confirmed_a and match.confirmed_b):
+            status_text = "您已提交，等待对手确认"
         else:
-            status_text = "等待管理员审核"
+            status_text = "对手已确认，等待管理员批准"
     elif role == "opponent":
         if confirmed_self is False:
-            status_text = "请确认比赛结果"
             can_confirm = True
             can_decline = True
-        elif confirmed_self is True:
-            if not all_players_confirmed:
-                status_text = "您已确认，等待对手确认"
-            else:
-                status_text = "等待管理员审核"
-    elif role == "admin":
-        if all_players_confirmed:
-            status_text = "等待管理员批准" # Corrected from "等待管理员批准" to "等待管理员审核" to match the plan, then back to "等待管理员批准" as per "Admin (if match is fully confirmed by players): “等待管理员批准” (Waiting for admin approval)"
-            can_approve = True
-            can_veto = True
+            status_text = "请确认比赛结果"
+        elif confirmed_self and not confirmed_opp:
+            status_text = "您已确认，等待对手确认"
         else:
-            status_text = "待确认" # "Admin (if match is not fully confirmed by players): “待确认” (Pending confirmation)"
-    elif role == "viewer":
-        if not all_players_confirmed:
+            status_text = "对手已确认，等待管理员批准"
+    else:
+        if match.confirmed_a and match.confirmed_b:
+            status_text = "等待管理员批准"
+        else:
             status_text = "待确认"
-        else:
-            status_text = "等待管理员审核"
-
-
-    # Override button visibility for initiator (they don't confirm/decline their own submission)
-    if user_id == match.initiator:
-        can_confirm = False
-        can_decline = False
-
-    # Admin can only approve/veto if all players confirmed
-    if not (is_admin and all_players_confirmed):
-        can_approve = False
-        can_veto = False
-
 
     return {
         "display_status_text": status_text,
         "can_confirm": can_confirm,
         "can_decline": can_decline,
-        "can_approve": can_approve, # Added
-        "can_veto": can_veto,       # Added
         "current_user_role_in_match": role,
     }
 
@@ -752,16 +726,10 @@ def list_pending_doubles(club_id: str, token: str):
             m.player_b2.user_id,
         }
         if uid not in participants:
-            # Admin can see fully confirmed matches to approve/veto
-            # Viewer should not see any pending matches not involving them
-            if not (uid in admins and m.confirmed_a and m.confirmed_b):
-                if role != "viewer": # allow admin to see matches they are not part of if not fully confirmed
-                    pass # Admins should see all pending matches to monitor
-                else: # Viewers should not see matches they are not part of
-                    continue
-            # If admin and not fully confirmed, they are a viewer for now unless they are a participant
-            elif uid in admins and not (m.confirmed_a and m.confirmed_b) and uid not in participants:
-                 pass # Covered by initial role check, admin will see "待确认"
+            if uid in admins and m.confirmed_a and m.confirmed_b:
+                pass
+            else:
+                continue
 
         entry = {
             "index": idx,
@@ -774,29 +742,59 @@ def list_pending_doubles(club_id: str, token: str):
             "score_b": m.score_b,
             "confirmed_a": m.confirmed_a,
             "confirmed_b": m.confirmed_b,
-            "submitted_by_player_id": m.initiator,
         }
 
-        # Get status from the centralized function
-        status_info = _pending_status_for_user(uid, m, club)
-        entry.update(status_info)
+        if uid == m.initiator:
+            role = "submitter"
+        elif uid in participants:
+            role = "opponent"
+        elif uid in admins:
+            role = "admin"
+        else:
+            role = "viewer"
 
+        confirmed_self = None
+        confirmed_opp = None
+        if uid in {m.player_a1.user_id, m.player_a2.user_id}:
+            confirmed_self = m.confirmed_a
+            confirmed_opp = m.confirmed_b
+        elif uid in {m.player_b1.user_id, m.player_b2.user_id}:
+            confirmed_self = m.confirmed_b
+            confirmed_opp = m.confirmed_a
 
-        # Filter out matches that are not actionable or visible to the user based on status role,
-        # unless they are an admin (admins see all to monitor)
-        # This logic is tricky because _pending_status_for_user assigns a role.
-        # We need to ensure that viewers don't see matches they aren't part of.
-        # Opponents/submitters should always see their matches.
-        # Admins should see all matches.
-        current_user_role = status_info["current_user_role_in_match"]
-        if current_user_role == "viewer" and uid not in participants:
-            continue
+        can_confirm = False
+        can_decline = False
+        status_text = ""
 
-        # Ensure that admins only see action buttons if the match is fully confirmed
-        if current_user_role == "admin" and not (m.confirmed_a and m.confirmed_b):
-            entry["can_approve"] = False
-            entry["can_veto"] = False
+        if role == "submitter":
+            if not (m.confirmed_a and m.confirmed_b):
+                status_text = "您已提交，等待对手确认"
+            else:
+                status_text = "对手已确认，等待管理员批准"
+        elif role == "opponent":
+            if confirmed_self is False:
+                can_confirm = True
+                can_decline = True
+                status_text = "请确认比赛结果"
+            elif confirmed_self and not confirmed_opp:
+                status_text = "您已确认，等待对手确认"
+            else:
+                status_text = "对手已确认，等待管理员批准"
+        else:
+            if m.confirmed_a and m.confirmed_b:
+                status_text = "等待管理员批准"
+            else:
+                status_text = "待确认"
 
+        entry.update(
+            {
+                "display_status_text": status_text,
+                "can_confirm": can_confirm,
+                "can_decline": can_decline,
+                "current_user_role_in_match": role,
+                "submitted_by_player_id": m.initiator,
+            }
+        )
 
         a1 = club.members.get(m.player_a1.user_id)
         a2 = club.members.get(m.player_a2.user_id)
@@ -948,17 +946,10 @@ def list_pending_matches(club_id: str, token: str):
             continue
         participants = {m.player_a.user_id, m.player_b.user_id}
         if uid not in participants:
-            # Admin can see fully confirmed matches to approve/veto
-            # Viewer should not see any pending matches not involving them
-            if not (uid in admins and m.confirmed_a and m.confirmed_b):
-                if role != "viewer": # allow admin to see matches they are not part of if not fully confirmed
-                     pass # Admins should see all pending matches to monitor
-                else: # Viewers should not see matches they are not part of
-                    continue
-            # If admin and not fully confirmed, they are a viewer for now unless they are a participant
-            elif uid in admins and not (m.confirmed_a and m.confirmed_b) and uid not in participants :
-                 pass # Covered by initial role check, admin will see "待确认"
-
+            if uid in admins and m.confirmed_a and m.confirmed_b:
+                pass
+            else:
+                continue
 
         entry = {
             "index": idx,
@@ -969,23 +960,59 @@ def list_pending_matches(club_id: str, token: str):
             "score_b": m.score_b,
             "confirmed_a": m.confirmed_a,
             "confirmed_b": m.confirmed_b,
-            "submitted_by_player_id": m.initiator,
         }
 
-        # Get status from the centralized function
-        status_info = _pending_status_for_user(uid, m, club)
-        entry.update(status_info)
+        if uid == m.initiator:
+            role = "submitter"
+        elif uid in participants:
+            role = "opponent"
+        elif uid in admins:
+            role = "admin"
+        else:
+            role = "viewer"
 
-        # Filter out matches that are not actionable or visible to the user based on status role,
-        # unless they are an admin (admins see all to monitor)
-        current_user_role = status_info["current_user_role_in_match"]
-        if current_user_role == "viewer" and uid not in participants:
-            continue
+        confirmed_self = None
+        confirmed_opp = None
+        if uid == m.player_a.user_id:
+            confirmed_self = m.confirmed_a
+            confirmed_opp = m.confirmed_b
+        elif uid == m.player_b.user_id:
+            confirmed_self = m.confirmed_b
+            confirmed_opp = m.confirmed_a
 
-        # Ensure that admins only see action buttons if the match is fully confirmed
-        if current_user_role == "admin" and not (m.confirmed_a and m.confirmed_b):
-            entry["can_approve"] = False
-            entry["can_veto"] = False
+        can_confirm = False
+        can_decline = False
+        status_text = ""
+
+        if role == "submitter":
+            if not (m.confirmed_a and m.confirmed_b):
+                status_text = "您已提交，等待对手确认"
+            else:
+                status_text = "对手已确认，等待管理员批准"
+        elif role == "opponent":
+            if confirmed_self is False:
+                can_confirm = True
+                can_decline = True
+                status_text = "请确认比赛结果"
+            elif confirmed_self and not confirmed_opp:
+                status_text = "您已确认，等待对手确认"
+            else:
+                status_text = "对手已确认，等待管理员批准"
+        else:  # admin or viewer seeing a fully confirmed match
+            if m.confirmed_a and m.confirmed_b:
+                status_text = "等待管理员批准"
+            else:
+                status_text = "待确认"
+
+        entry.update(
+            {
+                "display_status_text": status_text,
+                "can_confirm": can_confirm,
+                "can_decline": can_decline,
+                "current_user_role_in_match": role,
+                "submitted_by_player_id": m.initiator,
+            }
+        )
 
         pa = club.members.get(m.player_a.user_id)
         pb = club.members.get(m.player_b.user_id)
@@ -1091,24 +1118,6 @@ def approve_match_api(club_id: str, index: int, data: ApproveMatchRequest):
     save_data(clubs)
     save_users(users)
     return {"status": "ok"}
-
-
-@app.post("/clubs/{club_id}/pending_doubles/{index}/veto")
-def veto_doubles_api(club_id: str, index: int, data: ApproveMatchRequest):
-    """Admin vetoes a pending doubles match."""
-    from .cli import veto_doubles # New function to be created in cli.py
-
-    user = require_auth(data.token)
-    if user != data.approver:
-        raise HTTPException(401, "Token mismatch")
-
-    try:
-        veto_doubles(clubs, club_id, index, data.approver, users)
-    except ValueError as e:
-        raise HTTPException(400, str(e))
-    save_data(clubs)
-    save_users(users)
-    return {"status": "vetoed"}
 
 
 @app.post("/clubs/{club_id}/pending_matches/{index}/veto")
