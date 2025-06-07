@@ -61,7 +61,6 @@ Page({
           wx.showToast({ title: '加载失败', icon: 'none' });
           return;
         }
-        const uid = that.data.userId;
         const isAdmin = that.data.isAdmin;
         const highlight =
           that.data.highlightType === 'single' ? that.data.highlightIndex : null;
@@ -91,7 +90,6 @@ Page({
           wx.showToast({ title: '加载失败', icon: 'none' });
           return;
         }
-        const uid = that.data.userId;
         const isAdmin = that.data.isAdmin;
         const highlight =
           that.data.highlightType === 'double' ? that.data.highlightIndex : null;
