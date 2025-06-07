@@ -18,7 +18,7 @@ Page({
     date: '',
     location: '',
     // Display names for match formats
-    formatOptions: ['6局', '4局', '抢10', '抢7'],
+    formatOptions: ['六局', '四局', '抢十', '抢七'],
     // Codes sent to the backend when submitting a result
     formatCodes: ['6_game', '4_game', 'tb10', 'tb7'],
     formatIndex: 0,
