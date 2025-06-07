@@ -1,5 +1,21 @@
 const BASE_URL = getApp().globalData.BASE_URL;
 
+// Map backend format identifiers to display names
+const FORMAT_DISPLAY = {
+  '6_game': '六局',
+  '4_game': '四局',
+  tb10: '抢十',
+  tb7: '抢七',
+  '6局': '六局',
+  '4局': '四局',
+  '抢10': '抢十',
+  '抢7': '抢七'
+};
+
+function displayFormat(fmt) {
+  return FORMAT_DISPLAY[fmt] || fmt;
+}
+
 Page({
   data: {
     tabIndex: 0,
@@ -77,6 +93,8 @@ Page({
                   rec.deltaDisplayB = '';
                   rec.deltaClassB = 'neutral';
                 }
+
+                rec.displayFormat = displayFormat(rec.format);
               });
               that.setData({ records: list });
             }

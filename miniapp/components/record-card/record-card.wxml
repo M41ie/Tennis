@@ -1,7 +1,7 @@
 <view class="record-card">
   <view class="header">
     <text class="date">{{record.date}}</text>
-    <text class="format">{{record.format}}</text>
+    <text class="format">{{record.displayFormat || record.format}}</text>
     <view class="location">
       <text class="icon">📍</text>
       <text>{{record.location}}</text>
