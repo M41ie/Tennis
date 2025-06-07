@@ -69,7 +69,6 @@ Page({
           it.canConfirm = it.can_confirm;
           it.canReject = it.can_decline;
           it.status = it.display_status_text || '';
-          const isParticipant = it.player_a === uid || it.player_b === uid;
           it.canApprove = isAdmin && it.confirmed_a && it.confirmed_b;
           it.canVeto = isAdmin && it.confirmed_a && it.confirmed_b;
           it.highlight = highlight === i;
@@ -100,8 +99,6 @@ Page({
           it.canConfirm = it.can_confirm;
           it.canReject = it.can_decline;
           it.status = it.display_status_text || '';
-          const participants = [it.a1, it.a2, it.b1, it.b2];
-          const isParticipant = participants.includes(uid);
           it.canApprove = isAdmin && it.confirmed_a && it.confirmed_b;
           it.canVeto = isAdmin && it.confirmed_a && it.confirmed_b;
           it.highlight = highlight === i;
