@@ -77,9 +77,13 @@ Page({
     this.setData({ clubs });
   },
   confirmClub() {
-    const selected = this.data.clubs.filter(c => c.checked).map(c => c.id);
-    const filter = { ...this.data.filter, clubs: selected };
+    // Extract currently selected clubs from the object list
+    const selectedClubs = this.data.clubs.filter(club => club.checked);
+    const selectedClubIds = selectedClubs.map(club => club.id);
+
+    const filter = { ...this.data.filter, clubs: selectedClubIds };
     this.setData({ filter, showClubDialog: false });
+    // Re-fetch ranking list using the updated club filter
     this.fetchList(filter);
   },
   selectAllClubs() {
