@@ -1,6 +1,6 @@
 {
   "navigationBarTitleText": "我的战绩",
   "usingComponents": {
-    "record-card": "../../components/record-card/record-card"
+    "record-card": "/components/record-card/record-card"
   }
 }
