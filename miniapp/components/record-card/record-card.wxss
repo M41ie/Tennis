@@ -7,10 +7,12 @@
 .row{display:flex;align-items:center;padding:20rpx;border-bottom:1px solid #eee;}
 .row:last-child{border-bottom:none;}
 .info{flex:1;display:flex;align-items:center;flex-wrap:wrap;}
+.info.singles{margin-left:40rpx;}
 .info.doubles{justify-content:flex-start;}
-.unit{display:flex;align-items:center;margin-right:20rpx;}
-.avatar{width:48rpx;height:48rpx;border-radius:50%;margin-right:12rpx;background:#ccc;}
-.name{color:#333;font-size:26rpx;}
+.unit{display:flex;align-items:center;margin-right:20rpx;flex:1 1 45%;}
+.unit:last-child{margin-right:0;}
+.avatar{width:48rpx;height:48rpx;border-radius:50%;margin-right:12rpx;background:#ccc;flex-shrink:0;}
+.name{color:#333;font-size:26rpx;max-width:120rpx;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .score{width:100rpx;margin-right:20rpx;text-align:center;font-size:48rpx;font-weight:700;color:#000;}
 .rating{margin-left:8rpx;font-size:26rpx;color:#333;}
 .delta{font-size:22rpx;margin-left:8rpx;}
