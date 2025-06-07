@@ -804,6 +804,10 @@ def list_pending_doubles(club_id: str, token: str):
         entry["a2_name"] = a2.name if a2 else m.player_a2.user_id
         entry["b1_name"] = b1.name if b1 else m.player_b1.user_id
         entry["b2_name"] = b2.name if b2 else m.player_b2.user_id
+        entry["rating_a1_before"] = a1.doubles_rating if a1 else None
+        entry["rating_a2_before"] = a2.doubles_rating if a2 else None
+        entry["rating_b1_before"] = b1.doubles_rating if b1 else None
+        entry["rating_b2_before"] = b2.doubles_rating if b2 else None
         if m.initiator and (submitter := club.members.get(m.initiator)):
             entry["submitted_by_player_name"] = submitter.name
 
@@ -1014,6 +1018,8 @@ def list_pending_matches(club_id: str, token: str):
         pb = club.members.get(m.player_b.user_id)
         entry["player_a_name"] = pa.name if pa else m.player_a.user_id
         entry["player_b_name"] = pb.name if pb else m.player_b.user_id
+        entry["rating_a_before"] = pa.singles_rating if pa else None
+        entry["rating_b_before"] = pb.singles_rating if pb else None
         if m.initiator and (submitter := club.members.get(m.initiator)):
             entry["submitted_by_player_name"] = submitter.name
 
@@ -1112,6 +1118,24 @@ def approve_match_api(club_id: str, index: int, data: ApproveMatchRequest):
     save_data(clubs)
     save_users(users)
     return {"status": "ok"}
+
+
+@app.post("/clubs/{club_id}/pending_matches/{index}/veto")
+def veto_match_api(club_id: str, index: int, data: ApproveMatchRequest):
+    """Admin vetoes a pending singles match."""
+    from .cli import veto_match
+
+    user = require_auth(data.token)
+    if user != data.approver:
+        raise HTTPException(401, "Token mismatch")
+
+    try:
+        veto_match(clubs, club_id, index, data.approver, users)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    save_data(clubs)
+    save_users(users)
+    return {"status": "vetoed"}
 
 
 @app.post("/clubs/{club_id}/pending_doubles")

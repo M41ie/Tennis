@@ -2,3 +2,8 @@
 .item { margin-bottom: 10px; border-bottom: 1px solid #ccc; }
 .actions { margin-top: 5px; }
 .status { color: #888; font-size: 12px; }
+.tab-bar{display:flex;background:#fff;border-bottom:1px solid #eee;}
+.tab-item{flex:1;padding:20rpx 0;text-align:center;font-size:28rpx;color:#666;}
+.tab-item.active{color:#07C160;border-bottom:4rpx solid #07C160;}
+.score{font-weight:bold;margin-right:10px;}
+.info{font-size:14px;margin-bottom:4px;}

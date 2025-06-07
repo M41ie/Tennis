@@ -343,6 +343,31 @@ def reject_match(clubs, club_id: str, index: int, user_id: str, users=None):
             )
 
 
+def veto_match(clubs, club_id: str, index: int, approver: str, users=None):
+    """Admin vetoes a pending singles match without approval."""
+    club = clubs.get(club_id)
+    if not club:
+        raise ValueError("Club not found")
+    if index >= len(club.pending_matches):
+        raise ValueError("Match not found")
+    if approver != club.leader_id and approver not in club.admin_ids:
+        raise ValueError("Not authorized")
+    match = club.pending_matches[index]
+    from .models import DoublesMatch
+    if isinstance(match, DoublesMatch):
+        raise ValueError("Not a singles match")
+    club.pending_matches.pop(index)
+    if users is not None and match.initiator:
+        initiator = users.get(match.initiator)
+        if initiator:
+            initiator.messages.append(
+                Message(
+                    date=datetime.date.today(),
+                    text=f"Match on {match.date.isoformat()} vetoed in {club.name}",
+                )
+            )
+
+
 def submit_doubles(
     clubs,
     club_id: str,
