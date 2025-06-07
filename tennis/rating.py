@@ -230,3 +230,11 @@ def initial_rating_from_votes(player: Player, club: Club, default: float = 1000.
         return default
 
     return total / weight_sum
+
+
+def weighted_matches(player: Player) -> float:
+    """Return the sum of match weights for a player."""
+
+    total = sum(m.format_weight for m in player.singles_matches)
+    total += sum(m.format_weight for m in player.doubles_matches)
+    return total

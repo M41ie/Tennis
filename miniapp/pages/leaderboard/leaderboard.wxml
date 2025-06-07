@@ -23,11 +23,16 @@
 </view>
 
 <!-- Dialogs for level and age filters removed -->
-<view class="weui-list">
+<view>
   <block wx:for="{{players}}" wx:key="user_id">
-    <view class="weui-list__item item" bindtap="viewPlayer" data-id="{{item.user_id}}" data-cid="{{item.club_id}}">
+    <view class="player-card" bindtap="viewPlayer" data-id="{{item.user_id}}" data-cid="{{item.club_id}}">
+      <view class="rank">{{index + 1}}</view>
       <image class="avatar" src="{{item.avatar}}" mode="aspectFill"></image>
-      <text style="flex:1">{{item.name}}: {{item.rating}}</text>
+      <view class="info">
+        <view class="name">{{item.name}}</view>
+        <view class="meta">{{item.gender=='M'?'男':item.gender=='F'?'女':'-'}} · 加权场次: {{item.weighted_matches}}</view>
+      </view>
+      <view class="score">{{item.rating}}</view>
     </view>
   </block>
 </view>
