@@ -56,10 +56,12 @@ Page({
       url: `${BASE_URL}/clubs/${clubId}/players`,
       success(res) {
         const players = res.data || [];
-        const map = {};
+        const idMap = {};
+        const nameMap = {};
         let player = null;
         players.forEach(p => {
-          map[p.name] = p;
+          idMap[p.user_id] = p;
+          nameMap[p.name] = p;
           if (p.user_id === userId) player = p;
         });
         if (player) {
@@ -87,7 +89,7 @@ Page({
 
                 if (!that.data.doubles) {
                   rec.playerBName = rec.opponent || '';
-                  const opp = map[rec.playerBName];
+                  const opp = nameMap[rec.playerBName] || (rec.opponent_id && idMap[rec.opponent_id]);
                   rec.playerBAvatar = (rec.opponent_avatar || (opp && opp.avatar)) || placeholder;
                   rec.ratingB = rec.opponent_rating_after != null ? rec.opponent_rating_after.toFixed(3) : opp && opp.rating != null ? opp.rating.toFixed(3) : '';
                   const d2 = rec.opponent_delta;
@@ -101,8 +103,8 @@ Page({
                   }
                 } else {
                   // doubles partner
-                  rec.partnerName = rec.partner || '';
-                  const partner = map[rec.partnerName];
+                  const partner = (rec.partner_id && idMap[rec.partner_id]) || nameMap[rec.partner || ''];
+                  rec.partnerName = partner ? partner.name : rec.partner || '';
                   rec.partnerAvatar = (rec.partner_avatar || (partner && partner.avatar)) || placeholder;
                   rec.partnerRating = rec.partner_rating_after != null ? rec.partner_rating_after.toFixed(3) : partner && partner.rating != null ? partner.rating.toFixed(3) : '';
                   const pd = rec.partner_delta;
@@ -116,7 +118,8 @@ Page({
                   }
 
                   rec.opp1Name = rec.opponent1 || '';
-                  const o1 = map[rec.opp1Name];
+                  const o1 = (rec.opponent1_id && idMap[rec.opponent1_id]) || nameMap[rec.opp1Name];
+                  if (o1) rec.opp1Name = o1.name;
                   rec.opp1Avatar = (rec.opponent1_avatar || (o1 && o1.avatar)) || placeholder;
                   rec.opp1Rating = rec.opponent1_rating_after != null ? rec.opponent1_rating_after.toFixed(3) : o1 && o1.rating != null ? o1.rating.toFixed(3) : '';
                   const od1 = rec.opponent1_delta;
@@ -130,7 +133,8 @@ Page({
                   }
 
                   rec.opp2Name = rec.opponent2 || '';
-                  const o2 = map[rec.opp2Name];
+                  const o2 = (rec.opponent2_id && idMap[rec.opponent2_id]) || nameMap[rec.opp2Name];
+                  if (o2) rec.opp2Name = o2.name;
                   rec.opp2Avatar = (rec.opponent2_avatar || (o2 && o2.avatar)) || placeholder;
                   rec.opp2Rating = rec.opponent2_rating_after != null ? rec.opponent2_rating_after.toFixed(3) : o2 && o2.rating != null ? o2.rating.toFixed(3) : '';
                   const od2 = rec.opponent2_delta;

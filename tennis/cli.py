@@ -820,6 +820,7 @@ def get_player_doubles_cards(clubs, club_id: str, user_id: str):
                 "self_score": self_score,
                 "opponent_score": opp_score,
                 "partner": partner.name,
+                "partner_id": partner.user_id,
                 "partner_avatar": partner.avatar,
                 "partner_rating_after": partner_after,
                 "partner_delta": (
@@ -828,6 +829,7 @@ def get_player_doubles_cards(clubs, club_id: str, user_id: str):
                     else None
                 ),
                 "opponent1": opp1.name,
+                "opponent1_id": opp1.user_id,
                 "opponent1_avatar": opp1.avatar,
                 "opponent1_rating_after": opp1_after,
                 "opponent1_delta": (
@@ -836,6 +838,7 @@ def get_player_doubles_cards(clubs, club_id: str, user_id: str):
                     else None
                 ),
                 "opponent2": opp2.name,
+                "opponent2_id": opp2.user_id,
                 "opponent2_avatar": opp2.avatar,
                 "opponent2_rating_after": opp2_after,
                 "opponent2_delta": (
