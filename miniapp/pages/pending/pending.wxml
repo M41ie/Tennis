@@ -2,33 +2,57 @@
   <view class="tab-item {{tabIndex==0?'active':''}}" data-index="0" bindtap="switchTab">单打</view>
   <view class="tab-item {{tabIndex==1?'active':''}}" data-index="1" bindtap="switchTab">双打</view>
 </view>
+
 <view wx:if="{{tabIndex==0}}" class="list">
   <block wx:for="{{singles}}" wx:key="index">
-    <view class="item">
-      <view class="score">{{item.score_a}}-{{item.score_b}}</view>
-      <view class="info">{{item.player_a_name}} ({{item.rating_a_before}}) vs {{item.player_b_name}} ({{item.rating_b_before}})</view>
-      <view class="status">{{item.status}}</view>
-      <view class="actions">
-        <button wx:if="{{item.canConfirm}}" data-index="{{item.index}}" bindtap="confirmSingle">确认</button>
-        <button wx:if="{{item.canReject}}" data-index="{{item.index}}" bindtap="rejectSingle">拒绝</button>
-        <button wx:if="{{item.canApprove}}" data-index="{{item.index}}" bindtap="approveSingle">通过</button>
-        <button wx:if="{{item.canVeto}}" data-index="{{item.index}}" bindtap="vetoSingle">否决</button>
-        <button open-type="share">分享</button>
+    <view class="pending-card-wrapper">
+      <view class="pending-card">
+        <view class="card-left score-section">{{item.score_a}}-{{item.score_b}}</view>
+        <view class="card-right info-section">
+          <view class="player-line">{{item.player_a_name}} ({{item.rating_a_before}})</view>
+          <view class="vs-text">vs</view>
+          <view class="player-line">{{item.player_b_name}} ({{item.rating_b_before}})</view>
+        </view>
+      </view>
+      <view class="status-actions-container">
+        <view class="status">{{item.status}}</view>
+        <view class="actions">
+          <button wx:if="{{item.canConfirm}}" data-index="{{item.index}}" data-type="single" bindtap="confirmSingle">确认</button>
+          <button wx:if="{{item.canReject}}" data-index="{{item.index}}" data-type="single" bindtap="rejectSingle">拒绝</button>
+          <button wx:if="{{item.canApprove}}" data-index="{{item.index}}" data-type="single" bindtap="approveSingle">通过</button>
+          <button wx:if="{{item.canVeto}}" data-index="{{item.index}}" data-type="single" bindtap="vetoSingle">否决</button>
+          <button open-type="share" data-index="{{item.index}}" data-type="single">分享</button>
+        </view>
       </view>
     </view>
   </block>
 </view>
+
 <view wx:elif="{{tabIndex==1}}" class="list">
   <block wx:for="{{doubles}}" wx:key="index">
-    <view class="item">
-      <view class="score">{{item.score_a}}-{{item.score_b}}</view>
-      <view class="info">{{item.a1_name}}/{{item.a2_name}} vs {{item.b1_name}}/{{item.b2_name}}</view>
-      <view class="status">{{item.status}}</view>
-      <view class="actions">
-        <button wx:if="{{item.canConfirm}}" data-index="{{item.index}}" bindtap="confirmDouble">确认</button>
-        <button wx:if="{{item.canReject}}" data-index="{{item.index}}" bindtap="rejectDouble">拒绝</button>
-        <button wx:if="{{item.canApprove}}" data-index="{{item.index}}" bindtap="approveDouble">通过</button>
-        <button open-type="share">分享</button>
+    <view class="pending-card-wrapper">
+      <view class="pending-card">
+        <view class="card-left score-section">{{item.score_a}}-{{item.score_b}}</view>
+        <view class="card-right info-section">
+          <view class="team-line">
+            <view>{{item.a1_name}} ({{item.rating_a1_before}})</view>
+            <view>{{item.a2_name}} ({{item.rating_a2_before}})</view>
+          </view>
+          <view class="vs-text">vs</view>
+          <view class="team-line">
+            <view>{{item.b1_name}} ({{item.rating_b1_before}})</view>
+            <view>{{item.b2_name}} ({{item.rating_b2_before}})</view>
+          </view>
+        </view>
+      </view>
+      <view class="status-actions-container">
+        <view class="status">{{item.status}}</view>
+        <view class="actions">
+          <button wx:if="{{item.canConfirm}}" data-index="{{item.index}}" data-type="double" bindtap="confirmDouble">确认</button>
+          <button wx:if="{{item.canReject}}" data-index="{{item.index}}" data-type="double" bindtap="rejectDouble">拒绝</button>
+          <button wx:if="{{item.canApprove}}" data-index="{{item.index}}" data-type="double" bindtap="approveDouble">通过</button>
+          <button open-type="share" data-index="{{item.index}}" data-type="double">分享</button>
+        </view>
       </view>
     </view>
   </block>
