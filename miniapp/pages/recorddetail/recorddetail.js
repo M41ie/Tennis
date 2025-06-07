@@ -1,3 +1,18 @@
+const FORMAT_DISPLAY = {
+  '6_game': '六局',
+  '4_game': '四局',
+  tb10: '抢十',
+  tb7: '抢七',
+  '6局': '六局',
+  '4局': '四局',
+  '抢10': '抢十',
+  '抢7': '抢七'
+};
+
+function displayFormat(fmt) {
+  return FORMAT_DISPLAY[fmt] || fmt;
+}
+
 Page({
   data: {
     record: null
@@ -23,6 +38,7 @@ Page({
         }
         if (rec.self_rating_after != null)
           rec.self_rating_after = rec.self_rating_after.toFixed(3);
+        rec.displayFormat = displayFormat(rec.format);
         this.setData({ record: rec });
       } catch (e) {}
     }

@@ -1,6 +1,6 @@
 <view wx:if="{{record}}" class="detail">
   <view>{{record.date}} {{record.location}}</view>
-  <view>{{record.format}} {{record.self_score}}-{{record.opponent_score}}</view>
+  <view>{{record.displayFormat || record.format}} {{record.self_score}}-{{record.opponent_score}}</view>
   <view>vs {{record.opponent || record.opponents}}</view>
   <view>预期得分率: {{record.expected_score}}</view>
   <view>实际得分率: {{record.actual_rate}}</view>
