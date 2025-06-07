@@ -99,6 +99,10 @@
      can add more specific styles like background-color, color, border if needed */
 }
 
+.pending-card-wrapper.highlight {
+  border: 2px solid #07C160;
+}
+
 /* Old styles that might conflict or are no longer needed directly for items */
 /* .item { margin-bottom: 10px; border-bottom: 1px solid #ccc; } */
 /* .score{font-weight:bold;margin-right:10px;} */

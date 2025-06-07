@@ -6,10 +6,27 @@ Page({
     singles: [],
     doubles: [],
     userId: '',
-    isAdmin: false
+    isAdmin: false,
+    highlightIndex: null,
+    highlightType: ''
   },
-  onLoad() {
+  onLoad(options) {
     this.setData({ userId: wx.getStorageSync('user_id') });
+    if (options && options.tab) {
+      const tab = parseInt(options.tab, 10);
+      if (!Number.isNaN(tab)) {
+        this.setData({ tabIndex: tab });
+      }
+    }
+    if (options && options.index) {
+      const idx = parseInt(options.index, 10);
+      if (!Number.isNaN(idx)) {
+        this.setData({ highlightIndex: idx });
+      }
+    }
+    if (options && options.type) {
+      this.setData({ highlightType: options.type });
+    }
     this.fetchClubInfo();
   },
   switchTab(e) {
@@ -46,16 +63,21 @@ Page({
         }
         const uid = that.data.userId;
         const isAdmin = that.data.isAdmin;
-        const list = res.data.map(it => {
+        const highlight =
+          that.data.highlightType === 'single' ? that.data.highlightIndex : null;
+        const list = res.data.map((it, i) => {
           it.canConfirm = it.can_confirm;
           it.canReject = it.can_decline;
           it.status = it.display_status_text || '';
-          const isParticipant = it.player_a === uid || it.player_b === uid;
           it.canApprove = isAdmin && it.confirmed_a && it.confirmed_b;
           it.canVeto = isAdmin && it.confirmed_a && it.confirmed_b;
+          it.highlight = highlight === i;
           return it;
         });
         that.setData({ singles: list });
+        if (highlight !== null) {
+          setTimeout(() => that.scrollToHighlight(), 50);
+        }
       },
       fail() {
         wx.showToast({ title: '网络错误', icon: 'none' });
@@ -71,16 +93,21 @@ Page({
         }
         const uid = that.data.userId;
         const isAdmin = that.data.isAdmin;
-        const list = res.data.map(it => {
+        const highlight =
+          that.data.highlightType === 'double' ? that.data.highlightIndex : null;
+        const list = res.data.map((it, i) => {
           it.canConfirm = it.can_confirm;
           it.canReject = it.can_decline;
           it.status = it.display_status_text || '';
-          const participants = [it.a1, it.a2, it.b1, it.b2];
-          const isParticipant = participants.includes(uid);
           it.canApprove = isAdmin && it.confirmed_a && it.confirmed_b;
+          it.canVeto = isAdmin && it.confirmed_a && it.confirmed_b;
+          it.highlight = highlight === i;
           return it;
         });
         that.setData({ doubles: list });
+        if (highlight !== null) {
+          setTimeout(() => that.scrollToHighlight(), 50);
+        }
       },
       fail() {
         wx.showToast({ title: '网络错误', icon: 'none' });
@@ -189,6 +216,18 @@ Page({
       complete() { that.fetchPendings(); }
     });
   },
+  vetoDouble(e) {
+    const idx = e.currentTarget.dataset.index;
+    const cid = wx.getStorageSync('club_id');
+    const token = wx.getStorageSync('token');
+    const that = this;
+    wx.request({
+      url: `${BASE_URL}/clubs/${cid}/pending_doubles/${idx}/veto`,
+      method: 'POST',
+      data: { approver: this.data.userId, token },
+      complete() { that.fetchPendings(); }
+    });
+  },
   rejectDouble(e) {
     const idx = e.currentTarget.dataset.index;
     const cid = wx.getStorageSync('club_id');
@@ -207,7 +246,29 @@ Page({
       complete() { that.fetchPendings(); }
     });
   },
-  onShareAppMessage() {
+  scrollToHighlight() {
+    const idx = this.data.highlightIndex;
+    const type = this.data.highlightType;
+    if (idx === null || !type) return;
+    const id = type === 'double' ? `double-${idx}` : `single-${idx}`;
+    wx.createSelectorQuery()
+      .select(`#${id}`)
+      .boundingClientRect(rect => {
+        if (rect) {
+          wx.pageScrollTo({ scrollTop: rect.top - 80, duration: 0 });
+        }
+      })
+      .exec();
+  },
+  onShareAppMessage(options) {
+    if (options.from === 'button') {
+      const { index, type } = options.target.dataset;
+      const tab = type === 'double' ? 1 : 0;
+      return {
+        title: '待确认战绩',
+        path: `/pages/pending/pending?tab=${tab}&index=${index}&type=${type}`,
+      };
+    }
     return { title: '待确认战绩', path: '/pages/pending/pending' };
   }
 });

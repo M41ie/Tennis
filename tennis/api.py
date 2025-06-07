@@ -1226,6 +1226,24 @@ def approve_doubles_api(club_id: str, index: int, data: ApproveMatchRequest):
     return {"status": "ok"}
 
 
+@app.post("/clubs/{club_id}/pending_doubles/{index}/veto")
+def veto_doubles_api(club_id: str, index: int, data: ApproveMatchRequest):
+    """Admin vetoes a pending doubles match."""
+    from .cli import veto_doubles
+
+    user = require_auth(data.token)
+    if user != data.approver:
+        raise HTTPException(401, "Token mismatch")
+
+    try:
+        veto_doubles(clubs, club_id, index, data.approver, users)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    save_data(clubs)
+    save_users(users)
+    return {"status": "vetoed"}
+
+
 @app.post("/clubs/{club_id}/appointments")
 def create_appointment(club_id: str, data: AppointmentCreate):
     """Create a new appointment in a club."""
