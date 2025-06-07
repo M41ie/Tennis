@@ -762,9 +762,17 @@ def get_player_doubles_cards(clubs, club_id: str, user_id: str):
             if player == m.player_a1:
                 self_after = m.rating_a1_after
                 self_before = m.rating_a1_before
+                partner_after = m.rating_a2_after
+                partner_before = m.rating_a2_before
             else:
                 self_after = m.rating_a2_after
                 self_before = m.rating_a2_before
+                partner_after = m.rating_a1_after
+                partner_before = m.rating_a1_before
+            opp1_after = m.rating_b1_after
+            opp1_before = m.rating_b1_before
+            opp2_after = m.rating_b2_after
+            opp2_before = m.rating_b2_before
         else:
             partner = m.player_b2 if m.player_b1 == player else m.player_b1
             opp1, opp2 = m.player_a1, m.player_a2
@@ -773,9 +781,17 @@ def get_player_doubles_cards(clubs, club_id: str, user_id: str):
             if player == m.player_b1:
                 self_after = m.rating_b1_after
                 self_before = m.rating_b1_before
+                partner_after = m.rating_b2_after
+                partner_before = m.rating_b2_before
             else:
                 self_after = m.rating_b2_after
                 self_before = m.rating_b2_before
+                partner_after = m.rating_b1_after
+                partner_before = m.rating_b1_before
+            opp1_after = m.rating_a1_after
+            opp1_before = m.rating_a1_before
+            opp2_after = m.rating_a2_after
+            opp2_before = m.rating_a2_before
 
         # expected and actual scoring rates for the player's team
         if (
@@ -804,6 +820,29 @@ def get_player_doubles_cards(clubs, club_id: str, user_id: str):
                 "self_score": self_score,
                 "opponent_score": opp_score,
                 "partner": partner.name,
+                "partner_avatar": partner.avatar,
+                "partner_rating_after": partner_after,
+                "partner_delta": (
+                    partner_after - partner_before
+                    if partner_after is not None and partner_before is not None
+                    else None
+                ),
+                "opponent1": opp1.name,
+                "opponent1_avatar": opp1.avatar,
+                "opponent1_rating_after": opp1_after,
+                "opponent1_delta": (
+                    opp1_after - opp1_before
+                    if opp1_after is not None and opp1_before is not None
+                    else None
+                ),
+                "opponent2": opp2.name,
+                "opponent2_avatar": opp2.avatar,
+                "opponent2_rating_after": opp2_after,
+                "opponent2_delta": (
+                    opp2_after - opp2_before
+                    if opp2_after is not None and opp2_before is not None
+                    else None
+                ),
                 "opponents": f"{opp1.name}/{opp2.name}",
                 "expected_score": exp_rate,
                 "actual_rate": actual_rate,
