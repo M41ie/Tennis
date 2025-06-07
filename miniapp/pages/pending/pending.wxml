@@ -51,6 +51,7 @@
           <button wx:if="{{item.canConfirm}}" data-index="{{item.index}}" data-type="double" bindtap="confirmDouble">确认</button>
           <button wx:if="{{item.canReject}}" data-index="{{item.index}}" data-type="double" bindtap="rejectDouble">拒绝</button>
           <button wx:if="{{item.canApprove}}" data-index="{{item.index}}" data-type="double" bindtap="approveDouble">通过</button>
+          <button wx:if="{{item.canVeto}}" data-index="{{item.index}}" data-type="double" bindtap="vetoDouble">否决</button>
           <button open-type="share" data-index="{{item.index}}" data-type="double">分享</button>
         </view>
       </view>
