@@ -103,5 +103,3 @@
 /* .item { margin-bottom: 10px; border-bottom: 1px solid #ccc; } */
 /* .score{font-weight:bold;margin-right:10px;} */
 /* .info{font-size:14px;margin-bottom:4px;} */
-
-[end of miniapp/pages/pending/pending.wxss]
