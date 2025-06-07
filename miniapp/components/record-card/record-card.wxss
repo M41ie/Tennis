@@ -13,7 +13,7 @@
 .unit:last-child{margin-right:0;}
 .avatar{width:48rpx;height:48rpx;border-radius:50%;margin-right:12rpx;background:#ccc;flex-shrink:0;}
 .name{color:#333;font-size:26rpx;max-width:120rpx;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.score{width:100rpx;margin-right:20rpx;text-align:center;font-size:48rpx;font-weight:700;color:#000;}
+.score{width:100rpx;margin-right:20rpx;margin-left:20rpx;text-align:center;font-size:48rpx;font-weight:700;color:#000;}
 .rating{margin-left:8rpx;font-size:26rpx;color:#333;}
 .delta{font-size:22rpx;margin-left:8rpx;}
 .pos{color:#2f8f2f;}
