@@ -741,7 +741,8 @@ def test_doubles_leaderboard_api(tmp_path, monkeypatch):
     assert resp.status_code == 200
     board = resp.json()
     for p in board:
-        assert p["weighted_matches"] == 0.0
+        assert p["weighted_singles_matches"] == 0.0
+        assert p["weighted_doubles_matches"] == 0.0
     ids = [p["user_id"] for p in board]
     assert ids == ["p3", "p1", "p2", "leader", "p4"]
 
@@ -822,7 +823,8 @@ def test_list_players_filters(tmp_path, monkeypatch):
     assert resp.status_code == 200
     data = resp.json()
     for p in data:
-        assert p["weighted_matches"] == 0.0
+        assert p["weighted_singles_matches"] == 0.0
+        assert p["weighted_doubles_matches"] == 0.0
     ids = [p["user_id"] for p in data]
     assert ids == ["p3", "p1"]
 
@@ -881,7 +883,8 @@ def test_list_all_players_multi_club(tmp_path, monkeypatch):
     assert resp.status_code == 200
     board = resp.json()
     for p in board:
-        assert p["weighted_matches"] == 0.0
+        assert p["weighted_singles_matches"] == 0.0
+        assert p["weighted_doubles_matches"] == 0.0
     ids = [p["user_id"] for p in board]
     assert ids == ["p3", "p4", "p1"]
 

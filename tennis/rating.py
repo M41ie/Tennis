@@ -232,9 +232,19 @@ def initial_rating_from_votes(player: Player, club: Club, default: float = 1000.
     return total / weight_sum
 
 
-def weighted_matches(player: Player) -> float:
-    """Return the sum of match weights for a player."""
+def weighted_singles_matches(player: Player) -> float:
+    """Return the weighted count of singles matches for ``player``."""
 
-    total = sum(m.format_weight for m in player.singles_matches)
-    total += sum(m.format_weight for m in player.doubles_matches)
-    return total
+    return sum(m.format_weight for m in player.singles_matches)
+
+
+def weighted_doubles_matches(player: Player) -> float:
+    """Return the weighted count of doubles matches for ``player``."""
+
+    return sum(m.format_weight for m in player.doubles_matches)
+
+
+def weighted_matches(player: Player) -> float:
+    """Return the total weighted match count for a player."""
+
+    return weighted_singles_matches(player) + weighted_doubles_matches(player)

@@ -135,7 +135,8 @@ Page({
         const list = res.data || [];
         list.forEach(p => {
           if (p.rating != null) p.rating = p.rating.toFixed(3);
-          if (p.weighted_matches != null) p.weighted_matches = p.weighted_matches.toFixed(2);
+          if (p.weighted_singles_matches != null) p.weighted_singles_matches = p.weighted_singles_matches.toFixed(2);
+          if (p.weighted_doubles_matches != null) p.weighted_doubles_matches = p.weighted_doubles_matches.toFixed(2);
         });
         that.setData({ players: list });
       }
