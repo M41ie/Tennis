@@ -33,6 +33,7 @@ Page({
   fetchRecords() {
     const userId = wx.getStorageSync('user_id');
     const clubId = wx.getStorageSync('club_id');
+    const placeholder = require('../../assets/base64.js').DEFAULT_AVATAR;
     const that = this;
     if (!userId || !clubId) return;
     wx.request({
@@ -46,18 +47,36 @@ Page({
             success(r) {
               const list = r.data || [];
               list.forEach(rec => {
+                // player A (self)
+                rec.playerAName = player.name;
+                rec.playerAAvatar = player.avatar || placeholder;
+                rec.playerAGender = player.gender || '';
+                rec.scoreA = rec.self_score;
+                rec.ratingA = rec.self_rating_after != null ? rec.self_rating_after.toFixed(3) : '';
                 const d = rec.self_delta;
                 if (d != null) {
                   const abs = Math.abs(d).toFixed(3);
-                  rec.deltaDisplay =
-                    (d > 0 ? '+' : d < 0 ? '-' : '') + abs;
-                  rec.deltaClass = d > 0 ? 'pos' : d < 0 ? 'neg' : 'neutral';
+                  rec.deltaDisplayA = (d > 0 ? '+' : d < 0 ? '-' : '') + abs;
+                  rec.deltaClassA = d > 0 ? 'pos' : d < 0 ? 'neg' : 'neutral';
                 } else {
-                  rec.deltaDisplay = '';
-                  rec.deltaClass = 'neutral';
+                  rec.deltaDisplayA = '';
+                  rec.deltaClassA = 'neutral';
                 }
-                if (rec.self_rating_after != null)
-                  rec.self_rating_after = rec.self_rating_after.toFixed(3);
+                // player B (opponent)
+                rec.playerBName = rec.opponent || '';
+                rec.playerBAvatar = placeholder;
+                rec.playerBGender = '';
+                rec.scoreB = rec.opponent_score;
+                rec.ratingB = rec.opponent_rating_after != null ? rec.opponent_rating_after.toFixed(3) : '';
+                const d2 = rec.opponent_delta;
+                if (d2 != null) {
+                  const abs2 = Math.abs(d2).toFixed(3);
+                  rec.deltaDisplayB = (d2 > 0 ? '+' : d2 < 0 ? '-' : '') + abs2;
+                  rec.deltaClassB = d2 > 0 ? 'pos' : d2 < 0 ? 'neg' : 'neutral';
+                } else {
+                  rec.deltaDisplayB = '';
+                  rec.deltaClassB = 'neutral';
+                }
               });
               that.setData({ records: list });
             }

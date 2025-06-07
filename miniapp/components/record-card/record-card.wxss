@@ -1,0 +1,19 @@
+.record-card{background:#fff;border-radius:12rpx;box-shadow:0 6rpx 12rpx rgba(0,0,0,.05);margin:12rpx;overflow:hidden;}
+.header{display:flex;justify-content:space-between;align-items:center;padding:20rpx;border-bottom:1px solid #eee;font-size:26rpx;}
+.date{color:#888;font-size:24rpx;}
+.format{font-weight:600;color:#333;font-size:28rpx;}
+.location{display:flex;align-items:center;color:#888;font-size:24rpx;}
+.location .icon{margin-right:4rpx;}
+.player{display:flex;align-items:center;padding:20rpx;border-bottom:1px solid #eee;}
+.player:last-child{border-bottom:none;}
+.player-info{flex:1;display:flex;align-items:center;}
+.avatar{width:40px;height:40px;border-radius:50%;margin-right:12rpx;background:#ccc;}
+.meta{display:flex;flex-direction:column;}
+.name{color:#333;font-size:26rpx;}
+.gender{color:#aaa;font-size:20rpx;}
+.score{flex:1;text-align:center;font-size:32rpx;font-weight:700;color:#000;}
+.rating{flex:1;display:flex;justify-content:flex-end;align-items:center;font-size:26rpx;color:#333;}
+.rating text:last-child{margin-left:8rpx;font-size:24rpx;}
+.pos{color:green;}
+.neg{color:red;}
+.neutral{color:gray;}
