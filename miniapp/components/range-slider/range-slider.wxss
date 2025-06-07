@@ -5,3 +5,27 @@
   text-align: center;
   margin-bottom: 5px;
 }
+.range-track {
+  position: relative;
+  height: 6px;
+  border-radius: 3px;
+}
+.range-active {
+  position: absolute;
+  height: 100%;
+  border-radius: 3px;
+}
+.area {
+  position: absolute;
+  left: 0;
+  top: -12px;
+  width: 100%;
+  height: 30px;
+}
+.handle {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 0 3px rgba(0,0,0,0.3);
+}
