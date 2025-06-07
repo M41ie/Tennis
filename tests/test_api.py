@@ -740,6 +740,8 @@ def test_doubles_leaderboard_api(tmp_path, monkeypatch):
     resp = client.get("/clubs/c1/players?doubles=true")
     assert resp.status_code == 200
     board = resp.json()
+    for p in board:
+        assert p["weighted_matches"] == 0.0
     ids = [p["user_id"] for p in board]
     assert ids == ["p3", "p1", "p2", "leader", "p4"]
 
@@ -819,6 +821,8 @@ def test_list_players_filters(tmp_path, monkeypatch):
     resp = client.get("/clubs/c1/players?min_rating=1100&max_age=25&gender=M")
     assert resp.status_code == 200
     data = resp.json()
+    for p in data:
+        assert p["weighted_matches"] == 0.0
     ids = [p["user_id"] for p in data]
     assert ids == ["p3", "p1"]
 
@@ -876,6 +880,8 @@ def test_list_all_players_multi_club(tmp_path, monkeypatch):
     resp = client.get("/players?club=c1,c2&min_rating=1200")
     assert resp.status_code == 200
     board = resp.json()
+    for p in board:
+        assert p["weighted_matches"] == 0.0
     ids = [p["user_id"] for p in board]
     assert ids == ["p3", "p4", "p1"]
 
