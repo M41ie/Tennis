@@ -17,8 +17,8 @@ Component({
   lifetimes: {
     attached() {
       const val = this.properties.value;
-      const min = val.length ? val[0] : this.properties.min;
-      const max = val.length ? val[1] : this.properties.max;
+      const min = val.length && val[0] !== '' ? val[0] : this.properties.min;
+      const max = val.length && val[1] !== '' ? val[1] : this.properties.max;
       this.setData({ innerMin: min, innerMax: max });
     },
     ready() {
