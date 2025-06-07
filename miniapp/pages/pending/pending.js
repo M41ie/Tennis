@@ -2,6 +2,7 @@ const BASE_URL = getApp().globalData.BASE_URL;
 
 Page({
   data: {
+    tabIndex: 0,
     singles: [],
     doubles: [],
     userId: '',
@@ -10,6 +11,10 @@ Page({
   onLoad() {
     this.setData({ userId: wx.getStorageSync('user_id') });
     this.fetchClubInfo();
+  },
+  switchTab(e) {
+    const idx = e.currentTarget.dataset.index;
+    this.setData({ tabIndex: idx });
   },
   fetchClubInfo() {
     const cid = wx.getStorageSync('club_id');
@@ -117,6 +122,18 @@ Page({
       complete() { that.fetchPendings(); }
     });
   },
+  vetoSingle(e) {
+    const idx = e.currentTarget.dataset.index;
+    const cid = wx.getStorageSync('club_id');
+    const token = wx.getStorageSync('token');
+    const that = this;
+    wx.request({
+      url: `${BASE_URL}/clubs/${cid}/pending_matches/${idx}/veto`,
+      method: 'POST',
+      data: { approver: this.data.userId, token },
+      complete() { that.fetchPendings(); }
+    });
+  },
   rejectSingle(e) {
     const idx = e.currentTarget.dataset.index;
     const cid = wx.getStorageSync('club_id');
@@ -188,5 +205,8 @@ Page({
       fail() { wx.showToast({ title: '网络错误', icon: 'none' }); },
       complete() { that.fetchPendings(); }
     });
+  },
+  onShareAppMessage() {
+    return { title: '待确认战绩', path: '/pages/pending/pending' };
   }
 });
