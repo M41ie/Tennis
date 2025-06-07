@@ -31,7 +31,8 @@ from .rating import (
     weighted_rating,
     weighted_doubles_rating,
     format_weight_from_name,
-    weighted_matches,
+    weighted_singles_matches,
+    weighted_doubles_matches,
 )
 from .models import Player, Club, Match, DoublesMatch, Appointment, User
 
@@ -557,7 +558,8 @@ def list_players(
     players = []
     for p in club.members.values():
         rating = get_rating(p, today)
-        matches_played = weighted_matches(p)
+        singles_count = weighted_singles_matches(p)
+        doubles_count = weighted_doubles_matches(p)
         if min_rating is not None and rating < min_rating:
             continue
         if max_rating is not None and rating > max_rating:
@@ -574,7 +576,8 @@ def list_players(
                 "name": p.name,
                 "avatar": p.avatar,
                 "rating": rating,
-                "weighted_matches": round(matches_played, 2),
+                "weighted_singles_matches": round(singles_count, 2),
+                "weighted_doubles_matches": round(doubles_count, 2),
             }
         )
 
@@ -612,7 +615,8 @@ def list_all_players(
     for c in clubs_to_iter:
         for p in c.members.values():
             rating = get_rating(p, today)
-            matches_played = weighted_matches(p)
+            singles_count = weighted_singles_matches(p)
+            doubles_count = weighted_doubles_matches(p)
             if min_rating is not None and rating < min_rating:
                 continue
             if max_rating is not None and rating > max_rating:
@@ -630,7 +634,8 @@ def list_all_players(
                     "name": p.name,
                     "avatar": p.avatar,
                     "rating": rating,
-                    "weighted_matches": round(matches_played, 2),
+                    "weighted_singles_matches": round(singles_count, 2),
+                    "weighted_doubles_matches": round(doubles_count, 2),
                 }
             )
     players.sort(key=lambda x: x["rating"], reverse=True)
