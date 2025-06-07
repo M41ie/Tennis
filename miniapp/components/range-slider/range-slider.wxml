@@ -1,7 +1,7 @@
 <view class="range-slider">
   <view class="values">{{innerMin}} - {{innerMax}}</view>
   <view class="range-track" style="background-color: {{backgroundColor}}">
-    <view class="range-active" style="background-color: {{activeColor}}; left: {{leftPos}}px; width: {{rightPos - leftPos}}px"></view>
+    <view class="range-active" style="background-color: {{activeColor}}; left: {{leftPos + handleRadius}}px; width: {{rightPos - leftPos}}px"></view>
     <movable-area class="area">
       <movable-view class="handle" direction="horizontal" x="{{leftPos}}" data-type="min"
                     bindchange="onHandleEnd" bindtouchmove="onHandleMove" />
