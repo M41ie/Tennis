@@ -1,0 +1,5 @@
+Component({
+  properties: {
+    record: Object
+  }
+});
