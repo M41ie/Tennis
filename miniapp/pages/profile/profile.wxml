@@ -5,7 +5,7 @@
     <view class="info">
       <view class="name">{{user.name}}</view>
       <view class="uid">ID：{{user.user_id}}</view>
-      <view class="rating">Singles {{user.singles_rating || '--'}} ・ Doubles {{user.doubles_rating || '--'}}</view>
+      <view class="rating">单打 {{user.singles_rating || '--'}} ・ 双打 {{user.doubles_rating || '--'}}</view>
     </view>
   </block>
   <block wx:else>

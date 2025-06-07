@@ -1,6 +1,6 @@
 <view class="mode-switch">
-  <view class="mode-item {{filter.mode === 'Singles' ? 'active' : ''}}" data-mode="Singles" bindtap="switchMode">Singles</view>
-  <view class="mode-item {{filter.mode === 'Doubles' ? 'active' : ''}}" data-mode="Doubles" bindtap="switchMode">Doubles</view>
+  <view class="mode-item {{filter.mode === 'Singles' ? 'active' : ''}}" data-mode="Singles" bindtap="switchMode">单打</view>
+  <view class="mode-item {{filter.mode === 'Doubles' ? 'active' : ''}}" data-mode="Doubles" bindtap="switchMode">双打</view>
 </view>
 
 <view class="filter-bar">
