@@ -63,11 +63,11 @@ Page({
             success(r) {
               const list = r.data || [];
               list.forEach(rec => {
-                // player A (self)
+                rec.scoreA = rec.self_score;
+                rec.scoreB = rec.opponent_score;
+                // singles fields
                 rec.playerAName = player.name;
                 rec.playerAAvatar = player.avatar || placeholder;
-                rec.playerAGender = player.gender || '';
-                rec.scoreA = rec.self_score;
                 rec.ratingA = rec.self_rating_after != null ? rec.self_rating_after.toFixed(3) : '';
                 const d = rec.self_delta;
                 if (d != null) {
@@ -78,20 +78,60 @@ Page({
                   rec.deltaDisplayA = '';
                   rec.deltaClassA = 'neutral';
                 }
-                // player B (opponent)
-                rec.playerBName = rec.opponent || '';
-                rec.playerBAvatar = placeholder;
-                rec.playerBGender = '';
-                rec.scoreB = rec.opponent_score;
-                rec.ratingB = rec.opponent_rating_after != null ? rec.opponent_rating_after.toFixed(3) : '';
-                const d2 = rec.opponent_delta;
-                if (d2 != null) {
-                  const abs2 = Math.abs(d2).toFixed(3);
-                  rec.deltaDisplayB = (d2 > 0 ? '+' : d2 < 0 ? '-' : '') + abs2;
-                  rec.deltaClassB = d2 > 0 ? 'pos' : d2 < 0 ? 'neg' : 'neutral';
+
+                if (!that.data.doubles) {
+                  rec.playerBName = rec.opponent || '';
+                  rec.playerBAvatar = placeholder;
+                  rec.ratingB = rec.opponent_rating_after != null ? rec.opponent_rating_after.toFixed(3) : '';
+                  const d2 = rec.opponent_delta;
+                  if (d2 != null) {
+                    const abs2 = Math.abs(d2).toFixed(3);
+                    rec.deltaDisplayB = (d2 > 0 ? '+' : d2 < 0 ? '-' : '') + abs2;
+                    rec.deltaClassB = d2 > 0 ? 'pos' : d2 < 0 ? 'neg' : 'neutral';
+                  } else {
+                    rec.deltaDisplayB = '';
+                    rec.deltaClassB = 'neutral';
+                  }
                 } else {
-                  rec.deltaDisplayB = '';
-                  rec.deltaClassB = 'neutral';
+                  // doubles partner
+                  rec.partnerName = rec.partner || '';
+                  rec.partnerAvatar = rec.partner_avatar || placeholder;
+                  rec.partnerRating = rec.partner_rating_after != null ? rec.partner_rating_after.toFixed(3) : '';
+                  const pd = rec.partner_delta;
+                  if (pd != null) {
+                    const abs = Math.abs(pd).toFixed(3);
+                    rec.partnerDeltaDisplay = (pd > 0 ? '+' : pd < 0 ? '-' : '') + abs;
+                    rec.partnerDeltaClass = pd > 0 ? 'pos' : pd < 0 ? 'neg' : 'neutral';
+                  } else {
+                    rec.partnerDeltaDisplay = '';
+                    rec.partnerDeltaClass = 'neutral';
+                  }
+
+                  rec.opp1Name = rec.opponent1 || '';
+                  rec.opp1Avatar = rec.opponent1_avatar || placeholder;
+                  rec.opp1Rating = rec.opponent1_rating_after != null ? rec.opponent1_rating_after.toFixed(3) : '';
+                  const od1 = rec.opponent1_delta;
+                  if (od1 != null) {
+                    const abs = Math.abs(od1).toFixed(3);
+                    rec.opp1DeltaDisplay = (od1 > 0 ? '+' : od1 < 0 ? '-' : '') + abs;
+                    rec.opp1DeltaClass = od1 > 0 ? 'pos' : od1 < 0 ? 'neg' : 'neutral';
+                  } else {
+                    rec.opp1DeltaDisplay = '';
+                    rec.opp1DeltaClass = 'neutral';
+                  }
+
+                  rec.opp2Name = rec.opponent2 || '';
+                  rec.opp2Avatar = rec.opponent2_avatar || placeholder;
+                  rec.opp2Rating = rec.opponent2_rating_after != null ? rec.opponent2_rating_after.toFixed(3) : '';
+                  const od2 = rec.opponent2_delta;
+                  if (od2 != null) {
+                    const abs = Math.abs(od2).toFixed(3);
+                    rec.opp2DeltaDisplay = (od2 > 0 ? '+' : od2 < 0 ? '-' : '') + abs;
+                    rec.opp2DeltaClass = od2 > 0 ? 'pos' : od2 < 0 ? 'neg' : 'neutral';
+                  } else {
+                    rec.opp2DeltaDisplay = '';
+                    rec.opp2DeltaClass = 'neutral';
+                  }
                 }
 
                 rec.displayFormat = displayFormat(rec.format);

@@ -7,32 +7,50 @@
       <text>{{record.location}}</text>
     </view>
   </view>
-  <view class="player">
-    <view class="player-info">
-      <image class="avatar" src="{{record.playerAAvatar}}" mode="aspectFill"></image>
-      <view class="meta">
-        <text class="name">{{record.playerAName}}</text>
-        <text class="gender">{{record.playerAGender}}</text>
-      </view>
-    </view>
+  <view class="row">
     <view class="score">{{record.scoreA}}</view>
-    <view class="rating">
-      <text>{{record.ratingA}}</text>
+    <view class="info" wx:if="{{!doubles}}">
+      <image class="avatar" src="{{record.playerAAvatar}}" mode="aspectFill"></image>
+      <text class="name">{{record.playerAName}}</text>
+      <text class="rating">{{record.ratingA}}</text>
       <text class="{{record.deltaClassA}}">{{record.deltaDisplayA}}</text>
     </view>
-  </view>
-  <view class="player">
-    <view class="player-info">
-      <image class="avatar" src="{{record.playerBAvatar}}" mode="aspectFill"></image>
-      <view class="meta">
-        <text class="name">{{record.playerBName}}</text>
-        <text class="gender">{{record.playerBGender}}</text>
+    <view class="info doubles" wx:else>
+      <view class="unit">
+        <image class="avatar" src="{{record.playerAAvatar}}" mode="aspectFill"></image>
+        <text class="name">{{record.playerAName}}</text>
+        <text class="rating">{{record.ratingA}}</text>
+        <text class="{{record.deltaClassA}}">{{record.deltaDisplayA}}</text>
+      </view>
+      <view class="unit">
+        <image class="avatar" src="{{record.partnerAvatar}}" mode="aspectFill"></image>
+        <text class="name">{{record.partnerName}}</text>
+        <text class="rating">{{record.partnerRating}}</text>
+        <text class="{{record.partnerDeltaClass}}">{{record.partnerDeltaDisplay}}</text>
       </view>
     </view>
+  </view>
+  <view class="row">
     <view class="score">{{record.scoreB}}</view>
-    <view class="rating">
-      <text>{{record.ratingB}}</text>
+    <view class="info" wx:if="{{!doubles}}">
+      <image class="avatar" src="{{record.playerBAvatar}}" mode="aspectFill"></image>
+      <text class="name">{{record.playerBName}}</text>
+      <text class="rating">{{record.ratingB}}</text>
       <text class="{{record.deltaClassB}}">{{record.deltaDisplayB}}</text>
+    </view>
+    <view class="info doubles" wx:else>
+      <view class="unit">
+        <image class="avatar" src="{{record.opp1Avatar}}" mode="aspectFill"></image>
+        <text class="name">{{record.opp1Name}}</text>
+        <text class="rating">{{record.opp1Rating}}</text>
+        <text class="{{record.opp1DeltaClass}}">{{record.opp1DeltaDisplay}}</text>
+      </view>
+      <view class="unit">
+        <image class="avatar" src="{{record.opp2Avatar}}" mode="aspectFill"></image>
+        <text class="name">{{record.opp2Name}}</text>
+        <text class="rating">{{record.opp2Rating}}</text>
+        <text class="{{record.opp2DeltaClass}}">{{record.opp2DeltaDisplay}}</text>
+      </view>
     </view>
   </view>
 </view>

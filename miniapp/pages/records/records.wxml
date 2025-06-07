@@ -20,7 +20,7 @@
   <view>
     <block wx:for="{{records}}" wx:key="index">
       <view data-index="{{index}}" bindtap="viewRecord">
-        <record-card record="{{item}}" />
+        <record-card record="{{item}}" doubles="{{doubles}}" />
       </view>
     </block>
   </view>

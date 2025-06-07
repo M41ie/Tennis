@@ -1,5 +1,9 @@
 Component({
   properties: {
-    record: Object
+    record: Object,
+    doubles: {
+      type: Boolean,
+      value: false
+    }
   }
 });
