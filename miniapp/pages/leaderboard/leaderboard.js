@@ -7,11 +7,11 @@ Page({
     filter: {
       clubs: [],
       mode: 'Singles',
-      minLevel: '',
-      maxLevel: '',
+      minLevel: 0,
+      maxLevel: 7,
       gender: 'All',
-      minAge: '',
-      maxAge: ''
+      minAge: 0,
+      maxAge: 100
     },
     showClubDialog: false,
     showLevelDialog: false,

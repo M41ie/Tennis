@@ -12,7 +12,10 @@ Component({
     innerMax: 0,
     trackWidth: 0,
     leftPos: 0,
-    rightPos: 0
+    rightPos: 0,
+    handleWidth: 30,
+    handleRadius: 15,
+    lastMove: 0
   },
   lifetimes: {
     attached() {
@@ -24,7 +27,8 @@ Component({
     ready() {
       const query = this.createSelectorQuery();
       query.in(this).select('.range-track').boundingClientRect(rect => {
-        this.setData({ trackWidth: rect.width }, () => {
+        const width = rect.width - this.data.handleWidth;
+        this.setData({ trackWidth: width < 0 ? 0 : width }, () => {
           this.updatePositions();
         });
       }).exec();
@@ -49,7 +53,10 @@ Component({
     },
     onHandleMove(e) {
       const type = e.currentTarget.dataset.type;
+      const now = Date.now();
+      if (now - this.data.lastMove < 30) return;
       const pos = e.detail.x;
+      this.setData({ lastMove: now });
       this.updateValue(type, pos, true);
     },
     onHandleEnd(e) {
@@ -58,14 +65,15 @@ Component({
       this.updateValue(type, pos, false);
     },
     updateValue(type, pos, moving) {
-      const { leftPos, rightPos } = this.data;
+      const { leftPos, rightPos, step, innerMin, innerMax, min, max } = this.data;
+      let val = this.posToValue(pos);
       if (type === 'min') {
-        if (pos > rightPos) pos = rightPos;
-        const val = this.posToValue(pos);
+        if (val > innerMax - step) val = innerMax - step;
+        val = Math.max(min, val);
         this.setData({ innerMin: val, leftPos: this.valueToPos(val) });
       } else {
-        if (pos < leftPos) pos = leftPos;
-        const val = this.posToValue(pos);
+        if (val < innerMin + step) val = innerMin + step;
+        val = Math.min(max, val);
         this.setData({ innerMax: val, rightPos: this.valueToPos(val) });
       }
       const payload = { value: [this.data.innerMin, this.data.innerMax] };
