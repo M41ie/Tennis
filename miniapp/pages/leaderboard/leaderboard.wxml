@@ -15,8 +15,8 @@
     <button size="mini" bindtap="clearClubs">清除选择</button>
   </view>
   <checkbox-group bindchange="onClubsChange">
-    <label wx:for="{{clubs}}" wx:key="index" class="chk">
-      <checkbox value="{{item}}" checked="{{selectedClubs.indexOf(item) >= 0}}">{{item}}</checkbox>
+    <label wx:for="{{clubs}}" wx:key="id" class="chk">
+      <checkbox value="{{item.id}}" checked="{{item.checked}}">{{item.name}}</checkbox>
     </label>
   </checkbox-group>
   <button bindtap="confirmClub">确定</button>

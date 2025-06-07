@@ -2,7 +2,7 @@ const BASE_URL = getApp().globalData.BASE_URL;
 
 Page({
   data: {
-    clubs: [],
+    clubs: [], // [{id, name, checked}]
     players: [],
     filter: {
       clubs: [],
@@ -10,8 +10,7 @@ Page({
       gender: 'All'
     },
     showClubDialog: false,
-    genderText: '全性别',
-    selectedClubs: []
+    genderText: '全性别'
   },
   onLoad() {
     this.fetchClubs();
@@ -21,9 +20,17 @@ Page({
     wx.request({
       url: `${BASE_URL}/clubs`,
       success(res) {
-        const list = res.data.map(c => c.club_id || c.name);
-        that.setData({ clubs: list });
-        that.fetchJoined(list);
+        const clubList = (res.data || []).map(c => ({
+          id: c.club_id || c.name,
+          name: c.name || c.club_id,
+          checked: true
+        }));
+        const ids = clubList.map(c => c.id);
+        that.setData({
+          clubs: clubList,
+          filter: { ...that.data.filter, clubs: ids }
+        });
+        that.fetchJoined(ids);
       }
     });
   },
@@ -32,7 +39,7 @@ Page({
     const that = this;
     if (!uid) {
       that.setData({
-        selectedClubs: list.slice(),
+        clubs: that.data.clubs.map(c => ({ ...c, checked: true })),
         filter: { ...that.data.filter, clubs: list.slice() }
       });
       that.fetchList(that.data.filter);
@@ -44,15 +51,19 @@ Page({
         const joined = res.data.joined_clubs || [];
         const sel = list.filter(c => joined.includes(c));
         const selected = sel.length ? sel : list.slice();
+        const newClubs = that.data.clubs.map(club => ({
+          ...club,
+          checked: selected.includes(club.id)
+        }));
         that.setData({
-          selectedClubs: selected,
+          clubs: newClubs,
           filter: { ...that.data.filter, clubs: selected }
         });
         that.fetchList(that.data.filter);
       },
       fail() {
         that.setData({
-          selectedClubs: list.slice(),
+          clubs: that.data.clubs.map(c => ({ ...c, checked: true })),
           filter: { ...that.data.filter, clubs: list.slice() }
         });
         that.fetchList(that.data.filter);
@@ -60,17 +71,24 @@ Page({
     });
   },
   openClub() { this.setData({ showClubDialog: true }); },
-  onClubsChange(e) { this.setData({ selectedClubs: e.detail.value }); },
+  onClubsChange(e) {
+    const ids = e.detail.value;
+    const clubs = this.data.clubs.map(c => ({ ...c, checked: ids.includes(c.id) }));
+    this.setData({ clubs });
+  },
   confirmClub() {
-    const filter = { ...this.data.filter, clubs: this.data.selectedClubs };
+    const selected = this.data.clubs.filter(c => c.checked).map(c => c.id);
+    const filter = { ...this.data.filter, clubs: selected };
     this.setData({ filter, showClubDialog: false });
     this.fetchList(filter);
   },
   selectAllClubs() {
-    this.setData({ selectedClubs: this.data.clubs.slice() });
+    const clubs = this.data.clubs.map(c => ({ ...c, checked: true }));
+    this.setData({ clubs });
   },
   clearClubs() {
-    this.setData({ selectedClubs: [] });
+    const clubs = this.data.clubs.map(c => ({ ...c, checked: false }));
+    this.setData({ clubs });
   },
   switchMode(e) {
     const mode = e.currentTarget.dataset.mode;
