@@ -12,21 +12,18 @@
     <view class="info" wx:if="{{!doubles}}">
       <image class="avatar" src="{{record.playerAAvatar}}" mode="aspectFill"></image>
       <text class="name">{{record.playerAName}}</text>
-      <text class="rating">{{record.ratingA}}</text>
-      <text class="{{record.deltaClassA}}">{{record.deltaDisplayA}}</text>
+      <text class="{{record.deltaClassA}} delta">{{record.deltaDisplayA}}</text>
     </view>
     <view class="info doubles" wx:else>
       <view class="unit">
         <image class="avatar" src="{{record.playerAAvatar}}" mode="aspectFill"></image>
         <text class="name">{{record.playerAName}}</text>
-        <text class="rating">{{record.ratingA}}</text>
-        <text class="{{record.deltaClassA}}">{{record.deltaDisplayA}}</text>
+        <text class="{{record.deltaClassA}} delta">{{record.deltaDisplayA}}</text>
       </view>
       <view class="unit">
         <image class="avatar" src="{{record.partnerAvatar}}" mode="aspectFill"></image>
         <text class="name">{{record.partnerName}}</text>
-        <text class="rating">{{record.partnerRating}}</text>
-        <text class="{{record.partnerDeltaClass}}">{{record.partnerDeltaDisplay}}</text>
+        <text class="{{record.partnerDeltaClass}} delta">{{record.partnerDeltaDisplay}}</text>
       </view>
     </view>
   </view>
@@ -35,8 +32,19 @@
     <view class="info" wx:if="{{!doubles}}">
       <image class="avatar" src="{{record.playerBAvatar}}" mode="aspectFill"></image>
       <text class="name">{{record.playerBName}}</text>
-      <text class="rating">{{record.ratingB}}</text>
-      <text class="{{record.deltaClassB}}">{{record.deltaDisplayB}}</text>
+      <text class="{{record.deltaClassB}} delta">{{record.deltaDisplayB}}</text>
+    </view>
+    <view class="info doubles" wx:else>
+      <view class="unit">
+        <image class="avatar" src="{{record.opp1Avatar}}" mode="aspectFill"></image>
+        <text class="name">{{record.opp1Name}}</text>
+        <text class="{{record.opp1DeltaClass}} delta">{{record.opp1DeltaDisplay}}</text>
+      </view>
+      <view class="unit">
+        <image class="avatar" src="{{record.opp2Avatar}}" mode="aspectFill"></image>
+        <text class="name">{{record.opp2Name}}</text>
+        <text class="{{record.opp2DeltaClass}} delta">{{record.opp2DeltaDisplay}}</text>
+      </view>
     </view>
     <view class="info doubles" wx:else>
       <view class="unit">
