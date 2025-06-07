@@ -1,13 +1,3 @@
-<view wx:if="{{record}}" class="detail">
-  <view>{{record.date}} {{record.location}}</view>
-  <view>{{record.displayFormat || record.format}} {{record.self_score}}-{{record.opponent_score}}</view>
-  <view>vs {{record.opponent || record.opponents}}</view>
-  <view>预期得分率: {{record.expected_score}}</view>
-  <view>实际得分率: {{record.actual_rate}}</view>
-  <view>
-    Rating: {{record.self_rating_after}}
-    <text class="{{record.deltaClass}}">({{record.deltaDisplay}})</text>
-  </view>
-  <button class="weui-btn weui-btn_disabled" bindtap="noAccess" disabled>对战笔记</button>
+<view class="detail">
+  <button class="weui-btn weui-btn_disabled" bindtap="noAccess" disabled>记录对战笔记（Coming Soon）</button>
 </view>
-<view wx:else>No data</view>
