@@ -46,5 +46,19 @@
         <text class="{{record.opp2DeltaClass}} delta">{{record.opp2DeltaDisplay}}</text>
       </view>
     </view>
+    <view class="info doubles" wx:else>
+      <view class="unit">
+        <image class="avatar" src="{{record.opp1Avatar}}" mode="aspectFill"></image>
+        <text class="name">{{record.opp1Name}}</text>
+        <text class="rating">{{record.opp1Rating}}</text>
+        <text class="{{record.opp1DeltaClass}}">{{record.opp1DeltaDisplay}}</text>
+      </view>
+      <view class="unit">
+        <image class="avatar" src="{{record.opp2Avatar}}" mode="aspectFill"></image>
+        <text class="name">{{record.opp2Name}}</text>
+        <text class="rating">{{record.opp2Rating}}</text>
+        <text class="{{record.opp2DeltaClass}}">{{record.opp2DeltaDisplay}}</text>
+      </view>
+    </view>
   </view>
 </view>
