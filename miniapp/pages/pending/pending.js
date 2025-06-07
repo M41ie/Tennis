@@ -8,8 +8,14 @@ Page({
     userId: '',
     isAdmin: false
   },
-  onLoad() {
+  onLoad(options) {
     this.setData({ userId: wx.getStorageSync('user_id') });
+    if (options && options.tab) {
+      const tab = parseInt(options.tab, 10);
+      if (!Number.isNaN(tab)) {
+        this.setData({ tabIndex: tab });
+      }
+    }
     this.fetchClubInfo();
   },
   switchTab(e) {
@@ -78,6 +84,7 @@ Page({
           const participants = [it.a1, it.a2, it.b1, it.b2];
           const isParticipant = participants.includes(uid);
           it.canApprove = isAdmin && it.confirmed_a && it.confirmed_b;
+          it.canVeto = isAdmin && it.confirmed_a && it.confirmed_b;
           return it;
         });
         that.setData({ doubles: list });
@@ -189,6 +196,18 @@ Page({
       complete() { that.fetchPendings(); }
     });
   },
+  vetoDouble(e) {
+    const idx = e.currentTarget.dataset.index;
+    const cid = wx.getStorageSync('club_id');
+    const token = wx.getStorageSync('token');
+    const that = this;
+    wx.request({
+      url: `${BASE_URL}/clubs/${cid}/pending_doubles/${idx}/veto`,
+      method: 'POST',
+      data: { approver: this.data.userId, token },
+      complete() { that.fetchPendings(); }
+    });
+  },
   rejectDouble(e) {
     const idx = e.currentTarget.dataset.index;
     const cid = wx.getStorageSync('club_id');
@@ -207,7 +226,15 @@ Page({
       complete() { that.fetchPendings(); }
     });
   },
-  onShareAppMessage() {
+  onShareAppMessage(options) {
+    if (options.from === 'button') {
+      const { index, type } = options.target.dataset;
+      const tab = type === 'double' ? 1 : 0;
+      return {
+        title: '待确认战绩',
+        path: `/pages/pending/pending?tab=${tab}&index=${index}&type=${type}`,
+      };
+    }
     return { title: '待确认战绩', path: '/pages/pending/pending' };
   }
 });

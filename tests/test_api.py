@@ -653,6 +653,58 @@ def test_veto_pending_match(tmp_path, monkeypatch):
     assert any("vetoed" in m.text for m in users["p1"].messages)
 
 
+def test_veto_pending_doubles(tmp_path, monkeypatch):
+    db = tmp_path / "tennis.db"
+    monkeypatch.setattr(storage, "DB_FILE", db)
+
+    api = importlib.reload(importlib.import_module("tennis.api"))
+    client = TestClient(api.app)
+
+    for uid in ("leader", "p1", "p2", "p3", "p4"):
+        allow = uid == "leader"
+        client.post(
+            "/users",
+            json={"user_id": uid, "name": uid.upper(), "password": "pw", "allow_create": allow},
+        )
+
+    tokens = {pid: client.post("/login", json={"user_id": pid, "password": "pw"}).json()["token"] for pid in ("leader", "p1", "p2", "p3", "p4")}
+
+    client.post(
+        "/clubs",
+        json={"club_id": "c1", "name": "C1", "user_id": "leader", "token": tokens["leader"]},
+    )
+    for pid in ("p1", "p2", "p3", "p4"):
+        client.post(
+            "/clubs/c1/players",
+            json={"user_id": pid, "name": pid.upper(), "token": tokens[pid]},
+        )
+
+    client.post(
+        "/clubs/c1/pending_doubles",
+        json={
+            "initiator": "p1",
+            "partner": "p2",
+            "opponent1": "p3",
+            "opponent2": "p4",
+            "score_initiator": 6,
+            "score_opponent": 3,
+            "token": tokens["p1"],
+        },
+    )
+
+    resp = client.post(
+        "/clubs/c1/pending_doubles/0/veto",
+        json={"approver": "leader", "token": tokens["leader"]},
+    )
+    assert resp.status_code == 200
+    assert resp.json()["status"] == "vetoed"
+
+    data = storage.load_data()
+    assert not data["c1"].pending_matches
+    users = storage.load_users()
+    assert any("vetoed" in m.text for m in users["p1"].messages)
+
+
 def test_pending_visibility_rules(tmp_path, monkeypatch):
     db = tmp_path / "tennis.db"
     monkeypatch.setattr(storage, "DB_FILE", db)
