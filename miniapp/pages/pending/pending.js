@@ -52,6 +52,7 @@ Page({
           it.status = it.display_status_text || '';
           const isParticipant = it.player_a === uid || it.player_b === uid;
           it.canApprove = isAdmin && it.confirmed_a && it.confirmed_b;
+          it.canVeto = isAdmin && it.confirmed_a && it.confirmed_b;
           return it;
         });
         that.setData({ singles: list });
