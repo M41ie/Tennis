@@ -26,6 +26,7 @@ export const zh_CN = {
   club: '俱乐部',
   singles: '单打',
   doubles: '双打',
+  matchType: '比赛类型',
   opponent: '对手',
   partner: '搭档',
   opponent1: '对手1',
@@ -34,5 +35,14 @@ export const zh_CN = {
   location: '地点',
   format: '赛制',
   yourScore: '我的比分',
-  oppScore: '对手比分'
+  oppScore: '对手比分',
+  chooseClub: '请选择所属俱乐部',
+  chooseMatchType: '请选择比赛类型',
+  chooseOpponent: '请选择你的对手',
+  choosePartner: '请选择你的队友',
+  chooseDate: '请选择比赛日期',
+  chooseFormat: '请选择赛制',
+  inputLocation: '请输入比赛地点',
+  inputYourScore: '请输入你的分数',
+  inputOppScore: '请输入对手分数'
 };
