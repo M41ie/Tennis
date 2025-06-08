@@ -737,7 +737,11 @@ def list_pending_doubles(club_id: str, token: str):
     admins = {club.leader_id, *club.admin_ids}
     result = []
     today = datetime.date.today()
-    for idx, m in enumerate(club.pending_matches):
+    for idx, m in sorted(
+        enumerate(club.pending_matches),
+        key=lambda x: (x[1].date, x[1].created),
+        reverse=True,
+    ):
         if not isinstance(m, DoublesMatch):
             continue
         team_a = {m.player_a1.user_id, m.player_a2.user_id}
@@ -1011,7 +1015,11 @@ def list_pending_matches(club_id: str, token: str):
     result = []
     admins = {club.leader_id, *club.admin_ids}
     today = datetime.date.today()
-    for idx, m in enumerate(club.pending_matches):
+    for idx, m in sorted(
+        enumerate(club.pending_matches),
+        key=lambda x: (x[1].date, x[1].created),
+        reverse=True,
+    ):
         from .models import DoublesMatch
 
         if isinstance(m, DoublesMatch):
