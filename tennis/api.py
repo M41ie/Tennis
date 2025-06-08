@@ -742,6 +742,8 @@ def list_pending_doubles(club_id: str, token: str):
             "score_b": m.score_b,
             "confirmed_a": m.confirmed_a,
             "confirmed_b": m.confirmed_b,
+            "location": m.location,
+            "format_name": m.format_name,
         }
 
         if uid == m.initiator:
@@ -960,6 +962,8 @@ def list_pending_matches(club_id: str, token: str):
             "score_b": m.score_b,
             "confirmed_a": m.confirmed_a,
             "confirmed_b": m.confirmed_b,
+            "location": m.location,
+            "format_name": m.format_name,
         }
 
         if uid == m.initiator:
