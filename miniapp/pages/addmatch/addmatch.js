@@ -154,13 +154,10 @@ Page({
           token
         },
         success() {
-          wx.showToast({
-            title: '提交成功',
-            icon: 'success',
-            success() {
-              wx.navigateBack();
-            }
-          });
+          wx.showToast({ title: '提交成功', icon: 'success', duration: 1000 });
+          setTimeout(() => {
+            wx.navigateBack();
+          }, 1000);
         }
       });
     } else {
@@ -179,13 +176,10 @@ Page({
           token
         },
         success() {
-          wx.showToast({
-            title: '提交成功',
-            icon: 'success',
-            success() {
-              wx.navigateBack();
-            }
-          });
+          wx.showToast({ title: '提交成功', icon: 'success', duration: 1000 });
+          setTimeout(() => {
+            wx.navigateBack();
+          }, 1000);
         }
       });
     }
