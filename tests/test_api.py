@@ -411,7 +411,7 @@ def test_pending_match_role_fields(tmp_path, monkeypatch):
     assert rec["current_user_role_in_match"] == "submitter"
 
     rec = client.get(f"/clubs/c1/pending_matches?token={tokens['p2']}").json()[0]
-    assert rec["display_status_text"] == "请确认比赛结果"
+    assert rec["display_status_text"] == "对手提交了比赛战绩，请确认"
     assert rec["can_confirm"] is True
     assert rec["can_decline"] is True
     assert rec["current_user_role_in_match"] == "opponent"
@@ -422,7 +422,7 @@ def test_pending_match_role_fields(tmp_path, monkeypatch):
     )
 
     rec = client.get(f"/clubs/c1/pending_matches?token={tokens['leader']}").json()[0]
-    assert rec["display_status_text"] == "等待管理员批准"
+    assert rec["display_status_text"] == "双方已确认，请审核战绩"
     assert rec["current_user_role_in_match"] == "admin"
 
 
@@ -488,7 +488,7 @@ def test_pending_doubles_query(tmp_path, monkeypatch):
     resp = client.get(f"/clubs/c1/pending_doubles?token={tokens['p3']}")
     assert resp.status_code == 200
     rec = resp.json()[0]
-    assert rec["display_status_text"] == "请确认比赛结果"
+    assert rec["display_status_text"] == "对手提交了比赛战绩，请确认"
     assert rec["can_confirm"] is True
     assert rec["can_decline"] is True
 
@@ -542,7 +542,7 @@ def test_reject_pending_match(tmp_path, monkeypatch):
     resp = client.get(f"/clubs/c1/pending_matches?token={tokens['p2']}")
     assert resp.status_code == 200
     rec = resp.json()[0]
-    assert rec["display_status_text"] == "请确认比赛结果"
+    assert rec["display_status_text"] == "对手提交了比赛战绩，请确认"
     assert rec["can_confirm"] is True
     assert rec["can_decline"] is True
 
