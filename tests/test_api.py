@@ -422,7 +422,7 @@ def test_pending_match_role_fields(tmp_path, monkeypatch):
     )
 
     rec = client.get(f"/clubs/c1/pending_matches?token={tokens['leader']}").json()[0]
-    assert rec["display_status_text"] == "双方已确认，请审核战绩"
+    assert rec["display_status_text"] == "双方已确认，请审核"
     assert rec["current_user_role_in_match"] == "admin"
 
 
@@ -491,6 +491,165 @@ def test_pending_doubles_query(tmp_path, monkeypatch):
     assert rec["display_status_text"] == "对手提交了比赛战绩，请确认"
     assert rec["can_confirm"] is True
     assert rec["can_decline"] is True
+
+
+def test_doubles_opponent_confirmed_text(tmp_path, monkeypatch):
+    db = tmp_path / "tennis.db"
+    monkeypatch.setattr(storage, "DB_FILE", db)
+
+    api = importlib.reload(importlib.import_module("tennis.api"))
+    client = TestClient(api.app)
+
+    for uid in ("leader", "p1", "p2", "p3", "p4"):
+        allow = uid == "leader"
+        client.post(
+            "/users",
+            json={"user_id": uid, "name": uid.upper(), "password": "pw", "allow_create": allow},
+        )
+
+    tokens = {
+        pid: client.post("/login", json={"user_id": pid, "password": "pw"}).json()["token"]
+        for pid in ("leader", "p1", "p2", "p3", "p4")
+    }
+
+    client.post(
+        "/clubs",
+        json={"club_id": "c1", "name": "C1", "user_id": "leader", "token": tokens["leader"]},
+    )
+    for pid in ("p1", "p2", "p3", "p4"):
+        client.post(
+            "/clubs/c1/players",
+            json={"user_id": pid, "name": pid.upper(), "token": tokens[pid]},
+        )
+
+    client.post(
+        "/clubs/c1/pending_doubles",
+        json={
+            "initiator": "p1",
+            "partner": "p2",
+            "opponent1": "p3",
+            "opponent2": "p4",
+            "score_initiator": 6,
+            "score_opponent": 3,
+            "token": tokens["p1"],
+        },
+    )
+
+    client.post(
+        "/clubs/c1/pending_doubles/0/confirm",
+        json={"user_id": "p3", "token": tokens["p3"]},
+    )
+
+    rec = client.get(f"/clubs/c1/pending_doubles?token={tokens['p3']}").json()[0]
+    assert rec["display_status_text"] == "您的队友已确认，等待管理员审核"
+    assert rec["can_confirm"] is False
+    assert rec["can_decline"] is False
+
+    rec = client.get(f"/clubs/c1/pending_doubles?token={tokens['p4']}").json()[0]
+    assert rec["display_status_text"] == "您的队友已确认，等待管理员审核"
+
+    rec = client.get(f"/clubs/c1/pending_doubles?token={tokens['p1']}").json()[0]
+    assert rec["display_status_text"] == "对手已确认，等待管理员审核"
+
+
+def test_admin_submitter_review_text(tmp_path, monkeypatch):
+    db = tmp_path / "tennis.db"
+    monkeypatch.setattr(storage, "DB_FILE", db)
+
+    api = importlib.reload(importlib.import_module("tennis.api"))
+    client = TestClient(api.app)
+
+    for uid in ("leader", "p2"):
+        allow = uid == "leader"
+        client.post(
+            "/users",
+            json={"user_id": uid, "name": uid.upper(), "password": "pw", "allow_create": allow},
+        )
+
+    tokens = {u: client.post("/login", json={"user_id": u, "password": "pw"}).json()["token"] for u in ("leader", "p2")}
+
+    client.post(
+        "/clubs",
+        json={"club_id": "c1", "name": "C1", "user_id": "leader", "token": tokens["leader"]},
+    )
+    for pid in ("leader", "p2"):
+        client.post(
+            "/clubs/c1/players",
+            json={"user_id": pid, "name": pid.upper(), "token": tokens[pid]},
+        )
+
+    client.post(
+        "/clubs/c1/pending_matches",
+        json={
+            "initiator": "leader",
+            "opponent": "p2",
+            "score_initiator": 6,
+            "score_opponent": 4,
+            "token": tokens["leader"],
+        },
+    )
+
+    rec = client.get(f"/clubs/c1/pending_matches?token={tokens['leader']}").json()[0]
+    assert rec["display_status_text"] == "您已提交，等待对手确认"
+
+    client.post(
+        "/clubs/c1/pending_matches/0/confirm",
+        json={"user_id": "p2", "token": tokens["p2"]},
+    )
+
+    rec = client.get(f"/clubs/c1/pending_matches?token={tokens['leader']}").json()[0]
+    assert rec["display_status_text"] == "双方已确认，请审核"
+
+
+def test_admin_opponent_review_text_doubles(tmp_path, monkeypatch):
+    db = tmp_path / "tennis.db"
+    monkeypatch.setattr(storage, "DB_FILE", db)
+
+    api = importlib.reload(importlib.import_module("tennis.api"))
+    client = TestClient(api.app)
+
+    for uid in ("leader", "p1", "p2", "p3"):
+        allow = uid == "leader"
+        client.post(
+            "/users",
+            json={"user_id": uid, "name": uid.upper(), "password": "pw", "allow_create": allow},
+        )
+
+    tokens = {u: client.post("/login", json={"user_id": u, "password": "pw"}).json()["token"] for u in ("leader", "p1", "p2", "p3")}
+
+    client.post(
+        "/clubs",
+        json={"club_id": "c1", "name": "C1", "user_id": "leader", "token": tokens["leader"]},
+    )
+    for pid in ("leader", "p1", "p2", "p3"):
+        client.post(
+            "/clubs/c1/players",
+            json={"user_id": pid, "name": pid.upper(), "token": tokens[pid]},
+        )
+
+    client.post(
+        "/clubs/c1/pending_doubles",
+        json={
+            "initiator": "p1",
+            "partner": "p2",
+            "opponent1": "leader",
+            "opponent2": "p3",
+            "score_initiator": 6,
+            "score_opponent": 4,
+            "token": tokens["p1"],
+        },
+    )
+
+    rec = client.get(f"/clubs/c1/pending_doubles?token={tokens['leader']}").json()[0]
+    assert rec["display_status_text"] == "对手提交了比赛战绩，请确认"
+
+    client.post(
+        "/clubs/c1/pending_doubles/0/confirm",
+        json={"user_id": "leader", "token": tokens["leader"]},
+    )
+
+    rec = client.get(f"/clubs/c1/pending_doubles?token={tokens['leader']}").json()[0]
+    assert rec["display_status_text"] == "双方已确认，请审核"
 
 
 def test_reject_pending_match(tmp_path, monkeypatch):
