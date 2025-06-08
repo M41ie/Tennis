@@ -3,7 +3,7 @@
     <view class="weui-cell {{clubIndex == 0 ? 'placeholder' : ''}}">{{t.club}}: {{clubOptions[clubIndex]}}</view>
   </picker>
   <picker mode="selector" range="{{modeOptions}}" value="{{modeIndex}}" bindchange="onModeChange">
-    <view class="weui-cell {{modeIndex == 0 ? 'placeholder' : ''}}">{{modeIndex == 0 ? t.chooseMatchType : (modeIndex == 1 ? t.singles : t.doubles)}}</view>
+    <view class="weui-cell {{modeIndex == 0 ? 'placeholder' : ''}}">{{t.matchType}}: {{modeOptions[modeIndex]}}</view>
   </picker>
   <block wx:if="{{modeIndex == 1}}">
     <picker mode="selector" range="{{playerNames}}" value="{{opponentIndex}}" bindchange="onOpponentChange">
@@ -11,8 +11,8 @@
     </picker>
   </block>
   <block wx:elif="{{modeIndex == 2}}">
-    <picker mode="selector" range="{{playerNames}}" value="{{partnerIndex}}" bindchange="onPartnerChange">
-      <view class="weui-cell {{partnerIndex == 0 ? 'placeholder' : ''}}">{{t.partner}}: {{playerNames[partnerIndex]}}</view>
+    <picker mode="selector" range="{{partnerNames}}" value="{{partnerIndex}}" bindchange="onPartnerChange">
+      <view class="weui-cell {{partnerIndex == 0 ? 'placeholder' : ''}}">{{t.partner}}: {{partnerNames[partnerIndex]}}</view>
     </picker>
     <picker mode="selector" range="{{playerNames}}" value="{{opp1Index}}" bindchange="onOpp1Change">
       <view class="weui-cell {{opp1Index == 0 ? 'placeholder' : ''}}">{{t.opponent1}}: {{playerNames[opp1Index]}}</view>

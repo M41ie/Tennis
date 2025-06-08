@@ -9,6 +9,7 @@ Page({
     clubIndex: 0,
     players: [],
     playerNames: [],
+    partnerNames: [],
     opponentIndex: 0,
     modeOptions: [zh_CN.chooseMatchType, zh_CN.singles, zh_CN.doubles],
     modeIndex: 0,
@@ -60,9 +61,11 @@ Page({
         const names = filtered.map(p => p.name);
         const players = [null, ...filtered];
         const playerNames = [that.data.t.chooseOpponent, ...names];
+        const partnerNames = [that.data.t.choosePartner, ...names];
         that.setData({
           players,
           playerNames,
+          partnerNames,
           opponentIndex: 0,
           partnerIndex: 0,
           opp1Index: 0,
@@ -81,6 +84,7 @@ Page({
       this.setData({
         players: [],
         playerNames: [],
+        partnerNames: [],
         opponentIndex: 0,
         partnerIndex: 0,
         opp1Index: 0,

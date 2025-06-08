@@ -26,6 +26,7 @@ export const zh_CN = {
   club: '俱乐部',
   singles: '单打',
   doubles: '双打',
+  matchType: '比赛类型',
   opponent: '对手',
   partner: '搭档',
   opponent1: '对手1',
