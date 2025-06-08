@@ -1,4 +1,8 @@
 .weui-cells { padding: 10px 0; }
 .placeholder { color: #888; }
 .dark-label { color: #000; }
-.submit-btn { width: 80%; margin: 10px auto; }
+.submit-btn {
+  width: 60%;
+  margin: 8px auto;
+  padding: 8px 0;
+}
