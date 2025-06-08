@@ -189,6 +189,8 @@ def _pending_status_for_user(
             status_text = "对手提交了比赛战绩，请确认"
         else:
             status_text = "您已确认，等待管理员审核"
+    elif role == "admin":
+        status_text = "双方已确认，请审核战绩"
     else:
         if match.confirmed_a and match.confirmed_b:
             status_text = "等待管理员审核"
@@ -792,6 +794,8 @@ def list_pending_doubles(club_id: str, token: str):
                 status_text = "对手提交了比赛战绩，请确认"
             else:
                 status_text = "您已确认，等待管理员审核"
+        elif role == "admin":
+            status_text = "双方已确认，请审核战绩"
         else:
             if m.confirmed_a and m.confirmed_b:
                 status_text = "等待管理员审核"
@@ -1010,7 +1014,9 @@ def list_pending_matches(club_id: str, token: str):
                 status_text = "对手提交了比赛战绩，请确认"
             else:
                 status_text = "您已确认，等待管理员审核"
-        else:  # admin or viewer seeing a fully confirmed match
+        elif role == "admin":
+            status_text = "双方已确认，请审核战绩"
+        else:  # viewer
             if m.confirmed_a and m.confirmed_b:
                 status_text = "等待管理员审核"
             else:
