@@ -19,11 +19,11 @@
     "list": [
       {
         "pagePath": "pages/leaderboard/leaderboard",
-        "text": "排行榜"
+        "text": "排行"
       },
       {
         "pagePath": "pages/records/records",
-        "text": "比赛"
+        "text": "战绩"
       },
       {
         "pagePath": "pages/profile/profile",
