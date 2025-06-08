@@ -210,6 +210,7 @@ Page({
               it.canReject = it.can_decline;
               it.status = it.display_status_text || '';
               it.canApprove = isAdmin && it.confirmed_a && it.confirmed_b;
+              it.canVeto = isAdmin;
               const pa = idMap[it.player_a] || {};
               const pb = idMap[it.player_b] || {};
               it.scoreA = it.score_a;
@@ -245,6 +246,7 @@ Page({
               it.canReject = it.can_decline;
               it.status = it.display_status_text || '';
               it.canApprove = isAdmin && it.confirmed_a && it.confirmed_b;
+              it.canVeto = isAdmin;
               const a1 = idMap[it.a1] || {};
               const a2 = idMap[it.a2] || {};
               const b1 = idMap[it.b1] || {};

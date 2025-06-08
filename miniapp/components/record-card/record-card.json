@@ -2,5 +2,6 @@
   "component": true,
   "options": {
     "multipleSlots": true
-  }
+  },
+  "styleIsolation": "apply-shared"
 }
