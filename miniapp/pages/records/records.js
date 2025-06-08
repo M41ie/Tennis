@@ -34,12 +34,12 @@ Page({
   },
   switchTab(e) {
     const idx = e.currentTarget.dataset.index;
-    this.setData({ tabIndex: idx });
-    if (idx == 0) {
-      this.fetchRecords();
-    } else {
-      this.fetchPendings();
+    if (idx == 1) {
+      wx.navigateTo({ url: '/pages/pending/pending' });
+      return;
     }
+    this.setData({ tabIndex: 0 });
+    this.fetchRecords();
   },
   switchMode(e) {
     const idx = e.currentTarget.dataset.index;
