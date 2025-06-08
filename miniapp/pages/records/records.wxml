@@ -28,7 +28,7 @@
   </view>
   <view wx:if="{{pendingTabIndex==0}}">
     <block wx:for="{{pendingSingles}}" wx:key="index">
-      <record-card record="{{item}}" doubles="{{false}}" showActions="{{true}}">
+      <record-card record="{{item}}" doubles="{{false}}" show-actions="{{true}}">
         <view slot="actions" class="action-bar">
           <text class="status-text">{{item.status}}</text>
           <view class="button-group">
@@ -44,7 +44,7 @@
   </view>
   <view wx:elif="{{pendingTabIndex==1}}">
     <block wx:for="{{pendingDoubles}}" wx:key="index">
-      <record-card record="{{item}}" doubles="{{true}}" showActions="{{true}}">
+      <record-card record="{{item}}" doubles="{{true}}" show-actions="{{true}}">
         <view slot="actions" class="action-bar">
           <text class="status-text">{{item.status}}</text>
           <view class="button-group">
