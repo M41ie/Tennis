@@ -53,4 +53,7 @@
       </view>
     </view>
   </view>
+  <view class="actions-slot">
+    <slot name="actions"></slot>
+  </view>
 </view>

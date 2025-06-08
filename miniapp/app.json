@@ -10,7 +10,6 @@
     "pages/profile/profile",
     "pages/prerate/prerate",
     "pages/addmatch/addmatch",
-    "pages/pending/pending",
     "pages/manage/manage",
     "pages/messages/messages",
     "pages/recorddetail/recorddetail",
