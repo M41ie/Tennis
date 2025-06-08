@@ -173,9 +173,11 @@ Page({
         const admin =
           info.leader_id === that.data.userId ||
           (info.admin_ids && info.admin_ids.includes(that.data.userId));
-        that.setData({ isAdmin: admin });
+        that.setData({ isAdmin: admin }, () => {
+          that.fetchPendings();
+        });
       },
-      complete() {
+      fail() {
         that.fetchPendings();
       }
     });
@@ -206,11 +208,13 @@ Page({
             const uid = that.data.userId;
             const isAdmin = that.data.isAdmin;
             const list = r.data.map(it => {
+              const confirmedA = Boolean(it.confirmed_a);
+              const confirmedB = Boolean(it.confirmed_b);
               it.canConfirm = it.can_confirm;
               it.canReject = it.can_decline;
               it.statusText = it.display_status_text || '';
-              it.canApprove = isAdmin && it.confirmed_a && it.confirmed_b;
-              it.canVeto = isAdmin;
+              it.canApprove = isAdmin && confirmedA && confirmedB;
+              it.canVeto = isAdmin && confirmedA && confirmedB;
               const pa = idMap[it.player_a] || {};
               const pb = idMap[it.player_b] || {};
               it.scoreA = it.score_a;
@@ -242,11 +246,13 @@ Page({
             }
             const isAdmin = that.data.isAdmin;
             const list = r.data.map(it => {
+              const confirmedA = Boolean(it.confirmed_a);
+              const confirmedB = Boolean(it.confirmed_b);
               it.canConfirm = it.can_confirm;
               it.canReject = it.can_decline;
               it.statusText = it.display_status_text || '';
-              it.canApprove = isAdmin && it.confirmed_a && it.confirmed_b;
-              it.canVeto = isAdmin;
+              it.canApprove = isAdmin && confirmedA && confirmedB;
+              it.canVeto = isAdmin && confirmedA && confirmedB;
               const a1 = idMap[it.a1] || {};
               const a2 = idMap[it.a2] || {};
               const b1 = idMap[it.b1] || {};
