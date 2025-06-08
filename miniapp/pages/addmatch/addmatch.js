@@ -10,22 +10,25 @@ Page({
     players: [],
     playerNames: [],
     opponentIndex: 0,
-    modeOptions: [zh_CN.singles, zh_CN.doubles],
+    modeOptions: [zh_CN.chooseMatchType, zh_CN.singles, zh_CN.doubles],
     modeIndex: 0,
     partnerIndex: 0,
     opp1Index: 0,
     opp2Index: 0,
     date: '',
+    today: '',
     location: '',
     // Display names for match formats
-    formatOptions: ['六局', '四局', '抢十', '抢七'],
+    formatOptions: [zh_CN.chooseFormat, '六局', '四局', '抢十', '抢七'],
     // Codes sent to the backend when submitting a result
-    formatCodes: ['6_game', '4_game', 'tb10', 'tb7'],
+    formatCodes: ['', '6_game', '4_game', 'tb10', 'tb7'],
     formatIndex: 0,
     scoreA: '',
     scoreB: ''
   },
   onLoad() {
+    const today = new Date().toISOString().slice(0, 10);
+    this.setData({ today });
     this.fetchClubs();
   },
   fetchClubs() {
@@ -33,12 +36,14 @@ Page({
     wx.request({
       url: `${BASE_URL}/clubs`,
       success(res) {
-        const ids = res.data.map(c => c.club_id);
-        const names = res.data.map(c => c.name);
-        that.setData({ clubIds: ids, clubOptions: names });
+        const ids = [''];
+        const names = [that.data.t.chooseClub];
+        ids.push(...res.data.map(c => c.club_id));
+        names.push(...res.data.map(c => c.name));
+        that.setData({ clubIds: ids, clubOptions: names, clubIndex: 0 });
         const stored = wx.getStorageSync('club_id');
         const idx = ids.indexOf(stored);
-        if (idx >= 0) {
+        if (idx > 0) {
           that.setData({ clubIndex: idx });
           that.fetchPlayers(ids[idx]);
         }
@@ -53,9 +58,11 @@ Page({
         const uid = wx.getStorageSync('user_id');
         const filtered = res.data.filter(p => p.user_id !== uid);
         const names = filtered.map(p => p.name);
+        const players = [null, ...filtered];
+        const playerNames = [that.data.t.chooseOpponent, ...names];
         that.setData({
-          players: filtered,
-          playerNames: names,
+          players,
+          playerNames,
           opponentIndex: 0,
           partnerIndex: 0,
           opp1Index: 0,
@@ -68,7 +75,18 @@ Page({
     const idx = e.detail.value;
     this.setData({ clubIndex: idx });
     const cid = this.data.clubIds[idx];
-    this.fetchPlayers(cid);
+    if (cid) {
+      this.fetchPlayers(cid);
+    } else {
+      this.setData({
+        players: [],
+        playerNames: [],
+        opponentIndex: 0,
+        partnerIndex: 0,
+        opp1Index: 0,
+        opp2Index: 0,
+      });
+    }
   },
   onOpponentChange(e) {
     this.setData({ opponentIndex: e.detail.value });
@@ -92,7 +110,7 @@ Page({
     const userId = wx.getStorageSync('user_id');
     const token = wx.getStorageSync('token');
     if (!cid || !userId || !token) return;
-    const doubles = this.data.modeIndex === 1;
+    const doubles = this.data.modeIndex === 2;
     if (doubles) {
       const players = this.data.players;
       const partner = players[this.data.partnerIndex];
