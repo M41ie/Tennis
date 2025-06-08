@@ -42,6 +42,25 @@ def validate_scores(score_a, score_b):
         raise ValueError("Invalid score")
 
 
+def cleanup_pending_matches(club: Club) -> None:
+    """Remove expired pending matches from a club."""
+    today = datetime.date.today()
+    remaining = []
+    for m in club.pending_matches:
+        if m.status in {"rejected", "vetoed"}:
+            if m.status_date and (today - m.status_date).days >= 3:
+                continue
+        elif not (m.confirmed_a and m.confirmed_b):
+            if (today - m.created).days >= 7:
+                continue
+        else:
+            base = m.confirmed_on or m.created
+            if (today - base).days >= 7:
+                continue
+        remaining.append(m)
+    club.pending_matches = remaining
+
+
 def register_user(
     users,
     user_id: str,
@@ -269,6 +288,8 @@ def submit_match(
     club = clubs.get(club_id)
     if not club:
         raise ValueError("Club not found")
+    cleanup_pending_matches(club)
+    cleanup_pending_matches(club)
     p_init = club.members.get(initiator)
     p_opp = club.members.get(opponent)
     if not p_init or not p_opp:
@@ -298,6 +319,7 @@ def confirm_match(clubs, club_id: str, index: int, user_id: str, users=None):
     club = clubs.get(club_id)
     if not club:
         raise ValueError("Club not found")
+    cleanup_pending_matches(club)
     if index >= len(club.pending_matches):
         raise ValueError("Match not found")
     match = club.pending_matches[index]
@@ -310,6 +332,8 @@ def confirm_match(clubs, club_id: str, index: int, user_id: str, users=None):
 
     if match.confirmed_a and match.confirmed_b and users is not None:
         today = datetime.date.today()
+        if match.confirmed_on is None:
+            match.confirmed_on = today
         for uid in [club.leader_id, *club.admin_ids]:
             if not uid:
                 continue
@@ -325,13 +349,15 @@ def reject_match(clubs, club_id: str, index: int, user_id: str, users=None):
     club = clubs.get(club_id)
     if not club:
         raise ValueError("Club not found")
+    cleanup_pending_matches(club)
     if index >= len(club.pending_matches):
         raise ValueError("Match not found")
     match = club.pending_matches[index]
     participants = {match.player_a.user_id, match.player_b.user_id}
     if user_id not in participants:
         raise ValueError("User not in match")
-    club.pending_matches.pop(index)
+    match.status = "rejected"
+    match.status_date = datetime.date.today()
     if users is not None and match.initiator:
         initiator = users.get(match.initiator)
         if initiator:
@@ -348,6 +374,7 @@ def veto_match(clubs, club_id: str, index: int, approver: str, users=None):
     club = clubs.get(club_id)
     if not club:
         raise ValueError("Club not found")
+    cleanup_pending_matches(club)
     if index >= len(club.pending_matches):
         raise ValueError("Match not found")
     if approver != club.leader_id and approver not in club.admin_ids:
@@ -356,7 +383,8 @@ def veto_match(clubs, club_id: str, index: int, approver: str, users=None):
     from .models import DoublesMatch
     if isinstance(match, DoublesMatch):
         raise ValueError("Not a singles match")
-    club.pending_matches.pop(index)
+    match.status = "vetoed"
+    match.status_date = datetime.date.today()
     if users is not None and match.initiator:
         initiator = users.get(match.initiator)
         if initiator:
@@ -373,6 +401,7 @@ def veto_doubles(clubs, club_id: str, index: int, approver: str, users=None):
     club = clubs.get(club_id)
     if not club:
         raise ValueError("Club not found")
+    cleanup_pending_matches(club)
     if index >= len(club.pending_matches):
         raise ValueError("Match not found")
     if approver != club.leader_id and approver not in club.admin_ids:
@@ -380,7 +409,8 @@ def veto_doubles(clubs, club_id: str, index: int, approver: str, users=None):
     match = club.pending_matches[index]
     if not isinstance(match, DoublesMatch):
         raise ValueError("Not a doubles match")
-    club.pending_matches.pop(index)
+    match.status = "vetoed"
+    match.status_date = datetime.date.today()
     if users is not None and match.initiator:
         initiator = users.get(match.initiator)
         if initiator:
@@ -458,6 +488,7 @@ def confirm_doubles(clubs, club_id: str, index: int, user_id: str, users=None):
     club = clubs.get(club_id)
     if not club:
         raise ValueError("Club not found")
+    cleanup_pending_matches(club)
     if index >= len(club.pending_matches):
         raise ValueError("Match not found")
     match = club.pending_matches[index]
@@ -472,6 +503,8 @@ def confirm_doubles(clubs, club_id: str, index: int, user_id: str, users=None):
 
     if match.confirmed_a and match.confirmed_b and users is not None:
         today = datetime.date.today()
+        if match.confirmed_on is None:
+            match.confirmed_on = today
         for uid in [club.leader_id, *club.admin_ids]:
             if not uid:
                 continue
@@ -487,6 +520,7 @@ def reject_doubles(clubs, club_id: str, index: int, user_id: str, users=None):
     club = clubs.get(club_id)
     if not club:
         raise ValueError("Club not found")
+    cleanup_pending_matches(club)
     if index >= len(club.pending_matches):
         raise ValueError("Match not found")
     match = club.pending_matches[index]
@@ -500,7 +534,8 @@ def reject_doubles(clubs, club_id: str, index: int, user_id: str, users=None):
     }
     if user_id not in participants:
         raise ValueError("User not in match")
-    club.pending_matches.pop(index)
+    match.status = "rejected"
+    match.status_date = datetime.date.today()
     if users is not None and match.initiator:
         initiator = users.get(match.initiator)
         if initiator:
@@ -530,6 +565,7 @@ def approve_match(clubs, club_id: str, index: int, approver: str, users=None):
     club = clubs.get(club_id)
     if not club:
         raise ValueError("Club not found")
+    cleanup_pending_matches(club)
     if index >= len(club.pending_matches):
         raise ValueError("Match not found")
     if approver != club.leader_id and approver not in club.admin_ids:

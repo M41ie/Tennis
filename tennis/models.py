@@ -76,6 +76,10 @@ class Match:
     confirmed_a: bool = False
     confirmed_b: bool = False
     approved: bool = False
+    created: datetime.date = field(default_factory=datetime.date.today)
+    confirmed_on: datetime.date | None = None
+    status: str | None = None
+    status_date: datetime.date | None = None
 
 
 @dataclass
@@ -102,6 +106,10 @@ class DoublesMatch:
     confirmed_a: bool = False
     confirmed_b: bool = False
     approved: bool = False
+    created: datetime.date = field(default_factory=datetime.date.today)
+    confirmed_on: datetime.date | None = None
+    status: str | None = None
+    status_date: datetime.date | None = None
 
 
 @dataclass

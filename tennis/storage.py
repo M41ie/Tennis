@@ -206,6 +206,13 @@ def load_data() -> Dict[str, Club]:
             )
             match.confirmed_a = data.get("confirmed_a", False)
             match.confirmed_b = data.get("confirmed_b", False)
+            if "created" in data:
+                match.created = datetime.date.fromisoformat(data["created"])
+            if data.get("confirmed_on"):
+                match.confirmed_on = datetime.date.fromisoformat(data["confirmed_on"])
+            match.status = data.get("status")
+            if data.get("status_date"):
+                match.status_date = datetime.date.fromisoformat(data["status_date"])
             club.pending_matches.append(match)
         else:
             pa = club.members[data["player_a"]]
@@ -223,6 +230,13 @@ def load_data() -> Dict[str, Club]:
             )
             match.confirmed_a = data.get("confirmed_a", False)
             match.confirmed_b = data.get("confirmed_b", False)
+            if "created" in data:
+                match.created = datetime.date.fromisoformat(data["created"])
+            if data.get("confirmed_on"):
+                match.confirmed_on = datetime.date.fromisoformat(data["confirmed_on"])
+            match.status = data.get("status")
+            if data.get("status_date"):
+                match.status_date = datetime.date.fromisoformat(data["status_date"])
             club.pending_matches.append(match)
     for row in cur.execute("SELECT * FROM appointments ORDER BY id"):
         club = clubs.get(row["club_id"])
@@ -350,6 +364,10 @@ def save_data(clubs: Dict[str, Club]) -> None:
                     "initiator": m.initiator,
                     "confirmed_a": m.confirmed_a,
                     "confirmed_b": m.confirmed_b,
+                    "created": m.created.isoformat(),
+                    "confirmed_on": m.confirmed_on.isoformat() if m.confirmed_on else None,
+                    "status": m.status,
+                    "status_date": m.status_date.isoformat() if m.status_date else None,
                 }
                 cur.execute(
                     "INSERT INTO pending_matches(club_id, type, date, data) VALUES (?,?,?,?)",
@@ -372,6 +390,10 @@ def save_data(clubs: Dict[str, Club]) -> None:
                     "initiator": m.initiator,
                     "confirmed_a": m.confirmed_a,
                     "confirmed_b": m.confirmed_b,
+                    "created": m.created.isoformat(),
+                    "confirmed_on": m.confirmed_on.isoformat() if m.confirmed_on else None,
+                    "status": m.status,
+                    "status_date": m.status_date.isoformat() if m.status_date else None,
                 }
                 cur.execute(
                     "INSERT INTO pending_matches(club_id, type, date, data) VALUES (?,?,?,?)",
