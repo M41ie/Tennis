@@ -4,6 +4,10 @@ Component({
     doubles: {
       type: Boolean,
       value: false
+    },
+    showActions: {
+      type: Boolean,
+      value: false
     }
   }
 });

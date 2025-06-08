@@ -53,7 +53,7 @@
       </view>
     </view>
   </view>
-  <view class="actions-slot">
+  <view class="actions-slot" wx:if="{{showActions}}">
     <slot name="actions"></slot>
   </view>
 </view>
