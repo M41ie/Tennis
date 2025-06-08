@@ -422,7 +422,7 @@ def test_pending_match_role_fields(tmp_path, monkeypatch):
     )
 
     rec = client.get(f"/clubs/c1/pending_matches?token={tokens['leader']}").json()[0]
-    assert rec["display_status_text"] == "等待管理员审核"
+    assert rec["display_status_text"] == "双方已确认，请审核战绩"
     assert rec["current_user_role_in_match"] == "admin"
 
 
