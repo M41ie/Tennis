@@ -802,7 +802,7 @@ def list_pending_doubles(club_id: str, token: str):
                 can_decline = True
                 status_text = "对手提交了比赛战绩，请确认"
             else:
-                status_text = "您已确认，等待管理员审核"
+                status_text = "您的队友已确认，等待管理员审核"
         elif role == "admin":
             status_text = "双方已确认，请审核"
         else:
