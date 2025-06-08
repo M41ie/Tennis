@@ -20,3 +20,7 @@
 .neg{color:#e03a3a;}
 .neutral{color:gray;}
 .actions-slot{padding:20rpx;border-top:1px solid #eee;font-size:26rpx;color:#666;display:flex;justify-content:space-between;align-items:center;}
+.action-bar{padding:20rpx;border-top:1px solid #eee;font-size:24rpx;color:#666;}
+.action-bar .button-group{display:flex;flex-wrap:wrap;gap:8rpx;margin-top:10rpx;}
+.action-bar .status-text{margin-bottom:6rpx;}
+.action-btn{}
