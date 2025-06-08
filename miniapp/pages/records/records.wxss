@@ -19,8 +19,9 @@
 .mode-item.active{background:#07C160;color:#fff;}
 .list{padding:10px;}
 .action-bar{padding:20rpx;border-top:1px solid #eee;font-size:24rpx;color:#666;}
-.action-bar .buttons{display:flex;flex-wrap:wrap;gap:8rpx;margin-top:10rpx;}
-.action-bar .status{margin-bottom:6rpx;}
+.action-bar .button-group{display:flex;flex-wrap:wrap;gap:8rpx;margin-top:10rpx;}
+.action-bar .status-text{margin-bottom:6rpx;}
+.action-btn{}
 .pos{color:green;font-size:24rpx;}
 .neg{color:red;font-size:24rpx;}
 .neutral{color:gray;font-size:24rpx;}
