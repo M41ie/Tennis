@@ -130,21 +130,26 @@ def _pending_status_for_user(
         role = "submitter"
     else:
         if isinstance(match, DoublesMatch):
-            participants = {
-                match.player_a1.user_id,
-                match.player_a2.user_id,
-                match.player_b1.user_id,
-                match.player_b2.user_id,
-            }
+            team_a = {match.player_a1.user_id, match.player_a2.user_id}
+            team_b = {match.player_b1.user_id, match.player_b2.user_id}
+
+            if user_id in team_a:
+                role = "teammate"
+            elif user_id in team_b:
+                role = "opponent"
+            elif user_id in admins:
+                role = "admin"
+            else:
+                role = "viewer"
         else:
             participants = {match.player_a.user_id, match.player_b.user_id}
 
-        if user_id in participants:
-            role = "opponent"
-        elif user_id in admins:
-            role = "admin"
-        else:
-            role = "viewer"
+            if user_id in participants:
+                role = "opponent"
+            elif user_id in admins:
+                role = "admin"
+            else:
+                role = "viewer"
 
     confirmed_self = None
     confirmed_opp = None
@@ -171,19 +176,22 @@ def _pending_status_for_user(
         if not (match.confirmed_a and match.confirmed_b):
             status_text = "您已提交，等待对手确认"
         else:
-            status_text = "对手已确认，等待管理员批准"
+            status_text = "对手已确认，等待管理员审核"
+    elif role == "teammate":
+        if not match.confirmed_b:
+            status_text = "您的队友已确认，等待对手确认"
+        else:
+            status_text = "对手和队友已确认，等待管理员审核"
     elif role == "opponent":
         if confirmed_self is False:
             can_confirm = True
             can_decline = True
-            status_text = "请确认比赛结果"
-        elif confirmed_self and not confirmed_opp:
-            status_text = "您已确认，等待对手确认"
+            status_text = "对手提交了比赛战绩，请确认"
         else:
-            status_text = "对手已确认，等待管理员批准"
+            status_text = "您已确认，等待管理员审核"
     else:
         if match.confirmed_a and match.confirmed_b:
-            status_text = "等待管理员批准"
+            status_text = "等待管理员审核"
         else:
             status_text = "待确认"
 
@@ -719,12 +727,9 @@ def list_pending_doubles(club_id: str, token: str):
     for idx, m in enumerate(club.pending_matches):
         if not isinstance(m, DoublesMatch):
             continue
-        participants = {
-            m.player_a1.user_id,
-            m.player_a2.user_id,
-            m.player_b1.user_id,
-            m.player_b2.user_id,
-        }
+        team_a = {m.player_a1.user_id, m.player_a2.user_id}
+        team_b = {m.player_b1.user_id, m.player_b2.user_id}
+        participants = team_a | team_b
         if uid not in participants:
             if uid in admins and m.confirmed_a and m.confirmed_b:
                 pass
@@ -748,7 +753,9 @@ def list_pending_doubles(club_id: str, token: str):
 
         if uid == m.initiator:
             role = "submitter"
-        elif uid in participants:
+        elif uid in team_a:
+            role = "teammate"
+        elif uid in team_b:
             role = "opponent"
         elif uid in admins:
             role = "admin"
@@ -757,10 +764,10 @@ def list_pending_doubles(club_id: str, token: str):
 
         confirmed_self = None
         confirmed_opp = None
-        if uid in {m.player_a1.user_id, m.player_a2.user_id}:
+        if uid in team_a:
             confirmed_self = m.confirmed_a
             confirmed_opp = m.confirmed_b
-        elif uid in {m.player_b1.user_id, m.player_b2.user_id}:
+        elif uid in team_b:
             confirmed_self = m.confirmed_b
             confirmed_opp = m.confirmed_a
 
@@ -772,19 +779,22 @@ def list_pending_doubles(club_id: str, token: str):
             if not (m.confirmed_a and m.confirmed_b):
                 status_text = "您已提交，等待对手确认"
             else:
-                status_text = "对手已确认，等待管理员批准"
+                status_text = "对手已确认，等待管理员审核"
+        elif role == "teammate":
+            if not m.confirmed_b:
+                status_text = "您的队友已确认，等待对手确认"
+            else:
+                status_text = "对手和队友已确认，等待管理员审核"
         elif role == "opponent":
             if confirmed_self is False:
                 can_confirm = True
                 can_decline = True
-                status_text = "请确认比赛结果"
-            elif confirmed_self and not confirmed_opp:
-                status_text = "您已确认，等待对手确认"
+                status_text = "对手提交了比赛战绩，请确认"
             else:
-                status_text = "对手已确认，等待管理员批准"
+                status_text = "您已确认，等待管理员审核"
         else:
             if m.confirmed_a and m.confirmed_b:
-                status_text = "等待管理员批准"
+                status_text = "等待管理员审核"
             else:
                 status_text = "待确认"
 
@@ -992,19 +1002,17 @@ def list_pending_matches(club_id: str, token: str):
             if not (m.confirmed_a and m.confirmed_b):
                 status_text = "您已提交，等待对手确认"
             else:
-                status_text = "对手已确认，等待管理员批准"
+                status_text = "对手已确认，等待管理员审核"
         elif role == "opponent":
             if confirmed_self is False:
                 can_confirm = True
                 can_decline = True
-                status_text = "请确认比赛结果"
-            elif confirmed_self and not confirmed_opp:
-                status_text = "您已确认，等待对手确认"
+                status_text = "对手提交了比赛战绩，请确认"
             else:
-                status_text = "对手已确认，等待管理员批准"
+                status_text = "您已确认，等待管理员审核"
         else:  # admin or viewer seeing a fully confirmed match
             if m.confirmed_a and m.confirmed_b:
-                status_text = "等待管理员批准"
+                status_text = "等待管理员审核"
             else:
                 status_text = "待确认"
 
