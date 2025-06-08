@@ -714,7 +714,8 @@ def test_reject_pending_match(tmp_path, monkeypatch):
 
     resp = client.get(f"/clubs/c1/pending_matches?token={tokens['p1']}")
     assert resp.status_code == 200
-    assert resp.json() == []
+    rec = resp.json()[0]
+    assert "对手已拒绝" in rec["display_status_text"]
 
 
 def test_reject_pending_doubles(tmp_path, monkeypatch):
@@ -765,7 +766,8 @@ def test_reject_pending_doubles(tmp_path, monkeypatch):
 
     resp = client.get(f"/clubs/c1/pending_doubles?token={tokens['p1']}")
     assert resp.status_code == 200
-    assert resp.json() == []
+    rec = resp.json()[0]
+    assert "对手已拒绝" in rec["display_status_text"]
 
 
 def test_veto_pending_match(tmp_path, monkeypatch):
@@ -807,7 +809,8 @@ def test_veto_pending_match(tmp_path, monkeypatch):
     assert resp.json()["status"] == "vetoed"
 
     data = storage.load_data()
-    assert not data["c1"].pending_matches
+    assert data["c1"].pending_matches
+    assert data["c1"].pending_matches[0].status == "vetoed"
     users = storage.load_users()
     assert any("vetoed" in m.text for m in users["p1"].messages)
 
@@ -859,7 +862,8 @@ def test_veto_pending_doubles(tmp_path, monkeypatch):
     assert resp.json()["status"] == "vetoed"
 
     data = storage.load_data()
-    assert not data["c1"].pending_matches
+    assert data["c1"].pending_matches
+    assert data["c1"].pending_matches[0].status == "vetoed"
     users = storage.load_users()
     assert any("vetoed" in m.text for m in users["p1"].messages)
 

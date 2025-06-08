@@ -730,16 +730,26 @@ def list_pending_doubles(club_id: str, token: str):
     if not club:
         raise HTTPException(404, "Club not found")
     from .models import DoublesMatch
+    from .cli import cleanup_pending_matches
+
+    cleanup_pending_matches(club)
 
     admins = {club.leader_id, *club.admin_ids}
     result = []
+    today = datetime.date.today()
     for idx, m in enumerate(club.pending_matches):
         if not isinstance(m, DoublesMatch):
             continue
         team_a = {m.player_a1.user_id, m.player_a2.user_id}
         team_b = {m.player_b1.user_id, m.player_b2.user_id}
         participants = team_a | team_b
-        if uid not in participants:
+        if m.status == "rejected":
+            if uid != m.initiator:
+                continue
+        elif m.status == "vetoed":
+            if uid not in participants:
+                continue
+        elif uid not in participants:
             if uid in admins and m.confirmed_a and m.confirmed_b:
                 pass
             else:
@@ -786,30 +796,58 @@ def list_pending_doubles(club_id: str, token: str):
         can_decline = False
         status_text = ""
 
-        if role == "submitter":
-            if not (m.confirmed_a and m.confirmed_b):
-                status_text = "您已提交，等待对手确认"
-            else:
-                status_text = "对手已确认，等待管理员审核"
-        elif role == "teammate":
-            if not m.confirmed_b:
-                status_text = "您的队友已确认，等待对手确认"
-            else:
-                status_text = "对手和队友已确认，等待管理员审核"
-        elif role == "opponent":
-            if confirmed_self is False:
-                can_confirm = True
-                can_decline = True
-                status_text = "对手提交了比赛战绩，请确认"
-            else:
-                status_text = "您的队友已确认，等待管理员审核"
-        elif role == "admin":
-            status_text = "双方已确认，请审核"
+        if m.status == "rejected":
+            days_left = 3 - (today - (m.status_date or today)).days
+            status_text = f"对手已拒绝，该记录将在{days_left}日后自动删除"
+        elif m.status == "vetoed":
+            days_left = 3 - (today - (m.status_date or today)).days
+            status_text = f"管理员审核未通过，该记录将在{days_left}日后自动删除"
         else:
-            if m.confirmed_a and m.confirmed_b:
-                status_text = "等待管理员审核"
+            if role == "submitter":
+                if not (m.confirmed_a and m.confirmed_b):
+                    status_text = "您已提交，等待对手确认"
+                    wait_days = (today - m.created).days
+                    if wait_days >= 4:
+                        left = 7 - wait_days
+                        status_text = f"该记录长时间未得到对手确认，将在{left}日后自动删除"
+                else:
+                    status_text = "对手已确认，等待管理员审核"
+                    wait_days = (today - (m.confirmed_on or m.created)).days
+                    if wait_days >= 4:
+                        left = 7 - wait_days
+                        status_text = f"该记录长时间未得到管理员审核，将在{left}日后自动删除"
+            elif role in {"teammate", "opponent"}:
+                if role == "teammate":
+                    if not m.confirmed_b:
+                        status_text = "您的队友已确认，等待对手确认"
+                        wait_days = (today - m.created).days
+                        if wait_days >= 4:
+                            left = 7 - wait_days
+                            status_text = f"该记录长时间未得到对手确认，将在{left}日后自动删除"
+                    else:
+                        status_text = "对手和队友已确认，等待管理员审核"
+                        wait_days = (today - (m.confirmed_on or m.created)).days
+                        if wait_days >= 4:
+                            left = 7 - wait_days
+                            status_text = f"该记录长时间未得到管理员审核，将在{left}日后自动删除"
+                else:  # opponent
+                    if confirmed_self is False:
+                        can_confirm = True
+                        can_decline = True
+                        status_text = "对手提交了比赛战绩，请确认"
+                    else:
+                        status_text = "您的队友已确认，等待管理员审核"
+                        wait_days = (today - (m.confirmed_on or m.created)).days
+                        if wait_days >= 4:
+                            left = 7 - wait_days
+                            status_text = f"该记录长时间未得到管理员审核，将在{left}日后自动删除"
+            elif role == "admin":
+                status_text = "双方已确认，请审核"
             else:
-                status_text = "待确认"
+                if m.confirmed_a and m.confirmed_b:
+                    status_text = "等待管理员审核"
+                else:
+                    status_text = "待确认"
 
         if is_admin and m.confirmed_a and m.confirmed_b:
             role = "admin"
@@ -968,15 +1006,24 @@ def list_pending_matches(club_id: str, token: str):
     club = clubs.get(club_id)
     if not club:
         raise HTTPException(404, "Club not found")
+    from .cli import cleanup_pending_matches
+    cleanup_pending_matches(club)
     result = []
     admins = {club.leader_id, *club.admin_ids}
+    today = datetime.date.today()
     for idx, m in enumerate(club.pending_matches):
         from .models import DoublesMatch
 
         if isinstance(m, DoublesMatch):
             continue
         participants = {m.player_a.user_id, m.player_b.user_id}
-        if uid not in participants:
+        if m.status == "rejected":
+            if uid != m.initiator:
+                continue
+        elif m.status == "vetoed":
+            if uid not in participants:
+                continue
+        elif uid not in participants:
             if uid in admins and m.confirmed_a and m.confirmed_b:
                 pass
             else:
@@ -1019,25 +1066,44 @@ def list_pending_matches(club_id: str, token: str):
         can_decline = False
         status_text = ""
 
-        if role == "submitter":
-            if not (m.confirmed_a and m.confirmed_b):
-                status_text = "您已提交，等待对手确认"
-            else:
-                status_text = "对手已确认，等待管理员审核"
-        elif role == "opponent":
-            if confirmed_self is False:
-                can_confirm = True
-                can_decline = True
-                status_text = "对手提交了比赛战绩，请确认"
-            else:
-                status_text = "您已确认，等待管理员审核"
-        elif role == "admin":
-            status_text = "双方已确认，请审核"
-        else:  # viewer
-            if m.confirmed_a and m.confirmed_b:
-                status_text = "等待管理员审核"
-            else:
-                status_text = "待确认"
+        if m.status == "rejected":
+            days_left = 3 - (today - (m.status_date or today)).days
+            status_text = f"对手已拒绝，该记录将在{days_left}日后自动删除"
+        elif m.status == "vetoed":
+            days_left = 3 - (today - (m.status_date or today)).days
+            status_text = f"管理员审核未通过，该记录将在{days_left}日后自动删除"
+        else:
+            if role == "submitter":
+                if not (m.confirmed_a and m.confirmed_b):
+                    status_text = "您已提交，等待对手确认"
+                    wait_days = (today - m.created).days
+                    if wait_days >= 4:
+                        left = 7 - wait_days
+                        status_text = f"该记录长时间未得到对手确认，将在{left}日后自动删除"
+                else:
+                    status_text = "对手已确认，等待管理员审核"
+                    wait_days = (today - (m.confirmed_on or m.created)).days
+                    if wait_days >= 4:
+                        left = 7 - wait_days
+                        status_text = f"该记录长时间未得到管理员审核，将在{left}日后自动删除"
+            elif role == "opponent":
+                if confirmed_self is False:
+                    can_confirm = True
+                    can_decline = True
+                    status_text = "对手提交了比赛战绩，请确认"
+                else:
+                    status_text = "您已确认，等待管理员审核"
+                    wait_days = (today - (m.confirmed_on or m.created)).days
+                    if wait_days >= 4:
+                        left = 7 - wait_days
+                        status_text = f"该记录长时间未得到管理员审核，将在{left}日后自动删除"
+            elif role == "admin":
+                status_text = "双方已确认，请审核"
+            else:  # viewer
+                if m.confirmed_a and m.confirmed_b:
+                    status_text = "等待管理员审核"
+                else:
+                    status_text = "待确认"
 
         if is_admin and m.confirmed_a and m.confirmed_b:
             role = "admin"
