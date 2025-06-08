@@ -3,5 +3,5 @@
   "options": {
     "multipleSlots": true
   },
-  "styleIsolation": "shared"
+  "styleIsolation": "apply-shared"
 }
