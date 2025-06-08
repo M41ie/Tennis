@@ -28,7 +28,7 @@
   </view>
   <view wx:if="{{pendingTabIndex==0}}">
     <block wx:for="{{pendingSingles}}" wx:key="index">
-      <record-card data-index="{{index}}" record="{{item}}" doubles="{{false}}" show-actions="{{true}}"
+      <record-card data-index="{{item.index}}" record="{{item}}" doubles="{{false}}" show-actions="{{true}}"
         status-text="{{item.statusText}}" can-confirm="{{item.canConfirm}}" can-reject="{{item.canReject}}"
         can-approve="{{item.canApprove}}" can-veto="{{item.canVeto}}" bind:confirm="confirmSingle"
         bind:reject="rejectSingle" bind:approve="approveSingle" bind:veto="vetoSingle" />
@@ -36,7 +36,7 @@
   </view>
   <view wx:elif="{{pendingTabIndex==1}}">
     <block wx:for="{{pendingDoubles}}" wx:key="index">
-      <record-card data-index="{{index}}" record="{{item}}" doubles="{{true}}" show-actions="{{true}}"
+      <record-card data-index="{{item.index}}" record="{{item}}" doubles="{{true}}" show-actions="{{true}}"
         status-text="{{item.statusText}}" can-confirm="{{item.canConfirm}}" can-reject="{{item.canReject}}"
         can-approve="{{item.canApprove}}" can-veto="{{item.canVeto}}" bind:confirm="confirmDouble"
         bind:reject="rejectDouble" bind:approve="approveDouble" bind:veto="vetoDouble" />
