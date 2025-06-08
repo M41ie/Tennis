@@ -125,6 +125,7 @@ def _pending_status_for_user(
     """Return status information for the given user viewing a pending match."""
 
     admins = {club.leader_id, *club.admin_ids}
+    is_admin = user_id in admins
 
     if user_id == match.initiator:
         role = "submitter"
@@ -190,12 +191,18 @@ def _pending_status_for_user(
         else:
             status_text = "您已确认，等待管理员审核"
     elif role == "admin":
-        status_text = "双方已确认，请审核战绩"
+        status_text = "双方已确认，请审核"
     else:
         if match.confirmed_a and match.confirmed_b:
             status_text = "等待管理员审核"
         else:
             status_text = "待确认"
+
+    if is_admin and match.confirmed_a and match.confirmed_b:
+        role = "admin"
+        status_text = "双方已确认，请审核"
+        can_confirm = False
+        can_decline = False
 
     return {
         "display_status_text": status_text,
@@ -753,13 +760,15 @@ def list_pending_doubles(club_id: str, token: str):
             "format_name": m.format_name,
         }
 
+        is_admin = uid in admins
+
         if uid == m.initiator:
             role = "submitter"
         elif uid in team_a:
             role = "teammate"
         elif uid in team_b:
             role = "opponent"
-        elif uid in admins:
+        elif is_admin:
             role = "admin"
         else:
             role = "viewer"
@@ -795,12 +804,18 @@ def list_pending_doubles(club_id: str, token: str):
             else:
                 status_text = "您已确认，等待管理员审核"
         elif role == "admin":
-            status_text = "双方已确认，请审核战绩"
+            status_text = "双方已确认，请审核"
         else:
             if m.confirmed_a and m.confirmed_b:
                 status_text = "等待管理员审核"
             else:
                 status_text = "待确认"
+
+        if is_admin and m.confirmed_a and m.confirmed_b:
+            role = "admin"
+            status_text = "双方已确认，请审核"
+            can_confirm = False
+            can_decline = False
 
         entry.update(
             {
@@ -980,11 +995,13 @@ def list_pending_matches(club_id: str, token: str):
             "format_name": m.format_name,
         }
 
+        is_admin = uid in admins
+
         if uid == m.initiator:
             role = "submitter"
         elif uid in participants:
             role = "opponent"
-        elif uid in admins:
+        elif is_admin:
             role = "admin"
         else:
             role = "viewer"
@@ -1015,12 +1032,18 @@ def list_pending_matches(club_id: str, token: str):
             else:
                 status_text = "您已确认，等待管理员审核"
         elif role == "admin":
-            status_text = "双方已确认，请审核战绩"
+            status_text = "双方已确认，请审核"
         else:  # viewer
             if m.confirmed_a and m.confirmed_b:
                 status_text = "等待管理员审核"
             else:
                 status_text = "待确认"
+
+        if is_admin and m.confirmed_a and m.confirmed_b:
+            role = "admin"
+            status_text = "双方已确认，请审核"
+            can_confirm = False
+            can_decline = False
 
         entry.update(
             {
