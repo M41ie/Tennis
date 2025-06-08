@@ -110,17 +110,34 @@ Page({
   onScoreA(e) { this.setData({ scoreA: e.detail.value }); },
   onScoreB(e) { this.setData({ scoreB: e.detail.value }); },
   submit() {
+    const doubles = this.data.modeIndex === 2;
+    const incomplete =
+      this.data.clubIndex === 0 ||
+      this.data.modeIndex === 0 ||
+      !this.data.date ||
+      this.data.formatIndex === 0 ||
+      this.data.scoreA === '' ||
+      this.data.scoreB === '' ||
+      (doubles
+        ? this.data.partnerIndex === 0 ||
+          this.data.opp1Index === 0 ||
+          this.data.opp2Index === 0
+        : this.data.opponentIndex === 0);
+    if (incomplete) {
+      wx.showToast({ title: '信息不完整，请完善后提交', icon: 'none' });
+      return;
+    }
+
     const cid = this.data.clubIds[this.data.clubIndex];
     const userId = wx.getStorageSync('user_id');
     const token = wx.getStorageSync('token');
     if (!cid || !userId || !token) return;
-    const doubles = this.data.modeIndex === 2;
+
     if (doubles) {
       const players = this.data.players;
       const partner = players[this.data.partnerIndex];
       const b1 = players[this.data.opp1Index];
       const b2 = players[this.data.opp2Index];
-      if (!partner || !b1 || !b2) return;
       wx.request({
         url: `${BASE_URL}/clubs/${cid}/pending_doubles`,
         method: 'POST',
@@ -137,12 +154,14 @@ Page({
           token
         },
         success() {
-          wx.showToast({ title: '已提交', icon: 'success' });
+          wx.showToast({ title: '提交成功', icon: 'success', duration: 1000 });
+          setTimeout(() => {
+            wx.navigateBack();
+          }, 1000);
         }
       });
     } else {
       const opponent = this.data.players[this.data.opponentIndex];
-      if (!opponent) return;
       wx.request({
         url: `${BASE_URL}/clubs/${cid}/pending_matches`,
         method: 'POST',
@@ -157,7 +176,10 @@ Page({
           token
         },
         success() {
-          wx.showToast({ title: '已提交', icon: 'success' });
+          wx.showToast({ title: '提交成功', icon: 'success', duration: 1000 });
+          setTimeout(() => {
+            wx.navigateBack();
+          }, 1000);
         }
       });
     }
