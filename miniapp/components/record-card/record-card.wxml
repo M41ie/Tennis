@@ -53,7 +53,14 @@
       </view>
     </view>
   </view>
-  <view class="actions-slot" wx:if="{{showActions}}">
-    <slot name="actions"></slot>
+  <view class="action-bar" wx:if="{{showActions}}">
+    <text class="status-text" wx:if="{{statusText}}">{{statusText}}</text>
+    <view class="button-group">
+      <button wx:if="{{canConfirm}}" class="action-btn confirm" bindtap="onConfirm">确认</button>
+      <button wx:if="{{canReject}}" class="action-btn reject" bindtap="onReject">拒绝</button>
+      <button wx:if="{{canApprove}}" class="action-btn approve" bindtap="onApprove">通过</button>
+      <button wx:if="{{canVeto}}" class="action-btn veto" bindtap="onVeto">否决</button>
+      <button class="action-btn share" open-type="share" bindtap="onShare">分享</button>
+    </view>
   </view>
 </view>

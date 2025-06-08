@@ -208,7 +208,7 @@ Page({
             const list = r.data.map(it => {
               it.canConfirm = it.can_confirm;
               it.canReject = it.can_decline;
-              it.status = it.display_status_text || '';
+              it.statusText = it.display_status_text || '';
               it.canApprove = isAdmin && it.confirmed_a && it.confirmed_b;
               it.canVeto = isAdmin;
               const pa = idMap[it.player_a] || {};
@@ -244,7 +244,7 @@ Page({
             const list = r.data.map(it => {
               it.canConfirm = it.can_confirm;
               it.canReject = it.can_decline;
-              it.status = it.display_status_text || '';
+              it.statusText = it.display_status_text || '';
               it.canApprove = isAdmin && it.confirmed_a && it.confirmed_b;
               it.canVeto = isAdmin;
               const a1 = idMap[it.a1] || {};
