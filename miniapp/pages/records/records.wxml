@@ -30,13 +30,13 @@
     <block wx:for="{{pendingSingles}}" wx:key="index">
       <record-card record="{{item}}" doubles="{{false}}" showActions="{{true}}">
         <view slot="actions" class="action-bar">
-          <text class="status">{{item.status}}</text>
-          <view class="buttons">
-            <button wx:if="{{item.canConfirm}}" data-index="{{index}}" bindtap="confirmSingle">确认</button>
-            <button wx:if="{{item.canReject}}" data-index="{{index}}" bindtap="rejectSingle">拒绝</button>
-            <button wx:if="{{item.canApprove}}" data-index="{{index}}" bindtap="approveSingle">通过</button>
-            <button wx:if="{{item.canVeto}}" data-index="{{index}}" bindtap="vetoSingle">否决</button>
-            <button open-type="share" data-index="{{index}}" data-type="single">分享</button>
+          <text class="status-text">{{item.status}}</text>
+          <view class="button-group">
+            <button wx:if="{{item.canConfirm}}" class="action-btn confirm" bindtap="confirmSingle" data-index="{{index}}">确认</button>
+            <button wx:if="{{item.canReject}}" class="action-btn reject" bindtap="rejectSingle" data-index="{{index}}">拒绝</button>
+            <button wx:if="{{item.canApprove}}" class="action-btn approve" bindtap="approveSingle" data-index="{{index}}">通过</button>
+            <button wx:if="{{item.canVeto}}" class="action-btn veto" bindtap="vetoSingle" data-index="{{index}}">否决</button>
+            <button class="action-btn share" open-type="share" data-index="{{index}}" data-type="single">分享</button>
           </view>
         </view>
       </record-card>
@@ -46,13 +46,13 @@
     <block wx:for="{{pendingDoubles}}" wx:key="index">
       <record-card record="{{item}}" doubles="{{true}}" showActions="{{true}}">
         <view slot="actions" class="action-bar">
-          <text class="status">{{item.status}}</text>
-          <view class="buttons">
-            <button wx:if="{{item.canConfirm}}" data-index="{{index}}" bindtap="confirmDouble">确认</button>
-            <button wx:if="{{item.canReject}}" data-index="{{index}}" bindtap="rejectDouble">拒绝</button>
-            <button wx:if="{{item.canApprove}}" data-index="{{index}}" bindtap="approveDouble">通过</button>
-            <button wx:if="{{item.canVeto}}" data-index="{{index}}" bindtap="vetoDouble">否决</button>
-            <button open-type="share" data-index="{{index}}" data-type="double">分享</button>
+          <text class="status-text">{{item.status}}</text>
+          <view class="button-group">
+            <button wx:if="{{item.canConfirm}}" class="action-btn confirm" bindtap="confirmDouble" data-index="{{index}}">确认</button>
+            <button wx:if="{{item.canReject}}" class="action-btn reject" bindtap="rejectDouble" data-index="{{index}}">拒绝</button>
+            <button wx:if="{{item.canApprove}}" class="action-btn approve" bindtap="approveDouble" data-index="{{index}}">通过</button>
+            <button wx:if="{{item.canVeto}}" class="action-btn veto" bindtap="vetoDouble" data-index="{{index}}">否决</button>
+            <button class="action-btn share" open-type="share" data-index="{{index}}" data-type="double">分享</button>
           </view>
         </view>
       </record-card>
