@@ -17,10 +17,10 @@
 .mode-switch{display:flex;background:#f7f7f7;margin:10rpx;border-radius:32rpx;overflow:hidden;}
 .mode-item{flex:1;padding:12rpx 0;text-align:center;font-size:28rpx;color:#333;}
 .mode-item.active{background:#07C160;color:#fff;}
-.item{padding:10px 0;border-bottom:1px solid #ddd;}
 .list{padding:10px;}
-.actions{margin-top:5px;}
-.status{color:#888;font-size:12px;}
+.action-bar{padding:20rpx;border-top:1px solid #eee;font-size:24rpx;color:#666;}
+.action-bar .buttons{display:flex;flex-wrap:wrap;gap:8rpx;margin-top:10rpx;}
+.action-bar .status{margin-bottom:6rpx;}
 .pos{color:green;font-size:24rpx;}
 .neg{color:red;font-size:24rpx;}
 .neutral{color:gray;font-size:24rpx;}

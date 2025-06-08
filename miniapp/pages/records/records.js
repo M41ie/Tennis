@@ -22,6 +22,7 @@ Page({
     records: [],
     doubles: false,
     modeIndex: 0,
+    pendingTabIndex: 0,
     pendingSingles: [],
     pendingDoubles: [],
     userId: '',
@@ -34,17 +35,21 @@ Page({
   },
   switchTab(e) {
     const idx = e.currentTarget.dataset.index;
-    if (idx == 1) {
-      wx.navigateTo({ url: '/pages/pending/pending' });
-      return;
+    this.setData({ tabIndex: idx });
+    if (idx == 0) {
+      this.fetchRecords();
+    } else {
+      this.fetchPendings();
     }
-    this.setData({ tabIndex: 0 });
-    this.fetchRecords();
   },
   switchMode(e) {
     const idx = e.currentTarget.dataset.index;
     this.setData({ modeIndex: idx, doubles: idx == 1 });
     this.fetchRecords();
+  },
+  switchPendingMode(e) {
+    const idx = e.currentTarget.dataset.index;
+    this.setData({ pendingTabIndex: idx });
   },
   fetchRecords() {
     const userId = wx.getStorageSync('user_id');
@@ -180,52 +185,94 @@ Page({
     if (!cid) return;
     const that = this;
     const token = wx.getStorageSync('token');
+    const placeholder = require('../../assets/base64.js').DEFAULT_AVATAR;
     wx.request({
-      url: `${BASE_URL}/clubs/${cid}/pending_matches`,
-      data: { token },
+      url: `${BASE_URL}/clubs/${cid}/players`,
       success(res) {
-        if (res.statusCode >= 300) {
-          wx.showToast({ title: '加载失败', icon: 'none' });
-          return;
-        }
-        const uid = that.data.userId;
-        const isAdmin = that.data.isAdmin;
-        const list = res.data.map(it => {
-          it.canConfirm = it.can_confirm;
-          it.canReject = it.can_decline;
-          it.status = it.display_status_text || '';
-          const isParticipant = it.player_a === uid || it.player_b === uid;
-          it.canApprove = isAdmin && it.confirmed_a && it.confirmed_b;
-          return it;
+        const players = res.data || [];
+        const idMap = {};
+        players.forEach(p => {
+          idMap[p.user_id] = p;
         });
-        that.setData({ pendingSingles: list });
-      },
-      fail() {
-        wx.showToast({ title: '网络错误', icon: 'none' });
-      }
-    });
-    wx.request({
-      url: `${BASE_URL}/clubs/${cid}/pending_doubles`,
-      data: { token },
-      success(res) {
-        if (res.statusCode >= 300) {
-          wx.showToast({ title: '加载失败', icon: 'none' });
-          return;
-        }
-        const uid = that.data.userId;
-        const isAdmin = that.data.isAdmin;
-        const list = res.data.map(it => {
-          it.canConfirm = it.can_confirm;
-          it.canReject = it.can_decline;
-          it.status = it.display_status_text || '';
-          const participants = [it.a1, it.a2, it.b1, it.b2];
-          it.canApprove = isAdmin && it.confirmed_a && it.confirmed_b;
-          return it;
+
+        wx.request({
+          url: `${BASE_URL}/clubs/${cid}/pending_matches`,
+          data: { token },
+          success(r) {
+            if (r.statusCode >= 300) {
+              wx.showToast({ title: '加载失败', icon: 'none' });
+              return;
+            }
+            const uid = that.data.userId;
+            const isAdmin = that.data.isAdmin;
+            const list = r.data.map(it => {
+              it.canConfirm = it.can_confirm;
+              it.canReject = it.can_decline;
+              it.status = it.display_status_text || '';
+              it.canApprove = isAdmin && it.confirmed_a && it.confirmed_b;
+              const pa = idMap[it.player_a] || {};
+              const pb = idMap[it.player_b] || {};
+              it.scoreA = it.score_a;
+              it.scoreB = it.score_b;
+              it.playerAName = it.player_a_name || pa.name || it.player_a;
+              it.playerBName = it.player_b_name || pb.name || it.player_b;
+              it.playerAAvatar = pa.avatar || placeholder;
+              it.playerBAvatar = pb.avatar || placeholder;
+              it.ratingA = it.rating_a_before != null ? Number(it.rating_a_before).toFixed(3) : '';
+              it.ratingB = it.rating_b_before != null ? Number(it.rating_b_before).toFixed(3) : '';
+              it.displayFormat = it.format_name ? displayFormat(it.format_name) : '';
+              it.location = it.location || '';
+              return it;
+            });
+            that.setData({ pendingSingles: list });
+          },
+          fail() {
+            wx.showToast({ title: '网络错误', icon: 'none' });
+          }
         });
-        that.setData({ pendingDoubles: list });
-      },
-      fail() {
-        wx.showToast({ title: '网络错误', icon: 'none' });
+
+        wx.request({
+          url: `${BASE_URL}/clubs/${cid}/pending_doubles`,
+          data: { token },
+          success(r) {
+            if (r.statusCode >= 300) {
+              wx.showToast({ title: '加载失败', icon: 'none' });
+              return;
+            }
+            const isAdmin = that.data.isAdmin;
+            const list = r.data.map(it => {
+              it.canConfirm = it.can_confirm;
+              it.canReject = it.can_decline;
+              it.status = it.display_status_text || '';
+              it.canApprove = isAdmin && it.confirmed_a && it.confirmed_b;
+              const a1 = idMap[it.a1] || {};
+              const a2 = idMap[it.a2] || {};
+              const b1 = idMap[it.b1] || {};
+              const b2 = idMap[it.b2] || {};
+              it.scoreA = it.score_a;
+              it.scoreB = it.score_b;
+              it.playerAName = it.a1_name || a1.name || it.a1;
+              it.partnerName = it.a2_name || a2.name || it.a2;
+              it.opp1Name = it.b1_name || b1.name || it.b1;
+              it.opp2Name = it.b2_name || b2.name || it.b2;
+              it.playerAAvatar = a1.avatar || placeholder;
+              it.partnerAvatar = a2.avatar || placeholder;
+              it.opp1Avatar = b1.avatar || placeholder;
+              it.opp2Avatar = b2.avatar || placeholder;
+              it.ratingA = it.rating_a1_before != null ? Number(it.rating_a1_before).toFixed(3) : '';
+              it.partnerRating = it.rating_a2_before != null ? Number(it.rating_a2_before).toFixed(3) : '';
+              it.opp1Rating = it.rating_b1_before != null ? Number(it.rating_b1_before).toFixed(3) : '';
+              it.opp2Rating = it.rating_b2_before != null ? Number(it.rating_b2_before).toFixed(3) : '';
+              it.displayFormat = it.format_name ? displayFormat(it.format_name) : '';
+              it.location = it.location || '';
+              return it;
+            });
+            that.setData({ pendingDoubles: list });
+          },
+          fail() {
+            wx.showToast({ title: '网络错误', icon: 'none' });
+          }
+        });
       }
     });
   },
@@ -268,6 +315,20 @@ Page({
       fail() {
         wx.showToast({ title: '网络错误', icon: 'none' });
       },
+      complete() {
+        that.fetchPendings();
+      }
+    });
+  },
+  vetoSingle(e) {
+    const idx = e.currentTarget.dataset.index;
+    const cid = wx.getStorageSync('club_id');
+    const token = wx.getStorageSync('token');
+    const that = this;
+    wx.request({
+      url: `${BASE_URL}/clubs/${cid}/pending_matches/${idx}/veto`,
+      method: 'POST',
+      data: { approver: this.data.userId, token },
       complete() {
         that.fetchPendings();
       }
@@ -334,6 +395,20 @@ Page({
       fail() {
         wx.showToast({ title: '网络错误', icon: 'none' });
       },
+      complete() {
+        that.fetchPendings();
+      }
+    });
+  },
+  vetoDouble(e) {
+    const idx = e.currentTarget.dataset.index;
+    const cid = wx.getStorageSync('club_id');
+    const token = wx.getStorageSync('token');
+    const that = this;
+    wx.request({
+      url: `${BASE_URL}/clubs/${cid}/pending_doubles/${idx}/veto`,
+      method: 'POST',
+      data: { approver: this.data.userId, token },
       complete() {
         that.fetchPendings();
       }
