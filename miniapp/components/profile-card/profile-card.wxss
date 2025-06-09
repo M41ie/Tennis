@@ -1,0 +1,11 @@
+.profile-card{position:relative;display:flex;padding:24rpx;margin:24rpx;background:#fff;border-radius:12rpx;box-shadow:0 6rpx 12rpx rgba(0,0,0,.05);}
+.avatar{width:120rpx;height:120rpx;border-radius:50%;background:#ccc;flex-shrink:0;}
+.content{flex:1;margin-left:24rpx;display:flex;flex-direction:column;}
+.name{font-size:32rpx;font-weight:600;color:#333;}
+.uid{font-size:24rpx;color:#888;margin-top:6rpx;}
+.stats{display:flex;margin-top:16rpx;}
+.col{flex:1;}
+.title{font-size:24rpx;color:#666;}
+.rating{font-size:28rpx;font-weight:600;color:#333;margin-top:4rpx;}
+.games{font-size:24rpx;color:#888;margin-top:2rpx;}
+.edit{position:absolute;top:20rpx;right:20rpx;font-size:28rpx;color:#666;}
