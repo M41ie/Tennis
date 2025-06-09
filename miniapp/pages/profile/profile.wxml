@@ -1,64 +1,21 @@
-<!-- 顶部用户卡片 -->
-<view class="user-card" bindtap="onCardTap">
-  <block wx:if="{{loggedIn}}">
-    <image class="avatar" src="{{user.avatar || placeholderAvatar}}" />
-    <view class="info">
-      <view class="name">{{user.name}}</view>
-      <view class="uid">ID：{{user.user_id}}</view>
-      <view class="rating">单打 {{user.singles_rating || '--'}} ・ 双打 {{user.doubles_rating || '--'}}</view>
-    </view>
-  </block>
-  <block wx:else>
-    <image class="avatar placeholder" src="{{loginPlaceholder}}" />
-    <view class="login-tip">点击登录 / 注册</view>
-  </block>
+<view wx:if="{{loggedIn}}">
+  <profile-card user="{{user}}" placeholder="{{placeholderAvatar}}" bind:edit="editProfile" />
+</view>
+<view wx:else class="login-block">
+  <button class="weui-btn weui-btn_primary" bindtap="toLogin">登录</button>
+  <button class="weui-btn" bindtap="toRegister">注册</button>
 </view>
 
-<!-- 编辑表单 -->
-<view wx:if="{{loggedIn && editing}}" class="weui-cells weui-cells_form">
-  <view class="weui-cell">
-    <view class="weui-label">昵称</view>
-    <input class="weui-input" value="{{user.name}}" bindinput="onName" />
-  </view>
-  <view class="weui-cell">
-    <view class="weui-label">年龄</view>
-    <input class="weui-input" type="number" value="{{user.age}}" bindinput="onAge" />
-  </view>
-  <view class="weui-cell">
-    <view class="weui-label">性别</view>
-    <picker class="weui-input" range="{{genders}}" value="{{genderIndex}}" bindchange="onGender">
-      <view>{{user.gender || '请选择'}}</view>
-    </picker>
-  </view>
-  <view class="weui-cell" bindtap="chooseAvatar">
-    <view class="weui-label">头像</view>
-    <image class="avatar" src="{{user.avatar || placeholderAvatar}}" />
-  </view>
-</view>
-
-<!-- 编辑/保存按钮 -->
-<block wx:if="{{loggedIn && isSelf}}">
-  <button wx:if="{{!editing}}" class="weui-btn" bindtap="startEdit">编辑资料</button>
-  <block wx:if="{{editing}}">
-    <button class="weui-btn weui-btn_primary" bindtap="saveProfile">保存</button>
-    <button class="weui-btn" bindtap="cancelEdit">取消</button>
-  </block>
-</block>
-
-<!-- 无评分提醒卡片 -->
-<view wx:if="{{loggedIn && !user.singles_rating && !user.doubles_rating}}" class="hint-card" bindtap="goClub">
-  还没有评分？加入俱乐部并邀请成员为你预评分 &gt;
-</view>
-
-<!-- 功能按钮列表 -->
 <view class="menu-list">
-  <button class="menu-item" bindtap="goClub">
-    <image class="icon" src="{{iconClub}}" /> 我的俱乐部
-  </button>
-  <button class="menu-item disabled">
-    <image class="icon" src="{{iconComing}}" /> 敬请期待
-  </button>
+  <view class="menu-item" bindtap="goMyClub">
+    <image class="icon" src="{{iconClub}}" />
+    <view class="title">{{myClubBtnText}}</view>
+    <text class="arrow">›</text>
+  </view>
+  <view class="menu-item disabled">
+    <image class="icon" src="{{iconComing}}" />
+    <view class="title">敬请期待</view>
+  </view>
 </view>
 
-<!-- 退出登录按钮 -->
-<button wx:if="{{loggedIn}}" class="weui-btn" bindtap="logout">退出登录</button>
+<button wx:if="{{loggedIn}}" class="logout-btn" bindtap="logout">退出登录</button>

@@ -1,0 +1,20 @@
+<view class="profile-card">
+  <image class="avatar" src="{{user.avatar_url || placeholder}}" mode="aspectFill"></image>
+  <view class="content">
+    <view class="name">{{user.name}}</view>
+    <view class="uid">ID: {{user.id}}</view>
+    <view class="stats">
+      <view class="col">
+        <view class="title">单打</view>
+        <view class="rating">{{fr(user.rating_singles)}}</view>
+        <view class="games">场次: {{user.weighted_games_singles}}</view>
+      </view>
+      <view class="col">
+        <view class="title">双打</view>
+        <view class="rating">{{fr(user.rating_doubles)}}</view>
+        <view class="games">场次: {{user.weighted_games_doubles}}</view>
+      </view>
+    </view>
+  </view>
+  <view class="edit" bindtap="edit">✏️</view>
+</view>
