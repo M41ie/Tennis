@@ -3,6 +3,7 @@
 .content{flex:1;margin-left:24rpx;display:flex;flex-direction:column;}
 .name{font-size:32rpx;font-weight:600;color:#333;}
 .uid{font-size:24rpx;color:#888;margin-top:6rpx;}
+.uid2{font-size:24rpx;color:#888;margin-top:2rpx;}
 .stats{display:flex;margin-top:16rpx;}
 .col{flex:1;}
 .title{font-size:24rpx;color:#000;}

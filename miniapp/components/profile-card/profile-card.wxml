@@ -2,7 +2,11 @@
   <image class="avatar" src="{{user.avatar_url || placeholder}}" mode="aspectFill"></image>
   <view class="content">
     <view class="name">{{user.name}}</view>
-    <view class="uid">{{info || ('ID: ' + user.id)}}</view>
+    <block wx:if="{{info2}}">
+      <view class="uid">{{info}}</view>
+      <view class="uid2">{{info2}}</view>
+    </block>
+    <view wx:else class="uid">{{info || ('ID: ' + user.id)}}</view>
     <view class="stats">
       <view class="col">
         <view class="title">单打</view>
