@@ -4,11 +4,18 @@ Component({
       type: Object,
       value: null
     },
-    placeholder: String
+    placeholder: String,
+    editable: {
+      type: Boolean,
+      value: true
+    }
   },
   methods: {
     edit() {
       this.triggerEvent('edit');
+    },
+    tapCard() {
+      this.triggerEvent('tap');
     }
   }
 });

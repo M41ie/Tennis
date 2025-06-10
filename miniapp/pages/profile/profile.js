@@ -6,6 +6,15 @@ Page({
   data: {
     loggedIn: false,
     user: null,
+    guestUser: {
+      id: '-',
+      name: '点击登陆/注册',
+      rating_singles: '-',
+      rating_doubles: '-',
+      weighted_games_singles: '-',
+      weighted_games_doubles: '-',
+      avatar_url: ''
+    },
     clubId: '',
     joinedClubs: [],
     placeholderAvatar: IMAGES.DEFAULT_AVATAR,
@@ -20,7 +29,7 @@ Page({
       this.setData({ loggedIn: true });
       this.loadJoinedClubs(uid, cid);
     } else {
-      this.setData({ loggedIn: false, user: null });
+      this.setData({ loggedIn: false, user: this.data.guestUser });
     }
   },
   loadJoinedClubs(uid, cid) {
@@ -73,6 +82,11 @@ Page({
   },
   toLogin() { wx.navigateTo({ url: '/pages/login/index' }); },
   toRegister() { wx.navigateTo({ url: '/pages/register/register' }); },
+  onCardTap() {
+    if (!this.data.loggedIn) {
+      wx.navigateTo({ url: '/pages/login/index' });
+    }
+  },
   goMyClub() {
     if (this.data.joinedClubs && this.data.joinedClubs.length) {
       wx.navigateTo({ url: '/pages/club-manage/index' });
@@ -87,7 +101,7 @@ Page({
       wx.removeStorageSync('token');
       wx.removeStorageSync('user_id');
       wx.removeStorageSync('club_id');
-      that.setData({ loggedIn: false, user: null });
+      that.setData({ loggedIn: false, user: that.data.guestUser });
     };
     if (token) {
       wx.request({
