@@ -15,7 +15,7 @@ Component({
       this.triggerEvent('edit');
     },
     tapCard() {
-      this.triggerEvent('tap');
+      this.triggerEvent('cardtap');
     }
   }
 });
