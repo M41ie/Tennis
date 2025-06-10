@@ -40,6 +40,9 @@ class Player:
     age: Optional[int] = None
     gender: Optional[str] = None
     avatar: Optional[str] = None
+    birth: Optional[str] = None
+    handedness: Optional[str] = None
+    backhand: Optional[str] = None
 
 @dataclass
 class Club:

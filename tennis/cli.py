@@ -185,6 +185,9 @@ def add_player(
     age: int | None = None,
     gender: str | None = None,
     avatar: str | None = None,
+    birth: str | None = None,
+    handedness: str | None = None,
+    backhand: str | None = None,
 ):
     club = clubs.get(club_id)
     if not club:
@@ -197,6 +200,9 @@ def add_player(
         age=age,
         gender=gender,
         avatar=avatar,
+        birth=birth,
+        handedness=handedness,
+        backhand=backhand,
     )
 
 
@@ -208,6 +214,9 @@ def update_player(
     age: int | None = None,
     gender: str | None = None,
     avatar: str | None = None,
+    birth: str | None = None,
+    handedness: str | None = None,
+    backhand: str | None = None,
 ):
     """Modify an existing player's profile."""
     club = clubs.get(club_id)
@@ -224,6 +233,12 @@ def update_player(
         player.gender = gender
     if avatar is not None:
         player.avatar = avatar
+    if birth is not None:
+        player.birth = birth
+    if handedness is not None:
+        player.handedness = handedness
+    if backhand is not None:
+        player.backhand = backhand
 
 
 def remove_member(
@@ -1129,6 +1144,9 @@ def main():
             age=args.age,
             gender=args.gender,
             avatar=args.avatar,
+            birth=args.birth,
+            handedness=args.handedness,
+            backhand=args.backhand,
         )
     elif args.cmd == 'pre_rate':
         pre_rate(clubs, args.club_id, args.rater_id, args.target_id, args.rating)

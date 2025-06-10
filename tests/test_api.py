@@ -1224,6 +1224,9 @@ def test_update_player_api(tmp_path, monkeypatch):
             "age": 30,
             "gender": "M",
             "avatar": "img.png",
+            "birth": "1990-01-01",
+            "handedness": "right",
+            "backhand": "double",
         },
     )
     assert resp.status_code == 200
@@ -1235,6 +1238,9 @@ def test_update_player_api(tmp_path, monkeypatch):
     assert p1.age == 30
     assert p1.gender == "M"
     assert p1.avatar == "img.png"
+    assert p1.birth == "1990-01-01"
+    assert p1.handedness == "right"
+    assert p1.backhand == "double"
 
 
 def test_remove_member_api(tmp_path, monkeypatch):
