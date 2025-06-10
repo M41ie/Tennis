@@ -9,21 +9,25 @@ function calcAge(birth) {
   return Math.floor(diff / (365 * 24 * 60 * 60 * 1000));
 }
 
-function formatExtra(info) {
-  const parts = [];
-  if (info.gender) parts.push(info.gender);
+function formatExtraLines(info) {
+  const line1 = [];
+  if (info.gender) line1.push(info.gender);
   const age = calcAge(info.birth);
-  if (age) parts.push(`${age}岁`);
-  if (info.handedness) parts.push(info.handedness);
-  if (info.backhand) parts.push(info.backhand);
-  return parts.join('·');
+  if (age) line1.push(`${age}岁`);
+
+  const line2 = [];
+  if (info.handedness) line2.push(info.handedness);
+  if (info.backhand) line2.push(info.backhand);
+
+  return { line1: line1.join('·'), line2: line2.join('·') };
 }
 
 Page({
   data: {
     user: null,
     placeholderAvatar: IMAGES.DEFAULT_AVATAR,
-    extraInfo: ''
+    infoLine1: '',
+    infoLine2: ''
   },
   onShow() {
     this.loadUser();
@@ -56,7 +60,12 @@ Page({
             ? doublesCount.toFixed(2)
             : (doublesCount ? Number(doublesCount).toFixed(2) : '--')
         };
-        that.setData({ user, extraInfo: formatExtra(user) });
+        const extra = formatExtraLines(user);
+        that.setData({
+          user,
+          infoLine1: extra.line1,
+          infoLine2: extra.line2
+        });
       }
     });
   },

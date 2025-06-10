@@ -2,7 +2,8 @@
   user="{{user}}"
   placeholder="{{placeholderAvatar}}"
   editable="false"
-  info="{{extraInfo}}"
+  info="{{infoLine1}}"
+  info2="{{infoLine2}}"
 />
 <view class="actions">
   <button class="action-btn" bindtap="editProfile">编辑资料</button>
