@@ -6,6 +6,6 @@
 .stats{display:flex;margin-top:16rpx;}
 .col{flex:1;}
 .title{font-size:24rpx;color:#666;}
-.rating{font-size:28rpx;font-weight:600;color:#333;margin-top:4rpx;}
+.rating{font-size:24rpx;color:#333;margin-top:4rpx;}
 .games{font-size:24rpx;color:#888;margin-top:2rpx;}
 .edit{position:absolute;top:20rpx;right:20rpx;font-size:28rpx;color:#666;}
