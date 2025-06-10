@@ -8,7 +8,8 @@ Component({
     editable: {
       type: Boolean,
       value: true
-    }
+    },
+    info: String
   },
   methods: {
     edit() {

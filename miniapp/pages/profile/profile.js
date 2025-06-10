@@ -85,6 +85,8 @@ Page({
   onCardTap() {
     if (!this.data.loggedIn) {
       wx.navigateTo({ url: '/pages/login/index' });
+    } else {
+      wx.navigateTo({ url: '/pages/playercard/playercard' });
     }
   },
   goMyClub() {

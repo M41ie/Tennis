@@ -1,8 +1,8 @@
 <profile-card
   user="{{user}}"
   placeholder="{{placeholderAvatar}}"
-  editable="{{loggedIn}}"
-  bind:edit="editProfile"
+  editable="false"
+  info="{{'ID: ' + user.id}}"
   bind:cardtap="onCardTap"
 />
 

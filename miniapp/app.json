@@ -9,6 +9,7 @@
     "pages/club-manage/index",
     "pages/records/records",
     "pages/profile/profile",
+    "pages/playercard/playercard",
     "pages/prerate/prerate",
     "pages/addmatch/addmatch",
     "pages/manage/manage",
