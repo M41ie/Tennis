@@ -9,9 +9,17 @@ function calcAge(birth) {
   return Math.floor(diff / (365 * 24 * 60 * 60 * 1000));
 }
 
+function genderText(g) {
+  if (!g) return '';
+  if (g === 'M' || g === 'Male' || g === '男') return '男';
+  if (g === 'F' || g === 'Female' || g === '女') return '女';
+  return g;
+}
+
 function formatExtraLines(info) {
   const line1 = [];
-  if (info.gender) line1.push(info.gender);
+  const gender = genderText(info.gender);
+  if (gender) line1.push(gender);
   const age = calcAge(info.birth);
   if (age) line1.push(`${age}岁`);
 
