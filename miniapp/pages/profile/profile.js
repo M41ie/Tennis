@@ -88,6 +88,7 @@ Page({
     }
   },
   goMyClub() {
+    if (!this.data.loggedIn) return;
     if (this.data.joinedClubs && this.data.joinedClubs.length) {
       wx.navigateTo({ url: '/pages/club-manage/index' });
     } else {
