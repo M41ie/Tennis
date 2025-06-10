@@ -46,6 +46,9 @@ def _init_schema(conn: sqlite3.Connection) -> None:
         age INTEGER,
         gender TEXT,
         avatar TEXT,
+        birth TEXT,
+        handedness TEXT,
+        backhand TEXT,
         PRIMARY KEY (club_id, user_id)
     )"""
     )
@@ -75,6 +78,13 @@ def _init_schema(conn: sqlite3.Connection) -> None:
         cur.execute("ALTER TABLE club_meta ADD COLUMN leader_id TEXT")
     if 'admin_ids' not in cols:
         cur.execute("ALTER TABLE club_meta ADD COLUMN admin_ids TEXT")
+    cols = {row[1] for row in cur.execute("PRAGMA table_info('players')")}
+    if 'birth' not in cols:
+        cur.execute("ALTER TABLE players ADD COLUMN birth TEXT")
+    if 'handedness' not in cols:
+        cur.execute("ALTER TABLE players ADD COLUMN handedness TEXT")
+    if 'backhand' not in cols:
+        cur.execute("ALTER TABLE players ADD COLUMN backhand TEXT")
     cur.execute(
         """CREATE TABLE IF NOT EXISTS messages (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -120,6 +130,9 @@ def load_data() -> Dict[str, Club]:
             age=row["age"],
             gender=row["gender"],
             avatar=row["avatar"],
+            birth=row["birth"],
+            handedness=row["handedness"],
+            backhand=row["backhand"],
         )
         p.pre_ratings.update(json.loads(row["pre_ratings"] or "{}"))
         club.members[p.user_id] = p
@@ -281,8 +294,9 @@ def save_data(clubs: Dict[str, Club]) -> None:
             cur.execute(
                 """INSERT INTO players
                 (club_id, user_id, name, singles_rating, doubles_rating,
-                 experience, pre_ratings, age, gender, avatar)
-                VALUES (?,?,?,?,?,?,?,?,?,?)""",
+                 experience, pre_ratings, age, gender, avatar, birth,
+                 handedness, backhand)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)""",
                 (
                     cid,
                     p.user_id,
@@ -294,6 +308,9 @@ def save_data(clubs: Dict[str, Club]) -> None:
                     p.age,
                     p.gender,
                     p.avatar,
+                    p.birth,
+                    p.handedness,
+                    p.backhand,
                 ),
             )
         for m in club.matches:

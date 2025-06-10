@@ -228,6 +228,9 @@ class PlayerCreate(BaseModel):
     age: int | None = None
     gender: str | None = None
     avatar: str | None = None
+    birth: str | None = None
+    handedness: str | None = None
+    backhand: str | None = None
 
 
 class PlayerUpdate(BaseModel):
@@ -237,6 +240,9 @@ class PlayerUpdate(BaseModel):
     age: int | None = None
     gender: str | None = None
     avatar: str | None = None
+    birth: str | None = None
+    handedness: str | None = None
+    backhand: str | None = None
 
 
 class MatchCreate(BaseModel):
@@ -673,6 +679,9 @@ def add_player(club_id: str, data: PlayerCreate):
         age=data.age,
         gender=data.gender,
         avatar=data.avatar,
+        birth=data.birth,
+        handedness=data.handedness,
+        backhand=data.backhand,
     )
     save_data(clubs)
     return {"status": "ok"}
@@ -693,6 +702,9 @@ def update_player_api(club_id: str, user_id: str, data: PlayerUpdate):
             age=data.age,
             gender=data.gender,
             avatar=data.avatar,
+            birth=data.birth,
+            handedness=data.handedness,
+            backhand=data.backhand,
         )
     except ValueError as e:
         raise HTTPException(400, str(e))
@@ -924,6 +936,9 @@ def get_player(club_id: str, user_id: str, recent: int = 0):
         "name": player.name,
         "avatar": player.avatar,
         "avatar_url": player.avatar,
+        "birth": player.birth,
+        "handedness": player.handedness,
+        "backhand": player.backhand,
         "singles_rating": singles,
         "doubles_rating": doubles,
         "rating_singles": singles,
