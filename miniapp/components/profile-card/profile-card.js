@@ -9,7 +9,8 @@ Component({
       type: Boolean,
       value: true
     },
-    info: String
+    info: String,
+    info2: String
   },
   methods: {
     edit() {
