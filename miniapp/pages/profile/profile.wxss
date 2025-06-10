@@ -6,5 +6,8 @@ page{background:#f5f5f5;}
 .menu-item.disabled{color:#bbb;}
 .icon{width:36rpx;height:36rpx;margin-right:16rpx;}
 .title{flex:1;}
-.arrow{color:#bbb;}
+.arrow{
+  color:#bbb;
+  font-size:36rpx;
+}
 .logout-btn{margin:40rpx 24rpx 0 24rpx;background:#fff;color:#e03a3a;border:none;}
