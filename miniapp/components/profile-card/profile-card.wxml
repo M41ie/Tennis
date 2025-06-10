@@ -2,7 +2,7 @@
   <image class="avatar" src="{{user.avatar_url || placeholder}}" mode="aspectFill"></image>
   <view class="content">
     <view class="name">{{user.name}}</view>
-    <view class="uid">ID: {{user.id}}</view>
+    <view class="uid">{{info || ('ID: ' + user.id)}}</view>
     <view class="stats">
       <view class="col">
         <view class="title">单打</view>
