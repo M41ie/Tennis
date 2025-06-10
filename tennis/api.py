@@ -937,6 +937,7 @@ def get_player(club_id: str, user_id: str, recent: int = 0):
         "avatar": player.avatar,
         "avatar_url": player.avatar,
         "birth": player.birth,
+        "gender": player.gender,
         "handedness": player.handedness,
         "backhand": player.backhand,
         "singles_rating": singles,
