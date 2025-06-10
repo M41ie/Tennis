@@ -1,4 +1,4 @@
-<view class="profile-card">
+<view class="profile-card" bindtap="tapCard">
   <image class="avatar" src="{{user.avatar_url || placeholder}}" mode="aspectFill"></image>
   <view class="content">
     <view class="name">{{user.name}}</view>
@@ -16,5 +16,5 @@
       </view>
     </view>
   </view>
-  <view class="edit" bindtap="edit">✏️</view>
+  <view wx:if="{{editable}}" class="edit" bindtap="edit">✏️</view>
 </view>
