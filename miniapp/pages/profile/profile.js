@@ -56,7 +56,7 @@ Page({
     });
   },
   editProfile() {
-    wx.navigateTo({ url: '/pages/register/register?edit=true' });
+    wx.navigateTo({ url: '/pages/editprofile/editprofile' });
   },
   toLogin() { wx.navigateTo({ url: '/pages/login/index' }); },
   toRegister() { wx.navigateTo({ url: '/pages/register/register' }); },

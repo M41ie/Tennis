@@ -2,6 +2,7 @@
   "pages": [
     "pages/leaderboard/leaderboard",
     "pages/register/register",
+    "pages/editprofile/editprofile",
     "pages/joinclub/joinclub",
     "pages/createclub/createclub",
     "pages/login/index",
