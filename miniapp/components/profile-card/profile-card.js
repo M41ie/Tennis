@@ -1,4 +1,3 @@
-const { formatRating } = require('../../utils/format');
 Component({
   properties: {
     user: {
@@ -10,9 +9,6 @@ Component({
   methods: {
     edit() {
       this.triggerEvent('edit');
-    },
-    fr(value) {
-      return formatRating(value);
     }
   }
 });
