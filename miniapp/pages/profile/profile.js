@@ -48,10 +48,23 @@ Page({
     wx.request({
       url: `${BASE_URL}/clubs/${cid}/players/${uid}`,
       success(res) {
-        const data = res.data || {};
-        data.rating_singles = formatRating(data.rating_singles);
-        data.rating_doubles = formatRating(data.rating_doubles);
-        that.setData({ user: data });
+        const raw = res.data || {};
+        const singlesCount = raw.weighted_games_singles ?? raw.weighted_singles_matches;
+        const doublesCount = raw.weighted_games_doubles ?? raw.weighted_doubles_matches;
+        const user = {
+          id: raw.id || raw.user_id,
+          avatar_url: raw.avatar_url || raw.avatar,
+          name: raw.name,
+          rating_singles: formatRating(raw.rating_singles ?? raw.singles_rating),
+          rating_doubles: formatRating(raw.rating_doubles ?? raw.doubles_rating),
+          weighted_games_singles: typeof singlesCount === 'number'
+            ? singlesCount.toFixed(2)
+            : (singlesCount ? Number(singlesCount).toFixed(2) : '--'),
+          weighted_games_doubles: typeof doublesCount === 'number'
+            ? doublesCount.toFixed(2)
+            : (doublesCount ? Number(doublesCount).toFixed(2) : '--')
+        };
+        that.setData({ user });
       }
     });
   },
