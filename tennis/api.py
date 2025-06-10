@@ -913,12 +913,25 @@ def get_player(club_id: str, user_id: str, recent: int = 0):
     if not player:
         raise HTTPException(404, "Player not found")
     today = datetime.date.today()
+    singles = weighted_rating(player, today)
+    doubles = weighted_doubles_rating(player, today)
+    singles_count = weighted_singles_matches(player)
+    doubles_count = weighted_doubles_matches(player)
+
     result = {
         "user_id": player.user_id,
+        "id": player.user_id,
         "name": player.name,
         "avatar": player.avatar,
-        "singles_rating": weighted_rating(player, today),
-        "doubles_rating": weighted_doubles_rating(player, today),
+        "avatar_url": player.avatar,
+        "singles_rating": singles,
+        "doubles_rating": doubles,
+        "rating_singles": singles,
+        "rating_doubles": doubles,
+        "weighted_singles_matches": round(singles_count, 2),
+        "weighted_doubles_matches": round(doubles_count, 2),
+        "weighted_games_singles": round(singles_count, 2),
+        "weighted_games_doubles": round(doubles_count, 2),
     }
     if recent > 0:
         from .cli import get_player_match_cards
