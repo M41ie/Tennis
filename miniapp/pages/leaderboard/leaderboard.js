@@ -38,11 +38,14 @@ Page({
     const uid = wx.getStorageSync('user_id');
     const that = this;
     if (!uid) {
+      // User not logged in. Clear selected clubs so no ranking
+      // list is shown by default.
+      const newClubs = that.data.clubs.map(c => ({ ...c, checked: false }));
       that.setData({
-        clubs: that.data.clubs.map(c => ({ ...c, checked: true })),
-        filter: { ...that.data.filter, clubs: list.slice() }
+        clubs: newClubs,
+        filter: { ...that.data.filter, clubs: [] },
+        players: []
       });
-      that.fetchList(that.data.filter);
       return;
     }
     wx.request({
