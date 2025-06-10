@@ -3,7 +3,7 @@
   placeholder="{{placeholderAvatar}}"
   editable="{{loggedIn}}"
   bind:edit="editProfile"
-  bindtap="onCardTap"
+  bind:cardtap="onCardTap"
 />
 
 <view class="menu-list">
