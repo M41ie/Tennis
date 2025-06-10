@@ -6,12 +6,12 @@
     <view class="stats">
       <view class="col">
         <view class="title">单打</view>
-        <view class="rating">{{fr(user.rating_singles)}}</view>
+        <view class="rating">{{user.rating_singles}}</view>
         <view class="games">场次: {{user.weighted_games_singles}}</view>
       </view>
       <view class="col">
         <view class="title">双打</view>
-        <view class="rating">{{fr(user.rating_doubles)}}</view>
+        <view class="rating">{{user.rating_doubles}}</view>
         <view class="games">场次: {{user.weighted_games_doubles}}</view>
       </view>
     </view>
