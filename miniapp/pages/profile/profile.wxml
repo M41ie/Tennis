@@ -14,7 +14,7 @@
   </view>
   <view class="menu-item disabled">
     <image class="icon" src="{{iconComing}}" />
-    <view class="title">敬请期待</view>
+    <view class="title">我的笔记（Coming Soon）</view>
   </view>
 </view>
 
