@@ -1,5 +1,9 @@
 <view>
   <input class="weui-input" placeholder="Search" bindinput="onSearch" />
+  <view class="section-title-row">
+    <view class="section-title">我加入的俱乐部</view>
+    <view class="add-btn" bindtap="createClub">+</view>
+  </view>
   <view class="weui-list">
     <block wx:for="{{clubs}}" wx:key="club_id">
       <view class="weui-list__item">
