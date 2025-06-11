@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "成员卡",
+  "usingComponents": {
+    "profile-card": "/components/profile-card/profile-card"
+  }
+}

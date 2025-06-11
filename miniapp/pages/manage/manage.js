@@ -174,7 +174,7 @@ Page({
   },
   viewPlayer(e) {
     const uid = e.currentTarget.dataset.uid;
-    wx.navigateTo({ url: '/pages/playercard/playercard?uid=' + uid });
+    wx.navigateTo({ url: '/pages/membercard/membercard?uid=' + uid });
   },
   quitClub() {
     const cid = wx.getStorageSync('club_id');
