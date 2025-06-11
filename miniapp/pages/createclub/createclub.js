@@ -4,12 +4,20 @@ Page({
   data: {
     clubId: '',
     name: '',
+    slogan: '',
     logo: '',
-    region: ''
+    region: [],
+    regionString: ''
   },
   onClubId(e) { this.setData({ clubId: e.detail.value }); },
   onName(e) { this.setData({ name: e.detail.value }); },
-  onRegion(e) { this.setData({ region: e.detail.value }); },
+  onSlogan(e) { this.setData({ slogan: e.detail.value }); },
+  onRegionChange(e) {
+    this.setData({
+      region: e.detail.value,
+      regionString: e.detail.value.join(' ')
+    });
+  },
   chooseLogo() {
     const that = this;
     wx.chooseImage({
@@ -22,7 +30,7 @@ Page({
   submit() {
     const userId = wx.getStorageSync('user_id');
     const token = wx.getStorageSync('token');
-    if (!userId || !token || !this.data.clubId || !this.data.name) {
+    if (!userId || !token || !this.data.clubId || !this.data.name || !this.data.slogan || this.data.region.length === 0) {
       wx.showToast({ title: '信息不完整', icon: 'none' });
       return;
     }
@@ -34,7 +42,8 @@ Page({
         club_id: this.data.clubId,
         name: this.data.name,
         logo: this.data.logo,
-        region: this.data.region,
+        region: this.data.regionString,
+        slogan: this.data.slogan,
         user_id: userId,
         token
       },
