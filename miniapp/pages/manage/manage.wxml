@@ -5,7 +5,9 @@
   </view>
   <view class="club-slogan" wx:if="{{clubSlogan}}">{{clubSlogan}}</view>
   <view class="club-stats" wx:if="{{stats.member_count}}">
-    成员 {{stats.member_count}} · 单打 {{stats.singles_rating_range[0]}}-{{stats.singles_rating_range[1]}} {{stats.total_singles_matches}} 场 · 双打 {{stats.doubles_rating_range[0]}}-{{stats.doubles_rating_range[1]}} {{stats.total_doubles_matches}} 场
+    <text>成员 {{stats.member_count}} 人</text>
+    <text>单打：{{stats.singles_rating_range[0]}}-{{stats.singles_rating_range[1]}}, 平均 {{stats.singles_avg_rating}}，共计 {{stats.total_singles_matches}} 场</text>
+    <text>双打：{{stats.doubles_rating_range[0]}}-{{stats.doubles_rating_range[1]}}, 平均 {{stats.doubles_avg_rating}}，共计 {{stats.total_doubles_matches}} 场</text>
   </view>
 </view>
 

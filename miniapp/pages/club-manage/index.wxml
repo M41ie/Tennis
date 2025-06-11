@@ -9,18 +9,18 @@
   </view>
 
   <view class="club-list">
-    <view wx:for="{{myClubs}}" wx:key="id" class="club-card" bindtap="goToManage" data-id="{{item.id}}">
+    <view wx:for="{{myClubs}}" wx:key="club_id" class="club-card" bindtap="openClub" data-id="{{item.club_id}}">
       <view class="card-left">
         <view class="club-name">{{item.name}}</view>
         <view class="club-slogan">{{item.slogan}}</view>
         <view class="club-stats">
-          <text>成员: {{item.stats.member_count}}</text>
-          <text>单打: {{item.stats.singles_rating_range[0]}}-{{item.stats.singles_rating_range[1]}}</text>
-          <text>总双打: {{item.stats.total_doubles_matches}} 场</text>
+          <text>成员 {{item.member_count}} 人</text>
+          <text>单打：{{item.singles_range}}，平均 {{item.singles_avg}}，共计 {{item.total_singles}} 场</text>
+          <text>双打：{{item.doubles_range}}，平均 {{item.doubles_avg}}，共计 {{item.total_doubles}} 场</text>
         </view>
       </view>
       <view class="card-right">
-        <text class="club-role">{{item.role}}</text>
+        <text class="club-role">{{item.roleText}}</text>
       </view>
     </view>
   </view>
