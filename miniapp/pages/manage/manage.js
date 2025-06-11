@@ -192,11 +192,20 @@ Page({
     const token = wx.getStorageSync('token');
     const uid = this.data.userId;
     const that = this;
-    wx.request({
-      url: `${BASE_URL}/clubs/${cid}/role`,
-      method: 'POST',
-      data: { user_id: uid, token, action: 'quit' },
-      complete() { wx.navigateBack(); }
+    wx.showModal({
+      title: '确认退出',
+      content: `确认要退出${that.data.clubName}吗？`,
+      confirmColor: '#e03a3a',
+      success(res) {
+        if (res.confirm) {
+          wx.request({
+            url: `${BASE_URL}/clubs/${cid}/role`,
+            method: 'POST',
+            data: { user_id: uid, token, action: 'quit' },
+            complete() { wx.navigateBack(); }
+          });
+        }
+      }
     });
   },
   resignAdmin() {
