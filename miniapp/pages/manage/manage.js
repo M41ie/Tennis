@@ -25,18 +25,41 @@ Page({
       url: `${BASE_URL}/clubs/${cid}`,
       success(res) {
         const info = res.data;
-        const isAdmin = info.leader_id === that.data.userId ||
+        const isAdmin =
+          info.leader_id === that.data.userId ||
           (info.admin_ids && info.admin_ids.includes(that.data.userId));
         let role = 'member';
         if (info.leader_id === that.data.userId) role = 'leader';
-        else if (info.admin_ids && info.admin_ids.includes(that.data.userId)) role = 'admin';
+        else if (info.admin_ids && info.admin_ids.includes(that.data.userId))
+          role = 'admin';
         const roleText = role === 'leader' ? '负责人' : role === 'admin' ? '管理员' : '成员';
+        const stats = info.stats || {};
+        const fmt = n =>
+          typeof n === 'number' ? n.toFixed(1) : '--';
+        if (Array.isArray(stats.singles_rating_range)) {
+          stats.singles_rating_range = stats.singles_rating_range.map(fmt);
+        }
+        if (Array.isArray(stats.doubles_rating_range)) {
+          stats.doubles_rating_range = stats.doubles_rating_range.map(fmt);
+        }
+        if (stats.singles_avg_rating != null) {
+          stats.singles_avg_rating = fmt(stats.singles_avg_rating);
+        }
+        if (stats.doubles_avg_rating != null) {
+          stats.doubles_avg_rating = fmt(stats.doubles_avg_rating);
+        }
+        if (stats.total_singles_matches != null) {
+          stats.total_singles_matches = Math.round(stats.total_singles_matches);
+        }
+        if (stats.total_doubles_matches != null) {
+          stats.total_doubles_matches = Math.round(stats.total_doubles_matches);
+        }
         that.setData({
           pending: info.pending_members || [],
           isAdmin,
           clubName: info.name || '',
           clubSlogan: info.slogan || '',
-          stats: info.stats || {},
+          stats,
           role,
           roleText
         });
