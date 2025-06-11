@@ -58,10 +58,27 @@ Page({
             url: `${BASE_URL}/clubs/${cid}`,
             success(r) {
               const info = r.data;
+              const stats = info.stats || {};
+              const sr = stats.singles_rating_range || [];
+              const dr = stats.doubles_rating_range || [];
+              const fmt = n => (typeof n === 'number' ? n.toFixed(1) : '--');
               let role = 'member';
               if (info.leader_id === uid) role = 'leader';
               else if (info.admin_ids && info.admin_ids.includes(uid)) role = 'admin';
-              list.push({ club_id: cid, name: info.name, role });
+              list.push({
+                club_id: cid,
+                name: info.name,
+                slogan: info.slogan || '',
+                role,
+                roleText: role === 'leader' ? '负责人' : role === 'admin' ? '管理员' : '成员',
+                member_count: stats.member_count,
+                singles_range: sr.length ? `${fmt(sr[0])}-${fmt(sr[1])}` : '--',
+                doubles_range: dr.length ? `${fmt(dr[0])}-${fmt(dr[1])}` : '--',
+                total_singles: stats.total_singles_matches != null ?
+                  stats.total_singles_matches.toFixed(0) : '--',
+                total_doubles: stats.total_doubles_matches != null ?
+                  stats.total_doubles_matches.toFixed(0) : '--'
+              });
             },
             complete() {
               count++;

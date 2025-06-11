@@ -35,13 +35,17 @@ Page({
     user: null,
     placeholderAvatar: IMAGES.DEFAULT_AVATAR,
     infoLine1: '',
-    infoLine2: ''
+    infoLine2: '',
+    viewId: ''
+  },
+  onLoad(options) {
+    this.setData({ viewId: options && options.uid ? options.uid : wx.getStorageSync('user_id') });
   },
   onShow() {
     this.loadUser();
   },
   loadUser() {
-    const uid = wx.getStorageSync('user_id');
+    const uid = this.data.viewId || wx.getStorageSync('user_id');
     const cid = wx.getStorageSync('club_id');
     if (!uid || !cid) return;
     const that = this;
