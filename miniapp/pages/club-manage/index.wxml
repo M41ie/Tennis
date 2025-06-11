@@ -3,6 +3,11 @@
     <input class="search-input" placeholder="搜索俱乐部" />
   </view>
 
+  <view class="section-title-row">
+    <view class="section-title">我加入的俱乐部</view>
+    <view class="add-btn" bindtap="createClub">+</view>
+  </view>
+
   <view class="club-list">
     <view wx:for="{{myClubs}}" wx:key="id" class="club-card" bindtap="goToManage" data-id="{{item.id}}">
       <view class="card-left">
