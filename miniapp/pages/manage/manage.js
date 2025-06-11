@@ -66,7 +66,9 @@ Page({
           region: info.region || '',
           stats,
           role,
-          roleText
+          roleText,
+          leaderId: info.leader_id,
+          adminIds: info.admin_ids || []
         });
       }
     });
@@ -127,7 +129,15 @@ Page({
                   : p.gender === 'F'
                   ? '女'
                   : '-';
-              p.infoLine = `${genderText} · ${p.joined || ''}（已加入俱乐部 ${days} 天）`;
+              p.infoLine = `${genderText} · 已加入俱乐部 ${days} 天`;
+              const role =
+                p.user_id === that.data.leaderId
+                  ? 'leader'
+                  : that.data.adminIds.includes(p.user_id)
+                  ? 'admin'
+                  : 'member';
+              p.role = role;
+              p.roleText = role === 'leader' ? '负责人' : role === 'admin' ? '管理员' : '成员';
               return p;
             });
             that.setData({ members: list });

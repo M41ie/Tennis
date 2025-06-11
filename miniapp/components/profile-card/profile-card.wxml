@@ -1,23 +1,26 @@
 <view class="profile-card" bindtap="tapCard">
   <image class="avatar" src="{{user.avatar_url || placeholder}}" mode="aspectFill"></image>
-  <view class="content">
-    <view class="name">{{user.name}}</view>
+  <view class="info">
+    <view class="name-row">
+      <text class="name">{{user.name}}</text>
+      <text class="role-tag {{user.role}}">{{user.roleText}}</text>
+    </view>
     <block wx:if="{{info2}}">
-      <view class="uid">{{info}}</view>
-      <view class="uid2">{{info2}}</view>
+      <view class="meta">{{info}}</view>
+      <view class="meta2">{{info2}}</view>
     </block>
-    <view wx:else class="uid">{{info || ('ID: ' + user.id)}}</view>
-    <view class="stats">
-      <view class="col">
-        <view class="title">单打</view>
-        <view class="rating">评分: {{user.rating_singles}}</view>
-        <view class="games">场次: {{user.weighted_games_singles}}</view>
-      </view>
-      <view class="col">
-        <view class="title">双打</view>
-        <view class="rating">评分: {{user.rating_doubles}}</view>
-        <view class="games">场次: {{user.weighted_games_doubles}}</view>
-      </view>
+    <view wx:else class="meta">{{info || ('ID: ' + user.id)}}</view>
+  </view>
+  <view class="stats">
+    <view class="col">
+      <view class="title">单打</view>
+      <view class="rating">评分: {{user.rating_singles}}</view>
+      <view class="games">场次: {{user.weighted_games_singles}}</view>
+    </view>
+    <view class="col">
+      <view class="title">双打</view>
+      <view class="rating">评分: {{user.rating_doubles}}</view>
+      <view class="games">场次: {{user.weighted_games_doubles}}</view>
     </view>
   </view>
   <view wx:if="{{editable}}" class="edit" bindtap="edit">✏️</view>
