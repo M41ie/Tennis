@@ -8,6 +8,7 @@ Page({
     userId: '',
     clubName: '',
     clubSlogan: '',
+    region: '',
     stats: {},
     role: '',
     roleText: ''
@@ -62,6 +63,7 @@ Page({
           isAdmin,
           clubName: info.name || '',
           clubSlogan: info.slogan || '',
+          region: info.region || '',
           stats,
           role,
           roleText
