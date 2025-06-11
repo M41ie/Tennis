@@ -1,14 +1,20 @@
 <view class="club-header">
-  <view class="club-name">{{clubName}}</view>
+  <view class="top">
+    <view class="club-name">{{clubName}}</view>
+    <view class="role">{{roleText}}</view>
+  </view>
   <view class="club-slogan" wx:if="{{clubSlogan}}">{{clubSlogan}}</view>
+  <view class="club-stats" wx:if="{{stats.member_count}}">
+    成员 {{stats.member_count}} · 单打 {{stats.singles_rating_range[0]}}-{{stats.singles_rating_range[1]}} {{stats.total_singles_matches}} 场 · 双打 {{stats.doubles_rating_range[0]}}-{{stats.doubles_rating_range[1]}} {{stats.total_doubles_matches}} 场
+  </view>
 </view>
 
-<view class="section">
+<view class="section" wx:if="{{pending.length && isAdmin}}">
   <view class="section-title">待审核成员</view>
   <block wx:for="{{pending}}" wx:key="uid">
     <view class="card">
       <text class="pending-name">{{item}}</text>
-      <button wx:if="{{isAdmin}}" data-uid="{{item}}" bindtap="approve" class="primary-btn">通过</button>
+      <button data-uid="{{item}}" bindtap="approve" class="primary-btn">通过</button>
     </view>
   </block>
 </view>
@@ -16,15 +22,26 @@
 <view class="section">
   <view class="section-title">成员列表</view>
   <block wx:for="{{members}}" wx:key="user_id">
-    <view class="card">
-      <view class="member-info">
-        <text class="name">{{item.name}}</text>
-        <text class="uid">ID: {{item.user_id}}</text>
+    <view class="player-card" bindtap="viewPlayer" data-uid="{{item.user_id}}">
+      <image class="avatar" src="{{item.avatar}}" mode="aspectFill"></image>
+      <view class="info">
+        <view class="name">{{item.name}}</view>
+        <view class="meta">单打场次: {{item.weighted_singles_matches}} · 双打场次: {{item.weighted_doubles_matches}}</view>
       </view>
-      <view class="actions" wx:if="{{isAdmin}}">
-        <button data-uid="{{item.user_id}}" bindtap="kick">踢出</button>
-        <button data-uid="{{item.user_id}}" bindtap="ban">封禁</button>
-      </view>
+      <view class="score">{{item.rating}}</view>
     </view>
   </block>
+</view>
+
+<view class="operation-bar">
+  <button wx:if="{{role==='member'}}" class="op-btn" bindtap="quitClub">退出</button>
+  <block wx:if="{{role==='admin'}}">
+    <button class="op-btn" bindtap="resignAdmin">卸任</button>
+    <button class="op-btn" bindtap="quitClub">退出</button>
+  </block>
+  <block wx:if="{{role==='leader'}}">
+    <button class="op-btn" bindtap="transferLeader">转移负责人</button>
+    <button class="op-btn" bindtap="toggleAdmin">设置管理员</button>
+  </block>
+  <button class="op-btn" open-type="share">分享</button>
 </view>
