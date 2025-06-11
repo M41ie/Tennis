@@ -1,0 +1,3 @@
+.weui-cell { align-items: center; }
+.image-preview { width: 100px; height: 100px; }
+.picker { padding: 10rpx 0; color: #888; }

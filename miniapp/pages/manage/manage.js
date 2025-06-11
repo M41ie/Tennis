@@ -234,5 +234,8 @@ Page({
       data: { user_id: uid, token, action: 'transfer_leader' },
       complete() { that.fetchClub(); }
     });
+  },
+  editClub() {
+    wx.navigateTo({ url: '/pages/editclub/editclub' });
   }
 });
