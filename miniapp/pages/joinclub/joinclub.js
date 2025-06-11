@@ -54,8 +54,5 @@ Page({
         });
       }
     });
-  },
-  createClub() {
-    wx.navigateTo({ url: '/pages/createclub/createclub' });
   }
 });
