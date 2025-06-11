@@ -115,10 +115,11 @@ Page({
     const cid = wx.getStorageSync('club_id');
     const token = wx.getStorageSync('token');
     const action = this.data.isTargetAdmin ? '取消管理员' : '设为管理员';
+    const name = this.data.user ? this.data.user.name : '';
     const that = this;
     wx.showModal({
       title: '确认操作',
-      content: `确认${action}？`,
+      content: `确认将${name}${action}？`,
       success(res) {
         if (res.confirm) {
           wx.request({
@@ -134,10 +135,11 @@ Page({
   transferLeader() {
     const cid = wx.getStorageSync('club_id');
     const token = wx.getStorageSync('token');
+    const name = this.data.user ? this.data.user.name : '';
     const that = this;
     wx.showModal({
       title: '转移负责人',
-      content: '确定将负责人转移给该成员？',
+      content: `确认将负责人转移给${name}？`,
       success(res) {
         if (res.confirm) {
           wx.request({
@@ -154,10 +156,11 @@ Page({
     const cid = wx.getStorageSync('club_id');
     const token = wx.getStorageSync('token');
     const remover = wx.getStorageSync('user_id');
+    const name = this.data.user ? this.data.user.name : '';
     const that = this;
     wx.showModal({
       title: '移除成员',
-      content: '确定要移除该成员？',
+      content: `确认将${name}从俱乐部移除？`,
       success(res) {
         if (res.confirm) {
           wx.request({
