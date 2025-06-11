@@ -114,35 +114,63 @@ Page({
   toggleAdmin() {
     const cid = wx.getStorageSync('club_id');
     const token = wx.getStorageSync('token');
+    const action = this.data.isTargetAdmin ? '取消管理员' : '设为管理员';
+    const name = this.data.user ? this.data.user.name : '';
     const that = this;
-    wx.request({
-      url: `${BASE_URL}/clubs/${cid}/role`,
-      method: 'POST',
-      data: { user_id: this.data.memberId, token, action: 'toggle_admin' },
-      complete() { that.loadClubInfo(); }
+    wx.showModal({
+      title: '确认操作',
+      content: `确认将${name}${action}？`,
+      success(res) {
+        if (res.confirm) {
+          wx.request({
+            url: `${BASE_URL}/clubs/${cid}/role`,
+            method: 'POST',
+            data: { user_id: that.data.memberId, token, action: 'toggle_admin' },
+            complete() { that.loadClubInfo(); }
+          });
+        }
+      }
     });
   },
   transferLeader() {
     const cid = wx.getStorageSync('club_id');
     const token = wx.getStorageSync('token');
+    const name = this.data.user ? this.data.user.name : '';
     const that = this;
-    wx.request({
-      url: `${BASE_URL}/clubs/${cid}/role`,
-      method: 'POST',
-      data: { user_id: this.data.memberId, token, action: 'transfer_leader' },
-      complete() { that.loadClubInfo(); }
+    wx.showModal({
+      title: '转移负责人',
+      content: `确认将负责人转移给${name}？`,
+      success(res) {
+        if (res.confirm) {
+          wx.request({
+            url: `${BASE_URL}/clubs/${cid}/role`,
+            method: 'POST',
+            data: { user_id: that.data.memberId, token, action: 'transfer_leader' },
+            complete() { that.loadClubInfo(); }
+          });
+        }
+      }
     });
   },
   removeMember() {
     const cid = wx.getStorageSync('club_id');
     const token = wx.getStorageSync('token');
     const remover = wx.getStorageSync('user_id');
+    const name = this.data.user ? this.data.user.name : '';
     const that = this;
-    wx.request({
-      url: `${BASE_URL}/clubs/${cid}/members/${this.data.memberId}`,
-      method: 'DELETE',
-      data: { remover_id: remover, token, ban: false },
-      complete() { wx.navigateBack(); }
+    wx.showModal({
+      title: '移除成员',
+      content: `确认将${name}从俱乐部移除？`,
+      success(res) {
+        if (res.confirm) {
+          wx.request({
+            url: `${BASE_URL}/clubs/${cid}/members/${that.data.memberId}`,
+            method: 'DELETE',
+            data: { remover_id: remover, token, ban: false },
+            complete() { wx.navigateBack(); }
+          });
+        }
+      }
     });
   }
 });
