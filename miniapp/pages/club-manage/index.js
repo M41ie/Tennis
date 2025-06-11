@@ -62,6 +62,14 @@ Page({
               const sr = stats.singles_rating_range || [];
               const dr = stats.doubles_rating_range || [];
               const fmt = n => (typeof n === 'number' ? n.toFixed(1) : '--');
+              const singlesAvg =
+                typeof stats.singles_avg_rating === 'number'
+                  ? fmt(stats.singles_avg_rating)
+                  : '--';
+              const doublesAvg =
+                typeof stats.doubles_avg_rating === 'number'
+                  ? fmt(stats.doubles_avg_rating)
+                  : '--';
               let role = 'member';
               if (info.leader_id === uid) role = 'leader';
               else if (info.admin_ids && info.admin_ids.includes(uid)) role = 'admin';
@@ -77,7 +85,9 @@ Page({
                 total_singles: stats.total_singles_matches != null ?
                   stats.total_singles_matches.toFixed(0) : '--',
                 total_doubles: stats.total_doubles_matches != null ?
-                  stats.total_doubles_matches.toFixed(0) : '--'
+                  stats.total_doubles_matches.toFixed(0) : '--',
+                singles_avg: singlesAvg,
+                doubles_avg: doublesAvg
               });
             },
             complete() {
