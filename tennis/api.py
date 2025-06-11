@@ -92,6 +92,14 @@ WECHAT_APPID = os.getenv("WECHAT_APPID", "")
 WECHAT_SECRET = os.getenv("WECHAT_SECRET", "")
 
 
+def _generate_club_id() -> str:
+    """Return a unique club id based on existing clubs."""
+    i = 1
+    while f"c{i}" in clubs:
+        i += 1
+    return f"c{i}"
+
+
 def _exchange_wechat_code(code: str) -> dict:
     """Call WeChat API to exchange login code for session info."""
     params = urllib.parse.urlencode(
@@ -233,7 +241,7 @@ def _club_stats(club: Club) -> dict[str, object]:
 
 
 class ClubCreate(BaseModel):
-    club_id: str
+    club_id: str | None = None
     name: str
     user_id: str
     token: str
@@ -577,12 +585,13 @@ def create_club(data: ClubCreate):
     user = require_auth(data.token)
     if user != data.user_id:
         raise HTTPException(401, "Token mismatch")
+    club_id = data.club_id or _generate_club_id()
     try:
         cli_create_club(
             users,
             clubs,
             data.user_id,
-            data.club_id,
+            club_id,
             data.name,
             data.logo,
             data.region,
@@ -592,7 +601,7 @@ def create_club(data: ClubCreate):
         raise HTTPException(400, str(e))
     save_data(clubs)
     save_users(users)
-    return {"status": "ok"}
+    return {"status": "ok", "club_id": club_id}
 
 
 @app.get("/clubs/{club_id}")
