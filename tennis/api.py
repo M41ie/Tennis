@@ -212,6 +212,21 @@ def _pending_status_for_user(
     }
 
 
+def _club_stats(club: Club) -> dict[str, object]:
+    """Aggregate statistics for a club."""
+    singles = [p.singles_rating for p in club.members.values()]
+    doubles = [p.doubles_rating for p in club.members.values()]
+    total_singles = sum(len(p.singles_matches) for p in club.members.values()) // 2
+    total_doubles = sum(len(p.doubles_matches) for p in club.members.values()) // 4
+    return {
+        "member_count": len(club.members),
+        "singles_rating_range": [min(singles) if singles else 0, max(singles) if singles else 0],
+        "doubles_rating_range": [min(doubles) if doubles else 0, max(doubles) if doubles else 0],
+        "total_singles_matches": total_singles,
+        "total_doubles_matches": total_doubles,
+    }
+
+
 class ClubCreate(BaseModel):
     club_id: str
     name: str
@@ -219,6 +234,16 @@ class ClubCreate(BaseModel):
     token: str
     logo: str | None = None
     region: str | None = None
+    slogan: str | None = None
+
+
+class ClubUpdate(BaseModel):
+    user_id: str
+    token: str
+    name: str | None = None
+    logo: str | None = None
+    region: str | None = None
+    slogan: str | None = None
 
 
 class PlayerCreate(BaseModel):
@@ -492,6 +517,29 @@ def join_club(club_id: str, data: JoinRequest):
     return {"status": "ok"}
 
 
+@app.patch("/clubs/{club_id}")
+def update_club_info(club_id: str, data: ClubUpdate):
+    """Update club basic information (leader or admin only)."""
+    user = require_auth(data.token)
+    club = clubs.get(club_id)
+    if not club:
+        raise HTTPException(404, "Club not found")
+    if user != data.user_id:
+        raise HTTPException(401, "Token mismatch")
+    if user != club.leader_id and user not in club.admin_ids:
+        raise HTTPException(403, "Forbidden")
+    if data.name is not None:
+        club.name = data.name
+    if data.logo is not None:
+        club.logo = data.logo
+    if data.region is not None:
+        club.region = data.region
+    if data.slogan is not None:
+        club.slogan = data.slogan
+    save_data(clubs)
+    return {"status": "ok"}
+
+
 @app.post("/clubs/{club_id}/approve")
 def approve_club_member(club_id: str, data: ApproveRequest):
     user = require_auth(data.token)
@@ -533,6 +581,7 @@ def create_club(data: ClubCreate):
             data.name,
             data.logo,
             data.region,
+            data.slogan,
         )
     except ValueError as e:
         raise HTTPException(400, str(e))
@@ -550,12 +599,16 @@ def get_club_info(club_id: str):
     return {
         "club_id": club.club_id,
         "name": club.name,
+        "logo": club.logo,
+        "region": club.region,
+        "slogan": club.slogan,
         "leader_id": club.leader_id,
         "admin_ids": list(club.admin_ids),
         "pending_members": list(club.pending_members),
         "members": [
             {"user_id": p.user_id, "name": p.name} for p in club.members.values()
         ],
+        "stats": _club_stats(club),
     }
 
 
