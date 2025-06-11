@@ -14,7 +14,10 @@
     </block>
   </scroll-view>
 </view>
-<view class="section-title">我加入的俱乐部</view>
+<view class="section-title-row">
+  <view class="section-title">我加入的俱乐部</view>
+  <view wx:if="{{allowCreate}}" class="add-btn" bindtap="createClub">+</view>
+</view>
 <scroll-view scroll-y class="my-clubs">
   <block wx:for="{{myClubs}}" wx:key="club_id">
     <view class="my-card">
