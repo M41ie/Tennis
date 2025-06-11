@@ -1,0 +1,18 @@
+<profile-card
+  user="{{user}}"
+  placeholder="{{placeholderAvatar}}"
+  editable="{{false}}"
+  info="{{infoLine1}}"
+  info2="{{infoLine2}}"
+/>
+
+<view class="actions">
+  <block wx:if="{{myRole === 'leader'}}">
+    <button class="action-btn" bindtap="transferLeader">转移负责人</button>
+    <button class="action-btn" bindtap="toggleAdmin">{{isTargetAdmin ? '取消管理员' : '设为管理员'}}</button>
+    <button class="action-btn remove" bindtap="removeMember">移除成员</button>
+  </block>
+  <block wx:elif="{{myRole === 'admin'}}">
+    <button class="action-btn remove" bindtap="removeMember">移除成员</button>
+  </block>
+</view>

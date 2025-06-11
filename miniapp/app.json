@@ -10,6 +10,7 @@
     "pages/records/records",
     "pages/profile/profile",
     "pages/playercard/playercard",
+    "pages/membercard/membercard",
     "pages/prerate/prerate",
     "pages/addmatch/addmatch",
     "pages/manage/manage",
