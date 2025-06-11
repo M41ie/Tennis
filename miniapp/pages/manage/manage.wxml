@@ -1,20 +1,29 @@
-<view class="list">
-  <view>Pending Members</view>
+<view class="club-header">
+  <view class="club-name">{{clubName}}</view>
+  <view class="club-slogan" wx:if="{{clubSlogan}}">{{clubSlogan}}</view>
+</view>
+
+<view class="section">
+  <view class="section-title">待审核成员</view>
   <block wx:for="{{pending}}" wx:key="uid">
-    <view class="item">
-      <text>{{item}}</text>
-      <button wx:if="{{isAdmin}}" data-uid="{{item}}" bindtap="approve">Approve</button>
+    <view class="card">
+      <text class="pending-name">{{item}}</text>
+      <button wx:if="{{isAdmin}}" data-uid="{{item}}" bindtap="approve" class="primary-btn">通过</button>
     </view>
   </block>
 </view>
-<view class="list">
-  <view>Members</view>
+
+<view class="section">
+  <view class="section-title">成员列表</view>
   <block wx:for="{{members}}" wx:key="user_id">
-    <view class="item">
-      <text>{{item.name}} ({{item.user_id}})</text>
+    <view class="card">
+      <view class="member-info">
+        <text class="name">{{item.name}}</text>
+        <text class="uid">ID: {{item.user_id}}</text>
+      </view>
       <view class="actions" wx:if="{{isAdmin}}">
-        <button data-uid="{{item.user_id}}" bindtap="kick">Kick</button>
-        <button data-uid="{{item.user_id}}" bindtap="ban">Ban</button>
+        <button data-uid="{{item.user_id}}" bindtap="kick">踢出</button>
+        <button data-uid="{{item.user_id}}" bindtap="ban">封禁</button>
       </view>
     </view>
   </block>

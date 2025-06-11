@@ -5,7 +5,9 @@ Page({
     pending: [],
     members: [],
     isAdmin: false,
-    userId: ''
+    userId: '',
+    clubName: '',
+    clubSlogan: ''
   },
   onLoad() {
     this.setData({ userId: wx.getStorageSync('user_id') });
@@ -24,7 +26,9 @@ Page({
         that.setData({
           pending: info.pending_members || [],
           members: info.members || [],
-          isAdmin
+          isAdmin,
+          clubName: info.name || '',
+          clubSlogan: info.slogan || ''
         });
       }
     });
