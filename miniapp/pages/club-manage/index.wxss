@@ -1,19 +1,90 @@
-page{background:#f5f5f5}
-.search-box{margin:24rpx}
-.search-box input{background:#fff;padding:30rpx;border-radius:12rpx;width:100%;box-sizing:border-box}
-.result-list{max-height:300rpx;margin-top:16rpx}
-.club-card{display:flex;justify-content:space-between;align-items:center;background:#fff;border-radius:12rpx;padding:24rpx;margin-bottom:16rpx;box-shadow:0 6rpx 12rpx rgba(0,0,0,.04);box-sizing:border-box;width:calc(100% - 40rpx)}
-.club-card .info{flex:1}
-.apply-btn{background:#07C160;color:#fff;border-radius:8rpx;padding:12rpx 24rpx;font-size:26rpx}
-.section-title{margin:24rpx;font-size:30rpx;color:#333}
-.section-title-row{display:flex;justify-content:space-between;align-items:center;margin:24rpx}
-.section-title-row .section-title{margin:0;font-size:30rpx;color:#333}
-.add-btn{width:40rpx;height:40rpx;border:1rpx solid #07C160;color:#07C160;border-radius:50%;display:flex;justify-content:center;align-items:center;font-size:32rpx}
-.my-clubs{margin:0 24rpx 24rpx 24rpx}
-.my-card{background:#fff;border-radius:12rpx;padding:24rpx;box-shadow:0 6rpx 12rpx rgba(0,0,0,.04);margin-bottom:24rpx;box-sizing:border-box}
-.my-card .main{display:flex;justify-content:space-between;align-items:flex-start}
-.my-card .info{flex:1}
-.my-card .name{font-size:32rpx;font-weight:600}
-.my-card .slogan{font-size:26rpx;color:#666;margin-top:6rpx}
-.my-card .stats{font-size:24rpx;color:#888;margin-top:6rpx;line-height:32rpx}
-.my-card .role{font-size:26rpx;color:#888;margin-left:20rpx;white-space:nowrap}
+/* 文件路径: miniapp/pages/club-manage/index.wxss */
+
+/* 页面整体容器，负责创建左右边距 */
+.page-container {
+  padding: 0 30rpx; /* 页面左右留出 30rpx 的边距 */
+  box-sizing: border-box;
+  background-color: #f7f7f7;
+  min-height: 100vh;
+}
+
+/* --- 搜索框样式 --- */
+.search-bar-container {
+  padding: 20rpx 0;
+  width: 100%; /* 宽度自动撑满父容器 */
+}
+
+.search-input {
+  background-color: #ffffff;
+  border-radius: 12rpx; /* 圆角 */
+  font-size: 28rpx;
+  
+  /* 解决【搜索框太扁】的核心代码 */
+  height: 80rpx;       /* 增加高度 */
+  line-height: 80rpx; /* 垂直居中文本 */
+  padding: 0 30rpx;   /* 增加左右内边距 */
+}
+
+/* --- 俱乐部卡片样式 --- */
+.club-list {
+  width: 100%;
+}
+
+.club-card {
+  /* 解决【卡片太宽】的核心代码 */
+  width: 100%; /* 宽度自动撑满父容器，与搜索框对齐 */
+  
+  background-color: #ffffff;
+  border-radius: 16rpx;
+  margin-bottom: 25rpx;
+  padding: 30rpx;
+  box-sizing: border-box;
+  display: flex; /* 使用 flex 布局来排列左右两部分 */
+  justify-content: space-between;
+  box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.05); /* 添加细微阴影，提升质感 */
+}
+
+.card-left {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1; /* 占据剩余所有空间 */
+  padding-right: 20rpx; /* 与右侧内容留出间距 */
+}
+
+.club-name {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 10rpx;
+}
+
+.club-slogan {
+  font-size: 26rpx;
+  color: #888;
+  margin-bottom: 20rpx;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis; /* 口号超出部分显示省略号 */
+}
+
+.club-stats {
+  font-size: 24rpx;
+  color: #666;
+  display: flex;
+  flex-direction: column;
+}
+
+.club-stats text {
+  margin-bottom: 6rpx;
+}
+
+.card-right {
+  flex-shrink: 0; /* 防止被压缩 */
+  display: flex;
+  align-items: flex-start;
+}
+
+.club-role {
+  font-size: 26rpx;
+  color: #999;
+}
