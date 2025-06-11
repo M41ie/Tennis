@@ -4,10 +4,12 @@ Page({
   data: {
     query: '',
     searchResults: [],
-    myClubs: []
+    myClubs: [],
+    allowCreate: false
   },
   onLoad() {
     this.getMyClubs();
+    this.checkPermission();
   },
   onSearch(e) {
     this.setData({ query: e.detail.value });
@@ -155,5 +157,23 @@ Page({
       data: { user_id: uid, token, action: 'transfer_leader' },
       complete() { that.getMyClubs(); }
     });
+  },
+  checkPermission() {
+    const uid = wx.getStorageSync('user_id');
+    if (!uid) return;
+    const that = this;
+    wx.request({
+      url: `${BASE_URL}/users/${uid}`,
+      success(res) {
+        that.setData({ allowCreate: !!res.data.can_create_club });
+      }
+    });
+  },
+  createClub() {
+    if (this.data.allowCreate) {
+      wx.navigateTo({ url: '/pages/createclub/createclub' });
+    } else {
+      wx.showToast({ title: '暂无权限', icon: 'none' });
+    }
   }
 });
