@@ -130,7 +130,7 @@ Page({
                   ? '女'
                   : '-';
               p.genderText = genderText;
-              p.daysText = `已加入俱乐部 ${days} 天`;
+              p.daysText = `已加入${days}天`;
               const role =
                 p.user_id === that.data.leaderId
                   ? 'leader'
