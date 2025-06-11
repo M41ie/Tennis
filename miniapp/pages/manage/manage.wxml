@@ -24,14 +24,13 @@
 <view class="section">
   <view class="section-title">成员列表</view>
   <block wx:for="{{members}}" wx:key="user_id">
-    <view class="player-card" bindtap="viewPlayer" data-uid="{{item.user_id}}">
-      <image class="avatar" src="{{item.avatar}}" mode="aspectFill"></image>
-      <view class="info">
-        <view class="name">{{item.name}}</view>
-        <view class="meta">单打场次: {{item.weighted_singles_matches}} · 双打场次: {{item.weighted_doubles_matches}}</view>
-      </view>
-      <view class="score">{{item.rating}}</view>
-    </view>
+    <profile-card
+      user="{{item}}"
+      editable="{{false}}"
+      info="{{item.infoLine}}"
+      bind:cardtap="viewPlayer"
+      data-uid="{{item.user_id}}"
+    />
   </block>
 </view>
 

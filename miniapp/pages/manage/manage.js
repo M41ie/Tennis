@@ -77,14 +77,62 @@ Page({
     const that = this;
     wx.request({
       url: `${BASE_URL}/clubs/${cid}/players`,
-      success(res) {
-        const list = res.data || [];
-        list.forEach(p => {
-          if (p.rating != null) p.rating = p.rating.toFixed(3);
-          if (p.weighted_singles_matches != null) p.weighted_singles_matches = p.weighted_singles_matches.toFixed(2);
-          if (p.weighted_doubles_matches != null) p.weighted_doubles_matches = p.weighted_doubles_matches.toFixed(2);
+      success(res1) {
+        const singles = res1.data || [];
+        wx.request({
+          url: `${BASE_URL}/clubs/${cid}/players?doubles=true`,
+          success(res2) {
+            const doubles = res2.data || [];
+            const map = {};
+            singles.forEach(p => {
+              map[p.user_id] = {
+                user_id: p.user_id,
+                id: p.user_id,
+                name: p.name,
+                avatar: p.avatar,
+                avatar_url: p.avatar,
+                gender: p.gender,
+                joined: p.joined,
+                rating_singles: p.rating != null ? p.rating.toFixed(3) : '--',
+                weighted_games_singles:
+                  p.weighted_singles_matches != null
+                    ? p.weighted_singles_matches.toFixed(2)
+                    : '--'
+              };
+            });
+            doubles.forEach(p => {
+              const t = map[p.user_id] || {
+                user_id: p.user_id,
+                id: p.user_id,
+                name: p.name,
+                avatar: p.avatar,
+                avatar_url: p.avatar,
+                gender: p.gender,
+                joined: p.joined
+              };
+              t.rating_doubles = p.rating != null ? p.rating.toFixed(3) : '--';
+              t.weighted_games_doubles =
+                p.weighted_doubles_matches != null
+                  ? p.weighted_doubles_matches.toFixed(2)
+                  : '--';
+              map[p.user_id] = t;
+            });
+            const now = Date.now();
+            const list = Object.values(map).map(p => {
+              const joined = p.joined ? new Date(p.joined).getTime() : now;
+              const days = Math.floor((now - joined) / (1000 * 60 * 60 * 24));
+              const genderText =
+                p.gender === 'M'
+                  ? '男'
+                  : p.gender === 'F'
+                  ? '女'
+                  : '-';
+              p.infoLine = `${genderText} · ${p.joined || ''}（已加入俱乐部 ${days} 天）`;
+              return p;
+            });
+            that.setData({ members: list });
+          }
         });
-        that.setData({ members: list });
       }
     });
   },

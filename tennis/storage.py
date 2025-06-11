@@ -49,6 +49,7 @@ def _init_schema(conn: sqlite3.Connection) -> None:
         birth TEXT,
         handedness TEXT,
         backhand TEXT,
+        joined TEXT,
         PRIMARY KEY (club_id, user_id)
     )"""
     )
@@ -88,6 +89,8 @@ def _init_schema(conn: sqlite3.Connection) -> None:
         cur.execute("ALTER TABLE players ADD COLUMN handedness TEXT")
     if 'backhand' not in cols:
         cur.execute("ALTER TABLE players ADD COLUMN backhand TEXT")
+    if 'joined' not in cols:
+        cur.execute("ALTER TABLE players ADD COLUMN joined TEXT")
     cur.execute(
         """CREATE TABLE IF NOT EXISTS messages (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -137,6 +140,7 @@ def load_data() -> Dict[str, Club]:
             birth=row["birth"],
             handedness=row["handedness"],
             backhand=row["backhand"],
+            joined=datetime.date.fromisoformat(row["joined"]) if row["joined"] else datetime.date.today(),
         )
         p.pre_ratings.update(json.loads(row["pre_ratings"] or "{}"))
         club.members[p.user_id] = p
@@ -299,8 +303,8 @@ def save_data(clubs: Dict[str, Club]) -> None:
                 """INSERT INTO players
                 (club_id, user_id, name, singles_rating, doubles_rating,
                  experience, pre_ratings, age, gender, avatar, birth,
-                 handedness, backhand)
-                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                 handedness, backhand, joined)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
                 (
                     cid,
                     p.user_id,
@@ -315,6 +319,7 @@ def save_data(clubs: Dict[str, Club]) -> None:
                     p.birth,
                     p.handedness,
                     p.backhand,
+                    p.joined.isoformat(),
                 ),
             )
         for m in club.matches:
