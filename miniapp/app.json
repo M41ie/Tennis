@@ -5,6 +5,7 @@
     "pages/editprofile/editprofile",
     "pages/joinclub/joinclub",
     "pages/createclub/createclub",
+    "pages/editclub/editclub",
     "pages/login/index",
     "pages/club-manage/index",
     "pages/records/records",
