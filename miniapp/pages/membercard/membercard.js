@@ -38,10 +38,14 @@ Page({
     infoLine2: '',
     memberId: '',
     myRole: '',
-    isTargetAdmin: false
+    isTargetAdmin: false,
+    isTargetLeader: false,
+    isSelf: false
   },
   onLoad(options) {
-    this.setData({ memberId: options && options.uid ? options.uid : '' });
+    const memberId = options && options.uid ? options.uid : '';
+    const selfId = wx.getStorageSync('user_id');
+    this.setData({ memberId, isSelf: memberId === selfId });
   },
   onShow() {
     this.loadUser();
@@ -96,7 +100,14 @@ Page({
         if (info.leader_id === uid) role = 'leader';
         else if (info.admin_ids && info.admin_ids.includes(uid)) role = 'admin';
         const targetAdmin = info.admin_ids && info.admin_ids.includes(that.data.memberId);
-        that.setData({ myRole: role, isTargetAdmin: !!targetAdmin });
+        const targetLeader = info.leader_id === that.data.memberId;
+        const isSelf = that.data.memberId === uid;
+        that.setData({
+          myRole: role,
+          isTargetAdmin: !!targetAdmin,
+          isTargetLeader: !!targetLeader,
+          isSelf
+        });
       }
     });
   },
