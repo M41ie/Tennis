@@ -12,7 +12,10 @@ Page({
     role: '',
     roleText: ''
   },
-  onLoad() {
+  onLoad(options) {
+    if (options && options.cid) {
+      wx.setStorageSync('club_id', options.cid);
+    }
     this.setData({ userId: wx.getStorageSync('user_id') });
     this.fetchClub();
     this.fetchPlayers();
