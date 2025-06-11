@@ -2,14 +2,12 @@ const BASE_URL = getApp().globalData.BASE_URL;
 
 Page({
   data: {
-    clubId: '',
     name: '',
     slogan: '',
     logo: '',
     region: [],
     regionString: ''
   },
-  onClubId(e) { this.setData({ clubId: e.detail.value }); },
   onName(e) { this.setData({ name: e.detail.value }); },
   onSlogan(e) { this.setData({ slogan: e.detail.value }); },
   onRegionChange(e) {
@@ -30,7 +28,7 @@ Page({
   submit() {
     const userId = wx.getStorageSync('user_id');
     const token = wx.getStorageSync('token');
-    if (!userId || !token || !this.data.clubId || !this.data.name || !this.data.slogan || this.data.region.length === 0) {
+    if (!userId || !token || !this.data.name || !this.data.slogan || this.data.region.length === 0) {
       wx.showToast({ title: '信息不完整', icon: 'none' });
       return;
     }
@@ -39,7 +37,6 @@ Page({
       url: `${BASE_URL}/clubs`,
       method: 'POST',
       data: {
-        club_id: this.data.clubId,
         name: this.data.name,
         logo: this.data.logo,
         region: this.data.regionString,

@@ -56,8 +56,9 @@ endpoints. Creating a club or adding a player requires the caller's token, e.g.:
 ```bash
 curl -X POST http://localhost:8000/clubs \
      -H "Content-Type: application/json" \
-     -d '{"club_id": "c1", "name": "Club", "user_id": "USER", "token": "TOKEN"}'
+     -d '{"name": "Club", "user_id": "USER", "token": "TOKEN"}'
 ```
+The API automatically assigns a `club_id` and returns it in the response.
 
 To invalidate a token call `/logout` with the token value.
 

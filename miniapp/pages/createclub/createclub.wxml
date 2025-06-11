@@ -1,9 +1,5 @@
 <view class="weui-cells weui-cells_form">
   <view class="weui-cell">
-    <view class="weui-label">ID</view>
-    <input class="weui-input" placeholder="Club ID" bindinput="onClubId" />
-  </view>
-  <view class="weui-cell">
     <view class="weui-label">Name</view>
     <input class="weui-input" placeholder="Name" bindinput="onName" />
   </view>
