@@ -22,17 +22,13 @@
         <view class="info">
           <view class="name">{{item.name}}</view>
           <view class="slogan" wx:if="{{item.slogan}}">{{item.slogan}}</view>
-          <view class="stats">成员 {{item.member_count}} · 单打 {{item.singles_range}} {{item.total_singles}} 场 · 双打 {{item.doubles_range}} {{item.total_doubles}} 场</view>
+          <view class="stats">
+            <view>成员 {{item.member_count}} 人</view>
+            <view>单打：{{item.singles_range}}，平均 {{item.singles_avg}}，共计 {{item.total_singles}} 场</view>
+            <view>双打：{{item.doubles_range}}，平均 {{item.doubles_avg}}，共计 {{item.total_doubles}} 场</view>
+          </view>
         </view>
         <view class="role">{{item.roleText}}</view>
-      </view>
-      <view class="actions">
-        <button wx:if="{{item.role=='member'}}" data-id="{{item.club_id}}" bindtap="quitClub">退出俱乐部</button>
-        <button wx:if="{{item.role=='admin'}}" data-id="{{item.club_id}}" bindtap="resignAdmin">卸任管理员</button>
-        <block wx:if="{{item.role=='leader'}}">
-          <button data-id="{{item.club_id}}" bindtap="toggleAdmin">设置/取消管理员</button>
-          <button data-id="{{item.club_id}}" bindtap="transferLeader">转移负责人</button>
-        </block>
       </view>
     </view>
   </block>

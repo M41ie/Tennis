@@ -5,6 +5,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 import secrets
 from pydantic import BaseModel, StrictInt
+import statistics
 import datetime
 import json
 import os
@@ -218,10 +219,14 @@ def _club_stats(club: Club) -> dict[str, object]:
     doubles = [p.doubles_rating for p in club.members.values()]
     total_singles = sum(len(p.singles_matches) for p in club.members.values()) // 2
     total_doubles = sum(len(p.doubles_matches) for p in club.members.values()) // 4
+    singles_avg = statistics.mean(singles) if singles else 0
+    doubles_avg = statistics.mean(doubles) if doubles else 0
     return {
         "member_count": len(club.members),
         "singles_rating_range": [min(singles) if singles else 0, max(singles) if singles else 0],
         "doubles_rating_range": [min(doubles) if doubles else 0, max(doubles) if doubles else 0],
+        "singles_avg_rating": singles_avg,
+        "doubles_avg_rating": doubles_avg,
         "total_singles_matches": total_singles,
         "total_doubles_matches": total_doubles,
     }
