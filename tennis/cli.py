@@ -154,7 +154,7 @@ def approve_member(
     )
 
 
-def create_club(users, clubs, user_id: str, club_id: str, name: str, logo: Optional[str], region: Optional[str]):
+def create_club(users, clubs, user_id: str, club_id: str, name: str, logo: Optional[str], region: Optional[str], slogan: Optional[str] = None):
     user = users.get(user_id)
     if not user or not user.can_create_club:
         raise ValueError('User not allowed to create club')
@@ -169,6 +169,7 @@ def create_club(users, clubs, user_id: str, club_id: str, name: str, logo: Optio
         name=name,
         logo=logo,
         region=region,
+        slogan=slogan,
         leader_id=user_id,
     )
     club = clubs[club_id]
@@ -1014,6 +1015,7 @@ def main():
     cclub.add_argument('name')
     cclub.add_argument('--logo')
     cclub.add_argument('--region')
+    cclub.add_argument('--slogan')
 
     reg = sub.add_parser('register_user')
     reg.add_argument('user_id')
@@ -1114,7 +1116,7 @@ def main():
     users = load_users()
 
     if args.cmd == 'create_club':
-        create_club(users, clubs, args.user_id, args.club_id, args.name, args.logo, args.region)
+        create_club(users, clubs, args.user_id, args.club_id, args.name, args.logo, args.region, args.slogan)
     elif args.cmd == 'register_user':
         register_user(users, args.user_id, args.name, args.password, allow_create=args.allow_create)
     elif args.cmd == 'login':

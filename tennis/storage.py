@@ -21,7 +21,7 @@ def _connect():
 def _init_schema(conn: sqlite3.Connection) -> None:
     cur = conn.cursor()
     cur.execute(
-        "CREATE TABLE IF NOT EXISTS clubs (club_id TEXT PRIMARY KEY, name TEXT, logo TEXT, region TEXT)"
+        "CREATE TABLE IF NOT EXISTS clubs (club_id TEXT PRIMARY KEY, name TEXT, logo TEXT, region TEXT, slogan TEXT)"
     )
     cur.execute(
         """CREATE TABLE IF NOT EXISTS users (
@@ -73,6 +73,9 @@ def _init_schema(conn: sqlite3.Connection) -> None:
         "CREATE TABLE IF NOT EXISTS club_meta (club_id TEXT PRIMARY KEY, banned_ids TEXT, leader_id TEXT, admin_ids TEXT)"
     )
     # add new columns if an older database is missing them
+    cols = {row[1] for row in cur.execute("PRAGMA table_info('clubs')")}
+    if 'slogan' not in cols:
+        cur.execute("ALTER TABLE clubs ADD COLUMN slogan TEXT")
     cols = {row[1] for row in cur.execute("PRAGMA table_info('club_meta')")}
     if 'leader_id' not in cols:
         cur.execute("ALTER TABLE club_meta ADD COLUMN leader_id TEXT")
@@ -107,6 +110,7 @@ def load_data() -> Dict[str, Club]:
             name=row["name"],
             logo=row["logo"],
             region=row["region"],
+            slogan=row["slogan"],
         )
 
     for row in cur.execute("SELECT * FROM club_meta"):
@@ -278,8 +282,8 @@ def save_data(clubs: Dict[str, Club]) -> None:
     cur.execute("DELETE FROM club_meta")
     for cid, club in clubs.items():
         cur.execute(
-            "INSERT INTO clubs(club_id, name, logo, region) VALUES (?,?,?,?)",
-            (cid, club.name, club.logo, club.region),
+            "INSERT INTO clubs(club_id, name, logo, region, slogan) VALUES (?,?,?,?,?)",
+            (cid, club.name, club.logo, club.region, club.slogan),
         )
         cur.execute(
             "INSERT INTO club_meta(club_id, banned_ids, leader_id, admin_ids) VALUES (?,?,?,?)",

@@ -50,6 +50,7 @@ class Club:
     name: str
     logo: str | None = None
     region: str | None = None
+    slogan: str | None = None
     leader_id: str | None = None
 
     admin_ids: Set[str] = field(default_factory=set)
