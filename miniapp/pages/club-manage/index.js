@@ -79,6 +79,7 @@ Page({
                 club_id: cid,
                 name: info.name,
                 slogan: info.slogan || '',
+                region: info.region || '',
                 role,
                 roleText: role === 'leader' ? '负责人' : role === 'admin' ? '管理员' : '成员',
                 member_count: stats.member_count,
