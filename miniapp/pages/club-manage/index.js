@@ -107,7 +107,7 @@ Page({
     const cid = e.currentTarget.dataset.id;
     if (cid) {
       wx.setStorageSync('club_id', cid);
-      wx.navigateTo({ url: '/pages/manage/manage' });
+      wx.navigateTo({ url: `/pages/manage/manage?cid=${cid}` });
     }
   },
   quitClub(e) {
