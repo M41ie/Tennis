@@ -27,7 +27,8 @@
     <profile-card
       user="{{item}}"
       editable="{{false}}"
-      info="{{item.infoLine}}"
+      info="{{item.genderText}}"
+      info2="{{item.daysText}}"
       bind:cardtap="viewPlayer"
       data-uid="{{item.user_id}}"
     />
