@@ -6,10 +6,16 @@
     <block wx:for="{{clubs}}" wx:key="club_id">
       <view class="club-card">
         <view class="card-left">
-          <view class="club-name">{{item.name}}</view>
-        </view>
-        <view class="card-right">
-          <button class="join-btn" data-id="{{item.club_id}}" bindtap="join">申请加入</button>
+          <view class="club-header">
+            <view class="club-name">{{item.name}}</view>
+            <button class="join-btn" data-id="{{item.club_id}}" bindtap="join">申请加入</button>
+          </view>
+          <view class="club-slogan" wx:if="{{item.slogan}}">{{item.slogan}}</view>
+          <view class="club-stats" wx:if="{{item.member_count}}">
+            <text>{{item.region}} · 成员 {{item.member_count}} 人</text>
+            <text>单打：{{item.singles_range}}，平均 {{item.singles_avg}}，共计 {{item.total_singles}} 场</text>
+            <text>双打：{{item.doubles_range}}，平均 {{item.doubles_avg}}，共计 {{item.total_doubles}} 场</text>
+          </view>
         </view>
       </view>
     </block>
