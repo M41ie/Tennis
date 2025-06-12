@@ -20,7 +20,7 @@
         </view>
       </view>
       <view class="card-right">
-        <text class="club-role">{{item.roleText}}</text>
+        <text class="club-role role-tag {{item.role}}">{{item.roleText}}</text>
       </view>
     </view>
   </view>

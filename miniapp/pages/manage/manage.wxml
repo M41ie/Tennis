@@ -1,7 +1,7 @@
 <view class="club-header">
   <view class="top">
     <view class="club-name">{{clubName}}</view>
-    <view class="role">{{roleText}}</view>
+    <text class="role role-tag {{role}}">{{roleText}}</text>
   </view>
   <view class="club-slogan" wx:if="{{clubSlogan}}">{{clubSlogan}}</view>
   <view class="club-stats" wx:if="{{stats.member_count}}">
@@ -27,7 +27,7 @@
     <profile-card
       user="{{item}}"
       editable="{{false}}"
-      info="{{item.genderText}}"
+      info="{{item.genderRoleText}}"
       info2="{{item.daysText}}"
       bind:cardtap="viewPlayer"
       data-uid="{{item.user_id}}"
