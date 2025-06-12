@@ -87,6 +87,7 @@ class Match:
     confirmed_b: bool = False
     approved: bool = False
     created: datetime.date = field(default_factory=datetime.date.today)
+    created_ts: datetime.datetime = field(default_factory=datetime.datetime.now)
     confirmed_on: datetime.date | None = None
     status: str | None = None
     status_date: datetime.date | None = None
@@ -117,6 +118,7 @@ class DoublesMatch:
     confirmed_b: bool = False
     approved: bool = False
     created: datetime.date = field(default_factory=datetime.date.today)
+    created_ts: datetime.datetime = field(default_factory=datetime.datetime.now)
     confirmed_on: datetime.date | None = None
     status: str | None = None
     status_date: datetime.date | None = None

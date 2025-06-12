@@ -168,6 +168,12 @@ def load_data() -> Dict[str, Club]:
             continue
         data = json.loads(row["data"])
         date = datetime.date.fromisoformat(row["date"])
+        created_ts_str = data.get("created_ts")
+        created_ts = (
+            datetime.datetime.fromisoformat(created_ts_str)
+            if created_ts_str
+            else datetime.datetime.combine(date, datetime.time())
+        )
         if row["type"] == "doubles":
             pa1 = players[data["a1"]]
             pa2 = players[data["a2"]]
@@ -185,6 +191,7 @@ def load_data() -> Dict[str, Club]:
                 location=data.get("location"),
                 format_name=data.get("format_name"),
             )
+            match.created_ts = created_ts
             match.rating_a1_before = data.get("rating_a1_before")
             match.rating_a2_before = data.get("rating_a2_before")
             match.rating_b1_before = data.get("rating_b1_before")
@@ -211,6 +218,7 @@ def load_data() -> Dict[str, Club]:
                 location=data.get("location"),
                 format_name=data.get("format_name"),
             )
+            match.created_ts = created_ts
             match.rating_a_before = data.get("rating_a_before")
             match.rating_b_before = data.get("rating_b_before")
             match.rating_a_after = data.get("rating_a_after")
@@ -246,6 +254,8 @@ def load_data() -> Dict[str, Club]:
             match.confirmed_b = data.get("confirmed_b", False)
             if "created" in data:
                 match.created = datetime.date.fromisoformat(data["created"])
+            if "created_ts" in data:
+                match.created_ts = datetime.datetime.fromisoformat(data["created_ts"])
             if data.get("confirmed_on"):
                 match.confirmed_on = datetime.date.fromisoformat(data["confirmed_on"])
             match.status = data.get("status")
@@ -270,6 +280,8 @@ def load_data() -> Dict[str, Club]:
             match.confirmed_b = data.get("confirmed_b", False)
             if "created" in data:
                 match.created = datetime.date.fromisoformat(data["created"])
+            if "created_ts" in data:
+                match.created_ts = datetime.datetime.fromisoformat(data["created_ts"])
             if data.get("confirmed_on"):
                 match.confirmed_on = datetime.date.fromisoformat(data["confirmed_on"])
             match.status = data.get("status")
@@ -364,6 +376,8 @@ def save_data(clubs: Dict[str, Club]) -> None:
                     "rating_a2_after": m.rating_a2_after,
                     "rating_b1_after": m.rating_b1_after,
                     "rating_b2_after": m.rating_b2_after,
+                    "created": m.created.isoformat(),
+                    "created_ts": m.created_ts.isoformat(),
                 }
                 cur.execute(
                     "INSERT INTO matches(club_id, type, date, data) VALUES (?,?,?,?)",
@@ -387,6 +401,8 @@ def save_data(clubs: Dict[str, Club]) -> None:
                     "rating_b_before": m.rating_b_before,
                     "rating_a_after": m.rating_a_after,
                     "rating_b_after": m.rating_b_after,
+                    "created": m.created.isoformat(),
+                    "created_ts": m.created_ts.isoformat(),
                 }
                 cur.execute(
                     "INSERT INTO matches(club_id, type, date, data) VALUES (?,?,?,?)",
@@ -413,6 +429,7 @@ def save_data(clubs: Dict[str, Club]) -> None:
                     "confirmed_a": m.confirmed_a,
                     "confirmed_b": m.confirmed_b,
                     "created": m.created.isoformat(),
+                    "created_ts": m.created_ts.isoformat(),
                     "confirmed_on": m.confirmed_on.isoformat() if m.confirmed_on else None,
                     "status": m.status,
                     "status_date": m.status_date.isoformat() if m.status_date else None,
@@ -439,6 +456,7 @@ def save_data(clubs: Dict[str, Club]) -> None:
                     "confirmed_a": m.confirmed_a,
                     "confirmed_b": m.confirmed_b,
                     "created": m.created.isoformat(),
+                    "created_ts": m.created_ts.isoformat(),
                     "confirmed_on": m.confirmed_on.isoformat() if m.confirmed_on else None,
                     "status": m.status,
                     "status_date": m.status_date.isoformat() if m.status_date else None,
