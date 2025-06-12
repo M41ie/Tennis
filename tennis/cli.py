@@ -904,7 +904,7 @@ def get_player_match_cards(clubs, club_id: str, user_id: str):
         cards.append(
             {
                 "date": m.date,
-                "created": m.created,
+                "created_ts": m.created_ts,
                 "location": m.location,
                 "format": m.format_name,
                 "self_score": self_score,
@@ -927,9 +927,9 @@ def get_player_match_cards(clubs, club_id: str, user_id: str):
             }
         )
 
-    cards.sort(key=lambda x: (x["date"], x["created"]), reverse=True)
+    cards.sort(key=lambda x: (x["date"], x["created_ts"]), reverse=True)
     for c in cards:
-        del c["created"]
+        del c["created_ts"]
     return cards
 
 
@@ -1005,7 +1005,7 @@ def get_player_doubles_cards(clubs, club_id: str, user_id: str):
         cards.append(
             {
                 "date": m.date,
-                "created": m.created,
+                "created_ts": m.created_ts,
                 "location": m.location,
                 "format": m.format_name,
                 "self_score": self_score,
@@ -1049,9 +1049,9 @@ def get_player_doubles_cards(clubs, club_id: str, user_id: str):
             }
         )
 
-    cards.sort(key=lambda x: (x["date"], x["created"]), reverse=True)
+    cards.sort(key=lambda x: (x["date"], x["created_ts"]), reverse=True)
     for c in cards:
-        del c["created"]
+        del c["created_ts"]
     return cards
 
 

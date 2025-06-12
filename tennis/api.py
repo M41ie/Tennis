@@ -859,7 +859,7 @@ def list_pending_doubles(club_id: str, token: str):
     today = datetime.date.today()
     for idx, m in sorted(
         enumerate(club.pending_matches),
-        key=lambda x: (x[1].date, x[1].created),
+        key=lambda x: (x[1].date, x[1].created_ts),
         reverse=True,
     ):
         if not isinstance(m, DoublesMatch):
@@ -1155,7 +1155,7 @@ def list_pending_matches(club_id: str, token: str):
     today = datetime.date.today()
     for idx, m in sorted(
         enumerate(club.pending_matches),
-        key=lambda x: (x[1].date, x[1].created),
+        key=lambda x: (x[1].date, x[1].created_ts),
         reverse=True,
     ):
         from .models import DoublesMatch
