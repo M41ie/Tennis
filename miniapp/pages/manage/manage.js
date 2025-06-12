@@ -138,7 +138,9 @@ Page({
                   ? 'admin'
                   : 'member';
               p.role = role;
-              p.roleText = role === 'leader' ? '负责人' : role === 'admin' ? '管理员' : '成员';
+              p.roleText =
+                role === 'leader' ? '负责人' : role === 'admin' ? '管理员' : '成员';
+              p.genderRoleText = `${genderText} · ${p.roleText}`;
               return p;
             });
             that.setData({ members: list });

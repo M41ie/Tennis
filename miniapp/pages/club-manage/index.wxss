@@ -113,5 +113,7 @@
 
 .club-role {
   font-size: 26rpx;
-  color: #999;
 }
+.role-tag.leader {color:#007aff;}
+.role-tag.admin {color:#1aad19;}
+.role-tag.member {color:#999;}
