@@ -11,10 +11,6 @@ Page({
     }
     this.fetchClubs();
   },
-  onSearch(e) {
-    this.setData({ query: e.detail.value });
-    this.fetchClubs();
-  },
   fetchClubs() {
     const that = this;
     wx.request({
@@ -57,8 +53,5 @@ Page({
         });
       }
     });
-  },
-  createClub() {
-    wx.navigateTo({ url: '/pages/createclub/createclub' });
   }
 });

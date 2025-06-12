@@ -1,14 +1,16 @@
-<view>
-  <input class="weui-input" placeholder="Search" bindinput="onSearch" />
+<view class="page-container">
   <view class="section-title-row">
-    <view class="section-title">我加入的俱乐部</view>
-    <view class="add-btn" bindtap="createClub">+</view>
+    <view class="section-title">以下是符合搜索的俱乐部</view>
   </view>
-  <view class="weui-list">
+  <view class="club-list">
     <block wx:for="{{clubs}}" wx:key="club_id">
-      <view class="weui-list__item">
-        <text style="flex:1">{{item.name}} ({{item.club_id}})</text>
-        <button class="weui-btn weui-btn_primary" data-id="{{item.club_id}}" bindtap="join">Join</button>
+      <view class="club-card">
+        <view class="card-left">
+          <view class="club-name">{{item.name}}</view>
+        </view>
+        <view class="card-right">
+          <button class="join-btn" data-id="{{item.club_id}}" bindtap="join">申请加入</button>
+        </view>
       </view>
     </block>
   </view>
