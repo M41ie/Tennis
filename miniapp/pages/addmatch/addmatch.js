@@ -41,13 +41,9 @@ Page({
         const names = [that.data.t.chooseClub];
         ids.push(...res.data.map(c => c.club_id));
         names.push(...res.data.map(c => c.name));
+        // Always default to the placeholder option rather than a stored club
+        // so users explicitly choose their club when recording a match.
         that.setData({ clubIds: ids, clubOptions: names, clubIndex: 0 });
-        const stored = wx.getStorageSync('club_id');
-        const idx = ids.indexOf(stored);
-        if (idx > 0) {
-          that.setData({ clubIndex: idx });
-          that.fetchPlayers(ids[idx]);
-        }
       }
     });
   },
