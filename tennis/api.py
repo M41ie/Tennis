@@ -22,6 +22,10 @@ from .cli import (
     approve_member,
     add_player as cli_add_player,
     remove_member as cli_remove_member,
+    toggle_admin as cli_toggle_admin,
+    transfer_leader as cli_transfer_leader,
+    resign_admin as cli_resign_admin,
+    quit_club as cli_quit_club,
     create_club as cli_create_club,
     hash_password,
     validate_scores,
@@ -385,6 +389,12 @@ class RemoveRequest(BaseModel):
 
 
 class TokenOnly(BaseModel):
+    token: str
+
+
+class RoleRequest(BaseModel):
+    user_id: str
+    action: str
     token: str
 
 
@@ -799,6 +809,32 @@ def remove_member_api(club_id: str, user_id: str, data: RemoveRequest):
             user_id,
             ban=data.ban,
         )
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    save_data(clubs)
+    save_users(users)
+    return {"status": "ok"}
+
+
+@app.post("/clubs/{club_id}/role")
+def update_role_api(club_id: str, data: RoleRequest):
+    """Update member roles within a club."""
+    actor = require_auth(data.token)
+    try:
+        if data.action == "toggle_admin":
+            cli_toggle_admin(clubs, club_id, actor, data.user_id)
+        elif data.action == "transfer_leader":
+            cli_transfer_leader(clubs, club_id, actor, data.user_id)
+        elif data.action == "resign_admin":
+            if actor != data.user_id:
+                raise ValueError("Token mismatch")
+            cli_resign_admin(clubs, club_id, actor)
+        elif data.action == "quit":
+            if actor != data.user_id:
+                raise ValueError("Token mismatch")
+            cli_quit_club(clubs, users, club_id, actor)
+        else:
+            raise ValueError("Invalid action")
     except ValueError as e:
         raise HTTPException(400, str(e))
     save_data(clubs)
