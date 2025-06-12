@@ -294,6 +294,67 @@ def remove_member(
         user.joined_clubs -= 1
 
 
+def toggle_admin(clubs, club_id: str, actor_id: str, target_id: str):
+    """Leader toggles admin role for a member."""
+    club = clubs.get(club_id)
+    if not club:
+        raise ValueError("Club not found")
+    if actor_id != club.leader_id:
+        raise ValueError("Not authorized")
+    if target_id not in club.members or target_id == club.leader_id:
+        raise ValueError("Player not found")
+
+    if target_id in club.admin_ids:
+        club.admin_ids.remove(target_id)
+    else:
+        if len(club.admin_ids) >= 3:
+            raise ValueError("Admin limit reached")
+        club.admin_ids.add(target_id)
+
+
+def transfer_leader(clubs, club_id: str, actor_id: str, target_id: str):
+    """Transfer club leadership to another member."""
+    club = clubs.get(club_id)
+    if not club:
+        raise ValueError("Club not found")
+    if actor_id != club.leader_id:
+        raise ValueError("Not authorized")
+    if target_id not in club.members:
+        raise ValueError("Player not found")
+    if target_id == club.leader_id:
+        return
+
+    old_leader = club.leader_id
+    club.leader_id = target_id
+    club.admin_ids.discard(target_id)
+    if old_leader and len(club.admin_ids) < 3:
+        club.admin_ids.add(old_leader)
+
+
+def resign_admin(clubs, club_id: str, user_id: str):
+    """Admin resigns their role."""
+    club = clubs.get(club_id)
+    if not club:
+        raise ValueError("Club not found")
+    club.admin_ids.discard(user_id)
+
+
+def quit_club(clubs, users, club_id: str, user_id: str):
+    """Member quits a club."""
+    club = clubs.get(club_id)
+    if not club:
+        raise ValueError("Club not found")
+    if user_id == club.leader_id:
+        raise ValueError("Leader cannot quit")
+    if user_id not in club.members:
+        raise ValueError("Player not found")
+    club.members.pop(user_id)
+    club.admin_ids.discard(user_id)
+    u = users.get(user_id)
+    if u and u.joined_clubs > 0:
+        u.joined_clubs -= 1
+
+
 def pre_rate(clubs, club_id: str, rater_id: str, target_id: str, rating: float):
     """Record a pre-rating for ``target_id`` from ``rater_id``."""
     club = clubs.get(club_id)
