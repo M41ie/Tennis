@@ -1,4 +1,64 @@
-.weui-list__item { align-items: center; }
-.section-title-row{display:flex;justify-content:space-between;align-items:center;margin:24rpx 0}
-.section-title-row .section-title{font-size:30rpx;color:#333;margin-left:24rpx}
-.add-btn{width:40rpx;height:40rpx;border:1rpx solid #07C160;color:#07C160;border-radius:50%;display:flex;justify-content:center;align-items:center;font-size:32rpx;margin-right:24rpx}
+.page-container {
+  padding: 0 30rpx;
+  box-sizing: border-box;
+  background-color: #f7f7f7;
+  min-height: 100vh;
+}
+
+.section-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 24rpx 0;
+}
+
+.section-title-row .section-title {
+  font-size: 30rpx;
+  color: #333;
+  margin-left: 24rpx;
+}
+
+.club-list {
+  width: 100%;
+}
+
+.club-card {
+  width: 100%;
+  background-color: #ffffff;
+  border-radius: 16rpx;
+  margin-bottom: 25rpx;
+  padding: 30rpx;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: space-between;
+  box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.05);
+}
+
+.card-left {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  padding-right: 20rpx;
+}
+
+.club-name {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 10rpx;
+}
+
+.card-right {
+  flex-shrink: 0;
+  display: flex;
+  align-items: flex-start;
+}
+
+.join-btn {
+  background: #07C160;
+  color: #fff;
+  border-radius: 8rpx;
+  padding: 0 20rpx;
+  font-size: 36rpx;
+  line-height: 1;
+}
