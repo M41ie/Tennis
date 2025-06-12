@@ -1,6 +1,7 @@
 <view class="page-container">
   <view class="search-bar-container">
-    <input class="search-input" placeholder="搜索俱乐部" />
+    <input class="search-input" placeholder="搜索俱乐部"
+           bindinput="onInput" confirm-type="search" bindconfirm="onSearch" />
   </view>
 
   <view class="section-title-row">

@@ -45,8 +45,7 @@ Page({
         }
         that.setData({
           joinedClubs: list,
-          clubId: current || '',
-          myClubBtnText: list.length ? '我的俱乐部' : '加入俱乐部'
+          clubId: current || ''
         });
         that.loadUser(uid);
       }
@@ -91,11 +90,7 @@ Page({
   },
   goMyClub() {
     if (!this.data.loggedIn) return;
-    if (this.data.joinedClubs && this.data.joinedClubs.length) {
-      wx.navigateTo({ url: '/pages/club-manage/index' });
-    } else {
-      wx.navigateTo({ url: '/pages/joinclub/joinclub' });
-    }
+    wx.navigateTo({ url: '/pages/club-manage/index' });
   },
   logout() {
     const token = wx.getStorageSync('token');
