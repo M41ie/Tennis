@@ -3,7 +3,6 @@ const BASE_URL = getApp().globalData.BASE_URL;
 Page({
   data: {
     query: '',
-    searchResults: [],
     myClubs: [],
     allowCreate: false
   },
@@ -11,19 +10,13 @@ Page({
     this.getMyClubs();
     this.checkPermission();
   },
-  onSearch(e) {
+  onInput(e) {
     this.setData({ query: e.detail.value });
-    this.searchClubs();
   },
-  searchClubs() {
-    const that = this;
-    wx.request({
-      url: `${BASE_URL}/clubs`,
-      data: { search: this.data.query },
-      success(res) {
-        that.setData({ searchResults: res.data || [] });
-      }
-    });
+  onSearch() {
+    const q = this.data.query.trim();
+    const url = q ? `/pages/joinclub/joinclub?query=${q}` : '/pages/joinclub/joinclub';
+    wx.navigateTo({ url });
   },
   joinClub(e) {
     const cid = e.currentTarget.dataset.id;

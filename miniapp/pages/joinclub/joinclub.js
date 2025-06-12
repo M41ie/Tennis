@@ -5,7 +5,10 @@ Page({
     clubs: [],
     query: ''
   },
-  onLoad() {
+  onLoad(options) {
+    if (options && options.query) {
+      this.setData({ query: options.query });
+    }
     this.fetchClubs();
   },
   onSearch(e) {
