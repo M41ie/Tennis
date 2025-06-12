@@ -21,7 +21,57 @@ Page({
         if (q) {
           list = list.filter(c => c.name.includes(q) || c.club_id.includes(q));
         }
-        that.setData({ clubs: list });
+        if (!list.length) {
+          that.setData({ clubs: [] });
+          return;
+        }
+        const result = [];
+        let count = 0;
+        list.forEach(c => {
+          wx.request({
+            url: `${BASE_URL}/clubs/${c.club_id}`,
+            success(r) {
+              const info = r.data || {};
+              const stats = info.stats || {};
+              const sr = stats.singles_rating_range || [];
+              const dr = stats.doubles_rating_range || [];
+              const fmt = n => (typeof n === 'number' ? n.toFixed(1) : '--');
+              const singlesAvg =
+                typeof stats.singles_avg_rating === 'number'
+                  ? fmt(stats.singles_avg_rating)
+                  : '--';
+              const doublesAvg =
+                typeof stats.doubles_avg_rating === 'number'
+                  ? fmt(stats.doubles_avg_rating)
+                  : '--';
+              result.push({
+                club_id: c.club_id,
+                name: c.name,
+                slogan: info.slogan || '',
+                region: info.region || '',
+                member_count: stats.member_count,
+                singles_range: sr.length ? `${fmt(sr[0])}-${fmt(sr[1])}` : '--',
+                doubles_range: dr.length ? `${fmt(dr[0])}-${fmt(dr[1])}` : '--',
+                total_singles:
+                  stats.total_singles_matches != null
+                    ? stats.total_singles_matches.toFixed(0)
+                    : '--',
+                total_doubles:
+                  stats.total_doubles_matches != null
+                    ? stats.total_doubles_matches.toFixed(0)
+                    : '--',
+                singles_avg: singlesAvg,
+                doubles_avg: doublesAvg
+              });
+            },
+            complete() {
+              count++;
+              if (count === list.length) {
+                that.setData({ clubs: result });
+              }
+            }
+          });
+        });
       }
     });
   },
