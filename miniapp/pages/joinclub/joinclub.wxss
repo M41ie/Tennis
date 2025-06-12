@@ -9,8 +9,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  /* Move the title down by additional 25rpx */
-  margin: 49rpx 0 24rpx;
+  margin: 24rpx 0;
 }
 
 .section-title-row .section-title {
