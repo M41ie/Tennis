@@ -128,11 +128,20 @@ Page({
     const uid = wx.getStorageSync('user_id');
     const token = wx.getStorageSync('token');
     const that = this;
-    wx.request({
-      url: `${BASE_URL}/clubs/${cid}/role`,
-      method: 'POST',
-      data: { user_id: uid, token, action: 'resign_admin' },
-      complete() { that.getMyClubs(); }
+    wx.showModal({
+      title: '确认卸任',
+      content: '确认要卸任该俱乐部的管理员吗？',
+      confirmColor: '#e03a3a',
+      success(res) {
+        if (res.confirm) {
+          wx.request({
+            url: `${BASE_URL}/clubs/${cid}/role`,
+            method: 'POST',
+            data: { user_id: uid, token, action: 'resign_admin' },
+            complete() { that.getMyClubs(); }
+          });
+        }
+      }
     });
   },
   toggleAdmin(e) {
