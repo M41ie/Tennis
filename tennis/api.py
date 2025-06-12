@@ -20,6 +20,7 @@ from .cli import (
     login_user,
     request_join,
     approve_member,
+    add_player as cli_add_player,
     remove_member as cli_remove_member,
     create_club as cli_create_club,
     hash_password,
@@ -739,21 +740,21 @@ def list_all_players(
 @app.post("/clubs/{club_id}/players")
 def add_player(club_id: str, data: PlayerCreate):
     require_auth(data.token)
-    club = clubs.get(club_id)
-    if not club:
-        raise HTTPException(404, "Club not found")
-    if data.user_id in club.members:
-        raise HTTPException(400, "Player exists")
-    club.members[data.user_id] = Player(
-        user_id=data.user_id,
-        name=data.name,
-        age=data.age,
-        gender=data.gender,
-        avatar=data.avatar,
-        birth=data.birth,
-        handedness=data.handedness,
-        backhand=data.backhand,
-    )
+    try:
+        cli_add_player(
+            clubs,
+            club_id,
+            data.user_id,
+            data.name,
+            age=data.age,
+            gender=data.gender,
+            avatar=data.avatar,
+            birth=data.birth,
+            handedness=data.handedness,
+            backhand=data.backhand,
+        )
+    except ValueError as e:
+        raise HTTPException(400, str(e))
     save_data(clubs)
     return {"status": "ok"}
 
