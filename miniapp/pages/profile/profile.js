@@ -48,14 +48,14 @@ Page({
           clubId: current || '',
           myClubBtnText: list.length ? '我的俱乐部' : '加入俱乐部'
         });
-        if (current) that.loadUser(current, uid);
+        that.loadUser(uid);
       }
     });
   },
-  loadUser(cid, uid) {
+  loadUser(uid) {
     const that = this;
     wx.request({
-      url: `${BASE_URL}/clubs/${cid}/players/${uid}`,
+      url: `${BASE_URL}/players/${uid}`,
       success(res) {
         const raw = res.data || {};
         const singlesCount = raw.weighted_games_singles ?? raw.weighted_singles_matches;

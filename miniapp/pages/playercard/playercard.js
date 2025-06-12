@@ -46,11 +46,10 @@ Page({
   },
   loadUser() {
     const uid = this.data.viewId || wx.getStorageSync('user_id');
-    const cid = wx.getStorageSync('club_id');
-    if (!uid || !cid) return;
+    if (!uid) return;
     const that = this;
     wx.request({
-      url: `${BASE_URL}/clubs/${cid}/players/${uid}`,
+      url: `${BASE_URL}/players/${uid}`,
       success(res) {
         const raw = res.data || {};
         const singlesCount = raw.weighted_games_singles ?? raw.weighted_singles_matches;
