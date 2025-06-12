@@ -10,7 +10,11 @@ Component({
       value: true
     },
     info: String,
-    info2: String
+    info2: String,
+    showRoleTag: {
+      type: Boolean,
+      value: true
+    }
   },
   methods: {
     edit() {

@@ -29,6 +29,7 @@
       editable="{{false}}"
       info="{{item.genderRoleText}}"
       info2="{{item.daysText}}"
+      showRoleTag="{{false}}"
       bind:cardtap="viewPlayer"
       data-uid="{{item.user_id}}"
     />

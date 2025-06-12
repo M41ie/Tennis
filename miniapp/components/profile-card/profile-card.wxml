@@ -3,7 +3,7 @@
   <view class="info">
     <view class="name-row">
       <text class="name">{{user.name}}</text>
-      <text class="role-tag {{user.role}}">{{user.roleText}}</text>
+      <text wx:if="{{showRoleTag}}" class="role-tag {{user.role}}">{{user.roleText}}</text>
     </view>
     <block wx:if="{{info2}}">
       <view class="meta">{{info}}</view>
