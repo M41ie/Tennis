@@ -40,7 +40,7 @@ from .rating import (
     weighted_singles_matches,
     weighted_doubles_matches,
 )
-from .models import Player, Club, Match, DoublesMatch, Appointment, User
+from .models import Player, Club, Match, DoublesMatch, Appointment, User, players
 
 app = FastAPI()
 
@@ -686,6 +686,62 @@ def list_players(
 
     players.sort(key=lambda x: x["rating"], reverse=True)
     return players
+
+
+@app.get("/players/{user_id}")
+def get_global_player(user_id: str, recent: int = 0):
+    """Return player information without requiring a club."""
+    player = players.get(user_id)
+    if not player:
+        raise HTTPException(404, "Player not found")
+
+    today = datetime.date.today()
+    singles = weighted_rating(player, today)
+    doubles = weighted_doubles_rating(player, today)
+    singles_count = weighted_singles_matches(player)
+    doubles_count = weighted_doubles_matches(player)
+
+    result = {
+        "user_id": player.user_id,
+        "id": player.user_id,
+        "name": player.name,
+        "avatar": player.avatar,
+        "avatar_url": player.avatar,
+        "birth": player.birth,
+        "gender": player.gender,
+        "handedness": player.handedness,
+        "backhand": player.backhand,
+        "joined": player.joined.isoformat(),
+        "singles_rating": singles,
+        "doubles_rating": doubles,
+        "rating_singles": singles,
+        "rating_doubles": doubles,
+        "weighted_singles_matches": round(singles_count, 2),
+        "weighted_doubles_matches": round(doubles_count, 2),
+        "weighted_games_singles": round(singles_count, 2),
+        "weighted_games_doubles": round(doubles_count, 2),
+    }
+
+    if recent > 0:
+        from .cli import get_player_match_cards
+
+        cards = []
+        # iterate across all clubs to collect matches for this player
+        for club_id, club in clubs.items():
+            if user_id not in club.members:
+                continue
+            try:
+                match_cards = get_player_match_cards(clubs, club_id, user_id)
+            except ValueError:
+                continue
+            for c in match_cards:
+                c["date"] = c["date"].isoformat()
+                cards.append(c)
+        # sort by date descending and return most recent
+        cards.sort(key=lambda x: x["date"], reverse=True)
+        result["recent_records"] = cards[:recent]
+
+    return result
 
 
 @app.get("/players")
