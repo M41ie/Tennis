@@ -12,6 +12,7 @@ from .models import (
     Message,
     MAX_CREATED_CLUBS,
     MAX_JOINED_CLUBS,
+    players,
 )
 from .rating import (
     update_ratings,
@@ -135,12 +136,13 @@ def approve_member(
     if user.joined_clubs >= MAX_JOINED_CLUBS:
         raise ValueError("Club membership limit reached")
     club.pending_members.remove(user_id)
-    club.members[user_id] = Player(
-        user_id=user.user_id,
-        name=user.name,
-        singles_rating=rating,
-        doubles_rating=rating,
-    )
+    player = players.get(user_id)
+    if player is None:
+        player = Player(user_id=user.user_id, name=user.name)
+        players[user_id] = player
+    player.singles_rating = rating
+    player.doubles_rating = rating
+    club.members[user_id] = player
     user.joined_clubs += 1
     if make_admin:
         if len(club.admin_ids) >= 3:
@@ -173,7 +175,11 @@ def create_club(users, clubs, user_id: str, club_id: str, name: str, logo: Optio
         leader_id=user_id,
     )
     club = clubs[club_id]
-    club.members[user_id] = Player(user_id=user_id, name=user.name)
+    player = players.get(user_id)
+    if player is None:
+        player = Player(user_id=user_id, name=user.name)
+        players[user_id] = player
+    club.members[user_id] = player
     user.created_clubs += 1
     user.joined_clubs += 1
 
@@ -195,16 +201,35 @@ def add_player(
         raise ValueError('Club not found')
     if user_id in club.members:
         raise ValueError('Player already in club')
-    club.members[user_id] = Player(
-        user_id=user_id,
-        name=name,
-        age=age,
-        gender=gender,
-        avatar=avatar,
-        birth=birth,
-        handedness=handedness,
-        backhand=backhand,
-    )
+    player = players.get(user_id)
+    if player is None:
+        player = Player(
+            user_id=user_id,
+            name=name,
+            age=age,
+            gender=gender,
+            avatar=avatar,
+            birth=birth,
+            handedness=handedness,
+            backhand=backhand,
+        )
+        players[user_id] = player
+    else:
+        if name is not None:
+            player.name = name
+        if age is not None:
+            player.age = age
+        if gender is not None:
+            player.gender = gender
+        if avatar is not None:
+            player.avatar = avatar
+        if birth is not None:
+            player.birth = birth
+        if handedness is not None:
+            player.handedness = handedness
+        if backhand is not None:
+            player.backhand = backhand
+    club.members[user_id] = player
 
 
 def update_player(

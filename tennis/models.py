@@ -46,6 +46,10 @@ class Player:
     # date the player joined the club
     joined: datetime.date = field(default_factory=datetime.date.today)
 
+
+# Global player registry keyed by user_id
+players: Dict[str, Player] = {}
+
 @dataclass
 class Club:
     club_id: str

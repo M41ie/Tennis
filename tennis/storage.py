@@ -8,8 +8,16 @@ from typing import Dict
 # ensures scripts behave the same regardless of the working directory.
 DB_FILE = Path(__file__).resolve().parent.parent / "tennis.db"
 
-from .models import Player, Club, Match, DoublesMatch, User, Appointment, Message
-
+from .models import (
+    Player,
+    Club,
+    Match,
+    DoublesMatch,
+    User,
+    Appointment,
+    Message,
+    players,
+)
 
 def _connect():
     conn = sqlite3.connect(DB_FILE)
@@ -36,8 +44,7 @@ def _init_schema(conn: sqlite3.Connection) -> None:
     )
     cur.execute(
         """CREATE TABLE IF NOT EXISTS players (
-        club_id TEXT,
-        user_id TEXT,
+        user_id TEXT PRIMARY KEY,
         name TEXT,
         singles_rating REAL,
         doubles_rating REAL,
@@ -49,7 +56,13 @@ def _init_schema(conn: sqlite3.Connection) -> None:
         birth TEXT,
         handedness TEXT,
         backhand TEXT,
-        joined TEXT,
+        joined TEXT
+    )"""
+    )
+    cur.execute(
+        """CREATE TABLE IF NOT EXISTS club_members (
+        club_id TEXT,
+        user_id TEXT,
         PRIMARY KEY (club_id, user_id)
     )"""
     )
@@ -124,10 +137,8 @@ def load_data() -> Dict[str, Club]:
         club.leader_id = row["leader_id"]
         club.admin_ids.update(json.loads(row["admin_ids"] or "[]"))
 
+    players.clear()
     for row in cur.execute("SELECT * FROM players"):
-        club = clubs.get(row["club_id"])
-        if not club:
-            continue
         p = Player(
             user_id=row["user_id"],
             name=row["name"],
@@ -143,7 +154,13 @@ def load_data() -> Dict[str, Club]:
             joined=datetime.date.fromisoformat(row["joined"]) if row["joined"] else datetime.date.today(),
         )
         p.pre_ratings.update(json.loads(row["pre_ratings"] or "{}"))
-        club.members[p.user_id] = p
+        players[p.user_id] = p
+
+    for row in cur.execute("SELECT * FROM club_members"):
+        club = clubs.get(row["club_id"])
+        p = players.get(row["user_id"])
+        if club and p:
+            club.members[p.user_id] = p
 
     for row in cur.execute("SELECT * FROM matches ORDER BY id"):
         club = clubs.get(row["club_id"])
@@ -152,10 +169,10 @@ def load_data() -> Dict[str, Club]:
         data = json.loads(row["data"])
         date = datetime.date.fromisoformat(row["date"])
         if row["type"] == "doubles":
-            pa1 = club.members[data["a1"]]
-            pa2 = club.members[data["a2"]]
-            pb1 = club.members[data["b1"]]
-            pb2 = club.members[data["b2"]]
+            pa1 = players[data["a1"]]
+            pa2 = players[data["a2"]]
+            pb1 = players[data["b1"]]
+            pb2 = players[data["b2"]]
             match = DoublesMatch(
                 date=date,
                 player_a1=pa1,
@@ -182,8 +199,8 @@ def load_data() -> Dict[str, Club]:
             pb1.doubles_matches.append(match)
             pb2.doubles_matches.append(match)
         else:
-            pa = club.members[data["player_a"]]
-            pb = club.members[data["player_b"]]
+            pa = players[data["player_a"]]
+            pb = players[data["player_b"]]
             match = Match(
                 date=date,
                 player_a=pa,
@@ -208,10 +225,10 @@ def load_data() -> Dict[str, Club]:
         data = json.loads(row["data"])
         date = datetime.date.fromisoformat(row["date"])
         if row["type"] == "doubles":
-            pa1 = club.members[data["a1"]]
-            pa2 = club.members[data["a2"]]
-            pb1 = club.members[data["b1"]]
-            pb2 = club.members[data["b2"]]
+            pa1 = players[data["a1"]]
+            pa2 = players[data["a2"]]
+            pb1 = players[data["b1"]]
+            pb2 = players[data["b2"]]
             match = DoublesMatch(
                 date=date,
                 player_a1=pa1,
@@ -236,8 +253,8 @@ def load_data() -> Dict[str, Club]:
                 match.status_date = datetime.date.fromisoformat(data["status_date"])
             club.pending_matches.append(match)
         else:
-            pa = club.members[data["player_a"]]
-            pb = club.members[data["player_b"]]
+            pa = players[data["player_a"]]
+            pb = players[data["player_b"]]
             match = Match(
                 date=date,
                 player_a=pa,
@@ -280,10 +297,34 @@ def save_data(clubs: Dict[str, Club]) -> None:
     cur = conn.cursor()
     cur.execute("DELETE FROM clubs")
     cur.execute("DELETE FROM players")
+    cur.execute("DELETE FROM club_members")
     cur.execute("DELETE FROM matches")
     cur.execute("DELETE FROM pending_matches")
     cur.execute("DELETE FROM appointments")
     cur.execute("DELETE FROM club_meta")
+    for p in players.values():
+        cur.execute(
+            """INSERT INTO players
+            (user_id, name, singles_rating, doubles_rating, experience, pre_ratings,
+             age, gender, avatar, birth, handedness, backhand, joined)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+            (
+                p.user_id,
+                p.name,
+                p.singles_rating,
+                p.doubles_rating,
+                p.experience,
+                json.dumps(p.pre_ratings),
+                p.age,
+                p.gender,
+                p.avatar,
+                p.birth,
+                p.handedness,
+                p.backhand,
+                p.joined.isoformat(),
+            ),
+        )
+
     for cid, club in clubs.items():
         cur.execute(
             "INSERT INTO clubs(club_id, name, logo, region, slogan) VALUES (?,?,?,?,?)",
@@ -298,29 +339,10 @@ def save_data(clubs: Dict[str, Club]) -> None:
                 json.dumps(list(club.admin_ids)),
             ),
         )
-        for p in club.members.values():
+        for uid in club.members:
             cur.execute(
-                """INSERT INTO players
-                (club_id, user_id, name, singles_rating, doubles_rating,
-                 experience, pre_ratings, age, gender, avatar, birth,
-                 handedness, backhand, joined)
-                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
-                (
-                    cid,
-                    p.user_id,
-                    p.name,
-                    p.singles_rating,
-                    p.doubles_rating,
-                    p.experience,
-                    json.dumps(p.pre_ratings),
-                    p.age,
-                    p.gender,
-                    p.avatar,
-                    p.birth,
-                    p.handedness,
-                    p.backhand,
-                    p.joined.isoformat(),
-                ),
+                "INSERT INTO club_members(club_id, user_id) VALUES (?,?)",
+                (cid, uid),
             )
         for m in club.matches:
             if isinstance(m, DoublesMatch):
