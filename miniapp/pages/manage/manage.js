@@ -457,18 +457,6 @@ Page({
       }
     });
   },
-  toggleAdmin() {
-    const cid = wx.getStorageSync('club_id');
-    const token = wx.getStorageSync('token');
-    const uid = this.data.userId;
-    const that = this;
-    wx.request({
-      url: `${BASE_URL}/clubs/${cid}/role`,
-      method: 'POST',
-      data: { user_id: uid, token, action: 'toggle_admin' },
-      complete() { that.fetchClub(); }
-    });
-  },
   transferLeader() {
     const cid = wx.getStorageSync('club_id');
     const token = wx.getStorageSync('token');
