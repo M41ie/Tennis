@@ -33,6 +33,7 @@ from .cli import (
     check_password,
     validate_scores,
     update_player as cli_update_player,
+    normalize_gender,
 )
 from .rating import (
     update_ratings,
@@ -939,7 +940,7 @@ def update_global_player(user_id: str, data: PlayerUpdate):
     if data.age is not None:
         player.age = data.age
     if data.gender is not None:
-        player.gender = data.gender
+        player.gender = normalize_gender(data.gender)
     if data.avatar is not None:
         player.avatar = data.avatar
     if data.birth is not None:

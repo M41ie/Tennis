@@ -36,6 +36,18 @@ def check_password(user: User, password: str) -> bool:
     return user.password_hash == hash_password(password)
 
 
+def normalize_gender(g: str | None) -> str | None:
+    """Return canonical gender codes 'M'/'F' or None."""
+    if not g:
+        return None
+    g = g.strip()
+    if g in {"M", "Male", "男"}:
+        return "M"
+    if g in {"F", "Female", "女"}:
+        return "F"
+    return g
+
+
 def validate_scores(score_a, score_b):
     """Ensure scores are non-negative integers."""
     if not (isinstance(score_a, int) and isinstance(score_b, int)):
@@ -113,6 +125,7 @@ def register_user(
         password_hash=hash_password(password),
         can_create_club=allow_create,
     )
+    gender = normalize_gender(gender)
     if user_id not in players:
         players[user_id] = Player(
             user_id=user_id,
@@ -322,7 +335,7 @@ def add_player(
             user_id=user_id,
             name=name,
             age=age,
-            gender=gender,
+            gender=normalize_gender(gender),
             avatar=avatar,
             birth=birth,
             handedness=handedness,
@@ -336,7 +349,7 @@ def add_player(
         if age is not None:
             player.age = age
         if gender is not None:
-            player.gender = gender
+            player.gender = normalize_gender(gender)
         if avatar is not None:
             player.avatar = avatar
         if birth is not None:
@@ -375,7 +388,7 @@ def update_player(
     if age is not None:
         player.age = age
     if gender is not None:
-        player.gender = gender
+        player.gender = normalize_gender(gender)
     if avatar is not None:
         player.avatar = avatar
     if birth is not None:
