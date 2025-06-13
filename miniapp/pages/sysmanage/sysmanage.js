@@ -9,11 +9,17 @@ Page({
     totalMatches: '--',
     totalClubs: '--',
     pendingItems: '--',
-    topClubs: []
+    topClubs: [],
+    userDays: 7,
+    matchDays: 7,
+    userTrend: [],
+    matchTrend: []
   },
   onLoad() {
     this.loadStats();
     this.loadClubStats();
+    this.fetchUserTrend();
+    this.fetchMatchActivity();
   },
   loadStats() {
     const that = this;
@@ -112,6 +118,71 @@ Page({
     const q = this.data.clubQuery.trim();
     const url = q ? `/pages/sys-club-list/index?query=${q}` : '/pages/sys-club-list/index';
     wx.navigateTo({ url });
+  },
+  switchUserDays(e) {
+    const d = Number(e.currentTarget.dataset.days);
+    this.setData({ userDays: d });
+    this.fetchUserTrend();
+  },
+  switchMatchDays(e) {
+    const d = Number(e.currentTarget.dataset.days);
+    this.setData({ matchDays: d });
+    this.fetchMatchActivity();
+  },
+  fetchUserTrend() {
+    const that = this;
+    wx.request({
+      url: `${BASE_URL}/sys/user_trend?days=${this.data.userDays}`,
+      success(res) {
+        const data = res.data || [];
+        that.setData({ userTrend: data });
+        that.drawLine('userTrend', data);
+      }
+    });
+  },
+  fetchMatchActivity() {
+    const that = this;
+    wx.request({
+      url: `${BASE_URL}/sys/match_activity?days=${this.data.matchDays}`,
+      success(res) {
+        const data = res.data || [];
+        that.setData({ matchTrend: data });
+        that.drawBars('matchActivity', data);
+      }
+    });
+  },
+  drawLine(id, data) {
+    const ctx = wx.createCanvasContext(id, this);
+    const width = 300;
+    const height = 160;
+    const max = Math.max.apply(null, data.map(d => d.count)) || 1;
+    const step = data.length > 1 ? width / (data.length - 1) : width;
+    ctx.clearRect(0, 0, width, height);
+    ctx.beginPath();
+    ctx.setStrokeStyle('#07C160');
+    data.forEach((p, i) => {
+      const x = i * step;
+      const y = height - (p.count / max) * (height - 20);
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+    ctx.draw();
+  },
+  drawBars(id, data) {
+    const ctx = wx.createCanvasContext(id, this);
+    const width = 300;
+    const height = 160;
+    const max = Math.max.apply(null, data.map(d => d.count)) || 1;
+    const step = width / data.length;
+    const bar = step * 0.6;
+    ctx.clearRect(0, 0, width, height);
+    ctx.setFillStyle('#07C160');
+    data.forEach((p, i) => {
+      const x = i * step + (step - bar) / 2;
+      const h = (p.count / max) * (height - 20);
+      ctx.fillRect(x, height - h, bar, h);
+    });
+    ctx.draw();
   },
   openAllUsers() {
     wx.navigateTo({ url: '/pages/sys-user-list/index' });
