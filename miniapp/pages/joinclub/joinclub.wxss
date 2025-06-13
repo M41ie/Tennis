@@ -89,6 +89,10 @@
   background: #ccc;
   color: #fff;
 }
+.join-btn.pending {
+  background: #ffa500;
+  color: #fff;
+}
 
 .card-right {
   flex-shrink: 0;

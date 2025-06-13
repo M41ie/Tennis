@@ -38,6 +38,7 @@ Page({
   },
   fetchClubs() {
     const that = this;
+    const uid = wx.getStorageSync('user_id');
     wx.request({
       url: `${BASE_URL}/clubs`,
       success(res) {
@@ -69,6 +70,9 @@ Page({
                 typeof stats.doubles_avg_rating === 'number'
                   ? fmt(stats.doubles_avg_rating)
                   : '--';
+              const pending = (info.pending_members || []).some(
+                m => m.user_id === uid
+              );
               result.push({
                 club_id: c.club_id,
                 name: c.name,
@@ -87,7 +91,8 @@ Page({
                     : '--',
                 singles_avg: singlesAvg,
                 doubles_avg: doublesAvg,
-                joined: that.data.joined.includes(c.club_id)
+                joined: that.data.joined.includes(c.club_id),
+                pending
               });
             },
             complete() {
@@ -170,12 +175,10 @@ Page({
         if (r.statusCode === 200) {
           wx.setStorageSync('club_id', cid);
           wx.showToast({ title: '已申请', icon: 'success' });
-          const joined = that.data.joined.slice();
-          if (!joined.includes(cid)) joined.push(cid);
           const clubs = that.data.clubs.map(c =>
-            c.club_id === cid ? { ...c, joined: true } : c
+            c.club_id === cid ? { ...c, pending: true } : c
           );
-          that.setData({ joined, clubs, showDialog: false });
+          that.setData({ clubs, showDialog: false });
         } else {
           wx.showToast({ title: '失败', icon: 'none' });
         }
