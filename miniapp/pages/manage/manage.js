@@ -461,6 +461,27 @@ Page({
       complete() { that.fetchClub(); }
     });
   },
+  dissolveClub() {
+    const cid = wx.getStorageSync('club_id');
+    const token = wx.getStorageSync('token');
+    const uid = this.data.userId;
+    const that = this;
+    wx.showModal({
+      title: '确认解散',
+      content: `确认解散${that.data.clubName}吗？`,
+      confirmColor: '#e03a3a',
+      success(res) {
+        if (res.confirm) {
+          wx.request({
+            url: `${BASE_URL}/clubs/${cid}`,
+            method: 'DELETE',
+            data: { user_id: uid, token },
+            success() { wx.navigateBack(); }
+          });
+        }
+      }
+    });
+  },
   editClub() {
     wx.navigateTo({ url: '/pages/editclub/editclub' });
   }

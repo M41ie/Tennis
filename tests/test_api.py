@@ -1568,3 +1568,51 @@ def test_join_rejection_flow(tmp_path, monkeypatch):
     )
     info = client.get("/clubs/c1").json()
     assert any(p["user_id"] == "m1" for p in info["pending_members"])
+
+
+def test_dissolve_club(tmp_path, monkeypatch):
+    db = tmp_path / "tennis.db"
+    monkeypatch.setattr(storage, "DB_FILE", db)
+
+    api = importlib.reload(importlib.import_module("tennis.api"))
+    client = TestClient(api.app)
+
+    client.post(
+        "/users",
+        json={"user_id": "leader", "name": "L", "password": "pw", "allow_create": True},
+    )
+    client.post(
+        "/users",
+        json={"user_id": "m1", "name": "M", "password": "pw"},
+    )
+
+    token_leader = client.post("/login", json={"user_id": "leader", "password": "pw"}).json()["token"]
+    token_m1 = client.post("/login", json={"user_id": "m1", "password": "pw"}).json()["token"]
+
+    client.post(
+        "/clubs",
+        json={"club_id": "c1", "name": "C1", "user_id": "leader", "token": token_leader},
+    )
+    client.post(
+        "/clubs/c1/join",
+        json={"user_id": "m1", "token": token_m1},
+    )
+    client.post(
+        "/clubs/c1/approve",
+        json={"approver_id": "leader", "user_id": "m1", "rating": 1000.0, "token": token_leader},
+    )
+
+    resp = client.request(
+        "DELETE",
+        "/clubs/c1",
+        json={"user_id": "leader", "token": token_leader},
+    )
+    assert resp.status_code == 200
+    assert resp.json()["status"] == "ok"
+
+    data = storage.load_data()
+    users = storage.load_users()
+    assert "c1" not in data
+    assert users["leader"].created_clubs == 0
+    assert users["leader"].joined_clubs == 0
+    assert users["m1"].joined_clubs == 0

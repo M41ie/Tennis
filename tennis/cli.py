@@ -490,6 +490,23 @@ def quit_club(clubs, users, club_id: str, user_id: str):
         u.joined_clubs -= 1
 
 
+def dissolve_club(clubs, users, club_id: str, user_id: str):
+    """Leader dissolves a club and removes all memberships."""
+    club = clubs.get(club_id)
+    if not club:
+        raise ValueError("Club not found")
+    if user_id != club.leader_id:
+        raise ValueError("Not authorized")
+    for uid in list(club.members):
+        u = users.get(uid)
+        if u and u.joined_clubs > 0:
+            u.joined_clubs -= 1
+    leader = users.get(club.leader_id)
+    if leader and leader.created_clubs > 0:
+        leader.created_clubs -= 1
+    clubs.pop(club_id, None)
+
+
 def pre_rate(clubs, club_id: str, rater_id: str, target_id: str, rating: float):
     """Record a pre-rating for ``target_id`` from ``rater_id``."""
     club = clubs.get(club_id)

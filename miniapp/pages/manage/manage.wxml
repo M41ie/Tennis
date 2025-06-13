@@ -48,6 +48,7 @@
     <button class="op-btn danger" bindtap="quitClub">退出</button>
   </block>
   <button wx:if="{{role==='admin'||role==='leader'}}" class="op-btn" bindtap="editClub">编辑</button>
+  <button wx:if="{{role==='leader'}}" class="op-btn danger" bindtap="dissolveClub">解散</button>
   <button class="op-btn" open-type="share">分享</button>
 </view>
 
