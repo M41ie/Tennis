@@ -27,20 +27,13 @@
   </view>
   <view wx:if="{{showDialog}}" class="dialog-mask" bindtap="cancelJoin">
     <view class="dialog-card" catchtap="noop">
-      <input class="dialog-input" placeholder="申请理由" bindinput="onReason" />
+      <input class="dialog-input" placeholder="请输入申请理由" bindinput="onReason" />
       <input
         wx:if="{{needRating}}"
         class="dialog-input"
-        placeholder="单打自评"
+        placeholder="自我评分：如 3.250"
         type="number"
-        bindinput="onSingles"
-      />
-      <input
-        wx:if="{{needRating}}"
-        class="dialog-input"
-        placeholder="双打自评"
-        type="number"
-        bindinput="onDoubles"
+        bindinput="onRating"
       />
       <view class="dialog-actions">
         <button bindtap="submitJoin">提交</button>
