@@ -1,0 +1,6 @@
+<view class="page-container">
+  <block wx:for="{{clubs}}" wx:key="club_id">
+    <view class="club-item">{{item.name}}</view>
+  </block>
+  <view wx:if="{{!clubs.length}}" class="empty">暂无数据</view>
+</view>

@@ -1,8 +1,9 @@
-.page-container {
-  padding: 24rpx;
-}
-.center-text {
-  text-align: center;
-  padding: 60rpx 0;
-  color: #555;
-}
+.page-container { padding: 24rpx; }
+.tab-bar { display: flex; background: #fff; border-bottom: 1px solid #eee; }
+.tab-item { flex: 1; text-align: center; padding: 20rpx 0; color: #666; }
+.tab-item.active { color: #07C160; border-bottom: 4rpx solid #07C160; }
+.search-row { display: flex; align-items: center; margin: 20rpx 0; }
+.search-input { flex: 1; border: 1px solid #ccc; padding: 10rpx; border-radius: 4rpx; margin-right: 10rpx; }
+.dashboard { display: flex; gap: 20rpx; margin-bottom: 20rpx; }
+.card { flex: 1; background: #f7f7f7; padding: 20rpx; text-align: center; border-radius: 8rpx; }
+.chart-placeholder { text-align: center; color: #999; padding: 40rpx 0; background: #fafafa; border-radius: 8rpx; }
