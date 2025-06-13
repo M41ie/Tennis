@@ -12,17 +12,15 @@
 </view>
 
 <view class="section" wx:if="{{pending.length && isAdmin}}">
-  <view class="section-title">待审核成员</view>
+  <view class="section-title">待审核列表</view>
   <block wx:for="{{pending}}" wx:key="user_id">
-    <view class="card">
-      <view class="pending-info">
-        <text class="pending-name">{{item.user_id}}</text>
-        <text wx:if="{{item.reason}}" class="pending-reason">{{item.reason}}</text>
-        <text wx:if="{{item.singles_rating != null}}">单{{item.singles_rating}}</text>
-        <text wx:if="{{item.doubles_rating != null}}">双{{item.doubles_rating}}</text>
-      </view>
-      <button data-uid="{{item.user_id}}" bindtap="approve" class="primary-btn">通过</button>
-    </view>
+    <profile-card
+      user="{{item}}"
+      editable="{{false}}"
+      showRoleTag="{{false}}"
+      bind:cardtap="reviewApplication"
+      data-uid="{{item.user_id}}"
+    />
   </block>
 </view>
 

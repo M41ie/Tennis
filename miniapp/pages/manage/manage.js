@@ -21,6 +21,41 @@ Page({
     this.fetchClub();
     this.fetchPlayers();
   },
+  loadPendingNames(list) {
+    const that = this;
+    if (!list.length) {
+      this.setData({ pending: [] });
+      return;
+    }
+    const result = [];
+    let count = 0;
+    list.forEach(p => {
+      wx.request({
+        url: `${BASE_URL}/users/${p.user_id}`,
+        success(r) {
+          const name = r.data && r.data.name ? r.data.name : p.user_id;
+          result.push({
+            ...p,
+            id: p.user_id,
+            name,
+            avatar_url: '',
+            rating_singles:
+              p.singles_rating != null ? p.singles_rating.toFixed(3) : '--',
+            rating_doubles:
+              p.doubles_rating != null ? p.doubles_rating.toFixed(3) : '--',
+            weighted_games_singles: '--',
+            weighted_games_doubles: '--'
+          });
+        },
+        complete() {
+          count++;
+          if (count === list.length) {
+            that.setData({ pending: result });
+          }
+        }
+      });
+    });
+  },
   fetchClub() {
     const cid = wx.getStorageSync('club_id');
     if (!cid) return;
@@ -59,7 +94,6 @@ Page({
           stats.total_doubles_matches = Math.round(stats.total_doubles_matches);
         }
         that.setData({
-          pending: info.pending_members || [],
           isAdmin,
           clubName: info.name || '',
           clubSlogan: info.slogan || '',
@@ -70,6 +104,7 @@ Page({
           leaderId: info.leader_id,
           adminIds: info.admin_ids || []
         });
+        that.loadPendingNames(info.pending_members || []);
       }
     });
   },
@@ -149,8 +184,7 @@ Page({
       }
     });
   },
-  approve(e) {
-    const uid = e.currentTarget.dataset.uid;
+  approveById(uid) {
     const cid = wx.getStorageSync('club_id');
     const token = wx.getStorageSync('token');
     const that = this;
@@ -159,6 +193,38 @@ Page({
       method: 'POST',
       data: { approver_id: this.data.userId, user_id: uid, token },
       complete() { that.fetchClub(); }
+    });
+  },
+  approve(e) {
+    this.approveById(e.currentTarget.dataset.uid);
+  },
+  rejectById(uid) {
+    const list = this.data.pending.filter(p => p.user_id !== uid);
+    this.setData({ pending: list });
+  },
+  reviewApplication(e) {
+    const uid = e.currentTarget.dataset.uid;
+    const applicant = this.data.pending.find(p => p.user_id === uid);
+    if (!applicant) return;
+    const lines = [];
+    if (applicant.reason) lines.push('理由：' + applicant.reason);
+    if (applicant.singles_rating != null)
+      lines.push('单打自评：' + applicant.singles_rating);
+    if (applicant.doubles_rating != null)
+      lines.push('双打自评：' + applicant.doubles_rating);
+    const that = this;
+    wx.showModal({
+      title: applicant.name || applicant.user_id,
+      content: lines.join('\n'),
+      confirmText: '通过',
+      cancelText: '拒绝',
+      success(res) {
+        if (res.confirm) {
+          that.approveById(uid);
+        } else if (res.cancel) {
+          that.rejectById(uid);
+        }
+      }
     });
   },
   kick(e) {
