@@ -2171,6 +2171,120 @@ def list_all_doubles() -> list[dict[str, object]]:
     return result
 
 
+@app.get("/sys/pending_matches")
+def list_all_pending_matches(token: str) -> list[dict[str, object]]:
+    """Return all pending singles matches awaiting admin review."""
+    uid = require_auth(token)
+    user = users.get(uid)
+    if not user or not getattr(user, "is_sys_admin", False):
+        raise HTTPException(401, "Not authorized")
+
+    from .models import DoublesMatch
+    from .cli import cleanup_pending_matches
+
+    combined: list[dict[str, object]] = []
+    for cid, club in clubs.items():
+        cleanup_pending_matches(club)
+        for idx, m in enumerate(club.pending_matches):
+            if isinstance(m, DoublesMatch):
+                continue
+            entry = {
+                "club_id": cid,
+                "index": idx,
+                "date": m.date.isoformat(),
+                "player_a": m.player_a.user_id,
+                "player_b": m.player_b.user_id,
+                "score_a": m.score_a,
+                "score_b": m.score_b,
+                "confirmed_a": m.confirmed_a,
+                "confirmed_b": m.confirmed_b,
+                "location": m.location,
+                "format_name": m.format_name,
+            }
+            pa = club.members.get(m.player_a.user_id)
+            pb = club.members.get(m.player_b.user_id)
+            entry["player_a_name"] = pa.name if pa else m.player_a.user_id
+            entry["player_b_name"] = pb.name if pb else m.player_b.user_id
+            entry["rating_a_before"] = pa.singles_rating if pa else None
+            entry["rating_b_before"] = pb.singles_rating if pb else None
+            entry["player_a_avatar"] = pa.avatar if pa else None
+            entry["player_b_avatar"] = pb.avatar if pb else None
+            if m.initiator and (submitter := club.members.get(m.initiator)):
+                entry["submitted_by_player_name"] = submitter.name
+
+            ready = m.confirmed_a and m.confirmed_b
+            entry["display_status_text"] = "双方已确认，请审核" if ready else "待确认"
+            entry["can_approve"] = ready
+            entry["can_veto"] = ready
+
+            combined.append(entry)
+
+    combined.sort(key=lambda x: x["date"], reverse=True)
+    return combined
+
+
+@app.get("/sys/pending_doubles")
+def list_all_pending_doubles(token: str) -> list[dict[str, object]]:
+    """Return all pending doubles matches awaiting admin review."""
+    uid = require_auth(token)
+    user = users.get(uid)
+    if not user or not getattr(user, "is_sys_admin", False):
+        raise HTTPException(401, "Not authorized")
+
+    from .models import DoublesMatch
+    from .cli import cleanup_pending_matches
+
+    combined: list[dict[str, object]] = []
+    for cid, club in clubs.items():
+        cleanup_pending_matches(club)
+        for idx, m in enumerate(club.pending_matches):
+            if not isinstance(m, DoublesMatch):
+                continue
+            entry = {
+                "club_id": cid,
+                "index": idx,
+                "date": m.date.isoformat(),
+                "a1": m.player_a1.user_id,
+                "a2": m.player_a2.user_id,
+                "b1": m.player_b1.user_id,
+                "b2": m.player_b2.user_id,
+                "score_a": m.score_a,
+                "score_b": m.score_b,
+                "confirmed_a": m.confirmed_a,
+                "confirmed_b": m.confirmed_b,
+                "location": m.location,
+                "format_name": m.format_name,
+            }
+            a1 = club.members.get(m.player_a1.user_id)
+            a2 = club.members.get(m.player_a2.user_id)
+            b1 = club.members.get(m.player_b1.user_id)
+            b2 = club.members.get(m.player_b2.user_id)
+            entry["a1_name"] = a1.name if a1 else m.player_a1.user_id
+            entry["a2_name"] = a2.name if a2 else m.player_a2.user_id
+            entry["b1_name"] = b1.name if b1 else m.player_b1.user_id
+            entry["b2_name"] = b2.name if b2 else m.player_b2.user_id
+            entry["rating_a1_before"] = a1.doubles_rating if a1 else None
+            entry["rating_a2_before"] = a2.doubles_rating if a2 else None
+            entry["rating_b1_before"] = b1.doubles_rating if b1 else None
+            entry["rating_b2_before"] = b2.doubles_rating if b2 else None
+            entry["a1_avatar"] = a1.avatar if a1 else None
+            entry["a2_avatar"] = a2.avatar if a2 else None
+            entry["b1_avatar"] = b1.avatar if b1 else None
+            entry["b2_avatar"] = b2.avatar if b2 else None
+            if m.initiator and (submitter := club.members.get(m.initiator)):
+                entry["submitted_by_player_name"] = submitter.name
+
+            ready = m.confirmed_a and m.confirmed_b
+            entry["display_status_text"] = "双方已确认，请审核" if ready else "待确认"
+            entry["can_approve"] = ready
+            entry["can_veto"] = ready
+
+            combined.append(entry)
+
+    combined.sort(key=lambda x: x["date"], reverse=True)
+    return combined
+
+
 if __name__ == "__main__":
     import uvicorn
 
