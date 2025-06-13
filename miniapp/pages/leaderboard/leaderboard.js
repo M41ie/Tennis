@@ -22,67 +22,50 @@ Page({
     regionText: '全国'
   },
   onLoad() {
-    this.fetchClubs();
+    this.fetchInitial();
   },
-  fetchClubs() {
+  fetchInitial() {
+    const uid = wx.getStorageSync('user_id');
     const that = this;
+    const params = [];
+    params.push('include_clubs=true');
+    if (uid) {
+      params.push('user_id=' + uid);
+      params.push('include_joined=true');
+    }
+    const url = `${BASE_URL}/leaderboard_full?` + params.join('&');
     wx.request({
-      url: `${BASE_URL}/clubs`,
+      url,
       success(res) {
-        const list = res.data || [];
+        const data = res.data || {};
+        const list = data.clubs || [];
         const ids = list.map(c => c.club_id || c.name);
         const map = {};
         list.forEach(c => { map[c.club_id || c.name] = c.name || c.club_id; });
         that.clubNameMap = map;
-        that.setData({ allClubIds: ids });
-        that.fetchJoined();
-      }
-    });
-  },
-  fetchJoined() {
-    const uid = wx.getStorageSync('user_id');
-    const that = this;
-    if (!uid) {
-      const options = that.buildClubOptions([]);
-      const filter = { ...that.data.filter, clubs: that.data.allClubIds };
-      that.setData({
-        selectedClub: '_global',
-        selectedClubIndex: 0,
-        selectedClubText: options[0].name,
-        joinedClubIds: [],
-        filter
-      });
-      that.fetchList(filter);
-      return;
-    }
-    wx.request({
-      url: `${BASE_URL}/users/${uid}`,
-      success(res) {
-        const joined = res.data.joined_clubs || [];
-        that.setData({ joinedClubIds: joined });
+        const joined = data.joined_clubs || [];
         const options = that.buildClubOptions(joined);
         const selected = joined.length ? '_my' : '_global';
-        const clubs = joined.length ? joined.slice() : that.data.allClubIds;
+        const clubIds = joined.length ? joined.slice() : ids;
         const index = options.findIndex(o => o.id === selected);
+        data.players = data.players || [];
+        data.players.forEach(p => {
+          if (p.rating != null) p.rating = p.rating.toFixed(3);
+          if (p.weighted_singles_matches != null) p.weighted_singles_matches = p.weighted_singles_matches.toFixed(2);
+          if (p.weighted_doubles_matches != null) p.weighted_doubles_matches = p.weighted_doubles_matches.toFixed(2);
+        });
         that.setData({
+          allClubIds: ids,
+          joinedClubIds: joined,
           selectedClub: selected,
           selectedClubIndex: index,
           selectedClubText: options[index].name,
-          filter: { ...that.data.filter, clubs }
+          filter: { ...that.data.filter, clubs: clubIds },
+          players: data.players
         });
-        that.fetchList(that.data.filter);
       },
       fail() {
-        const options = that.buildClubOptions([]);
-        const filter = { ...that.data.filter, clubs: that.data.allClubIds };
-        that.setData({
-          selectedClub: '_global',
-          selectedClubIndex: 0,
-          selectedClubText: options[0].name,
-          joinedClubIds: [],
-          filter
-        });
-        that.fetchList(filter);
+        that.setData({ allClubIds: [], joinedClubIds: [] });
       }
     });
   },
@@ -148,15 +131,15 @@ Page({
     if (filter.gender && filter.gender !== 'All') params.push('gender=' + filter.gender);
     if (filter.mode === 'Doubles') params.push('doubles=true');
     if (filter.region) params.push('region=' + encodeURIComponent(filter.region));
-
-    let url = `${BASE_URL}/players`;
+    params.push('include_clubs=false');
+    params.push('include_joined=false');
     if (clubs.length) params.push('club=' + clubs.join(','));
-    if (params.length) url += '?' + params.join('&');
+    const url = `${BASE_URL}/leaderboard_full` + (params.length ? '?' + params.join('&') : '');
 
     wx.request({
       url,
       success(res) {
-        const list = res.data || [];
+        const list = (res.data && res.data.players) || [];
         list.forEach(p => {
           if (p.rating != null) p.rating = p.rating.toFixed(3);
           if (p.weighted_singles_matches != null) p.weighted_singles_matches = p.weighted_singles_matches.toFixed(2);
