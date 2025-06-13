@@ -32,5 +32,11 @@
       {{backhandOptions[backhandIndex]}}
     </view>
   </picker>
+  <view class="weui-cell">
+    <view class="weui-label">Region</view>
+    <picker mode="region" bindchange="onRegionChange" value="{{region}}">
+      <view class="picker">{{regionString || '选择地区'}}</view>
+    </picker>
+  </view>
 </view>
 <button class="weui-btn weui-btn_primary" bindtap="submit">保存</button>
