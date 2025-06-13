@@ -1,4 +1,5 @@
-<view class="weui-cells weui-cells_form" bindtap="hideKeyboard">
+<view class="page-container">
+  <view class="weui-cells weui-cells_form" bindtap="hideKeyboard">
   <view class="weui-cell">
     <view class="weui-label">Avatar</view>
     <button bindtap="chooseAvatar">Select</button>
@@ -38,5 +39,6 @@
       <view class="picker">{{regionString || '选择地区'}}</view>
     </picker>
   </view>
+  </view>
+  <button class="weui-btn weui-btn_primary" bindtap="submit">保存</button>
 </view>
-<button class="weui-btn weui-btn_primary" bindtap="submit">保存</button>

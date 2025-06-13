@@ -1,4 +1,11 @@
-.weui-cells { padding: 10px 0; }
+/* 页面容器最小高度设置，保证内容撑满屏幕高度 */
+.page-container {
+  min-height: 100vh;
+}
+
+.weui-cells {
+  padding: 10px 0;
+}
 scroll-view { height: 100vh; }
 .placeholder { color: #888; }
 .dark-label { color: #000; }
