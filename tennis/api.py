@@ -859,7 +859,7 @@ def list_players(
     gender = normalize_gender(gender)
     today = datetime.date.today()
     get_rating = weighted_doubles_rating if doubles else weighted_rating
-
+    
     players = []
     for p in club.members.values():
         rating = get_rating(p, today)
@@ -877,20 +877,23 @@ def list_players(
             continue
         if not _region_match(p.region, region):
             continue
-        players.append(
-            {
-                "user_id": p.user_id,
-                "name": p.name,
-                "avatar": p.avatar,
-                "gender": p.gender,
-                "joined": p.joined.isoformat(),
-                "rating": rating,
-                "weighted_singles_matches": round(singles_count, 2),
-                "weighted_doubles_matches": round(doubles_count, 2),
-            }
-        )
+        entry = {
+            "user_id": p.user_id,
+            "name": p.name,
+            "avatar": p.avatar,
+            "gender": p.gender,
+            "joined": p.joined.isoformat(),
+            "weighted_singles_matches": round(singles_count, 2),
+            "weighted_doubles_matches": round(doubles_count, 2),
+        }
+        if doubles:
+            entry["doubles_rating"] = rating
+        else:
+            entry["singles_rating"] = rating
+        players.append(entry)
 
-    players.sort(key=lambda x: x["rating"] if x["rating"] is not None else float('-inf'), reverse=True)
+    key = "doubles_rating" if doubles else "singles_rating"
+    players.sort(key=lambda x: x.get(key, float('-inf')) if x.get(key) is not None else float('-inf'), reverse=True)
     return players
 
 
@@ -920,8 +923,6 @@ def get_global_player(user_id: str, recent: int = 0):
         "joined": player.joined.isoformat(),
         "singles_rating": singles,
         "doubles_rating": doubles,
-        "rating_singles": singles,
-        "rating_doubles": doubles,
         "weighted_singles_matches": round(singles_count, 2),
         "weighted_doubles_matches": round(doubles_count, 2),
         "weighted_games_singles": round(singles_count, 2),
@@ -996,20 +997,23 @@ def list_all_players(
                 continue
             if not _region_match(p.region, region):
                 continue
-            players.append(
-                {
-                    "club_id": c.club_id,
-                    "user_id": p.user_id,
-                    "name": p.name,
-                    "avatar": p.avatar,
-                    "gender": p.gender,
-                    "joined": p.joined.isoformat(),
-                    "rating": rating,
-                    "weighted_singles_matches": round(singles_count, 2),
-                    "weighted_doubles_matches": round(doubles_count, 2),
-                }
-            )
-    players.sort(key=lambda x: x["rating"] if x["rating"] is not None else float('-inf'), reverse=True)
+            entry = {
+                "club_id": c.club_id,
+                "user_id": p.user_id,
+                "name": p.name,
+                "avatar": p.avatar,
+                "gender": p.gender,
+                "joined": p.joined.isoformat(),
+                "weighted_singles_matches": round(singles_count, 2),
+                "weighted_doubles_matches": round(doubles_count, 2),
+            }
+            if doubles:
+                entry["doubles_rating"] = rating
+            else:
+                entry["singles_rating"] = rating
+            players.append(entry)
+    key = "doubles_rating" if doubles else "singles_rating"
+    players.sort(key=lambda x: x.get(key, float('-inf')) if x.get(key) is not None else float('-inf'), reverse=True)
     return players
 
 
@@ -1401,8 +1405,6 @@ def get_player(club_id: str, user_id: str, recent: int = 0):
         "joined": player.joined.isoformat(),
         "singles_rating": singles,
         "doubles_rating": doubles,
-        "rating_singles": singles,
-        "rating_doubles": doubles,
         "weighted_singles_matches": round(singles_count, 2),
         "weighted_doubles_matches": round(doubles_count, 2),
         "weighted_games_singles": round(singles_count, 2),
@@ -1986,8 +1988,8 @@ def _user_summary(user: User) -> dict[str, object]:
         "id": user.user_id,
         "name": user.name,
         "avatar_url": getattr(player, "avatar", None) if player else None,
-        "rating_singles": singles,
-        "rating_doubles": doubles,
+        "singles_rating": singles,
+        "doubles_rating": doubles,
         "weighted_games_singles": round(singles_count, 2),
         "weighted_games_doubles": round(doubles_count, 2),
     }

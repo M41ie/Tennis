@@ -88,8 +88,8 @@ Page({
           birth: raw.birth,
           handedness: raw.handedness,
           backhand: raw.backhand,
-          rating_singles: formatRating(raw.rating_singles ?? raw.singles_rating),
-          rating_doubles: formatRating(raw.rating_doubles ?? raw.doubles_rating),
+          singles_rating: formatRating(raw.singles_rating),
+          doubles_rating: formatRating(raw.doubles_rating),
           weighted_games_singles: typeof singlesCount === 'number'
             ? singlesCount.toFixed(2)
             : (singlesCount ? Number(singlesCount).toFixed(2) : '--'),
