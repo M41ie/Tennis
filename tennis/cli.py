@@ -123,8 +123,9 @@ def register_user(
         user_id=user_id,
         name=name,
         password_hash=hash_password(password),
-        can_create_club=allow_create,
+        can_create_club=True,
         is_sys_admin=user_id == "A",
+        max_creatable_clubs=1 if allow_create else MAX_CREATED_CLUBS,
     )
     gender = normalize_gender(gender)
     if user_id not in players:
@@ -235,7 +236,7 @@ def approve_member(
     if not user:
         raise ValueError("User not registered")
     if user.joined_clubs >= user.max_joinable_clubs:
-        raise ValueError("Club membership limit reached")
+        raise ValueError("加入俱乐部的数量已达上限")
     club.pending_members.pop(user_id, None)
     player = players.get(user_id)
     if player is None:
@@ -295,12 +296,12 @@ def clear_rejection(clubs, club_id: str, user_id: str):
 
 def create_club(users, clubs, user_id: str, club_id: str, name: str, logo: Optional[str], region: Optional[str], slogan: Optional[str] = None):
     user = users.get(user_id)
-    if not user or not user.can_create_club:
-        raise ValueError('User not allowed to create club')
+    if not user:
+        raise ValueError('User not found')
     if user.created_clubs >= user.max_creatable_clubs:
-        raise ValueError('Club creation limit reached')
+        raise ValueError('创建俱乐部的数量已达上限')
     if user.joined_clubs >= user.max_joinable_clubs:
-        raise ValueError('Club membership limit reached')
+        raise ValueError('加入俱乐部的数量已达上限')
     if club_id in clubs:
         raise ValueError('Club already exists')
     clubs[club_id] = Club(
