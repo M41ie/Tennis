@@ -123,6 +123,9 @@ Page({
   onFormatChange(e) { this.setData({ formatIndex: e.detail.value }); },
   onScoreA(e) { this.setData({ scoreA: e.detail.value }); },
   onScoreB(e) { this.setData({ scoreB: e.detail.value }); },
+  hideKeyboard() {
+    wx.hideKeyboard();
+  },
   submit() {
     const doubles = this.data.modeIndex === 2;
     const incomplete =

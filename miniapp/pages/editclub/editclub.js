@@ -35,6 +35,9 @@ Page({
       regionString: e.detail.value.join(' ')
     });
   },
+  hideKeyboard() {
+    wx.hideKeyboard();
+  },
   chooseLogo() {
     const that = this;
     wx.chooseImage({

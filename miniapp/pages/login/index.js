@@ -32,6 +32,9 @@ Page({
       }
     });
   },
+  hideKeyboard() {
+    wx.hideKeyboard();
+  },
   wechatLogin() {
     const that = this;
     wx.login({

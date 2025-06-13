@@ -22,6 +22,9 @@ Page({
   },
   onDate(e) { this.setData({ date: e.detail.value }); },
   onLocation(e) { this.setData({ location: e.detail.value }); },
+  hideKeyboard() {
+    wx.hideKeyboard();
+  },
   create() {
     const cid = wx.getStorageSync('club_id');
     const userId = wx.getStorageSync('user_id');

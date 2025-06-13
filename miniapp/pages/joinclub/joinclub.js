@@ -151,6 +151,9 @@ Page({
   cancelJoin() {
     this.setData({ showDialog: false });
   },
+  hideKeyboard() {
+    wx.hideKeyboard();
+  },
   noop() {},
   viewReject(e) {
     const reason = e.currentTarget.dataset.reason;

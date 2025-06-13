@@ -48,6 +48,9 @@ Page({
       regionString: e.detail.value.join(' ')
     });
   },
+  hideKeyboard() {
+    wx.hideKeyboard();
+  },
   chooseAvatar() {
     const that = this;
     wx.chooseImage({

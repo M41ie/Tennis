@@ -1,4 +1,4 @@
-<view class="weui-cells weui-cells_form">
+<view class="weui-cells weui-cells_form" bindtap="hideKeyboard">
   <view class="weui-cell">
     <view class="weui-label">Name</view>
     <input class="weui-input" value="{{name}}" placeholder="Name" bindinput="onName" />

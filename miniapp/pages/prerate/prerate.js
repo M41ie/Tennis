@@ -8,6 +8,9 @@ Page({
   },
   onTarget(e) { this.setData({ targetId: e.detail.value }); },
   onRating(e) { this.setData({ rating: e.detail.value }); },
+  hideKeyboard() {
+    wx.hideKeyboard();
+  },
   submit() {
     const clubId = wx.getStorageSync('club_id');
     const raterId = wx.getStorageSync('user_id');
