@@ -28,6 +28,7 @@ from .cli import (
     transfer_leader as cli_transfer_leader,
     resign_admin as cli_resign_admin,
     quit_club as cli_quit_club,
+    dissolve_club as cli_dissolve_club,
     create_club as cli_create_club,
     hash_password,
     check_password,
@@ -427,6 +428,11 @@ class RoleRequest(BaseModel):
     token: str
 
 
+class DissolveRequest(BaseModel):
+    user_id: str
+    token: str
+
+
 @app.post("/users")
 def register_user_api(data: UserCreate):
     if data.user_id and data.user_id in users:
@@ -583,6 +589,21 @@ def join_club(club_id: str, data: JoinRequest):
             doubles_rating=data.doubles_rating,
             reason=data.reason,
         )
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    save_data(clubs)
+    save_users(users)
+    return {"status": "ok"}
+
+
+@app.delete("/clubs/{club_id}")
+def dissolve_club_api(club_id: str, data: DissolveRequest):
+    """Delete a club (leader only)."""
+    user = require_auth(data.token)
+    if user != data.user_id:
+        raise HTTPException(401, "Token mismatch")
+    try:
+        cli_dissolve_club(clubs, users, club_id, user)
     except ValueError as e:
         raise HTTPException(400, str(e))
     save_data(clubs)
