@@ -10,15 +10,11 @@
 </view>
 
 <view wx:if="{{showClubDialog}}" class="dialog">
-  <view class="actions">
-    <button size="mini" bindtap="selectAllClubs">选择全部</button>
-    <button size="mini" bindtap="clearClubs">清除选择</button>
-  </view>
-  <checkbox-group bindchange="onClubsChange">
+  <radio-group bindchange="onClubsChange">
     <label wx:for="{{clubs}}" wx:key="id" class="chk">
-      <checkbox value="{{item.id}}" checked="{{item.checked}}">{{item.name}}</checkbox>
+      <radio value="{{item.id}}" checked="{{item.id === selectedClub}}">{{item.name}}</radio>
     </label>
-  </checkbox-group>
+  </radio-group>
   <button bindtap="confirmClub">确定</button>
 </view>
 
