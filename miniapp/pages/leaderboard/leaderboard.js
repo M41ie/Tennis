@@ -15,6 +15,8 @@ Page({
       gender: 'All',
       region: ''
     },
+    genderOptions: ['男子&女子', '男子', '女子'],
+    genderIndex: 0,
     genderText: '男子&女子',
     region: [],
     regionText: '全国'
@@ -121,22 +123,14 @@ Page({
     this.setData({ filter });
     this.fetchList(filter);
   },
-  chooseGender() {
-    const that = this;
-    wx.showActionSheet({
-      itemList: ['男子&女子', '男子', '女子'],
-      success(res) {
-        if (res.tapIndex >= 0) {
-          const genders = ['All', 'Male', 'Female'];
-          const texts = ['男子&女子', '男子', '女子'];
-          const gender = genders[res.tapIndex];
-          const genderText = texts[res.tapIndex];
-          const filter = { ...that.data.filter, gender };
-          that.setData({ filter, genderText });
-          that.fetchList(filter);
-        }
-      }
-    });
+  onGender(e) {
+    const index = Number(e.detail.value);
+    const genders = ['All', 'Male', 'Female'];
+    const gender = genders[index] || 'All';
+    const genderText = this.data.genderOptions[index] || '男子&女子';
+    const filter = { ...this.data.filter, gender };
+    this.setData({ genderIndex: index, genderText, filter });
+    this.fetchList(filter);
   },
   onRegionChange(e) {
     const region = e.detail.value;
