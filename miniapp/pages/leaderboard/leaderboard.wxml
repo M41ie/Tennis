@@ -10,7 +10,7 @@
   <picker mode="selector" range="{{genderOptions}}" value="{{genderIndex}}" bindchange="onGender">
     <view class="filter-item">{{genderText}}</view>
   </picker>
-  <picker mode="region" bindchange="onRegionChange" value="{{region}}">
+  <picker mode="region" bindchange="onRegionChange" value="{{region}}" custom-item="-">
     <view class="filter-item">{{regionText}}</view>
   </picker>
   <!-- Level and age filters removed -->

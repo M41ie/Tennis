@@ -18,7 +18,7 @@ Page({
     genderOptions: ['男子&女子', '男子', '女子'],
     genderIndex: 0,
     genderText: '男子&女子',
-    region: [],
+    region: ['-', '-', '-'],
     regionText: '全国'
   },
   onLoad() {
@@ -134,8 +134,9 @@ Page({
   },
   onRegionChange(e) {
     const region = e.detail.value;
-    const regionString = region.join(' ');
-    const regionText = regionString || '全国';
+    const parts = region.filter(r => r && r !== '-');
+    const regionString = parts.join(' ');
+    const regionText = parts.length ? parts.join('-') : '全国';
     const filter = { ...this.data.filter, region: regionString };
     this.setData({ region, regionText, filter });
     this.fetchList(filter);
