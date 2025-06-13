@@ -6,7 +6,7 @@ from tennis.cli import (
     request_join,
     approve_member,
 )
-from tennis.models import MAX_CREATED_CLUBS, MAX_JOINED_CLUBS
+from tennis.models import MAX_CREATED_CLUBS, MAX_JOINED_CLUBS, Player, players
 
 
 def test_auto_generated_user_ids_basic():
@@ -111,3 +111,29 @@ def test_admin_limit():
     request_join(clubs, users, "c1", "extra", singles_rating=1000.0, doubles_rating=1000.0)
     with pytest.raises(ValueError):
         approve_member(clubs, users, "c1", "leader", "extra", 1000.0, make_admin=True)
+
+
+def test_register_user_name_duplicate():
+    users = {}
+    register_user(users, "u1", "Dup", "pw")
+    with pytest.raises(ValueError):
+        register_user(users, "u2", "Dup", "pw")
+
+
+def test_register_user_conflict_with_player():
+    users = {}
+    players.clear()
+    players["p1"] = Player("p1", "Player")
+    with pytest.raises(ValueError):
+        register_user(users, "u1", "Player", "pw")
+
+
+def test_create_club_name_duplicate():
+    users = {}
+    clubs = {}
+    register_user(users, "leader1", "L1", "pw", allow_create=True)
+    register_user(users, "leader2", "L2", "pw", allow_create=True)
+    create_club(users, clubs, "leader1", "c1", "Club", None, None)
+    with pytest.raises(ValueError):
+        create_club(users, clubs, "leader2", "c2", "Club", None, None)
+

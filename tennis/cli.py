@@ -119,6 +119,12 @@ def register_user(
         user_id = _next_user_id(users)
     if user_id in users:
         raise ValueError("User already exists")
+    for u in users.values():
+        if u.name == name:
+            raise ValueError("用户名已存在")
+    for p in players.values():
+        if p.name == name:
+            raise ValueError("用户名已存在")
     users[user_id] = User(
         user_id=user_id,
         name=name,
@@ -304,6 +310,9 @@ def create_club(users, clubs, user_id: str, club_id: str, name: str, logo: Optio
         raise ValueError('加入俱乐部的数量已达上限')
     if club_id in clubs:
         raise ValueError('Club already exists')
+    for c in clubs.values():
+        if c.name == name:
+            raise ValueError('俱乐部名已存在')
     clubs[club_id] = Club(
         club_id=club_id,
         name=name,
