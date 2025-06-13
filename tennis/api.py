@@ -274,6 +274,7 @@ class PlayerCreate(BaseModel):
     birth: str | None = None
     handedness: str | None = None
     backhand: str | None = None
+    region: str | None = None
 
 
 class PlayerUpdate(BaseModel):
@@ -286,6 +287,7 @@ class PlayerUpdate(BaseModel):
     birth: str | None = None
     handedness: str | None = None
     backhand: str | None = None
+    region: str | None = None
 
 
 class MatchCreate(BaseModel):
@@ -350,10 +352,16 @@ class SignupRequest(BaseModel):
 
 
 class UserCreate(BaseModel):
-    user_id: str
+    user_id: str | None = None
     name: str
     password: str
     allow_create: bool = False
+    avatar: str | None = None
+    gender: str | None = None
+    birth: str | None = None
+    handedness: str | None = None
+    backhand: str | None = None
+    region: str | None = None
 
 
 class LoginRequest(BaseModel):
@@ -400,18 +408,24 @@ class RoleRequest(BaseModel):
 
 @app.post("/users")
 def register_user_api(data: UserCreate):
-    if data.user_id in users:
+    if data.user_id and data.user_id in users:
         raise HTTPException(400, "User exists")
-    register_user(
+    uid = register_user(
         users,
         data.user_id,
         data.name,
         data.password,
         allow_create=data.allow_create,
+        avatar=data.avatar,
+        gender=data.gender,
+        birth=data.birth,
+        handedness=data.handedness,
+        backhand=data.backhand,
+        region=data.region,
     )
     save_users(users)
     save_data(clubs)
-    return {"status": "ok"}
+    return {"status": "ok", "user_id": uid}
 
 
 @app.post("/login")
@@ -822,6 +836,7 @@ def add_player(club_id: str, data: PlayerCreate):
             birth=data.birth,
             handedness=data.handedness,
             backhand=data.backhand,
+            region=data.region,
         )
     except ValueError as e:
         raise HTTPException(400, str(e))
@@ -847,6 +862,7 @@ def update_player_api(club_id: str, user_id: str, data: PlayerUpdate):
             birth=data.birth,
             handedness=data.handedness,
             backhand=data.backhand,
+            region=data.region,
         )
     except ValueError as e:
         raise HTTPException(400, str(e))
