@@ -1,7 +1,7 @@
 <view class="weui-cells weui-cells_form" bindtap="hideKeyboard">
   <view class="weui-cell">
     <view class="weui-label">Name</view>
-    <input class="weui-input" placeholder="球场常用名" bindinput="onName" />
+    <input class="weui-input" placeholder="请使用球友熟知的名字" bindinput="onName" />
   </view>
   <view class="weui-cell">
     <view class="weui-label">Password</view>
