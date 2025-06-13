@@ -8,8 +8,7 @@ Page({
     showDialog: false,
     joinClubId: '',
     needRating: false,
-    singles: '',
-    doubles: '',
+    rating: '',
     reason: ''
   },
   onLoad(options) {
@@ -129,24 +128,20 @@ Page({
             const info = pres.data || {};
             const need =
               info.singles_rating == null && info.doubles_rating == null;
-            that.setData({
-              showDialog: true,
-              joinClubId: cid,
-              needRating: need,
-              singles: '',
-              doubles: '',
-              reason: ''
-            });
+              that.setData({
+                showDialog: true,
+                joinClubId: cid,
+                needRating: need,
+                rating: '',
+                reason: ''
+              });
           }
         });
       }
     });
   },
-  onSingles(e) {
-    this.setData({ singles: e.detail.value });
-  },
-  onDoubles(e) {
-    this.setData({ doubles: e.detail.value });
+  onRating(e) {
+    this.setData({ rating: e.detail.value });
   },
   onReason(e) {
     this.setData({ reason: e.detail.value });
@@ -154,6 +149,7 @@ Page({
   cancelJoin() {
     this.setData({ showDialog: false });
   },
+  noop() {},
   viewReject(e) {
     const reason = e.currentTarget.dataset.reason;
     const cid = e.currentTarget.dataset.id;
@@ -181,23 +177,25 @@ Page({
     const userId = wx.getStorageSync('user_id');
     const token = wx.getStorageSync('token');
     const cid = this.data.joinClubId;
-    const singles = parseFloat(this.data.singles);
-    const doubles = parseFloat(this.data.doubles);
-    if (this.data.needRating && (isNaN(singles) || isNaN(doubles))) {
-      wx.showToast({ title: '请填写评分', icon: 'none' });
+    const rating = parseFloat(this.data.rating);
+    if (
+      (this.data.needRating && (isNaN(rating) || rating < 0 || rating > 7)) ||
+      !this.data.reason
+    ) {
+      wx.showToast({ title: '请完善信息', icon: 'none' });
       return;
     }
     const that = this;
     wx.request({
       url: `${BASE_URL}/clubs/${cid}/join`,
       method: 'POST',
-      data: {
-        user_id: userId,
-        token,
-        singles_rating: this.data.needRating ? singles : undefined,
-        doubles_rating: this.data.needRating ? doubles : undefined,
-        reason: this.data.reason
-      },
+        data: {
+          user_id: userId,
+          token,
+          singles_rating: this.data.needRating ? rating : undefined,
+          doubles_rating: this.data.needRating ? rating : undefined,
+          reason: this.data.reason
+        },
       success(r) {
         if (r.statusCode === 200) {
           wx.setStorageSync('club_id', cid);
