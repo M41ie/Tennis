@@ -4,4 +4,12 @@ function formatRating(value) {
   if (Number.isNaN(num)) return '--';
   return num.toFixed(3);
 }
-module.exports = { formatRating };
+
+function formatGames(value) {
+  if (value == null || value === '') return '--';
+  const num = Number(value);
+  if (Number.isNaN(num)) return '--';
+  return num.toFixed(2);
+}
+
+module.exports = { formatRating, formatGames };
