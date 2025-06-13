@@ -33,6 +33,7 @@ from .cli import (
     check_password,
     validate_scores,
     update_player as cli_update_player,
+    normalize_gender,
 )
 from .rating import (
     update_ratings,
@@ -750,6 +751,7 @@ def list_players(
     if not club:
         raise HTTPException(404, "Club not found")
 
+    gender = normalize_gender(gender)
     today = datetime.date.today()
     get_rating = weighted_doubles_rating if doubles else weighted_rating
 
@@ -858,6 +860,7 @@ def list_all_players(
     if not club:
         return []
 
+    gender = normalize_gender(gender)
     club_ids = club.split(",")
     clubs_to_iter = []
     for cid in club_ids:
@@ -939,7 +942,7 @@ def update_global_player(user_id: str, data: PlayerUpdate):
     if data.age is not None:
         player.age = data.age
     if data.gender is not None:
-        player.gender = data.gender
+        player.gender = normalize_gender(data.gender)
     if data.avatar is not None:
         player.avatar = data.avatar
     if data.birth is not None:

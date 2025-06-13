@@ -19,6 +19,7 @@ from .models import (
     players,
 )
 
+
 def _connect():
     conn = sqlite3.connect(DB_FILE)
     conn.row_factory = sqlite3.Row
@@ -122,6 +123,7 @@ def _init_schema(conn: sqlite3.Connection) -> None:
 def load_data() -> Dict[str, Club]:
     conn = _connect()
     cur = conn.cursor()
+    from .cli import normalize_gender
     clubs: Dict[str, Club] = {}
     for row in cur.execute("SELECT * FROM clubs"):
         clubs[row["club_id"]] = Club(
@@ -149,7 +151,7 @@ def load_data() -> Dict[str, Club]:
             doubles_rating=row["doubles_rating"],
             experience=row["experience"],
             age=row["age"],
-            gender=row["gender"],
+            gender=normalize_gender(row["gender"]),
             avatar=row["avatar"],
             birth=row["birth"],
             handedness=row["handedness"],
