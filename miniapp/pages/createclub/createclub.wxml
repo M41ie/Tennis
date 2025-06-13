@@ -20,3 +20,17 @@
   <image wx:if="{{logo}}" class="image-preview" mode="aspectFit" src="{{logo}}"></image>
 </view>
 <button class="weui-btn weui-btn_primary create-btn" bindtap="submit">创建</button>
+<view wx:if="{{showDialog}}" class="dialog-mask" bindtap="cancelRating">
+  <view class="dialog-card" catchtap="noop">
+    <input
+      class="dialog-input"
+      placeholder="请输入自我评分，参考格式：3.250"
+      type="digit"
+      bindinput="onRating"
+    />
+    <view class="dialog-actions">
+      <button bindtap="confirmRating">提交</button>
+      <button bindtap="cancelRating">取消</button>
+    </view>
+  </view>
+</view>
