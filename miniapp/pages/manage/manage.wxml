@@ -28,16 +28,25 @@
 <view class="section">
   <view class="section-title">成员列表</view>
   <block wx:for="{{members}}" wx:key="user_id">
-    <profile-card
-      user="{{item}}"
-      editable="{{false}}"
-      info="{{item.genderText}}"
-      info2="{{item.daysText}}"
-      showRoleTag="{{true}}"
-      roleInInfo="{{true}}"
-      bind:cardtap="viewPlayer"
-      data-uid="{{item.user_id}}"
-    />
+    <view class="member-item">
+      <profile-card
+        user="{{item}}"
+        editable="{{false}}"
+        info="{{item.genderText}}"
+        info2="{{item.daysText}}"
+        showRoleTag="{{true}}"
+        roleInInfo="{{true}}"
+        bind:cardtap="viewPlayer"
+        data-uid="{{item.user_id}}"
+      />
+      <button
+        wx:if="{{isSysAdmin && item.role !== 'leader'}}"
+        class="set-leader-btn"
+        data-uid="{{item.user_id}}"
+        data-name="{{item.name}}"
+        bindtap="setLeader"
+      >设为负责人</button>
+    </view>
   </block>
 </view>
 
