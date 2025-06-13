@@ -189,6 +189,7 @@ Page({
                 gender: p.gender,
                 joined: p.joined,
                 rating_singles: p.rating != null ? p.rating.toFixed(3) : '--',
+                ratingSinglesNum: typeof p.rating === 'number' ? p.rating : null,
                 weighted_games_singles:
                   p.weighted_singles_matches != null
                     ? p.weighted_singles_matches.toFixed(2)
@@ -206,6 +207,8 @@ Page({
                 joined: p.joined
               };
               t.rating_doubles = p.rating != null ? p.rating.toFixed(3) : '--';
+              t.ratingDoublesNum =
+                typeof p.rating === 'number' ? p.rating : null;
               t.weighted_games_doubles =
                 p.weighted_doubles_matches != null
                   ? p.weighted_doubles_matches.toFixed(2)
@@ -224,6 +227,7 @@ Page({
                   : '-';
               p.genderText = genderText;
               p.daysText = `已加入${days}天`;
+              p.days = days;
               const role =
                 p.user_id === that.data.leaderId
                   ? 'leader'
@@ -234,7 +238,16 @@ Page({
               p.roleText =
                 role === 'leader' ? '负责人' : role === 'admin' ? '管理员' : '成员';
               p.genderRoleText = `${genderText} · ${p.roleText}`;
+              const rs =
+                typeof p.ratingSinglesNum === 'number' ? p.ratingSinglesNum : 0;
+              const rd =
+                typeof p.ratingDoublesNum === 'number' ? p.ratingDoublesNum : 0;
+              p.totalRating = rs + rd;
               return p;
+            });
+            list.sort((a, b) => {
+              if (b.days !== a.days) return b.days - a.days;
+              return b.totalRating - a.totalRating;
             });
             that.setData({ members: list });
           }
