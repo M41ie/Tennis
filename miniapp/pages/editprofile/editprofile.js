@@ -65,7 +65,11 @@ Page({
   submit() {
     const token = wx.getStorageSync('token');
     if (!token || !this.data.userId) return;
-    const nameOk = /^[A-Za-z0-9\u4e00-\u9fa5]{1,20}$/.test(this.data.name);
+    if (!this.data.name) {
+      wx.showToast({ title: '请填写完整信息', icon: 'none' });
+      return;
+    }
+    const nameOk = /^[A-Za-z\u4e00-\u9fa5]{1,12}$/.test(this.data.name);
     if (!nameOk) {
       wx.showToast({ title: '用户名格式错误', icon: 'none' });
       return;
