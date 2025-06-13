@@ -5,7 +5,8 @@ from dataclasses import dataclass, field
 from typing import List, Dict, Optional, Set
 
 # Limits on how many clubs a user may create or join
-MAX_CREATED_CLUBS = 1
+# By default users cannot create any clubs until a limit is set
+MAX_CREATED_CLUBS = 0
 MAX_JOINED_CLUBS = 5
 
 
@@ -18,7 +19,8 @@ class User:
     password_hash: str
     # optional openid from WeChat mini program
     wechat_openid: Optional[str] = None
-    can_create_club: bool = False
+    # all users may create clubs; limit controls whether they actually can
+    can_create_club: bool = True
     is_sys_admin: bool = False
     # Number of clubs this user has created
     created_clubs: int = 0
