@@ -863,6 +863,38 @@ def add_player(club_id: str, data: PlayerCreate):
     return {"status": "ok"}
 
 
+@app.patch("/players/{user_id}")
+def update_global_player(user_id: str, data: PlayerUpdate):
+    """Update player information without specifying a club."""
+    user = require_auth(data.token)
+    if user != data.user_id or data.user_id != user_id:
+        raise HTTPException(401, "Token mismatch")
+
+    player = players.get(user_id)
+    if not player:
+        raise HTTPException(404, "Player not found")
+
+    if data.name is not None:
+        player.name = data.name
+    if data.age is not None:
+        player.age = data.age
+    if data.gender is not None:
+        player.gender = data.gender
+    if data.avatar is not None:
+        player.avatar = data.avatar
+    if data.birth is not None:
+        player.birth = data.birth
+    if data.handedness is not None:
+        player.handedness = data.handedness
+    if data.backhand is not None:
+        player.backhand = data.backhand
+    if data.region is not None:
+        player.region = data.region
+
+    save_data(clubs)
+    return {"status": "ok"}
+
+
 @app.patch("/clubs/{club_id}/players/{user_id}")
 def update_player_api(club_id: str, user_id: str, data: PlayerUpdate):
     """Update existing player information."""

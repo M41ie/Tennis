@@ -66,6 +66,15 @@ The API automatically assigns a `club_id` and returns it in the response.
 
 To invalidate a token call `/logout` with the token value.
 
+To update profile information before joining a club, use the global endpoint:
+
+```bash
+curl -X PATCH http://localhost:8000/players/USER \
+     -H "Content-Type: application/json" \
+     -d '{"user_id":"USER","token":"TOKEN","name":"New"}'
+```
+This accepts the same fields as the club specific `/clubs/{club_id}/players/{user_id}` route.
+
 Similarly, recording a match uses:
 
 ```bash

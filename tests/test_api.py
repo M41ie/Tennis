@@ -1243,6 +1243,40 @@ def test_update_player_api(tmp_path, monkeypatch):
     assert p1.backhand == "double"
 
 
+def test_update_global_player_api(tmp_path, monkeypatch):
+    db = tmp_path / "tennis.db"
+    monkeypatch.setattr(storage, "DB_FILE", db)
+
+    api = importlib.reload(importlib.import_module("tennis.api"))
+    client = TestClient(api.app)
+
+    client.post(
+        "/users",
+        json={"user_id": "p1", "name": "P1", "password": "pw"},
+    )
+
+    token = client.post("/login", json={"user_id": "p1", "password": "pw"}).json()["token"]
+
+    resp = client.patch(
+        "/players/p1",
+        json={
+            "user_id": "p1",
+            "token": token,
+            "name": "New",
+            "gender": "M",
+            "region": "Beijing",
+        },
+    )
+    assert resp.status_code == 200
+    assert resp.json()["status"] == "ok"
+
+    storage.load_data()
+    p1 = storage.players["p1"]
+    assert p1.name == "New"
+    assert p1.gender == "M"
+    assert p1.region == "Beijing"
+
+
 def test_remove_member_api(tmp_path, monkeypatch):
     db = tmp_path / "tennis.db"
     monkeypatch.setattr(storage, "DB_FILE", db)
