@@ -71,6 +71,8 @@ class Club:
 
     admin_ids: Set[str] = field(default_factory=set)
     pending_members: Dict[str, JoinApplication] = field(default_factory=dict)
+    # store rejection reasons for previously denied join requests
+    rejected_members: Dict[str, str] = field(default_factory=dict)
     banned_ids: Set[str] = field(default_factory=set)
     members: Dict[str, Player] = field(default_factory=dict)
     matches: List['Match | DoublesMatch'] = field(default_factory=list)
