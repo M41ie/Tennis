@@ -17,6 +17,7 @@ Page({
     },
     clubId: '',
     joinedClubs: [],
+    isSysAdmin: false,
     placeholderAvatar: IMAGES.DEFAULT_AVATAR,
     iconClub: IMAGES.ICON_CLUB,
     iconComing: IMAGES.ICON_COMING,
@@ -38,6 +39,7 @@ Page({
       url: `${BASE_URL}/users/${uid}`,
       success(res) {
         const list = res.data.joined_clubs || [];
+        const isAdmin = !!res.data.sys_admin;
         let current = cid;
         if (!current && list.length) {
           current = list[0];
@@ -45,7 +47,8 @@ Page({
         }
         that.setData({
           joinedClubs: list,
-          clubId: current || ''
+          clubId: current || '',
+          isSysAdmin: isAdmin
         });
         that.loadUser(uid);
       }
@@ -91,6 +94,10 @@ Page({
   goMyClub() {
     if (!this.data.loggedIn) return;
     wx.navigateTo({ url: '/pages/club-manage/index' });
+  },
+  goSysManage() {
+    if (!this.data.isSysAdmin) return;
+    wx.navigateTo({ url: '/pages/sysmanage/sysmanage' });
   },
   logout() {
     const token = wx.getStorageSync('token');

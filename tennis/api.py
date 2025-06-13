@@ -55,6 +55,8 @@ def validation_exception_handler(request, exc):
 
 clubs = load_data()
 users = load_users()
+if "A" in users:
+    users["A"].is_sys_admin = True
 
 # token persistence file next to the database
 TOKENS_FILE = Path(str(storage.DB_FILE)).with_name("tokens.json")
@@ -523,6 +525,7 @@ def get_user_info(user_id: str):
         "name": user.name,
         "joined_clubs": joined,
         "can_create_club": user.can_create_club,
+        "sys_admin": getattr(user, "is_sys_admin", False),
     }
 
 
