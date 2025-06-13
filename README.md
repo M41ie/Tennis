@@ -123,6 +123,17 @@ pages:
 To run the mini program, build it with the WeChat Developer Tools and start the
 REST API server as shown above.
 
+To keep the front‑end code healthy an ESLint configuration lives in
+`miniapp/`. Install the Node.js dependencies and run the linter:
+
+```bash
+cd miniapp
+npm install
+npm run lint
+```
+
+Basic front‑end tests using `miniprogram-simulate` can be executed with `npm test`.
+
 ### Testing
 
 To run the test suite:
