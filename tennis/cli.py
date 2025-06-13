@@ -62,14 +62,48 @@ def cleanup_pending_matches(club: Club) -> None:
     club.pending_matches = remaining
 
 
+def _next_user_id(users) -> str:
+    """Return the next available alphabetic ID (A, B, ..., Z, AA, AB, ...).
+
+    Existing IDs that fit the pattern are skipped, so gaps are filled and
+    custom user IDs do not affect the sequence.
+    """
+
+    def encode(n: int) -> str:
+        s = ""
+        while n > 0:
+            n, rem = divmod(n - 1, 26)
+            s = chr(ord("A") + rem) + s
+        return s
+
+    idx = 1
+    while encode(idx) in users:
+        idx += 1
+
+    s = ""
+    while idx > 0:
+        idx, rem = divmod(idx - 1, 26)
+        s = chr(ord("A") + rem) + s
+    return s
+
+
 def register_user(
     users,
-    user_id: str,
+    user_id: str | None,
     name: str,
     password: str,
     allow_create: bool = False,
+    *,
+    avatar: str | None = None,
+    gender: str | None = None,
+    birth: str | None = None,
+    handedness: str | None = None,
+    backhand: str | None = None,
+    region: str | None = None,
 ):
     """Add a new user account."""
+    if not user_id:
+        user_id = _next_user_id(users)
     if user_id in users:
         raise ValueError("User already exists")
     users[user_id] = User(
@@ -79,7 +113,17 @@ def register_user(
         can_create_club=allow_create,
     )
     if user_id not in players:
-        players[user_id] = Player(user_id=user_id, name=name)
+        players[user_id] = Player(
+            user_id=user_id,
+            name=name,
+            avatar=avatar,
+            gender=gender,
+            birth=birth,
+            handedness=handedness,
+            backhand=backhand,
+            region=region,
+        )
+    return user_id
 
 
 def login_user(users, user_id: str, password: str) -> bool:
@@ -197,6 +241,7 @@ def add_player(
     birth: str | None = None,
     handedness: str | None = None,
     backhand: str | None = None,
+    region: str | None = None,
 ):
     club = clubs.get(club_id)
     if not club:
@@ -214,6 +259,7 @@ def add_player(
             birth=birth,
             handedness=handedness,
             backhand=backhand,
+            region=region,
         )
         players[user_id] = player
     else:
@@ -231,6 +277,8 @@ def add_player(
             player.handedness = handedness
         if backhand is not None:
             player.backhand = backhand
+        if region is not None:
+            player.region = region
     club.members[user_id] = player
 
 
@@ -245,6 +293,7 @@ def update_player(
     birth: str | None = None,
     handedness: str | None = None,
     backhand: str | None = None,
+    region: str | None = None,
 ):
     """Modify an existing player's profile."""
     club = clubs.get(club_id)
@@ -267,6 +316,8 @@ def update_player(
         player.handedness = handedness
     if backhand is not None:
         player.backhand = backhand
+    if region is not None:
+        player.region = region
 
 
 def remove_member(
@@ -1106,7 +1157,7 @@ def main():
     cclub.add_argument('--slogan')
 
     reg = sub.add_parser('register_user')
-    reg.add_argument('user_id')
+    reg.add_argument('user_id', nargs='?')
     reg.add_argument('name')
     reg.add_argument('password')
     reg.add_argument('--allow-create', action='store_true')
@@ -1133,6 +1184,10 @@ def main():
     aplayer.add_argument('--age', type=int)
     aplayer.add_argument('--gender')
     aplayer.add_argument('--avatar')
+    aplayer.add_argument('--birth')
+    aplayer.add_argument('--handedness')
+    aplayer.add_argument('--backhand')
+    aplayer.add_argument('--region')
 
     pre = sub.add_parser('pre_rate')
     pre.add_argument('club_id')
@@ -1237,6 +1292,7 @@ def main():
             birth=args.birth,
             handedness=args.handedness,
             backhand=args.backhand,
+            region=args.region,
         )
     elif args.cmd == 'pre_rate':
         pre_rate(clubs, args.club_id, args.rater_id, args.target_id, args.rating)
