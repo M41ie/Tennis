@@ -25,8 +25,6 @@ page{background:#f5f5f5}
 .op-btn{flex:1;background:#07C160;color:#fff;border-radius:8rpx;padding:12rpx 0;font-size:28rpx}
 .op-btn.danger{background:#e03a3a}
 
-.member-item{position:relative;margin-bottom:16rpx}
-.set-leader-btn{position:absolute;right:30rpx;top:50%;transform:translateY(-50%);background:#07C160;color:#fff;border-radius:8rpx;padding:6rpx 16rpx;font-size:24rpx}
 
 .dialog-mask{position:fixed;left:0;right:0;top:0;bottom:0;background:rgba(0,0,0,.4);display:flex;justify-content:center;align-items:center;z-index:1000}
 .dialog-card{background:#fff;padding:40rpx 30rpx;border-radius:16rpx;width:90%;box-sizing:border-box}

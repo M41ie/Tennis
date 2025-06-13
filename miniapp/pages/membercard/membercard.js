@@ -40,7 +40,9 @@ Page({
     myRole: '',
     isTargetAdmin: false,
     isTargetLeader: false,
-    isSelf: false
+    isSelf: false,
+    isSysAdmin: false,
+    clubName: ''
   },
   onLoad(options) {
     const memberId = options && options.uid ? options.uid : '';
@@ -49,7 +51,25 @@ Page({
   },
   onShow() {
     this.loadUser();
-    this.loadClubInfo();
+    this.checkSysAdmin();
+  },
+  checkSysAdmin() {
+    const uid = wx.getStorageSync('user_id');
+    const that = this;
+    if (!uid) {
+      that.setData({ isSysAdmin: false });
+      that.loadClubInfo();
+      return;
+    }
+    wx.request({
+      url: `${BASE_URL}/users/${uid}`,
+      success(res) {
+        that.setData({ isSysAdmin: !!res.data.sys_admin });
+      },
+      complete() {
+        that.loadClubInfo();
+      }
+    });
   },
   loadUser() {
     if (!this.data.memberId) return;
@@ -98,10 +118,12 @@ Page({
         let role = 'member';
         if (info.leader_id === uid) role = 'leader';
         else if (info.admin_ids && info.admin_ids.includes(uid)) role = 'admin';
+        if (that.data.isSysAdmin) role = 'leader';
         const targetAdmin = info.admin_ids && info.admin_ids.includes(that.data.memberId);
         const targetLeader = info.leader_id === that.data.memberId;
         const isSelf = that.data.memberId === uid;
         that.setData({
+          clubName: info.name || '',
           myRole: role,
           isTargetAdmin: !!targetAdmin,
           isTargetLeader: !!targetLeader,
@@ -144,7 +166,32 @@ Page({
           wx.request({
             url: `${BASE_URL}/clubs/${cid}/role`,
             method: 'POST',
-            data: { user_id: that.data.memberId, token, action: 'transfer_leader' },
+          data: { user_id: that.data.memberId, token, action: 'transfer_leader' },
+          complete() { that.loadClubInfo(); }
+        });
+      }
+    }
+  });
+  },
+  setLeader() {
+    if (!this.data.isSysAdmin) return;
+    const cid = wx.getStorageSync('club_id');
+    const token = wx.getStorageSync('token');
+    const uid = this.data.memberId;
+    const name = this.data.user ? this.data.user.name : '';
+    const that = this;
+    wx.showModal({
+      title: '设为负责人',
+      content: `确定要将 ${name} 设为 ${that.data.clubName} 的负责人吗？此操作不可逆`,
+      success(res) {
+        if (res.confirm) {
+          wx.request({
+            url: `${BASE_URL}/sys/clubs/${cid}/leader`,
+            method: 'POST',
+            data: { user_id: uid, token },
+            success() {
+              wx.showToast({ title: '操作成功', icon: 'none' });
+            },
             complete() { that.loadClubInfo(); }
           });
         }
