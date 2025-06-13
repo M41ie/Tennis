@@ -43,6 +43,8 @@ Page({
                   id: p.user_id,
                   name,
                   avatar_url: '',
+                  gender: '',
+                  genderText: '-',
                   rating_singles:
                     p.singles_rating != null ? p.singles_rating.toFixed(3) : '--',
                   rating_doubles:
@@ -64,11 +66,20 @@ Page({
             typeof d.singles_rating === 'number' ? d.singles_rating : null;
           const doublesRating =
             typeof d.doubles_rating === 'number' ? d.doubles_rating : null;
+          const gender = d.gender || '';
+          const genderText =
+            gender === 'M' || gender === 'Male' || gender === '男'
+              ? '男'
+              : gender === 'F' || gender === 'Female' || gender === '女'
+              ? '女'
+              : '-';
           result.push({
             ...p,
             id: p.user_id,
             name: d.name || p.user_id,
             avatar_url: d.avatar_url || d.avatar || '',
+            gender,
+            genderText,
             rating_singles: rating != null ? rating.toFixed(3) : '--',
             rating_doubles: doublesRating != null ? doublesRating.toFixed(3) : '--',
             weighted_games_singles:
@@ -96,6 +107,8 @@ Page({
                 id: p.user_id,
                 name,
                 avatar_url: '',
+                gender: '',
+                genderText: '-',
                 rating_singles:
                   p.singles_rating != null ? p.singles_rating.toFixed(3) : '--',
                 rating_doubles:
