@@ -1,5 +1,5 @@
-const BASE_URL = getApp().globalData.BASE_URL;
 const { hideKeyboard } = require('../../utils/hideKeyboard');
+const userService = require('../../services/user');
 
 Page({
   data: {
@@ -13,50 +13,36 @@ Page({
       wx.showToast({ title: '信息不完整', icon: 'none' });
       return;
     }
-    const that = this;
-    wx.request({
-      url: `${BASE_URL}/login`,
-      method: 'POST',
-      data: { user_id: this.data.loginId, password: this.data.loginPw },
-      timeout: 5000,
-      success(res) {
-        if (res.data.success) {
-          wx.setStorageSync('token', res.data.token);
-          wx.setStorageSync('user_id', res.data.user_id || that.data.loginId);
+    userService
+      .login(this.data.loginId, this.data.loginPw)
+      .then(res => {
+        if (res.success) {
+          wx.setStorageSync('token', res.token);
+          wx.setStorageSync('user_id', res.user_id || this.data.loginId);
           wx.navigateBack();
         } else {
           wx.showToast({ title: '登录失败', icon: 'none' });
         }
-      },
-      fail() {
-        wx.showToast({ title: '网络错误', icon: 'none' });
-      }
-    });
+      })
+      .catch(() => {});
   },
   hideKeyboard,
   wechatLogin() {
-    const that = this;
     wx.login({
       success(res) {
         if (!res.code) return;
-        wx.request({
-          url: `${BASE_URL}/wechat_login`,
-          method: 'POST',
-          data: { code: res.code },
-          timeout: 5000,
-          success(resp) {
-            if (resp.statusCode === 200 && resp.data.token) {
-              wx.setStorageSync('token', resp.data.token);
-              wx.setStorageSync('user_id', resp.data.user_id);
+        userService
+          .wechatLogin(res.code)
+          .then(resp => {
+            if (resp.token) {
+              wx.setStorageSync('token', resp.token);
+              wx.setStorageSync('user_id', resp.user_id);
               wx.navigateBack();
             } else {
               wx.showToast({ title: '登录失败', icon: 'none' });
             }
-          },
-          fail() {
-            wx.showToast({ title: '网络错误', icon: 'none' });
-          }
-        });
+          })
+          .catch(() => {});
       }
     });
   },
