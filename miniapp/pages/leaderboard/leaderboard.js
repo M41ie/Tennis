@@ -10,10 +10,13 @@ Page({
     filter: {
       clubs: [],
       mode: 'Singles',
-      gender: 'All'
+      gender: 'All',
+      region: ''
     },
     showClubDialog: false,
-    genderText: '男子&女子'
+    genderText: '男子&女子',
+    region: [],
+    regionText: '全国'
   },
   onLoad() {
     this.fetchClubs();
@@ -111,12 +114,21 @@ Page({
       }
     });
   },
+  onRegionChange(e) {
+    const region = e.detail.value;
+    const regionString = region.join(' ');
+    const regionText = regionString || '全国';
+    const filter = { ...this.data.filter, region: regionString };
+    this.setData({ region, regionText, filter });
+    this.fetchList(filter);
+  },
   fetchList(filter) {
     const clubs = filter.clubs && filter.clubs.length ? filter.clubs : [];
     const that = this;
     const params = [];
     if (filter.gender && filter.gender !== 'All') params.push('gender=' + filter.gender);
     if (filter.mode === 'Doubles') params.push('doubles=true');
+    if (filter.region) params.push('region=' + encodeURIComponent(filter.region));
 
     let url = `${BASE_URL}/players`;
     if (clubs.length) params.push('club=' + clubs.join(','));

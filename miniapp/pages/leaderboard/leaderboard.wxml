@@ -5,6 +5,9 @@
 
 <view class="filter-bar">
   <view class="filter-item" bindtap="openClub">俱乐部</view>
+  <picker mode="region" bindchange="onRegionChange" value="{{region}}">
+    <view class="filter-item">{{regionText}}</view>
+  </picker>
   <view class="filter-item" bindtap="chooseGender">{{genderText}}</view>
   <!-- Level and age filters removed -->
 </view>
