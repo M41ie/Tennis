@@ -198,6 +198,12 @@ Page({
   openAllUsers() {
     wx.navigateTo({ url: '/pages/sys-user-list/index' });
   },
+  openAllClubs() {
+    wx.navigateTo({ url: '/pages/sys-club-list/index' });
+  },
+  openPending() {
+    wx.navigateTo({ url: '/pages/sys-pending/index' });
+  },
   openAllMatches() {
     wx.navigateTo({ url: '/pages/sys-match-list/index' });
   },

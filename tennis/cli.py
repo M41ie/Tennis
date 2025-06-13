@@ -657,7 +657,11 @@ def veto_match(clubs, club_id: str, index: int, approver: str, users=None):
     cleanup_pending_matches(club)
     if index >= len(club.pending_matches):
         raise ValueError("Match not found")
-    if approver != club.leader_id and approver not in club.admin_ids:
+    is_sys_admin = False
+    if users is not None:
+        u = users.get(approver)
+        is_sys_admin = bool(u and getattr(u, "is_sys_admin", False))
+    if approver != club.leader_id and approver not in club.admin_ids and not is_sys_admin:
         raise ValueError("Not authorized")
     match = club.pending_matches[index]
     from .models import DoublesMatch
@@ -684,7 +688,11 @@ def veto_doubles(clubs, club_id: str, index: int, approver: str, users=None):
     cleanup_pending_matches(club)
     if index >= len(club.pending_matches):
         raise ValueError("Match not found")
-    if approver != club.leader_id and approver not in club.admin_ids:
+    is_sys_admin = False
+    if users is not None:
+        u = users.get(approver)
+        is_sys_admin = bool(u and getattr(u, "is_sys_admin", False))
+    if approver != club.leader_id and approver not in club.admin_ids and not is_sys_admin:
         raise ValueError("Not authorized")
     match = club.pending_matches[index]
     if not isinstance(match, DoublesMatch):
@@ -848,7 +856,11 @@ def approve_match(clubs, club_id: str, index: int, approver: str, users=None):
     cleanup_pending_matches(club)
     if index >= len(club.pending_matches):
         raise ValueError("Match not found")
-    if approver != club.leader_id and approver not in club.admin_ids:
+    is_sys_admin = False
+    if users is not None:
+        u = users.get(approver)
+        is_sys_admin = bool(u and getattr(u, "is_sys_admin", False))
+    if approver != club.leader_id and approver not in club.admin_ids and not is_sys_admin:
         raise ValueError("Not authorized")
     match = club.pending_matches[index]
     if not (match.confirmed_a and match.confirmed_b):
