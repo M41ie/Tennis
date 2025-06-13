@@ -15,6 +15,10 @@ python3 -m tennis.cli confirm_match CLUB_ID INDEX USER_ID
 python3 -m tennis.cli approve_match CLUB_ID INDEX APPROVER
 ```
 
+When calling `register_user` you can omit the `USER_ID` argument. The server will
+assign the next available alphabetic ID automatically (A, B, ..., Z, AA, AB,
+...).
+
 Creating a club automatically makes the creator a member. This also counts
 toward their joined club limit (default 5).
 
@@ -49,6 +53,8 @@ curl -X POST http://localhost:8000/login \
      -H "Content-Type: application/json" \
      -d '{"user_id": "USER", "password": "PW"}'
 ```
+You may supply a username instead of `USER` and the server will look up the
+corresponding ID automatically.
 
 Include the returned `token` value in the `token` field when calling protected
 endpoints. Creating a club or adding a player requires the caller's token, e.g.:
@@ -61,6 +67,15 @@ curl -X POST http://localhost:8000/clubs \
 The API automatically assigns a `club_id` and returns it in the response.
 
 To invalidate a token call `/logout` with the token value.
+
+To update profile information before joining a club, use the global endpoint:
+
+```bash
+curl -X PATCH http://localhost:8000/players/USER \
+     -H "Content-Type: application/json" \
+     -d '{"user_id":"USER","token":"TOKEN","name":"New"}'
+```
+This accepts the same fields as the club specific `/clubs/{club_id}/players/{user_id}` route.
 
 Similarly, recording a match uses:
 
@@ -103,7 +118,7 @@ pages:
 
 * **Leaderboard** – displays player ratings with basic club and rating filters
 * **Match Records** – shows the logged in user's recent matches
-* **Profile** – displays user information and links to club management
+* **Profile** – displays user information (always from global data) and links to club management
 
 To run the mini program, build it with the WeChat Developer Tools and start the
 REST API server as shown above.

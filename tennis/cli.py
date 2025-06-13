@@ -127,9 +127,20 @@ def register_user(
     return user_id
 
 
-def login_user(users, user_id: str, password: str) -> bool:
-    """Verify a user's password."""
-    user = users.get(user_id)
+def resolve_user(users, identifier: str) -> User | None:
+    """Return the User matching the given ID or name."""
+    user = users.get(identifier)
+    if not user:
+        for u in users.values():
+            if u.name == identifier:
+                user = u
+                break
+    return user
+
+
+def login_user(users, identifier: str, password: str) -> bool:
+    """Verify a user's password by ID or name."""
+    user = resolve_user(users, identifier)
     if not user:
         return False
     return check_password(user, password)

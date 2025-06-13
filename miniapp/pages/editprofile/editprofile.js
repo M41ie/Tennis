@@ -17,12 +17,11 @@ Page({
   },
   onLoad() {
     const uid = wx.getStorageSync('user_id');
-    const cid = wx.getStorageSync('club_id');
-    if (!uid || !cid) return;
+    if (!uid) return;
     this.setData({ userId: uid });
     const that = this;
     wx.request({
-      url: `${BASE_URL}/clubs/${cid}/players/${uid}`,
+      url: `${BASE_URL}/players/${uid}`,
       success(res) {
         const p = res.data || {};
         that.setData({
@@ -64,9 +63,8 @@ Page({
     });
   },
   submit() {
-    const cid = wx.getStorageSync('club_id');
     const token = wx.getStorageSync('token');
-    if (!cid || !token || !this.data.userId) return;
+    if (!token || !this.data.userId) return;
     const nameOk = /^[A-Za-z0-9\u4e00-\u9fa5]{1,20}$/.test(this.data.name);
     if (!nameOk) {
       wx.showToast({ title: '用户名格式错误', icon: 'none' });
@@ -74,7 +72,7 @@ Page({
     }
     const that = this;
     wx.request({
-      url: `${BASE_URL}/clubs/${cid}/players/${this.data.userId}`,
+      url: `${BASE_URL}/players/${this.data.userId}`,
       method: 'PATCH',
       data: {
         user_id: this.data.userId,

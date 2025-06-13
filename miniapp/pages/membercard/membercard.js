@@ -52,11 +52,10 @@ Page({
     this.loadClubInfo();
   },
   loadUser() {
-    const cid = wx.getStorageSync('club_id');
-    if (!cid || !this.data.memberId) return;
+    if (!this.data.memberId) return;
     const that = this;
     wx.request({
-      url: `${BASE_URL}/clubs/${cid}/players/${this.data.memberId}`,
+      url: `${BASE_URL}/players/${this.data.memberId}`,
       success(res) {
         const raw = res.data || {};
         const singlesCount = raw.weighted_games_singles ?? raw.weighted_singles_matches;
