@@ -711,6 +711,9 @@ def get_club_info(club_id: str):
         "pending_members": [
             {
                 "user_id": uid,
+                "name": players[uid].name,
+                "avatar": players[uid].avatar,
+                "gender": players[uid].gender,
                 "reason": info.reason,
                 "singles_rating": info.singles_rating,
                 "doubles_rating": info.doubles_rating,
@@ -718,7 +721,13 @@ def get_club_info(club_id: str):
             for uid, info in club.pending_members.items()
         ],
         "members": [
-            {"user_id": p.user_id, "name": p.name} for p in club.members.values()
+            {
+                "user_id": p.user_id,
+                "name": p.name,
+                "avatar": p.avatar,
+                "gender": p.gender,
+            }
+            for p in club.members.values()
         ],
         "rejected_members": club.rejected_members,
         "stats": _club_stats(club),
