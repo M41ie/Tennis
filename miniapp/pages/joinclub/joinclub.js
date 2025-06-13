@@ -118,8 +118,10 @@ Page({
     wx.request({
       url: `${BASE_URL}/users/${userId}`,
       success(res) {
-        if (res.data.joined_clubs && res.data.joined_clubs.length >= 5) {
-          wx.showToast({ title: '达到上限', icon: 'none' });
+        const limit =
+          res.data.max_joinable_clubs != null ? res.data.max_joinable_clubs : 5;
+        if (res.data.joined_clubs && res.data.joined_clubs.length >= limit) {
+          wx.showToast({ title: '加入俱乐部的数量已达上限', icon: 'none' });
           return;
         }
         wx.request({
