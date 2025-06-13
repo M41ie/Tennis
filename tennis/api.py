@@ -30,6 +30,7 @@ from .cli import (
     quit_club as cli_quit_club,
     dissolve_club as cli_dissolve_club,
     create_club as cli_create_club,
+    set_user_limits,
     hash_password,
     check_password,
     validate_scores,
@@ -437,6 +438,12 @@ class RoleRequest(BaseModel):
     token: str
 
 
+class LimitsUpdateRequest(BaseModel):
+    token: str
+    max_joinable_clubs: int
+    max_creatable_clubs: int
+
+
 class DissolveRequest(BaseModel):
     user_id: str
     token: str
@@ -540,6 +547,8 @@ def get_user_info(user_id: str):
         "name": user.name,
         "joined_clubs": joined,
         "can_create_club": user.can_create_club,
+        "max_joinable_clubs": getattr(user, "max_joinable_clubs", 5),
+        "max_creatable_clubs": getattr(user, "max_creatable_clubs", 1),
         "sys_admin": getattr(user, "is_sys_admin", False),
     }
 
@@ -1837,6 +1846,31 @@ def list_all_users(query: str | None = None) -> list[dict[str, object]]:
         result.append(_user_summary(u))
     result.sort(key=lambda x: x["user_id"])
     return result
+
+
+@app.post("/sys/users/{user_id}/limits")
+def update_user_limits(user_id: str, data: LimitsUpdateRequest):
+    """System admin updates a user's club limits."""
+    actor = require_auth(data.token)
+    user = users.get(actor)
+    if not user or not getattr(user, "is_sys_admin", False):
+        raise HTTPException(401, "Not authorized")
+    target = users.get(user_id)
+    if not target:
+        raise HTTPException(404, "User not found")
+    from .cli import set_user_limits
+
+    try:
+        set_user_limits(
+            users,
+            user_id,
+            max_joinable=data.max_joinable_clubs,
+            max_creatable=data.max_creatable_clubs,
+        )
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    save_users(users)
+    return {"status": "ok"}
 
 
 @app.get("/sys/clubs")

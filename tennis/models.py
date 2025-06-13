@@ -24,6 +24,9 @@ class User:
     created_clubs: int = 0
     # Number of clubs the user has joined
     joined_clubs: int = 0
+    # Per-user limits
+    max_creatable_clubs: int = MAX_CREATED_CLUBS
+    max_joinable_clubs: int = MAX_JOINED_CLUBS
     messages: List['Message'] = field(default_factory=list)
 
 @dataclass
