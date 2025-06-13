@@ -1,4 +1,5 @@
 const BASE_URL = getApp().globalData.BASE_URL;
+const { formatRating, formatGames } = require('../../utils/format');
 
 Page({
   data: {
@@ -25,7 +26,14 @@ Page({
     wx.request({
       url,
       success(res) {
-        const list = res.data || [];
+        const raw = res.data || [];
+        const list = raw.map(u => ({
+          ...u,
+          rating_singles: formatRating(u.rating_singles),
+          rating_doubles: formatRating(u.rating_doubles),
+          weighted_games_singles: formatGames(u.weighted_games_singles),
+          weighted_games_doubles: formatGames(u.weighted_games_doubles)
+        }));
         const users = that.data.page === 1 ? list : that.data.users.concat(list);
         that.setData({ users, finished: !list.length });
       }
@@ -40,5 +48,10 @@ Page({
     if (this.data.finished) return;
     this.setData({ page: this.data.page + 1 });
     this.fetchUsers();
+  },
+  openUser(e) {
+    const uid = e.currentTarget.dataset.id;
+    if (!uid) return;
+    wx.navigateTo({ url: `/pages/sys-user-detail/index?user_id=${uid}` });
   }
 });

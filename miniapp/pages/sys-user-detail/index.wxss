@@ -1,5 +1,18 @@
-.page-container { padding: 20rpx; }
-.section-title { margin-top: 20rpx; font-weight: bold; }
-.club-item { padding: 10rpx 0; color: #555; }
-.edit-card { border: 1px solid #eee; padding: 20rpx; margin-top: 10rpx; }
-.edit-row { margin-bottom: 10rpx; display: flex; justify-content: space-between; align-items: center; }
+.page-container{padding:20rpx;background:#f5f5f5;min-height:100vh;}
+.section-title{margin:20rpx 0 10rpx 0;font-size:30rpx;font-weight:bold;}
+.club-list{}
+.club-card{width:100%;background:#fff;border-radius:16rpx;margin-bottom:20rpx;padding:24rpx;box-shadow:0 4rpx 12rpx rgba(0,0,0,0.05);display:flex;justify-content:space-between;}
+.card-left{display:flex;flex-direction:column;}
+.club-name{font-size:32rpx;font-weight:600;color:#333;}
+.club-slogan{font-size:24rpx;color:#888;margin-top:6rpx;}
+.card-right{display:flex;align-items:flex-start;}
+.club-role{font-size:26rpx;}
+.role-tag.leader{color:#007aff;}
+.role-tag.admin{color:#1aad19;}
+.role-tag.member{color:#999;}
+.primary-btn{background:#07C160;color:#fff;border-radius:8rpx;padding:12rpx 0;font-size:28rpx;margin:10rpx 0;}
+.dialog-mask{position:fixed;left:0;right:0;top:0;bottom:0;background:rgba(0,0,0,.4);display:flex;justify-content:center;align-items:center;z-index:1000;}
+.dialog-card{background:#fff;padding:40rpx 30rpx;border-radius:16rpx;width:90%;box-sizing:border-box;}
+.dialog-title{text-align:center;font-size:30rpx;margin-bottom:24rpx;}
+.edit-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:20rpx;}
+.edit-row input{border:1rpx solid #ccc;border-radius:8rpx;padding:10rpx;width:200rpx;text-align:right;}
