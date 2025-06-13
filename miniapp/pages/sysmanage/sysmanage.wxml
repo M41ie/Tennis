@@ -25,9 +25,20 @@
       <view class="card">总俱乐部数: {{totalClubs}}</view>
       <view class="card">待处理事项: {{pendingItems}}</view>
     </view>
+    <view class="section-title">俱乐部活跃度排名</view>
     <view class="rank-list">
       <block wx:for="{{topClubs}}" wx:key="club_id" wx:for-index="index">
-        <view class="rank-item">{{index+1}}. {{item.name}} ({{item.total_matches}} 场)</view>
+        <view class="club-card" data-id="{{item.club_id}}" bindtap="openClub">
+          <view class="card-left">
+            <view class="club-name">{{index+1}}. {{item.name}}</view>
+            <view class="club-slogan" wx:if="{{item.slogan}}">{{item.slogan}}</view>
+            <view class="club-stats" wx:if="{{item.member_count}}">
+              <text>{{item.region}} · 成员 {{item.member_count}} 人</text>
+              <text>单打：{{item.singles_range}}，平均 {{item.singles_avg}}，共计 {{item.total_singles}} 场</text>
+              <text>双打：{{item.doubles_range}}，平均 {{item.doubles_avg}}，共计 {{item.total_doubles}} 场</text>
+            </view>
+          </view>
+        </view>
       </block>
       <view wx:if="{{!topClubs.length}}" class="empty">暂无数据</view>
     </view>
