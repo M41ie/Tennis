@@ -517,7 +517,8 @@ def load_users() -> Dict[str, User]:
             name=row["name"],
             password_hash=row["password_hash"],
             wechat_openid=wechat_openid,
-            can_create_club=bool(row["can_create_club"]),
+            # ignore stored can_create_club flag; always load as True
+            can_create_club=True,
             is_sys_admin=bool(row["is_sys_admin"]) if "is_sys_admin" in row.keys() else False,
             created_clubs=row["created_clubs"],
             joined_clubs=row["joined_clubs"],

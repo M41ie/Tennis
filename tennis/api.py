@@ -542,14 +542,16 @@ def get_user_info(user_id: str):
     if not user:
         raise HTTPException(404, "User not found")
     joined = [cid for cid, c in clubs.items() if user_id in c.members]
+    created = getattr(user, "created_clubs", 0)
+    max_created = getattr(user, "max_creatable_clubs", 0)
     return {
         "user_id": user.user_id,
         "name": user.name,
         "joined_clubs": joined,
-        "can_create_club": user.can_create_club,
+        "can_create_club": created < max_created,
         "max_joinable_clubs": getattr(user, "max_joinable_clubs", 5),
-        "max_creatable_clubs": getattr(user, "max_creatable_clubs", 0),
-        "created_clubs": getattr(user, "created_clubs", 0),
+        "max_creatable_clubs": max_created,
+        "created_clubs": created,
         "sys_admin": getattr(user, "is_sys_admin", False),
     }
 

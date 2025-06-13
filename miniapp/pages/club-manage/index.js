@@ -168,7 +168,9 @@ Page({
     wx.request({
       url: `${BASE_URL}/users/${uid}`,
       success(res) {
-        that.setData({ allowCreate: !!res.data.can_create_club });
+        const created = res.data.created_clubs != null ? res.data.created_clubs : 0;
+        const max = res.data.max_creatable_clubs != null ? res.data.max_creatable_clubs : 0;
+        that.setData({ allowCreate: created < max });
       }
     });
   },
@@ -176,7 +178,7 @@ Page({
     if (this.data.allowCreate) {
       wx.navigateTo({ url: '/pages/createclub/createclub' });
     } else {
-      wx.showToast({ title: '暂无权限', icon: 'none' });
+      wx.showToast({ title: '创建俱乐部的数量已达上限', icon: 'none' });
     }
   }
 });

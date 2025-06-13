@@ -1514,7 +1514,8 @@ def test_get_user_info_api(tmp_path, monkeypatch):
     data = resp.json()
     assert data["user_id"] == "u1"
     assert data["joined_clubs"] == ["c1"]
-    assert data["can_create_club"] is True
+    # user u1 has no create permissions since the limit is 0
+    assert data["can_create_club"] is False
     resp = client.get(f"/users/u1/messages?token={token_u1}")
     assert resp.status_code == 200
     msgs = resp.json()
