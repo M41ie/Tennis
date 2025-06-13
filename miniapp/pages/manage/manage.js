@@ -5,6 +5,7 @@ Page({
     pending: [],
     members: [],
     isAdmin: false,
+    isSysAdmin: false,
     userId: '',
     clubName: '',
     clubSlogan: '',
@@ -22,8 +23,26 @@ Page({
       wx.setStorageSync('club_id', options.cid);
     }
     this.setData({ userId: wx.getStorageSync('user_id') });
-    this.fetchClub();
-    this.fetchPlayers();
+    this.checkSysAdmin();
+  },
+  checkSysAdmin() {
+    const uid = this.data.userId;
+    const that = this;
+    if (!uid) {
+      that.fetchClub();
+      that.fetchPlayers();
+      return;
+    }
+    wx.request({
+      url: `${BASE_URL}/users/${uid}`,
+      success(res) {
+        that.setData({ isSysAdmin: !!res.data.sys_admin });
+      },
+      complete() {
+        that.fetchClub();
+        that.fetchPlayers();
+      }
+    });
   },
   loadPendingNames(list) {
     const that = this;
@@ -141,7 +160,8 @@ Page({
         const info = res.data;
         const isAdmin =
           info.leader_id === that.data.userId ||
-          (info.admin_ids && info.admin_ids.includes(that.data.userId));
+          (info.admin_ids && info.admin_ids.includes(that.data.userId)) ||
+          that.data.isSysAdmin;
         let role = 'member';
         if (info.leader_id === that.data.userId) role = 'leader';
         else if (info.admin_ids && info.admin_ids.includes(that.data.userId))
@@ -435,18 +455,6 @@ Page({
           });
         }
       }
-    });
-  },
-  toggleAdmin() {
-    const cid = wx.getStorageSync('club_id');
-    const token = wx.getStorageSync('token');
-    const uid = this.data.userId;
-    const that = this;
-    wx.request({
-      url: `${BASE_URL}/clubs/${cid}/role`,
-      method: 'POST',
-      data: { user_id: uid, token, action: 'toggle_admin' },
-      complete() { that.fetchClub(); }
     });
   },
   transferLeader() {

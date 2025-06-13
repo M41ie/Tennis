@@ -476,6 +476,22 @@ def transfer_leader(clubs, club_id: str, actor_id: str, target_id: str):
         club.admin_ids.add(old_leader)
 
 
+def sys_set_leader(clubs, club_id: str, target_id: str):
+    """System admin directly sets club leader."""
+    club = clubs.get(club_id)
+    if not club:
+        raise ValueError("Club not found")
+    if target_id not in club.members:
+        raise ValueError("Player not found")
+    old_leader = club.leader_id
+    if target_id == old_leader:
+        return
+    club.leader_id = target_id
+    club.admin_ids.discard(target_id)
+    if old_leader and old_leader != target_id and len(club.admin_ids) < 3:
+        club.admin_ids.add(old_leader)
+
+
 def resign_admin(clubs, club_id: str, user_id: str):
     """Admin resigns their role."""
     club = clubs.get(club_id)

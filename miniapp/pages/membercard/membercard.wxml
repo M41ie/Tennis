@@ -10,7 +10,8 @@
   <block wx:if="{{myRole === 'leader' && !isSelf}}">
     <block wx:if="{{!isTargetLeader}}">
       <button class="action-btn" bindtap="toggleAdmin">{{isTargetAdmin ? '取消管理员' : '设为管理员'}}</button>
-      <button class="action-btn" bindtap="transferLeader">转移负责人</button>
+      <button wx:if="{{!isSysAdmin}}" class="action-btn" bindtap="transferLeader">转移负责人</button>
+      <button wx:if="{{isSysAdmin}}" class="action-btn" bindtap="setLeader">设为负责人</button>
       <button class="action-btn remove" bindtap="removeMember">移除成员</button>
     </block>
   </block>
