@@ -1007,6 +1007,52 @@ def list_all_players(
     return players
 
 
+@app.get("/leaderboard_full")
+def leaderboard_full(
+    user_id: str | None = None,
+    include_clubs: bool = True,
+    include_joined: bool = True,
+    include_players: bool = True,
+    min_rating: float | None = None,
+    max_rating: float | None = None,
+    min_age: int | None = None,
+    max_age: int | None = None,
+    gender: str | None = None,
+    club: str | None = None,
+    doubles: bool = False,
+    region: str | None = None,
+):
+    """Return club list, joined clubs and leaderboard data in one call."""
+
+    result: dict[str, object] = {}
+
+    if include_clubs:
+        result["clubs"] = list_clubs()
+
+    if include_joined:
+        if user_id:
+            user = users.get(user_id)
+            if not user:
+                raise HTTPException(404, "User not found")
+            result["joined_clubs"] = [cid for cid, c in clubs.items() if user_id in c.members]
+        else:
+            result["joined_clubs"] = []
+
+    if include_players:
+        result["players"] = list_all_players(
+            min_rating=min_rating,
+            max_rating=max_rating,
+            min_age=min_age,
+            max_age=max_age,
+            gender=gender,
+            club=club,
+            doubles=doubles,
+            region=region,
+        )
+
+    return result
+
+
 @app.post("/clubs/{club_id}/players")
 def add_player(club_id: str, data: PlayerCreate):
     require_auth(data.token)
