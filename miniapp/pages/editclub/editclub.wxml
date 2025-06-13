@@ -1,21 +1,21 @@
 <view class="weui-cells weui-cells_form" bindtap="hideKeyboard">
   <view class="weui-cell">
-    <view class="weui-label">Name</view>
-    <input class="weui-input" value="{{name}}" placeholder="Name" bindinput="onName" />
+    <view class="weui-label">俱乐部名</view>
+    <input class="weui-input" value="{{name}}" placeholder="俱乐部名" bindinput="onName" />
   </view>
   <view class="weui-cell">
-    <view class="weui-label">Slogan</view>
-    <input class="weui-input" value="{{slogan}}" placeholder="Slogan" bindinput="onSlogan" />
+    <view class="weui-label">口号</view>
+    <input class="weui-input" value="{{slogan}}" placeholder="口号" bindinput="onSlogan" />
   </view>
   <view class="weui-cell">
-    <view class="weui-label">Region</view>
+    <view class="weui-label">地区</view>
     <picker mode="region" bindchange="onRegionChange" value="{{region}}">
       <view class="picker">{{regionString || '选择地区'}}</view>
     </picker>
   </view>
   <view class="weui-cell">
-    <view class="weui-label">Logo</view>
-    <button bindtap="chooseLogo">Select</button>
+    <view class="weui-label">徽标</view>
+    <button bindtap="chooseLogo">选择</button>
   </view>
   <image wx:if="{{logo}}" class="image-preview" mode="aspectFit" src="{{logo}}"></image>
 </view>
