@@ -16,6 +16,7 @@
     "pages/addmatch/addmatch",
     "pages/manage/manage",
     "pages/messages/messages",
+    "pages/mynotes/mynotes",
     "pages/recorddetail/recorddetail",
     "pages/appointment/appointment",
     "pages/sysmanage/sysmanage"
