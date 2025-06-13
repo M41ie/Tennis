@@ -116,6 +116,7 @@ Page({
     const uid = this.data.userId;
     const join = Number(this.data.inputJoin);
     const create = Number(this.data.inputCreate);
+    const token = wx.getStorageSync('token');
     const that = this;
     wx.showModal({
       title: '确认修改',
@@ -125,14 +126,19 @@ Page({
           wx.request({
             url: `${BASE_URL}/sys/users/${uid}/limits`,
             method: 'POST',
-            data: { max_joinable_clubs: join, max_creatable_clubs: create },
-            success() {
-              wx.showToast({ title: '修改成功' });
-              that.setData({
-                'limits.max_joinable_clubs': join,
-                'limits.max_creatable_clubs': create
-              });
-              that.fetchDetail();
+            data: { max_joinable_clubs: join, max_creatable_clubs: create, token },
+            success(res) {
+              if (res.statusCode === 200) {
+                wx.showToast({ title: '修改成功' });
+                that.setData({
+                  'limits.max_joinable_clubs': join,
+                  'limits.max_creatable_clubs': create
+                });
+                that.fetchDetail();
+              } else {
+                const msg = (res.data && res.data.detail) || '修改失败';
+                wx.showToast({ title: msg, icon: 'none' });
+              }
             },
             complete() {
               that.setData({ showEdit: false });
