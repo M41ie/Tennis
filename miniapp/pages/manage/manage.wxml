@@ -13,10 +13,15 @@
 
 <view class="section" wx:if="{{pending.length && isAdmin}}">
   <view class="section-title">待审核成员</view>
-  <block wx:for="{{pending}}" wx:key="uid">
+  <block wx:for="{{pending}}" wx:key="user_id">
     <view class="card">
-      <text class="pending-name">{{item}}</text>
-      <button data-uid="{{item}}" bindtap="approve" class="primary-btn">通过</button>
+      <view class="pending-info">
+        <text class="pending-name">{{item.user_id}}</text>
+        <text wx:if="{{item.reason}}" class="pending-reason">{{item.reason}}</text>
+        <text wx:if="{{item.singles_rating != null}}">单{{item.singles_rating}}</text>
+        <text wx:if="{{item.doubles_rating != null}}">双{{item.doubles_rating}}</text>
+      </view>
+      <button data-uid="{{item.user_id}}" bindtap="approve" class="primary-btn">通过</button>
     </view>
   </block>
 </view>

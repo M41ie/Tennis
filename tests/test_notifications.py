@@ -22,7 +22,14 @@ def test_request_join_notifies_staff():
     club = clubs["c1"]
     club.admin_ids.add("admin")
 
-    request_join(clubs, users, "c1", "joiner")
+    request_join(
+        clubs,
+        users,
+        "c1",
+        "joiner",
+        singles_rating=1000.0,
+        doubles_rating=1000.0,
+    )
 
     assert len(users["leader"].messages) == 1
     assert "joiner" in users["leader"].messages[0].text
