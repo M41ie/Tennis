@@ -1800,6 +1800,53 @@ def cancel_signup(club_id: str, index: int, data: SignupRequest):
     return {"status": "ok"}
 
 
+# ---- System management endpoints ----
+
+def _user_summary(user: User) -> dict[str, object]:
+    """Return basic profile information with rating stats."""
+    player = players.get(user.user_id)
+    today = datetime.date.today()
+    if player:
+        singles = weighted_rating(player, today)
+        doubles = weighted_doubles_rating(player, today)
+        singles_count = weighted_singles_matches(player)
+        doubles_count = weighted_doubles_matches(player)
+    else:
+        singles = doubles = None
+        singles_count = doubles_count = 0.0
+    return {
+        "user_id": user.user_id,
+        "id": user.user_id,
+        "name": user.name,
+        "avatar_url": getattr(player, "avatar", None) if player else None,
+        "rating_singles": singles,
+        "rating_doubles": doubles,
+        "weighted_games_singles": round(singles_count, 2),
+        "weighted_games_doubles": round(doubles_count, 2),
+    }
+
+
+@app.get("/sys/users")
+def list_all_users(query: str | None = None) -> list[dict[str, object]]:
+    """Return users optionally filtered by a search query."""
+    q = query.lower() if query else None
+    result = []
+    for u in users.values():
+        if q and q not in u.user_id.lower() and q not in u.name.lower():
+            continue
+        result.append(_user_summary(u))
+    result.sort(key=lambda x: x["user_id"])
+    return result
+
+
+@app.get("/sys/stats")
+def system_stats() -> dict[str, int]:
+    """Return total user and match counts."""
+    total_users = len(users)
+    total_matches = sum(len(c.matches) for c in clubs.values())
+    return {"total_users": total_users, "total_matches": total_matches}
+
+
 if __name__ == "__main__":
     import uvicorn
 
