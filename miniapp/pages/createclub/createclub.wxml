@@ -22,6 +22,7 @@
 <button class="weui-btn weui-btn_primary create-btn" bindtap="submit">创建</button>
 <view wx:if="{{showDialog}}" class="dialog-mask" bindtap="cancelRating">
   <view class="dialog-card" catchtap="noop">
+    <view class="dialog-title">请为自己评定初始评分</view>
     <input
       class="dialog-input"
       placeholder="请输入自我评分，参考格式：3.250"

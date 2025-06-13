@@ -27,6 +27,12 @@
   box-sizing: border-box;
 }
 
+.dialog-title {
+  text-align: center;
+  font-size: 30rpx;
+  margin-bottom: 24rpx;
+}
+
 .dialog-input {
   width: 100%;
   height: 80rpx;

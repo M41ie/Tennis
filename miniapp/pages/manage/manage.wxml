@@ -50,3 +50,19 @@
   <button wx:if="{{role==='admin'||role==='leader'}}" class="op-btn" bindtap="editClub">编辑</button>
   <button class="op-btn" open-type="share">分享</button>
 </view>
+
+<view wx:if="{{showRatingDialog}}" class="dialog-mask" bindtap="cancelRating">
+  <view class="dialog-card" catchtap="noop">
+    <view class="dialog-title">{{ratingDialogTitle}}</view>
+    <input
+      class="dialog-input"
+      placeholder="参考格式：3.250"
+      type="digit"
+      bindinput="onRatingInput"
+    />
+    <view class="dialog-actions">
+      <button bindtap="confirmRating">提交</button>
+      <button bindtap="cancelRating">取消</button>
+    </view>
+  </view>
+</view>
