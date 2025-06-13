@@ -22,9 +22,14 @@
       <button size="mini" bindtap="searchClubs">搜索</button>
     </view>
     <view class="dashboard">
-      <view class="card">总俱乐部数: --</view>
-      <view class="card">待处理事项: --</view>
+      <view class="card">总俱乐部数: {{totalClubs}}</view>
+      <view class="card">待处理事项: {{pendingItems}}</view>
     </view>
-    <view class="chart-placeholder">俱乐部活跃度排名</view>
+    <view class="rank-list">
+      <block wx:for="{{topClubs}}" wx:key="club_id" wx:for-index="index">
+        <view class="rank-item">{{index+1}}. {{item.name}} ({{item.total_matches}} 场)</view>
+      </block>
+      <view wx:if="{{!topClubs.length}}" class="empty">暂无数据</view>
+    </view>
   </view>
 </view>

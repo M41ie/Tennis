@@ -6,10 +6,14 @@ Page({
     userQuery: '',
     clubQuery: '',
     totalUsers: '--',
-    totalMatches: '--'
+    totalMatches: '--',
+    totalClubs: '--',
+    pendingItems: '--',
+    topClubs: []
   },
   onLoad() {
     this.loadStats();
+    this.loadClubStats();
   },
   loadStats() {
     const that = this;
@@ -19,8 +23,21 @@ Page({
         const d = res.data || {};
         that.setData({
           totalUsers: d.total_users != null ? d.total_users : '--',
-          totalMatches: d.total_matches != null ? d.total_matches : '--'
+          totalMatches: d.total_matches != null ? d.total_matches : '--',
+          totalClubs: d.total_clubs != null ? d.total_clubs : '--',
+          pendingItems: d.pending_items != null ? d.pending_items : '--'
         });
+      }
+    });
+  },
+  loadClubStats() {
+    const that = this;
+    wx.request({
+      url: `${BASE_URL}/sys/clubs`,
+      success(res) {
+        const list = res.data || [];
+        list.sort((a, b) => (b.total_matches || 0) - (a.total_matches || 0));
+        that.setData({ topClubs: list.slice(0, 10) });
       }
     });
   },
