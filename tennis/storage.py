@@ -39,6 +39,7 @@ def _init_schema(conn: sqlite3.Connection) -> None:
         password_hash TEXT,
         wechat_openid TEXT,
         can_create_club INTEGER,
+        is_sys_admin INTEGER DEFAULT 0,
         created_clubs INTEGER DEFAULT 0,
         joined_clubs INTEGER DEFAULT 0
     )"""
@@ -92,6 +93,9 @@ def _init_schema(conn: sqlite3.Connection) -> None:
     cols = {row[1] for row in cur.execute("PRAGMA table_info('clubs')")}
     if 'slogan' not in cols:
         cur.execute("ALTER TABLE clubs ADD COLUMN slogan TEXT")
+    cols = {row[1] for row in cur.execute("PRAGMA table_info('users')")}
+    if 'is_sys_admin' not in cols:
+        cur.execute("ALTER TABLE users ADD COLUMN is_sys_admin INTEGER DEFAULT 0")
     cols = {row[1] for row in cur.execute("PRAGMA table_info('club_meta')")}
     if 'leader_id' not in cols:
         cur.execute("ALTER TABLE club_meta ADD COLUMN leader_id TEXT")
@@ -508,6 +512,7 @@ def load_users() -> Dict[str, User]:
             password_hash=row["password_hash"],
             wechat_openid=wechat_openid,
             can_create_club=bool(row["can_create_club"]),
+            is_sys_admin=bool(row["is_sys_admin"]) if "is_sys_admin" in row.keys() else False,
             created_clubs=row["created_clubs"],
             joined_clubs=row["joined_clubs"],
         )
@@ -532,13 +537,14 @@ def save_users(users: Dict[str, User]) -> None:
     cur.execute("DELETE FROM messages")
     for u in users.values():
         cur.execute(
-            "INSERT INTO users(user_id, name, password_hash, wechat_openid, can_create_club, created_clubs, joined_clubs) VALUES (?,?,?,?,?,?,?)",
+            "INSERT INTO users(user_id, name, password_hash, wechat_openid, can_create_club, is_sys_admin, created_clubs, joined_clubs) VALUES (?,?,?,?,?,?,?,?)",
             (
                 u.user_id,
                 u.name,
                 u.password_hash,
                 u.wechat_openid,
                 int(u.can_create_club),
+                int(getattr(u, 'is_sys_admin', False)),
                 u.created_clubs,
                 u.joined_clubs,
             ),

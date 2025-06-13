@@ -1,0 +1,8 @@
+.page-container {
+  padding: 24rpx;
+}
+.center-text {
+  text-align: center;
+  padding: 60rpx 0;
+  color: #555;
+}

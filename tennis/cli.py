@@ -124,6 +124,7 @@ def register_user(
         name=name,
         password_hash=hash_password(password),
         can_create_club=allow_create,
+        is_sys_admin=user_id == "A",
     )
     gender = normalize_gender(gender)
     if user_id not in players:

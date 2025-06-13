@@ -19,6 +19,7 @@ class User:
     # optional openid from WeChat mini program
     wechat_openid: Optional[str] = None
     can_create_club: bool = False
+    is_sys_admin: bool = False
     # Number of clubs this user has created
     created_clubs: int = 0
     # Number of clubs the user has joined

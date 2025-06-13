@@ -17,7 +17,8 @@
     "pages/manage/manage",
     "pages/messages/messages",
     "pages/recorddetail/recorddetail",
-    "pages/appointment/appointment"
+    "pages/appointment/appointment",
+    "pages/sysmanage/sysmanage"
   ],
   "tabBar": {
     "list": [
