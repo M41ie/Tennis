@@ -1521,3 +1521,50 @@ def test_get_user_info_api(tmp_path, monkeypatch):
     assert len(msgs) == 1
     resp = client.get(f"/users/u1/messages/unread_count?token={token_u1}")
     assert resp.json()["unread"] == 1
+
+
+def test_join_rejection_flow(tmp_path, monkeypatch):
+    db = tmp_path / "tennis.db"
+    monkeypatch.setattr(storage, "DB_FILE", db)
+
+    api = importlib.reload(importlib.import_module("tennis.api"))
+    client = TestClient(api.app)
+
+    client.post("/users", json={"user_id": "leader", "name": "L", "password": "pw", "allow_create": True})
+    client.post("/users", json={"user_id": "m1", "name": "M", "password": "pw"})
+
+    token_leader = client.post("/login", json={"user_id": "leader", "password": "pw"}).json()["token"]
+    token_m1 = client.post("/login", json={"user_id": "m1", "password": "pw"}).json()["token"]
+
+    client.post("/clubs", json={"club_id": "c1", "name": "C1", "user_id": "leader", "token": token_leader})
+
+    client.post(
+        "/clubs/c1/join",
+        json={"user_id": "m1", "token": token_m1, "singles_rating": 1000.0, "doubles_rating": 1000.0},
+    )
+
+    client.post(
+        "/clubs/c1/reject",
+        json={"approver_id": "leader", "user_id": "m1", "reason": "no", "token": token_leader},
+    )
+
+    info = client.get("/clubs/c1").json()
+    assert info["rejected_members"]["m1"] == "no"
+    assert all(p["user_id"] != "m1" for p in info["pending_members"])
+
+    resp = client.get(f"/users/m1/messages?token={token_m1}")
+    assert any("rejected" in m["text"] for m in resp.json())
+
+    client.post(
+        "/clubs/c1/clear_rejection",
+        json={"user_id": "m1", "token": token_m1},
+    )
+    info = client.get("/clubs/c1").json()
+    assert "m1" not in info["rejected_members"]
+
+    client.post(
+        "/clubs/c1/join",
+        json={"user_id": "m1", "token": token_m1, "singles_rating": 1000.0, "doubles_rating": 1000.0},
+    )
+    info = client.get("/clubs/c1").json()
+    assert any(p["user_id"] == "m1" for p in info["pending_members"])

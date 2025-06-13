@@ -20,6 +20,8 @@ from .cli import (
     resolve_user,
     request_join,
     approve_member,
+    reject_application,
+    clear_rejection,
     add_player as cli_add_player,
     remove_member as cli_remove_member,
     toggle_admin as cli_toggle_admin,
@@ -394,6 +396,18 @@ class ApproveRequest(BaseModel):
     token: str
 
 
+class RejectRequest(BaseModel):
+    approver_id: str
+    user_id: str
+    reason: str
+    token: str
+
+
+class ClearRejectRequest(BaseModel):
+    user_id: str
+    token: str
+
+
 class RemoveRequest(BaseModel):
     remover_id: str
     token: str
@@ -572,6 +586,40 @@ def join_club(club_id: str, data: JoinRequest):
     return {"status": "ok"}
 
 
+@app.post("/clubs/{club_id}/reject")
+def reject_join_request(club_id: str, data: RejectRequest):
+    user = require_auth(data.token)
+    if user != data.approver_id:
+        raise HTTPException(401, "Token mismatch")
+    try:
+        reject_application(
+            clubs,
+            users,
+            club_id,
+            data.approver_id,
+            data.user_id,
+            data.reason,
+        )
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    save_data(clubs)
+    save_users(users)
+    return {"status": "ok"}
+
+
+@app.post("/clubs/{club_id}/clear_rejection")
+def clear_rejection_api(club_id: str, data: ClearRejectRequest):
+    user = require_auth(data.token)
+    if user != data.user_id:
+        raise HTTPException(401, "Token mismatch")
+    try:
+        clear_rejection(clubs, club_id, data.user_id)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    save_data(clubs)
+    return {"status": "ok"}
+
+
 @app.patch("/clubs/{club_id}")
 def update_club_info(club_id: str, data: ClubUpdate):
     """Update club basic information (leader or admin only)."""
@@ -672,6 +720,7 @@ def get_club_info(club_id: str):
         "members": [
             {"user_id": p.user_id, "name": p.name} for p in club.members.values()
         ],
+        "rejected_members": club.rejected_members,
         "stats": _club_stats(club),
     }
 

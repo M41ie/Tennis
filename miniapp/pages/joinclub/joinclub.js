@@ -73,6 +73,9 @@ Page({
               const pending = (info.pending_members || []).some(
                 m => m.user_id === uid
               );
+              const rejected = info.rejected_members
+                ? info.rejected_members[uid]
+                : '';
               result.push({
                 club_id: c.club_id,
                 name: c.name,
@@ -92,7 +95,8 @@ Page({
                 singles_avg: singlesAvg,
                 doubles_avg: doublesAvg,
                 joined: that.data.joined.includes(c.club_id),
-                pending
+                pending,
+                rejected_reason: rejected
               });
             },
             complete() {
@@ -150,6 +154,29 @@ Page({
   cancelJoin() {
     this.setData({ showDialog: false });
   },
+  viewReject(e) {
+    const reason = e.currentTarget.dataset.reason;
+    const cid = e.currentTarget.dataset.id;
+    const uid = wx.getStorageSync('user_id');
+    const token = wx.getStorageSync('token');
+    const that = this;
+    wx.showModal({
+      title: '未通过原因',
+      content: reason || '',
+      showCancel: false,
+      confirmText: '了解',
+      success() {
+        wx.request({
+          url: `${BASE_URL}/clubs/${cid}/clear_rejection`,
+          method: 'POST',
+          data: { user_id: uid, token },
+          complete() {
+            that.fetchJoined();
+          }
+        });
+      }
+    });
+  },
   submitJoin() {
     const userId = wx.getStorageSync('user_id');
     const token = wx.getStorageSync('token');
@@ -176,7 +203,7 @@ Page({
           wx.setStorageSync('club_id', cid);
           wx.showToast({ title: '已申请', icon: 'success' });
           const clubs = that.data.clubs.map(c =>
-            c.club_id === cid ? { ...c, pending: true } : c
+            c.club_id === cid ? { ...c, pending: true, rejected_reason: '' } : c
           );
           that.setData({ clubs, showDialog: false });
         } else {

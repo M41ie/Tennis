@@ -17,8 +17,9 @@
           </view>
         </view>
         <view class="card-right">
-          <button wx:if="{{!item.joined && !item.pending}}" class="join-btn" data-id="{{item.club_id}}" bindtap="join">申请加入</button>
+          <button wx:if="{{!item.joined && !item.pending && !item.rejected_reason}}" class="join-btn" data-id="{{item.club_id}}" bindtap="join">申请加入</button>
           <button wx:elif="{{item.pending}}" class="join-btn pending" disabled>审核中</button>
+          <button wx:elif="{{item.rejected_reason}}" class="join-btn pending" data-id="{{item.club_id}}" data-reason="{{item.rejected_reason}}" bindtap="viewReject">查看未通过原因</button>
           <button wx:else class="join-btn disabled" disabled>已加入</button>
         </view>
       </view>

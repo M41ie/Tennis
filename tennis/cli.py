@@ -159,6 +159,8 @@ def request_join(
     club = clubs.get(club_id)
     if not club:
         raise ValueError("Club not found")
+    # allow re-applying after a rejection
+    club.rejected_members.pop(user_id, None)
     if user_id in club.banned_ids:
         raise ValueError("User banned")
     if user_id in club.members:
@@ -230,6 +232,42 @@ def approve_member(
             text=f"Approved to join club {club.name}",
         )
     )
+
+
+def reject_application(
+    clubs,
+    users,
+    club_id: str,
+    approver_id: str,
+    user_id: str,
+    reason: str,
+):
+    """Reject a pending join request with a reason."""
+    club = clubs.get(club_id)
+    if not club:
+        raise ValueError("Club not found")
+    if approver_id != club.leader_id and approver_id not in club.admin_ids:
+        raise ValueError("Not authorized")
+    if user_id not in club.pending_members:
+        raise ValueError("No request")
+    club.pending_members.pop(user_id, None)
+    club.rejected_members[user_id] = reason
+    user = users.get(user_id)
+    if user is not None:
+        user.messages.append(
+            Message(
+                date=datetime.date.today(),
+                text=f"Join request for club {club.name} rejected: {reason}",
+            )
+        )
+
+
+def clear_rejection(clubs, club_id: str, user_id: str):
+    """Remove stored rejection reason so the user can reapply."""
+    club = clubs.get(club_id)
+    if not club:
+        raise ValueError("Club not found")
+    club.rejected_members.pop(user_id, None)
 
 
 def create_club(users, clubs, user_id: str, club_id: str, name: str, logo: Optional[str], region: Optional[str], slogan: Optional[str] = None):

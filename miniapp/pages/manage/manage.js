@@ -280,9 +280,16 @@ Page({
   approve(e) {
     this.handleApproval(e.currentTarget.dataset.uid);
   },
-  rejectById(uid) {
-    const list = this.data.pending.filter(p => p.user_id !== uid);
-    this.setData({ pending: list });
+  rejectById(uid, reason) {
+    const cid = wx.getStorageSync('club_id');
+    const token = wx.getStorageSync('token');
+    const that = this;
+    wx.request({
+      url: `${BASE_URL}/clubs/${cid}/reject`,
+      method: 'POST',
+      data: { approver_id: this.data.userId, user_id: uid, reason, token },
+      complete() { that.fetchClub(); }
+    });
   },
   reviewApplication(e) {
     const uid = e.currentTarget.dataset.uid;
@@ -304,7 +311,17 @@ Page({
         if (res.confirm) {
           that.handleApproval(uid);
         } else if (res.cancel) {
-          that.rejectById(uid);
+          wx.showModal({
+            title: '拒绝理由',
+            editable: true,
+            placeholderText: '请输入理由',
+            success(r) {
+              if (r.confirm) {
+                const reason = r.content || '';
+                that.rejectById(uid, reason);
+              }
+            }
+          });
         }
       }
     });
