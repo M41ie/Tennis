@@ -8,8 +8,8 @@ from tennis.cli import get_player_match_cards
 
 def test_get_player_match_cards_basic():
     club = Club(club_id="c", name="Club")
-    p1 = Player("p1", "P1")
-    p2 = Player("p2", "P2")
+    p1 = Player("p1", "P1", singles_rating=1000.0)
+    p2 = Player("p2", "P2", singles_rating=1000.0)
     club.members[p1.user_id] = p1
     club.members[p2.user_id] = p2
     clubs = {club.club_id: club}

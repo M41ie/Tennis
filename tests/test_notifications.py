@@ -43,7 +43,7 @@ def test_submit_match_and_doubles_notify_staff():
     club = clubs["c1"]
     club.admin_ids.add("admin")
     for pid in ("p1", "p2", "p3", "p4"):
-        club.members[pid] = Player(pid, pid.upper())
+        club.members[pid] = Player(pid, pid.upper(), singles_rating=1000.0, doubles_rating=1000.0)
 
     today = datetime.date.today()
     submit_match(

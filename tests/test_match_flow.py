@@ -14,9 +14,9 @@ from tennis.rating import weighted_rating, update_ratings
 
 def test_match_approval_workflow():
     club = Club(club_id="c", name="Club", leader_id="leader")
-    p1 = Player("p1", "P1")
-    p2 = Player("p2", "P2")
-    leader = Player("leader", "L")
+    p1 = Player("p1", "P1", singles_rating=1000.0)
+    p2 = Player("p2", "P2", singles_rating=1000.0)
+    leader = Player("leader", "L", singles_rating=1000.0)
     club.members[p1.user_id] = p1
     club.members[p2.user_id] = p2
     club.members[leader.user_id] = leader
@@ -37,8 +37,8 @@ def test_match_approval_workflow():
     assert len(club.matches) == 1
 
     # compute expected ratings using a fresh reference calculation
-    ref_p1 = Player("p1", "P1")
-    ref_p2 = Player("p2", "P2")
+    ref_p1 = Player("p1", "P1", singles_rating=1000.0)
+    ref_p2 = Player("p2", "P2", singles_rating=1000.0)
     ref_match = Match(
         date=date,
         player_a=ref_p1,
@@ -56,11 +56,11 @@ def test_match_approval_workflow():
 
 def test_approve_requires_confirmation():
     club = Club(club_id="c", name="Club", leader_id="leader")
-    p1 = Player("p1", "P1")
-    p2 = Player("p2", "P2")
+    p1 = Player("p1", "P1", singles_rating=1000.0)
+    p2 = Player("p2", "P2", singles_rating=1000.0)
     club.members[p1.user_id] = p1
     club.members[p2.user_id] = p2
-    club.members["leader"] = Player("leader", "L")
+    club.members["leader"] = Player("leader", "L", singles_rating=1000.0)
     clubs = {"c": club}
 
     date = datetime.date(2023, 1, 1)
@@ -78,9 +78,9 @@ def test_approve_requires_confirmation():
 
 def test_doubles_approve_requires_confirmation():
     club = Club(club_id="c", name="Club", leader_id="leader")
-    players = {pid: Player(pid, pid.upper()) for pid in ("p1", "p2", "p3", "p4")}
+    players = {pid: Player(pid, pid.upper(), doubles_rating=1000.0) for pid in ("p1", "p2", "p3", "p4")}
     club.members.update(players)
-    club.members["leader"] = Player("leader", "L")
+    club.members["leader"] = Player("leader", "L", doubles_rating=1000.0)
     clubs = {"c": club}
 
     date = datetime.date(2023, 1, 2)

@@ -180,9 +180,9 @@ def test_weighted_rating_zero_score():
     assert pytest.approx(weighted_rating(player, datetime.date(2023, 1, 1)), rel=1e-6) == 0.0
 
 def test_weighted_rating_time_decay():
-    a = Player("a", "A")
-    b = Player("b", "B")
-    c = Player("c", "C")
+    a = Player("a", "A", singles_rating=1000.0)
+    b = Player("b", "B", singles_rating=1000.0)
+    c = Player("c", "C", singles_rating=1000.0)
 
     m1 = Match(
         date=datetime.date(2023, 1, 1),
@@ -275,8 +275,8 @@ def test_initial_rating_from_votes_weighting():
 
 
 def test_experience_bonus_accumulates():
-    a = Player("a", "A")
-    b = Player("b", "B")
+    a = Player("a", "A", singles_rating=1000.0)
+    b = Player("b", "B", singles_rating=1000.0)
 
     m1 = Match(
         date=datetime.date(2023, 1, 1),
