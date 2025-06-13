@@ -10,8 +10,8 @@
       <button size="mini" bindtap="searchUsers">搜索</button>
     </view>
     <view class="dashboard">
-      <view class="card">总用户数: --</view>
-      <view class="card">总比赛数: --</view>
+      <view class="card">总用户数: {{totalUsers}}</view>
+      <view class="card">总比赛数: {{totalMatches}}</view>
     </view>
     <view class="chart-placeholder">用户增长趋势/比赛活跃度</view>
   </view>

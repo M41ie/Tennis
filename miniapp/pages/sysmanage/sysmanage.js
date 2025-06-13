@@ -1,8 +1,28 @@
+const BASE_URL = getApp().globalData.BASE_URL;
+
 Page({
   data: {
     currentTab: 0,
     userQuery: '',
-    clubQuery: ''
+    clubQuery: '',
+    totalUsers: '--',
+    totalMatches: '--'
+  },
+  onLoad() {
+    this.loadStats();
+  },
+  loadStats() {
+    const that = this;
+    wx.request({
+      url: `${BASE_URL}/sys/stats`,
+      success(res) {
+        const d = res.data || {};
+        that.setData({
+          totalUsers: d.total_users != null ? d.total_users : '--',
+          totalMatches: d.total_matches != null ? d.total_matches : '--'
+        });
+      }
+    });
   },
   switchTab(e) {
     const idx = e.currentTarget.dataset.index;
