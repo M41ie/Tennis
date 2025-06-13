@@ -2,14 +2,17 @@ const BASE_URL = getApp().globalData.BASE_URL;
 
 Page({
   data: {
-    clubs: [], // [{id, name, checked}]
+    clubs: [], // [{id, name}]
+    allClubIds: [],
+    joinedClubIds: [],
+    selectedClub: '_global',
+    selectedClubIndex: 0,
     players: [],
     filter: {
       clubs: [],
       mode: 'Singles',
       gender: 'All'
     },
-    showClubDialog: false,
     genderText: '男子&女子'
   },
   onLoad() {
@@ -20,82 +23,74 @@ Page({
     wx.request({
       url: `${BASE_URL}/clubs`,
       success(res) {
-        const clubList = (res.data || []).map(c => ({
-          id: c.club_id || c.name,
-          name: c.name || c.club_id,
-          checked: true
-        }));
-        const ids = clubList.map(c => c.id);
-        that.setData({
-          clubs: clubList,
-          filter: { ...that.data.filter, clubs: ids }
-        });
-        that.fetchJoined(ids);
+        const list = res.data || [];
+        const ids = list.map(c => c.club_id || c.name);
+        const map = {};
+        list.forEach(c => { map[c.club_id || c.name] = c.name || c.club_id; });
+        that.clubNameMap = map;
+        that.setData({ allClubIds: ids });
+        that.fetchJoined();
       }
     });
   },
-  fetchJoined(list) {
+  fetchJoined() {
     const uid = wx.getStorageSync('user_id');
     const that = this;
     if (!uid) {
-      // User not logged in. Clear selected clubs so no ranking
-      // list is shown by default.
-      const newClubs = that.data.clubs.map(c => ({ ...c, checked: false }));
-      that.setData({
-        clubs: newClubs,
-        filter: { ...that.data.filter, clubs: [] },
-        players: []
-      });
+      that.setData({ joinedClubIds: [] });
+      that.buildClubOptions([]);
+      that.fetchList(that.data.filter);
       return;
     }
     wx.request({
       url: `${BASE_URL}/users/${uid}`,
       success(res) {
         const joined = res.data.joined_clubs || [];
-        const sel = list.filter(c => joined.includes(c));
-        const selected = sel.length ? sel : list.slice();
-        const newClubs = that.data.clubs.map(club => ({
-          ...club,
-          checked: selected.includes(club.id)
-        }));
-        that.setData({
-          clubs: newClubs,
-          filter: { ...that.data.filter, clubs: selected }
-        });
+        that.setData({ joinedClubIds: joined });
+        that.buildClubOptions(joined);
         that.fetchList(that.data.filter);
       },
       fail() {
-        that.setData({
-          clubs: that.data.clubs.map(c => ({ ...c, checked: true })),
-          filter: { ...that.data.filter, clubs: list.slice() }
-        });
+        that.setData({ joinedClubIds: [] });
+        that.buildClubOptions([]);
         that.fetchList(that.data.filter);
       }
     });
   },
-  openClub() { this.setData({ showClubDialog: true }); },
-  onClubsChange(e) {
-    const ids = e.detail.value;
-    const clubs = this.data.clubs.map(c => ({ ...c, checked: ids.includes(c.id) }));
-    this.setData({ clubs });
+  buildClubOptions(joined) {
+    const options = [
+      { id: '_global', name: '全局排行' },
+      { id: '_my', name: '我的所有俱乐部' }
+    ];
+    joined.forEach(cid => {
+      const name = this.clubNameMap[cid] || cid;
+      options.push({ id: cid, name });
+    });
+    let selected = joined.length ? '_my' : '_global';
+    const index = options.findIndex(o => o.id === selected);
+    const clubs = selected === '_global' ? this.data.allClubIds : joined.slice();
+    this.setData({
+      clubs: options,
+      selectedClub: selected,
+      selectedClubIndex: index,
+      filter: { ...this.data.filter, clubs }
+    });
   },
-  confirmClub() {
-    // Extract currently selected clubs from the object list
-    const selectedClubs = this.data.clubs.filter(club => club.checked);
-    const selectedClubIds = selectedClubs.map(club => club.id);
-
-    const filter = { ...this.data.filter, clubs: selectedClubIds };
-    this.setData({ filter, showClubDialog: false });
-    // Re-fetch ranking list using the updated club filter
+  onClubPick(e) {
+    const index = e.detail.value;
+    const option = this.data.clubs[index] || {};
+    const selected = option.id;
+    let clubs = [];
+    if (selected === '_global') clubs = this.data.allClubIds;
+    else if (selected === '_my') clubs = this.data.joinedClubIds;
+    else clubs = [selected];
+    const filter = { ...this.data.filter, clubs };
+    this.setData({
+      selectedClub: selected,
+      selectedClubIndex: index,
+      filter
+    });
     this.fetchList(filter);
-  },
-  selectAllClubs() {
-    const clubs = this.data.clubs.map(c => ({ ...c, checked: true }));
-    this.setData({ clubs });
-  },
-  clearClubs() {
-    const clubs = this.data.clubs.map(c => ({ ...c, checked: false }));
-    this.setData({ clubs });
   },
   switchMode(e) {
     const mode = e.currentTarget.dataset.mode;

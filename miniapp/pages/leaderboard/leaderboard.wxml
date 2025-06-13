@@ -4,23 +4,13 @@
 </view>
 
 <view class="filter-bar">
-  <view class="filter-item" bindtap="openClub">俱乐部</view>
+  <picker mode="selector" range="{{clubs}}" range-key="name" value="{{selectedClubIndex}}" bindchange="onClubPick">
+    <view class="filter-item">{{clubs[selectedClubIndex].name}}</view>
+  </picker>
   <view class="filter-item" bindtap="chooseGender">{{genderText}}</view>
   <!-- Level and age filters removed -->
 </view>
 
-<view wx:if="{{showClubDialog}}" class="dialog">
-  <view class="actions">
-    <button size="mini" bindtap="selectAllClubs">选择全部</button>
-    <button size="mini" bindtap="clearClubs">清除选择</button>
-  </view>
-  <checkbox-group bindchange="onClubsChange">
-    <label wx:for="{{clubs}}" wx:key="id" class="chk">
-      <checkbox value="{{item.id}}" checked="{{item.checked}}">{{item.name}}</checkbox>
-    </label>
-  </checkbox-group>
-  <button bindtap="confirmClub">确定</button>
-</view>
 
 <!-- Dialogs for level and age filters removed -->
 <view>
