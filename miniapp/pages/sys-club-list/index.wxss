@@ -12,6 +12,14 @@
   box-shadow:0 4rpx 12rpx rgba(0,0,0,0.05);
 }
 .card-left { display:flex; flex-direction:column; flex-grow:1; }
+.club-slogan {
+  font-size:26rpx;
+  color:#888;
+  margin-bottom:20rpx;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
 .club-name { font-size:36rpx; font-weight:bold; color:#333; margin-bottom:10rpx; }
 .club-stats { font-size:24rpx; color:#666; display:flex; flex-direction:column; }
 .club-stats text { margin-bottom:6rpx; }
