@@ -25,14 +25,18 @@ Page({
       url: `${BASE_URL}/players/${uid}`,
       success(res) {
         const p = res.data || {};
+        let gIndex = 0;
+        if (p.gender === 'M' || p.gender === '男' || p.gender === 'Male') gIndex = 1;
+        if (p.gender === 'F' || p.gender === '女' || p.gender === 'Female') gIndex = 2;
+        const regionArr = p.region ? p.region.split(/[\s-]+/) : [];
         that.setData({
           name: p.name || '',
-          genderIndex: that.data.genderOptions.indexOf(p.gender) > -1 ? that.data.genderOptions.indexOf(p.gender) : 0,
+          genderIndex: gIndex,
           handIndex: that.data.handOptions.indexOf(p.handedness) > -1 ? that.data.handOptions.indexOf(p.handedness) : 0,
           backhandIndex: that.data.backhandOptions.indexOf(p.backhand) > -1 ? that.data.backhandOptions.indexOf(p.backhand) : 0,
           avatar: p.avatar || '',
           birth: p.birth || '',
-          region: p.region ? p.region.split(' ') : [],
+          region: regionArr,
           regionString: p.region || ''
         });
       }
@@ -67,8 +71,15 @@ Page({
   submit() {
     const token = wx.getStorageSync('token');
     if (!token || !this.data.userId) return;
-    if (!this.data.name) {
-      wx.showToast({ title: '请填写完整信息', icon: 'none' });
+    const incomplete =
+      !this.data.name ||
+      this.data.genderIndex === 0 ||
+      !this.data.birth ||
+      this.data.handIndex === 0 ||
+      this.data.backhandIndex === 0 ||
+      !this.data.regionString;
+    if (incomplete) {
+      wx.showToast({ title: '信息不完整，请完善后保存。', icon: 'none' });
       return;
     }
     const nameOk = /^[A-Za-z\u4e00-\u9fa5]{1,12}$/.test(this.data.name);
@@ -84,7 +95,7 @@ Page({
         user_id: this.data.userId,
         token,
         name: this.data.name,
-        gender: this.data.genderOptions[this.data.genderIndex] || '',
+        gender: this.data.genderIndex === 1 ? 'M' : this.data.genderIndex === 2 ? 'F' : '',
         avatar: this.data.avatar,
         birth: this.data.birth,
         handedness: this.data.handOptions[this.data.handIndex] || '',
