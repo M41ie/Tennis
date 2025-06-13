@@ -4,7 +4,13 @@ Page({
   data: {
     clubs: [],
     query: '',
-    joined: []
+    joined: [],
+    showDialog: false,
+    joinClubId: '',
+    needRating: false,
+    singles: '',
+    doubles: '',
+    reason: ''
   },
   onLoad(options) {
     if (options && options.query) {
@@ -32,6 +38,7 @@ Page({
   },
   fetchClubs() {
     const that = this;
+    const uid = wx.getStorageSync('user_id');
     wx.request({
       url: `${BASE_URL}/clubs`,
       success(res) {
@@ -63,6 +70,9 @@ Page({
                 typeof stats.doubles_avg_rating === 'number'
                   ? fmt(stats.doubles_avg_rating)
                   : '--';
+              const pending = (info.pending_members || []).some(
+                m => m.user_id === uid
+              );
               result.push({
                 club_id: c.club_id,
                 name: c.name,
@@ -81,7 +91,8 @@ Page({
                     : '--',
                 singles_avg: singlesAvg,
                 doubles_avg: doublesAvg,
-                joined: that.data.joined.includes(c.club_id)
+                joined: that.data.joined.includes(c.club_id),
+                pending
               });
             },
             complete() {
@@ -109,24 +120,68 @@ Page({
           return;
         }
         wx.request({
-          url: `${BASE_URL}/clubs/${cid}/join`,
-          method: 'POST',
-          data: { user_id: userId, token },
-          success(r) {
-            if (r.statusCode === 200) {
-              wx.setStorageSync('club_id', cid);
-              wx.showToast({ title: '已加入', icon: 'success' });
-              const joined = that.data.joined.slice();
-              if (!joined.includes(cid)) joined.push(cid);
-              const clubs = that.data.clubs.map(c =>
-                c.club_id === cid ? { ...c, joined: true } : c
-              );
-              that.setData({ joined, clubs });
-            } else {
-              wx.showToast({ title: '失败', icon: 'none' });
-            }
+          url: `${BASE_URL}/players/${userId}`,
+          success(pres) {
+            const info = pres.data || {};
+            const need =
+              info.singles_rating == null && info.doubles_rating == null;
+            that.setData({
+              showDialog: true,
+              joinClubId: cid,
+              needRating: need,
+              singles: '',
+              doubles: '',
+              reason: ''
+            });
           }
         });
+      }
+    });
+  },
+  onSingles(e) {
+    this.setData({ singles: e.detail.value });
+  },
+  onDoubles(e) {
+    this.setData({ doubles: e.detail.value });
+  },
+  onReason(e) {
+    this.setData({ reason: e.detail.value });
+  },
+  cancelJoin() {
+    this.setData({ showDialog: false });
+  },
+  submitJoin() {
+    const userId = wx.getStorageSync('user_id');
+    const token = wx.getStorageSync('token');
+    const cid = this.data.joinClubId;
+    const singles = parseFloat(this.data.singles);
+    const doubles = parseFloat(this.data.doubles);
+    if (this.data.needRating && (isNaN(singles) || isNaN(doubles))) {
+      wx.showToast({ title: '请填写评分', icon: 'none' });
+      return;
+    }
+    const that = this;
+    wx.request({
+      url: `${BASE_URL}/clubs/${cid}/join`,
+      method: 'POST',
+      data: {
+        user_id: userId,
+        token,
+        singles_rating: this.data.needRating ? singles : undefined,
+        doubles_rating: this.data.needRating ? doubles : undefined,
+        reason: this.data.reason
+      },
+      success(r) {
+        if (r.statusCode === 200) {
+          wx.setStorageSync('club_id', cid);
+          wx.showToast({ title: '已申请', icon: 'success' });
+          const clubs = that.data.clubs.map(c =>
+            c.club_id === cid ? { ...c, pending: true } : c
+          );
+          that.setData({ clubs, showDialog: false });
+        } else {
+          wx.showToast({ title: '失败', icon: 'none' });
+        }
       }
     });
   }

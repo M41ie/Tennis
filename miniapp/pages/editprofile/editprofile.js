@@ -8,6 +8,8 @@ Page({
     birth: '',
     handIndex: 0,
     backhandIndex: 0,
+    region: [],
+    regionString: '',
     genderOptions: ['请选择', '男', '女'],
     handOptions: ['请选择', '右手持拍', '左手持拍'],
     backhandOptions: ['请选择', '双反', '单反'],
@@ -29,7 +31,9 @@ Page({
           handIndex: that.data.handOptions.indexOf(p.handedness) > -1 ? that.data.handOptions.indexOf(p.handedness) : 0,
           backhandIndex: that.data.backhandOptions.indexOf(p.backhand) > -1 ? that.data.backhandOptions.indexOf(p.backhand) : 0,
           avatar: p.avatar || '',
-          birth: p.birth || ''
+          birth: p.birth || '',
+          region: p.region ? p.region.split(' ') : [],
+          regionString: p.region || ''
         });
       }
     });
@@ -39,6 +43,12 @@ Page({
   onBirthChange(e) { this.setData({ birth: e.detail.value }); },
   onHand(e) { this.setData({ handIndex: Number(e.detail.value) }); },
   onBackhand(e) { this.setData({ backhandIndex: Number(e.detail.value) }); },
+  onRegionChange(e) {
+    this.setData({
+      region: e.detail.value,
+      regionString: e.detail.value.join(' ')
+    });
+  },
   chooseAvatar() {
     const that = this;
     wx.chooseImage({
@@ -74,7 +84,8 @@ Page({
         avatar: this.data.avatar,
         birth: this.data.birth,
         handedness: this.data.handOptions[this.data.handIndex] || '',
-        backhand: this.data.backhandOptions[this.data.backhandIndex] || ''
+        backhand: this.data.backhandOptions[this.data.backhandIndex] || '',
+        region: this.data.regionString
       },
       success(res) {
         if (res.statusCode === 200) {

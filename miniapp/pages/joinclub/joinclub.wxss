@@ -89,9 +89,27 @@
   background: #ccc;
   color: #fff;
 }
+.join-btn.pending {
+  background: #ffa500;
+  color: #fff;
+}
 
 .card-right {
   flex-shrink: 0;
   display: flex;
   align-items: flex-start;
+}
+
+.dialog {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: #fff;
+  padding: 20rpx;
+}
+.actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10rpx;
 }

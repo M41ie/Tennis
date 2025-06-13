@@ -52,6 +52,15 @@ class Player:
 players: Dict[str, Player] = {}
 
 @dataclass
+class JoinApplication:
+    """Data for a pending join request."""
+
+    reason: str | None = None
+    singles_rating: float | None = None
+    doubles_rating: float | None = None
+
+
+@dataclass
 class Club:
     club_id: str
     name: str
@@ -61,7 +70,7 @@ class Club:
     leader_id: str | None = None
 
     admin_ids: Set[str] = field(default_factory=set)
-    pending_members: Set[str] = field(default_factory=set)
+    pending_members: Dict[str, JoinApplication] = field(default_factory=dict)
     banned_ids: Set[str] = field(default_factory=set)
     members: Dict[str, Player] = field(default_factory=dict)
     matches: List['Match | DoublesMatch'] = field(default_factory=list)

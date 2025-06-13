@@ -380,6 +380,9 @@ class WeChatLoginRequest(BaseModel):
 class JoinRequest(BaseModel):
     user_id: str
     token: str
+    singles_rating: float | None = None
+    doubles_rating: float | None = None
+    reason: str | None = None
 
 
 class ApproveRequest(BaseModel):
@@ -551,7 +554,15 @@ def join_club(club_id: str, data: JoinRequest):
     if user != data.user_id:
         raise HTTPException(401, "Token mismatch")
     try:
-        request_join(clubs, users, club_id, data.user_id)
+        request_join(
+            clubs,
+            users,
+            club_id,
+            data.user_id,
+            singles_rating=data.singles_rating,
+            doubles_rating=data.doubles_rating,
+            reason=data.reason,
+        )
     except ValueError as e:
         raise HTTPException(400, str(e))
     save_data(clubs)
@@ -647,7 +658,15 @@ def get_club_info(club_id: str):
         "slogan": club.slogan,
         "leader_id": club.leader_id,
         "admin_ids": list(club.admin_ids),
-        "pending_members": list(club.pending_members),
+        "pending_members": [
+            {
+                "user_id": uid,
+                "reason": info.reason,
+                "singles_rating": info.singles_rating,
+                "doubles_rating": info.doubles_rating,
+            }
+            for uid, info in club.pending_members.items()
+        ],
         "members": [
             {"user_id": p.user_id, "name": p.name} for p in club.members.values()
         ],
