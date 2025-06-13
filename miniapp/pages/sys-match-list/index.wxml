@@ -1,0 +1,6 @@
+<view class="page-container">
+  <block wx:for="{{records}}" wx:key="index">
+    <record-card record="{{item}}" />
+  </block>
+  <view wx:if="{{!records.length}}" class="empty">暂无数据</view>
+</view>

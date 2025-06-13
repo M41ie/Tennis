@@ -1,7 +1,7 @@
 .page-container{padding:20rpx;background:#f5f5f5;min-height:100vh;}
 .section-title{margin:20rpx 0 10rpx 0;font-size:30rpx;font-weight:bold;}
 .club-list{}
-.club-card{width:100%;background:#fff;border-radius:16rpx;margin-bottom:20rpx;padding:24rpx;box-shadow:0 4rpx 12rpx rgba(0,0,0,0.05);display:flex;justify-content:space-between;}
+.club-card{width:100%;background:#fff;border-radius:16rpx;margin-bottom:20rpx;padding:24rpx;box-shadow:0 4rpx 12rpx rgba(0,0,0,0.05);display:flex;justify-content:space-between;box-sizing:border-box;}
 .card-left{display:flex;flex-direction:column;flex-grow:1;padding-right:20rpx;}
 .club-name{font-size:36rpx;font-weight:bold;color:#333;margin-bottom:10rpx;}
 .club-slogan{font-size:26rpx;color:#888;margin-bottom:20rpx;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}

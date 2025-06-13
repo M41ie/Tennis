@@ -89,7 +89,7 @@ Page({
   buildClubOptions(joined) {
     const options = [
       { id: '_global', name: '全局排行' },
-      { id: '_my', name: '我的所有俱乐部' }
+      { id: '_my', name: '所属俱乐部' }
     ];
     joined.forEach(cid => {
       const name = this.clubNameMap[cid] || cid;

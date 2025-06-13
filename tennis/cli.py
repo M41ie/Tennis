@@ -1072,6 +1072,8 @@ def get_player_match_cards(clubs, club_id: str, user_id: str):
                 "self_score": self_score,
                 "opponent_score": opp_score,
                 "opponent": opp.name,
+                "opponent_id": opp.user_id,
+                "opponent_avatar": opp.avatar,
                 "expected_score": exp_rate,
                 "actual_rate": actual_rate,
                 "self_rating_after": self_after,
