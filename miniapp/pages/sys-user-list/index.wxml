@@ -1,0 +1,6 @@
+<view class="page-container">
+  <block wx:for="{{users}}" wx:key="id">
+    <profile-card user="{{item}}" placeholder="" />
+  </block>
+  <view wx:if="{{!users.length}}" class="empty">暂无数据</view>
+</view>

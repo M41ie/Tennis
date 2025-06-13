@@ -1,0 +1,5 @@
+.page-container { padding: 20rpx; }
+.section-title { margin-top: 20rpx; font-weight: bold; }
+.club-item { padding: 10rpx 0; color: #555; }
+.edit-card { border: 1px solid #eee; padding: 20rpx; margin-top: 10rpx; }
+.edit-row { margin-bottom: 10rpx; display: flex; justify-content: space-between; align-items: center; }

@@ -1,3 +1,30 @@
 <view class="page-container">
-  <view class="center-text">系统管理页面</view>
+  <view class="tab-bar">
+    <view class="tab-item {{currentTab==0?'active':''}}" data-index="0" bindtap="switchTab">用户管理</view>
+    <view class="tab-item {{currentTab==1?'active':''}}" data-index="1" bindtap="switchTab">俱乐部管理</view>
+  </view>
+
+  <view wx:if="{{currentTab==0}}" class="tab-content">
+    <view class="search-row">
+      <input class="search-input" placeholder="输入用户ID或昵称" bindinput="onUserInput" confirm-type="search" bindconfirm="searchUsers" />
+      <button size="mini" bindtap="searchUsers">搜索</button>
+    </view>
+    <view class="dashboard">
+      <view class="card">总用户数: --</view>
+      <view class="card">总比赛数: --</view>
+    </view>
+    <view class="chart-placeholder">用户增长趋势/比赛活跃度</view>
+  </view>
+
+  <view wx:elif="{{currentTab==1}}" class="tab-content">
+    <view class="search-row">
+      <input class="search-input" placeholder="输入俱乐部ID或名称" bindinput="onClubInput" confirm-type="search" bindconfirm="searchClubs" />
+      <button size="mini" bindtap="searchClubs">搜索</button>
+    </view>
+    <view class="dashboard">
+      <view class="card">总俱乐部数: --</view>
+      <view class="card">待处理事项: --</view>
+    </view>
+    <view class="chart-placeholder">俱乐部活跃度排名</view>
+  </view>
 </view>

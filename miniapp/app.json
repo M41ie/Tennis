@@ -19,7 +19,10 @@
     "pages/mynotes/mynotes",
     "pages/recorddetail/recorddetail",
     "pages/appointment/appointment",
-    "pages/sysmanage/sysmanage"
+    "pages/sysmanage/sysmanage",
+    "pages/sys-user-list/index",
+    "pages/sys-user-detail/index",
+    "pages/sys-club-list/index"
   ],
   "tabBar": {
     "list": [

@@ -1,0 +1,20 @@
+<view class="page-container">
+  <profile-card user="{{user}}" placeholder="" />
+  <view class="section-title">所属俱乐部</view>
+  <block wx:for="{{user.clubs}}" wx:key="club_id">
+    <view class="club-item">{{item.name}} - {{item.roleText}}</view>
+  </block>
+  <view class="section-title">权限管理</view>
+  <button bindtap="openEdit">编辑权限</button>
+  <view wx:if="{{showEdit}}" class="edit-card">
+    <view class="edit-row">
+      <text>可加入俱乐部上限</text>
+      <input type="number" value="{{inputJoin}}" bindinput="onJoinInput" />
+    </view>
+    <view class="edit-row">
+      <text>可创建俱乐部上限</text>
+      <input type="number" value="{{inputCreate}}" bindinput="onCreateInput" />
+    </view>
+    <button bindtap="save">保存修改</button>
+  </view>
+</view>

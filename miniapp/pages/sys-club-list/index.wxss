@@ -1,0 +1,3 @@
+.page-container { padding: 20rpx; }
+.club-item { padding: 10rpx 0; border-bottom: 1px solid #eee; }
+.empty { text-align: center; color: #999; padding: 40rpx 0; }

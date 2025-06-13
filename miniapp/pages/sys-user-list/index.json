@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "用户搜索结果",
+  "usingComponents": {
+    "profile-card": "/components/profile-card/profile-card"
+  }
+}
