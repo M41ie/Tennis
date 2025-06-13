@@ -78,6 +78,8 @@ def register_user(
         password_hash=hash_password(password),
         can_create_club=allow_create,
     )
+    if user_id not in players:
+        players[user_id] = Player(user_id=user_id, name=name)
 
 
 def login_user(users, user_id: str, password: str) -> bool:

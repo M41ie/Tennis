@@ -410,6 +410,7 @@ def register_user_api(data: UserCreate):
         allow_create=data.allow_create,
     )
     save_users(users)
+    save_data(clubs)
     return {"status": "ok"}
 
 
@@ -446,7 +447,10 @@ def wechat_login_api(data: WeChatLoginRequest):
             wechat_openid=openid,
         )
         users[uid] = user
+        if uid not in players:
+            players[uid] = Player(user_id=uid, name=user.name)
         save_users(users)
+        save_data(clubs)
 
     token = secrets.token_hex(16)
     tokens[token] = (user.user_id, datetime.datetime.utcnow())
