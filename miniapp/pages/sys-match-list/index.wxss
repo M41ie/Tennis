@@ -1,0 +1,2 @@
+.page-container { padding: 12rpx; }
+.empty { text-align: center; color: #999; padding: 20rpx 0; }
