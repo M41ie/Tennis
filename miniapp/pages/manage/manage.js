@@ -11,7 +11,11 @@ Page({
     region: '',
     stats: {},
     role: '',
-    roleText: ''
+    roleText: '',
+    showRatingDialog: false,
+    ratingInput: '',
+    ratingDialogTitle: '',
+    ratingApplicantId: ''
   },
   onLoad(options) {
     if (options && options.cid) {
@@ -286,23 +290,34 @@ Page({
       this.approveById(uid, applicant.global_rating);
       return;
     }
-    const that = this;
-    wx.showModal({
-      title: '设置初始评分',
-      editable: true,
-      placeholderText: '如3.5',
-      success(res) {
-        if (res.confirm) {
-          const rating = parseFloat(res.content);
-          if (isNaN(rating)) {
-            wx.showToast({ title: '无效评分', icon: 'none' });
-            return;
-          }
-          that.approveById(uid, rating);
-        }
-      }
+    const title =
+      uid === this.data.userId
+        ? '请为自己评定初始评分'
+        : `请为${applicant.name || applicant.user_id}评定初始评分`;
+    this.setData({
+      showRatingDialog: true,
+      ratingInput: '',
+      ratingDialogTitle: title,
+      ratingApplicantId: uid
     });
   },
+  onRatingInput(e) {
+    this.setData({ ratingInput: e.detail.value });
+  },
+  cancelRating() {
+    this.setData({ showRatingDialog: false });
+  },
+  confirmRating() {
+    const rating = parseFloat(this.data.ratingInput);
+    if (isNaN(rating)) {
+      wx.showToast({ title: '无效评分', icon: 'none' });
+      return;
+    }
+    const uid = this.data.ratingApplicantId;
+    this.setData({ showRatingDialog: false, ratingInput: '', ratingApplicantId: '' });
+    this.approveById(uid, rating);
+  },
+  noop() {},
   approve(e) {
     this.handleApproval(e.currentTarget.dataset.uid);
   },
