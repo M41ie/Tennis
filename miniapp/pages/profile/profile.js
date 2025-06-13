@@ -95,6 +95,9 @@ Page({
     if (!this.data.loggedIn) return;
     wx.navigateTo({ url: '/pages/club-manage/index' });
   },
+  goMyNotes() {
+    wx.navigateTo({ url: '/pages/mynotes/mynotes' });
+  },
   goSysManage() {
     if (!this.data.isSysAdmin) return;
     wx.navigateTo({ url: '/pages/sysmanage/sysmanage' });
