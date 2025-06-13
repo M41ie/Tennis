@@ -1,39 +1,39 @@
 <view class="weui-cells weui-cells_form" bindtap="hideKeyboard">
   <view class="weui-cell">
-    <view class="weui-label">Avatar</view>
-    <button bindtap="chooseAvatar">Select</button>
+    <view class="weui-label">头像</view>
+    <button bindtap="chooseAvatar">选择</button>
   </view>
   <image wx:if="{{avatar}}" class="image-preview" mode="aspectFit" src="{{avatar}}"></image>
   <view class="weui-cell">
-    <view class="weui-label">Name</view>
-    <input class="weui-input" value="{{name}}" placeholder="Name" bindinput="onName" />
+    <view class="weui-label">用户名</view>
+    <input class="weui-input" value="{{name}}" placeholder="用户名" bindinput="onName" />
   </view>
   <picker mode="selector" range="{{genderOptions}}" value="{{genderIndex}}" bindchange="onGender">
     <view class="weui-cell">
-      <view class="weui-label">Gender</view>
+      <view class="weui-label">性别</view>
       {{genderOptions[genderIndex]}}
     </view>
   </picker>
   <picker mode="date" value="{{birth}}" bindchange="onBirthChange">
     <view class="weui-cell {{birth ? '' : 'placeholder'}}">
-      <view class="weui-label">Birth</view>
-      {{birth || 'Choose Date'}}
+      <view class="weui-label">出生日期</view>
+      {{birth || '选择日期'}}
     </view>
   </picker>
   <picker mode="selector" range="{{handOptions}}" value="{{handIndex}}" bindchange="onHand">
     <view class="weui-cell">
-      <view class="weui-label">Hold Hand</view>
+      <view class="weui-label">持拍手</view>
       {{handOptions[handIndex]}}
     </view>
   </picker>
   <picker mode="selector" range="{{backhandOptions}}" value="{{backhandIndex}}" bindchange="onBackhand">
     <view class="weui-cell">
-      <view class="weui-label">Backhand</view>
+      <view class="weui-label">反手类型</view>
       {{backhandOptions[backhandIndex]}}
     </view>
   </picker>
   <view class="weui-cell">
-    <view class="weui-label">Region</view>
+    <view class="weui-label">地区</view>
     <picker mode="region" bindchange="onRegionChange" value="{{region}}">
       <view class="picker">{{regionString || '选择地区'}}</view>
     </picker>
