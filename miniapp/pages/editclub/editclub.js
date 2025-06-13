@@ -50,7 +50,12 @@ Page({
     const token = wx.getStorageSync('token');
     if (!cid || !userId || !token) return;
     if (!this.data.name || !this.data.slogan || this.data.region.length === 0) {
-      wx.showToast({ title: '信息不完整', icon: 'none' });
+      wx.showToast({ title: '请填写完整信息', icon: 'none' });
+      return;
+    }
+    const nameOk = /^[A-Za-z\u4e00-\u9fa5]{1,20}$/.test(this.data.name);
+    if (!nameOk) {
+      wx.showToast({ title: '俱乐部名格式错误', icon: 'none' });
       return;
     }
     const that = this;
