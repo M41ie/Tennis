@@ -84,6 +84,11 @@
   height: 36rpx;
   line-height: 36rpx;
 }
+.join-btn.disabled,
+.join-btn[disabled] {
+  background: #ccc;
+  color: #fff;
+}
 
 .card-right {
   flex-shrink: 0;

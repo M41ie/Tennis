@@ -17,7 +17,8 @@
           </view>
         </view>
         <view class="card-right">
-          <button class="join-btn" data-id="{{item.club_id}}" bindtap="join">申请加入</button>
+          <button wx:if="{{!item.joined}}" class="join-btn" data-id="{{item.club_id}}" bindtap="join">申请加入</button>
+          <button wx:else class="join-btn disabled" disabled>已加入</button>
         </view>
       </view>
     </block>

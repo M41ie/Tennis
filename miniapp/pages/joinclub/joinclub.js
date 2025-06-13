@@ -3,13 +3,32 @@ const BASE_URL = getApp().globalData.BASE_URL;
 Page({
   data: {
     clubs: [],
-    query: ''
+    query: '',
+    joined: []
   },
   onLoad(options) {
     if (options && options.query) {
       this.setData({ query: options.query });
     }
-    this.fetchClubs();
+    this.fetchJoined();
+  },
+  fetchJoined() {
+    const uid = wx.getStorageSync('user_id');
+    const that = this;
+    if (!uid) {
+      this.setData({ joined: [] });
+      this.fetchClubs();
+      return;
+    }
+    wx.request({
+      url: `${BASE_URL}/users/${uid}`,
+      success(res) {
+        that.setData({ joined: res.data.joined_clubs || [] });
+      },
+      complete() {
+        that.fetchClubs();
+      }
+    });
   },
   fetchClubs() {
     const that = this;
@@ -61,7 +80,8 @@ Page({
                     ? stats.total_doubles_matches.toFixed(0)
                     : '--',
                 singles_avg: singlesAvg,
-                doubles_avg: doublesAvg
+                doubles_avg: doublesAvg,
+                joined: that.data.joined.includes(c.club_id)
               });
             },
             complete() {
@@ -96,6 +116,12 @@ Page({
             if (r.statusCode === 200) {
               wx.setStorageSync('club_id', cid);
               wx.showToast({ title: '已加入', icon: 'success' });
+              const joined = that.data.joined.slice();
+              if (!joined.includes(cid)) joined.push(cid);
+              const clubs = that.data.clubs.map(c =>
+                c.club_id === cid ? { ...c, joined: true } : c
+              );
+              that.setData({ joined, clubs });
             } else {
               wx.showToast({ title: '失败', icon: 'none' });
             }
