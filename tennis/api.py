@@ -17,7 +17,7 @@ import tennis.storage as storage
 from .storage import load_data, save_data, load_users, save_users
 from .cli import (
     register_user,
-    login_user,
+    resolve_user,
     request_join,
     approve_member,
     add_player as cli_add_player,
@@ -28,6 +28,7 @@ from .cli import (
     quit_club as cli_quit_club,
     create_club as cli_create_club,
     hash_password,
+    check_password,
     validate_scores,
     update_player as cli_update_player,
 )
@@ -433,11 +434,12 @@ def register_user_api(data: UserCreate):
 
 @app.post("/login")
 def login_api(data: LoginRequest):
-    if login_user(users, data.user_id, data.password):
+    user = resolve_user(users, data.user_id)
+    if user and check_password(user, data.password):
         token = secrets.token_hex(16)
-        tokens[token] = (data.user_id, datetime.datetime.utcnow())
+        tokens[token] = (user.user_id, datetime.datetime.utcnow())
         _save_tokens()
-        return {"success": True, "token": token}
+        return {"success": True, "token": token, "user_id": user.user_id}
     return {"success": False}
 
 

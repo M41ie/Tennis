@@ -18,11 +18,13 @@ Page({
   onLoad() {
     const uid = wx.getStorageSync('user_id');
     const cid = wx.getStorageSync('club_id');
-    if (!uid || !cid) return;
+    if (!uid) return;
     this.setData({ userId: uid });
     const that = this;
+    const url = cid ? `${BASE_URL}/clubs/${cid}/players/${uid}`
+                    : `${BASE_URL}/players/${uid}`;
     wx.request({
-      url: `${BASE_URL}/clubs/${cid}/players/${uid}`,
+      url,
       success(res) {
         const p = res.data || {};
         that.setData({

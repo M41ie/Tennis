@@ -1277,6 +1277,28 @@ def test_update_global_player_api(tmp_path, monkeypatch):
     assert p1.region == "Beijing"
 
 
+def test_login_by_name(tmp_path, monkeypatch):
+    db = tmp_path / "tennis.db"
+    monkeypatch.setattr(storage, "DB_FILE", db)
+
+    api = importlib.reload(importlib.import_module("tennis.api"))
+    client = TestClient(api.app)
+
+    client.post(
+        "/users",
+        json={"user_id": "u1", "name": "Alice", "password": "pw"},
+    )
+
+    resp = client.post("/login", json={"user_id": "Alice", "password": "pw"})
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["success"] is True
+    token = data["token"]
+
+    check = client.post("/check_token", json={"token": token})
+    assert check.json()["user_id"] == "u1"
+
+
 def test_remove_member_api(tmp_path, monkeypatch):
     db = tmp_path / "tennis.db"
     monkeypatch.setattr(storage, "DB_FILE", db)

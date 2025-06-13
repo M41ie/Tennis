@@ -53,6 +53,8 @@ curl -X POST http://localhost:8000/login \
      -H "Content-Type: application/json" \
      -d '{"user_id": "USER", "password": "PW"}'
 ```
+You may supply a username instead of `USER` and the server will look up the
+corresponding ID automatically.
 
 Include the returned `token` value in the `token` field when calling protected
 endpoints. Creating a club or adding a player requires the caller's token, e.g.:
