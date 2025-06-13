@@ -9,6 +9,27 @@ from tennis.cli import (
 from tennis.models import MAX_CREATED_CLUBS, MAX_JOINED_CLUBS
 
 
+def test_auto_generated_user_ids_basic():
+    users = {}
+    uid1 = register_user(users, None, "User1", "pw")
+    assert uid1 == "A"
+    uid2 = register_user(users, None, "User2", "pw")
+    assert uid2 == "B"
+
+
+def test_auto_generated_user_ids_ignore_custom():
+    users = {}
+    register_user(users, "CUSTOM", "Custom", "pw")
+    uid1 = register_user(users, None, "User1", "pw")
+    assert uid1 == "A"
+    uid2 = register_user(users, None, "User2", "pw")
+    assert uid2 == "B"
+    register_user(users, "ZZ", "Zed", "pw")
+    uid3 = register_user(users, None, "User3", "pw")
+    # custom IDs should not affect the sequence
+    assert uid3 == "C"
+
+
 def test_create_club_permission():
     users = {}
     clubs = {}

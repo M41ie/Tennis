@@ -64,7 +64,23 @@ def cleanup_pending_matches(club: Club) -> None:
 
 
 def _next_user_id(users) -> str:
-    idx = len(users) + 1
+    """Return the next available alphabetic ID (A, B, ..., Z, AA, AB, ...).
+
+    Existing IDs that fit the pattern are skipped, so gaps are filled and
+    custom user IDs do not affect the sequence.
+    """
+
+    def encode(n: int) -> str:
+        s = ""
+        while n > 0:
+            n, rem = divmod(n - 1, 26)
+            s = chr(ord("A") + rem) + s
+        return s
+
+    idx = 1
+    while encode(idx) in users:
+        idx += 1
+
     s = ""
     while idx > 0:
         idx, rem = divmod(idx - 1, 26)
