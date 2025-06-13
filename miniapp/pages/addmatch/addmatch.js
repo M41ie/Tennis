@@ -37,13 +37,31 @@ Page({
     wx.request({
       url: `${BASE_URL}/clubs`,
       success(res) {
-        const ids = [''];
-        const names = [that.data.t.chooseClub];
-        ids.push(...res.data.map(c => c.club_id));
-        names.push(...res.data.map(c => c.name));
-        // Always default to the placeholder option rather than a stored club
-        // so users explicitly choose their club when recording a match.
-        that.setData({ clubIds: ids, clubOptions: names, clubIndex: 0 });
+        const allClubs = res.data || [];
+        const uid = wx.getStorageSync('user_id');
+        if (!uid) {
+          const ids = [''];
+          const names = [that.data.t.chooseClub];
+          that.setData({ clubIds: ids, clubOptions: names, clubIndex: 0 });
+          return;
+        }
+        wx.request({
+          url: `${BASE_URL}/users/${uid}`,
+          success(uRes) {
+            const joined = uRes.data.joined_clubs || [];
+            const filtered = allClubs.filter(c => joined.includes(c.club_id));
+            const ids = [''];
+            const names = [that.data.t.chooseClub];
+            ids.push(...filtered.map(c => c.club_id));
+            names.push(...filtered.map(c => c.name));
+            that.setData({ clubIds: ids, clubOptions: names, clubIndex: 0 });
+          },
+          fail() {
+            const ids = [''];
+            const names = [that.data.t.chooseClub];
+            that.setData({ clubIds: ids, clubOptions: names, clubIndex: 0 });
+          }
+        });
       }
     });
   },
