@@ -595,16 +595,14 @@ def get_user_info(user_id: str):
     if not user:
         raise HTTPException(404, "User not found")
     joined = [cid for cid, c in clubs.items() if user_id in c.members]
-    created = getattr(user, "created_clubs", 0)
-    max_created = getattr(user, "max_creatable_clubs", 0)
     return {
         "user_id": user.user_id,
         "name": user.name,
         "joined_clubs": joined,
         "can_create_club": created < max_created if max_created else user.can_create_club,
         "max_joinable_clubs": getattr(user, "max_joinable_clubs", 5),
-        "max_creatable_clubs": max_created,
-        "created_clubs": created,
+        "max_creatable_clubs": getattr(user, "max_creatable_clubs", 0),
+        "created_clubs": getattr(user, "created_clubs", 0),
         "sys_admin": getattr(user, "is_sys_admin", False),
     }
 
@@ -2034,6 +2032,61 @@ def system_stats() -> dict[str, int]:
         "total_clubs": total_clubs,
         "pending_items": pending_items,
     }
+
+
+@app.get("/sys/user_trend")
+def system_user_trend(days: int = 7) -> list[dict[str, object]]:
+    """Return cumulative user counts for the given number of days."""
+    if days not in (7, 30, 90):
+        raise HTTPException(400, "days must be 7, 30 or 90")
+
+    end = datetime.date.today()
+    start = end - datetime.timedelta(days=days - 1)
+
+    join_dates: dict[str, datetime.date] = {}
+    for club in clubs.values():
+        for p in club.members.values():
+            d = p.joined
+            if p.user_id not in join_dates or d < join_dates[p.user_id]:
+                join_dates[p.user_id] = d
+
+    sorted_dates = sorted(join_dates.values())
+    result = []
+    total = 0
+    idx = 0
+    current = start
+    while current <= end:
+        while idx < len(sorted_dates) and sorted_dates[idx] <= current:
+            total += 1
+            idx += 1
+        result.append({"date": current.isoformat(), "count": total})
+        current += datetime.timedelta(days=1)
+
+    return result
+
+
+@app.get("/sys/match_activity")
+def system_match_activity(days: int = 7) -> list[dict[str, object]]:
+    """Return daily match counts for the given number of days."""
+    if days not in (7, 30, 90):
+        raise HTTPException(400, "days must be 7, 30 or 90")
+
+    end = datetime.date.today()
+    start = end - datetime.timedelta(days=days - 1)
+
+    counts: dict[datetime.date, int] = {}
+    for club in clubs.values():
+        for m in club.matches:
+            if start <= m.date <= end:
+                counts[m.date] = counts.get(m.date, 0) + 1
+
+    result = []
+    current = start
+    while current <= end:
+        result.append({"date": current.isoformat(), "count": counts.get(current, 0)})
+        current += datetime.timedelta(days=1)
+
+    return result
 
 
 @app.get("/sys/matches")
