@@ -492,6 +492,11 @@ class LimitsUpdateRequest(BaseModel):
     max_creatable_clubs: int
 
 
+class SysLeaderRequest(BaseModel):
+    user_id: str
+    token: str
+
+
 class DissolveRequest(BaseModel):
     user_id: str
     token: str
@@ -1993,6 +1998,27 @@ def list_all_clubs(query: str | None = None) -> list[dict[str, object]]:
         )
     result.sort(key=lambda x: x["club_id"])
     return result
+
+
+@app.post("/sys/clubs/{club_id}/leader")
+def sys_set_club_leader(club_id: str, data: SysLeaderRequest):
+    """System admin sets club leader."""
+    actor = require_auth(data.token)
+    user = users.get(actor)
+    if not user or not getattr(user, "is_sys_admin", False):
+        raise HTTPException(401, "Not authorized")
+    club = clubs.get(club_id)
+    if not club:
+        raise HTTPException(404, "Club not found")
+    from .cli import sys_set_leader
+
+    try:
+        sys_set_leader(clubs, club_id, data.user_id)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    save_data(clubs)
+    save_users(users)
+    return {"status": "ok"}
 
 
 @app.get("/sys/stats")

@@ -1,8 +1,14 @@
 <view class="page-container">
-  <block wx:for="{{clubs}}" wx:key="club_id" wx:for-index="index">
-    <view class="club-item" data-id="{{item.club_id}}" bindtap="openClub">
-      {{index+1}}. {{item.name}} ({{item.total_matches}} 场，待成员 {{item.pending_members}} )
+  <view class="club-list">
+    <view wx:for="{{clubs}}" wx:key="club_id" class="club-card" bindtap="openClub" data-id="{{item.club_id}}">
+      <view class="card-left">
+        <view class="club-name">{{item.name}}</view>
+        <view class="club-stats">
+          <text>总场次 {{item.total_matches}}</text>
+          <text>待成员 {{item.pending_members}}</text>
+        </view>
+      </view>
     </view>
-  </block>
+  </view>
   <view wx:if="{{!clubs.length}}" class="empty">暂无数据</view>
 </view>
