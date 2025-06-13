@@ -252,6 +252,15 @@ def _club_stats(club: Club) -> dict[str, object]:
     }
 
 
+def _region_match(player_region: str | None, filter_region: str | None) -> bool:
+    """Return True if the player's region matches the filter."""
+    if not filter_region:
+        return True
+    if not player_region:
+        return False
+    return player_region.startswith(filter_region)
+
+
 class ClubCreate(BaseModel):
     club_id: str | None = None
     name: str
@@ -768,6 +777,7 @@ def list_players(
     min_age: int | None = None,
     max_age: int | None = None,
     gender: str | None = None,
+    region: str | None = None,
 ):
     """Return members of a club optionally filtered and sorted by rating."""
 
@@ -793,6 +803,8 @@ def list_players(
         if max_age is not None and (p.age is None or p.age > max_age):
             continue
         if gender is not None and p.gender != gender:
+            continue
+        if not _region_match(p.region, region):
             continue
         players.append(
             {
@@ -876,6 +888,7 @@ def list_all_players(
     gender: str | None = None,
     club: str | None = None,
     doubles: bool = False,
+    region: str | None = None,
 ):
     """Return players from one or more clubs optionally filtered and sorted."""
 
@@ -909,6 +922,8 @@ def list_all_players(
             if max_age is not None and (p.age is None or p.age > max_age):
                 continue
             if gender is not None and p.gender != gender:
+                continue
+            if not _region_match(p.region, region):
                 continue
             players.append(
                 {
