@@ -1,6 +1,6 @@
-const BASE_URL = getApp().globalData.BASE_URL;
 const IMAGES = require('../../assets/base64.js');
 const { formatRating } = require('../../utils/format');
+const userService = require('../../services/user');
 
 Page({
   data: {
@@ -34,32 +34,25 @@ Page({
     }
   },
   loadJoinedClubs(uid, cid) {
-    const that = this;
-    wx.request({
-      url: `${BASE_URL}/users/${uid}`,
-      success(res) {
-        const list = res.data.joined_clubs || [];
-        const isAdmin = !!res.data.sys_admin;
-        let current = cid;
-        if (!current && list.length) {
-          current = list[0];
-          wx.setStorageSync('club_id', current);
-        }
-        that.setData({
-          joinedClubs: list,
-          clubId: current || '',
-          isSysAdmin: isAdmin
-        });
-        that.loadUser(uid);
+    userService.getUserInfo(uid).then(res => {
+      const list = res.joined_clubs || [];
+      const isAdmin = !!res.sys_admin;
+      let current = cid;
+      if (!current && list.length) {
+        current = list[0];
+        wx.setStorageSync('club_id', current);
       }
+      this.setData({
+        joinedClubs: list,
+        clubId: current || '',
+        isSysAdmin: isAdmin
+      });
+      this.loadUser(uid);
     });
   },
   loadUser(uid) {
-    const that = this;
-    wx.request({
-      url: `${BASE_URL}/players/${uid}`,
-      success(res) {
-        const raw = res.data || {};
+    userService.getPlayerInfo(uid).then(res => {
+        const raw = res || {};
         const singlesCount = raw.weighted_games_singles ?? raw.weighted_singles_matches;
         const doublesCount = raw.weighted_games_doubles ?? raw.weighted_doubles_matches;
         const user = {
@@ -75,8 +68,7 @@ Page({
             ? doublesCount.toFixed(2)
             : (doublesCount ? Number(doublesCount).toFixed(2) : '--')
         };
-        that.setData({ user });
-      }
+        this.setData({ user });
     });
   },
   editProfile() {
@@ -103,23 +95,12 @@ Page({
     wx.navigateTo({ url: '/pages/sysmanage/sysmanage' });
   },
   logout() {
-    const token = wx.getStorageSync('token');
-    const that = this;
-    const complete = function () {
+    const complete = () => {
       wx.removeStorageSync('token');
       wx.removeStorageSync('user_id');
       wx.removeStorageSync('club_id');
-      that.setData({ loggedIn: false, user: that.data.guestUser });
+      this.setData({ loggedIn: false, user: this.data.guestUser });
     };
-    if (token) {
-      wx.request({
-        url: `${BASE_URL}/logout`,
-        method: 'POST',
-        data: { token },
-        complete
-      });
-    } else {
-      complete();
-    }
+    userService.logout().finally(complete);
   }
 });

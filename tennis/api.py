@@ -189,6 +189,28 @@ def require_auth(token: str) -> str:
     return user_id
 
 
+def assert_token_matches(token_user: str, target_user: str) -> None:
+    """Ensure the token owner matches the target user."""
+    if token_user != target_user:
+        raise HTTPException(401, "Token mismatch")
+
+
+def get_user_or_404(user_id: str) -> User:
+    """Return a user or raise 404."""
+    user = users.get(user_id)
+    if not user:
+        raise HTTPException(404, "User not found")
+    return user
+
+
+def get_club_or_404(club_id: str) -> Club:
+    """Return a club or raise 404."""
+    club = clubs.get(club_id)
+    if not club:
+        raise HTTPException(404, "Club not found")
+    return club
+
+
 def _pending_status_for_user(
     user_id: str, match: Match | DoublesMatch, club: Club
 ) -> dict[str, object]:
@@ -612,11 +634,8 @@ def get_user_info(user_id: str):
 @app.get("/users/{user_id}/messages")
 def get_user_messages(user_id: str, token: str):
     uid = require_auth(token)
-    if uid != user_id:
-        raise HTTPException(401, "Token mismatch")
-    user = users.get(user_id)
-    if not user:
-        raise HTTPException(404, "User not found")
+    assert_token_matches(uid, user_id)
+    user = get_user_or_404(user_id)
     return [
         {"date": m.date.isoformat(), "text": m.text, "read": m.read}
         for m in user.messages
@@ -627,21 +646,17 @@ def get_user_messages(user_id: str, token: str):
 def get_unread_count(user_id: str, token: str):
     """Return the number of unread messages for the user."""
     uid = require_auth(token)
-    if uid != user_id:
-        raise HTTPException(401, "Token mismatch")
-    user = users.get(user_id)
-    if not user:
-        raise HTTPException(404, "User not found")
+    assert_token_matches(uid, user_id)
+    user = get_user_or_404(user_id)
     return {"unread": sum(1 for m in user.messages if not m.read)}
 
 
 @app.post("/users/{user_id}/messages/{index}/read")
 def mark_message_read(user_id: str, index: int, data: TokenOnly):
     uid = require_auth(data.token)
-    if uid != user_id:
-        raise HTTPException(401, "Token mismatch")
-    user = users.get(user_id)
-    if not user or index >= len(user.messages):
+    assert_token_matches(uid, user_id)
+    user = get_user_or_404(user_id)
+    if index >= len(user.messages):
         raise HTTPException(404, "Message not found")
     user.messages[index].read = True
     save_users(users)
@@ -651,8 +666,7 @@ def mark_message_read(user_id: str, index: int, data: TokenOnly):
 @app.post("/clubs/{club_id}/join")
 def join_club(club_id: str, data: JoinRequest):
     user = require_auth(data.token)
-    if user != data.user_id:
-        raise HTTPException(401, "Token mismatch")
+    assert_token_matches(user, data.user_id)
     try:
         request_join(
             clubs,
@@ -674,8 +688,7 @@ def join_club(club_id: str, data: JoinRequest):
 def dissolve_club_api(club_id: str, data: DissolveRequest):
     """Delete a club (leader only)."""
     user = require_auth(data.token)
-    if user != data.user_id:
-        raise HTTPException(401, "Token mismatch")
+    assert_token_matches(user, data.user_id)
     try:
         cli_dissolve_club(clubs, users, club_id, user)
     except ValueError as e:
@@ -688,8 +701,7 @@ def dissolve_club_api(club_id: str, data: DissolveRequest):
 @app.post("/clubs/{club_id}/reject")
 def reject_join_request(club_id: str, data: RejectRequest):
     user = require_auth(data.token)
-    if user != data.approver_id:
-        raise HTTPException(401, "Token mismatch")
+    assert_token_matches(user, data.approver_id)
     try:
         reject_application(
             clubs,
@@ -709,8 +721,7 @@ def reject_join_request(club_id: str, data: RejectRequest):
 @app.post("/clubs/{club_id}/clear_rejection")
 def clear_rejection_api(club_id: str, data: ClearRejectRequest):
     user = require_auth(data.token)
-    if user != data.user_id:
-        raise HTTPException(401, "Token mismatch")
+    assert_token_matches(user, data.user_id)
     try:
         clear_rejection(clubs, club_id, data.user_id)
     except ValueError as e:
@@ -723,11 +734,8 @@ def clear_rejection_api(club_id: str, data: ClearRejectRequest):
 def update_club_info(club_id: str, data: ClubUpdate):
     """Update club basic information (leader or admin only)."""
     user = require_auth(data.token)
-    club = clubs.get(club_id)
-    if not club:
-        raise HTTPException(404, "Club not found")
-    if user != data.user_id:
-        raise HTTPException(401, "Token mismatch")
+    club = get_club_or_404(club_id)
+    assert_token_matches(user, data.user_id)
     if user != club.leader_id and user not in club.admin_ids:
         raise HTTPException(403, "Forbidden")
     if data.name is not None:
@@ -745,8 +753,7 @@ def update_club_info(club_id: str, data: ClubUpdate):
 @app.post("/clubs/{club_id}/approve")
 def approve_club_member(club_id: str, data: ApproveRequest):
     user = require_auth(data.token)
-    if user != data.approver_id:
-        raise HTTPException(401, "Token mismatch")
+    assert_token_matches(user, data.approver_id)
     try:
         approve_member(
             clubs,
@@ -772,8 +779,7 @@ def list_clubs():
 @app.post("/clubs")
 def create_club(data: ClubCreate):
     user = require_auth(data.token)
-    if user != data.user_id:
-        raise HTTPException(401, "Token mismatch")
+    assert_token_matches(user, data.user_id)
     club_id = data.club_id or _generate_club_id()
     try:
         cli_create_club(
