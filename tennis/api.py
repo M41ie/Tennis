@@ -548,7 +548,8 @@ def get_user_info(user_id: str):
         "joined_clubs": joined,
         "can_create_club": user.can_create_club,
         "max_joinable_clubs": getattr(user, "max_joinable_clubs", 5),
-        "max_creatable_clubs": getattr(user, "max_creatable_clubs", 1),
+        "max_creatable_clubs": getattr(user, "max_creatable_clubs", 0),
+        "created_clubs": getattr(user, "created_clubs", 0),
         "sys_admin": getattr(user, "is_sys_admin", False),
     }
 
