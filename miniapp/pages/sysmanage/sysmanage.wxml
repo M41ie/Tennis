@@ -37,8 +37,8 @@
       <button size="mini" bindtap="searchClubs">搜索</button>
     </view>
     <view class="dashboard">
-      <view class="card">总俱乐部数: {{totalClubs}}</view>
-      <view class="card">待处理事项: {{pendingItems}}</view>
+      <view class="card" bindtap="openAllClubs">总俱乐部数: {{totalClubs}}</view>
+      <view class="card" bindtap="openPending">待处理事项: {{pendingItems}}</view>
     </view>
     <view class="section-title">俱乐部活跃度排名</view>
     <view class="rank-tabs">
