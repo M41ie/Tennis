@@ -1,4 +1,4 @@
-<view class="weui-cells weui-cells_form" bindtap="hideKeyboard">
+<scroll-view scroll-y="true" bindtap="hideKeyboard" class="weui-cells weui-cells_form">
   <picker mode="selector" range="{{clubOptions}}" value="{{clubIndex}}" bindchange="onClubChange">
     <view class="weui-cell {{clubIndex == 0 ? 'placeholder' : ''}}">{{t.club}}: {{clubOptions[clubIndex]}}</view>
   </picker>
@@ -26,18 +26,20 @@
   </picker>
   <view class="weui-cell">
     <view class="weui-label dark-label">{{t.location}}:</view>
-    <input class="weui-input" placeholder="{{t.inputLocation}}" bindinput="onLocation" />
+    <input class="weui-input" placeholder="{{t.inputLocation}}" bindinput="onLocation" cursor-spacing="80" bindblur="hideKeyboard" />
   </view>
   <picker mode="selector" range="{{formatOptions}}" value="{{formatIndex}}" bindchange="onFormatChange">
     <view class="weui-cell {{formatIndex == 0 ? 'placeholder' : ''}}">{{t.format}}: {{formatOptions[formatIndex]}}</view>
   </picker>
   <view class="weui-cell">
     <view class="weui-label dark-label">{{t.yourScore}}:</view>
-    <input class="weui-input" type="number" placeholder="{{t.inputYourScore}}" bindinput="onScoreA" />
+    <input class="weui-input" type="number" placeholder="{{t.inputYourScore}}" bindinput="onScoreA" cursor-spacing="80" bindblur="hideKeyboard" />
   </view>
   <view class="weui-cell">
     <view class="weui-label dark-label">{{t.oppScore}}:</view>
-    <input class="weui-input" type="number" placeholder="{{t.inputOppScore}}" bindinput="onScoreB" />
+    <input class="weui-input" type="number" placeholder="{{t.inputOppScore}}" bindinput="onScoreB" cursor-spacing="80" bindblur="hideKeyboard" />
   </view>
-</view>
-<button class="weui-btn weui-btn_primary submit-btn" bindtap="submit">{{t.submit}}</button>
+
+  <button class="weui-btn weui-btn_primary submit-btn" bindtap="submit">{{t.submit}}</button>
+</scroll-view>
+

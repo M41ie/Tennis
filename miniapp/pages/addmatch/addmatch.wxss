@@ -1,4 +1,5 @@
 .weui-cells { padding: 10px 0; }
+scroll-view { height: 100vh; }
 .placeholder { color: #888; }
 .dark-label { color: #000; }
 .submit-btn {
