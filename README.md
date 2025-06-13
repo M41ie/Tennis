@@ -53,6 +53,8 @@ curl -X POST http://localhost:8000/login \
      -H "Content-Type: application/json" \
      -d '{"user_id": "USER", "password": "PW"}'
 ```
+You may supply a username instead of `USER` and the server will look up the
+corresponding ID automatically.
 
 Include the returned `token` value in the `token` field when calling protected
 endpoints. Creating a club or adding a player requires the caller's token, e.g.:
@@ -116,7 +118,7 @@ pages:
 
 * **Leaderboard** – displays player ratings with basic club and rating filters
 * **Match Records** – shows the logged in user's recent matches
-* **Profile** – displays user information and links to club management
+* **Profile** – displays user information (always from global data) and links to club management
 
 To run the mini program, build it with the WeChat Developer Tools and start the
 REST API server as shown above.

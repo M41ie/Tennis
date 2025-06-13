@@ -21,7 +21,7 @@ Page({
       success(res) {
         if (res.data.success) {
           wx.setStorageSync('token', res.data.token);
-          wx.setStorageSync('user_id', that.data.loginId);
+          wx.setStorageSync('user_id', res.data.user_id || that.data.loginId);
           wx.navigateBack();
         } else {
           wx.showToast({ title: '登录失败', icon: 'none' });
