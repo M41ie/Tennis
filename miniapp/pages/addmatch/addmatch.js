@@ -1,4 +1,5 @@
 const BASE_URL = getApp().globalData.BASE_URL;
+const { hideKeyboard } = require('../../utils/hideKeyboard');
 const { zh_CN } = require('../../utils/locales.js');
 
 Page({
@@ -123,9 +124,7 @@ Page({
   onFormatChange(e) { this.setData({ formatIndex: e.detail.value }); },
   onScoreA(e) { this.setData({ scoreA: e.detail.value }); },
   onScoreB(e) { this.setData({ scoreB: e.detail.value }); },
-  hideKeyboard() {
-    wx.hideKeyboard();
-  },
+  hideKeyboard,
   submit() {
     const doubles = this.data.modeIndex === 2;
     const incomplete =

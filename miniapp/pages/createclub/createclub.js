@@ -1,4 +1,5 @@
 const BASE_URL = getApp().globalData.BASE_URL;
+const { hideKeyboard } = require('../../utils/hideKeyboard');
 
 Page({
   data: {
@@ -24,9 +25,7 @@ Page({
   cancelRating() {
     this.setData({ showDialog: false });
   },
-  hideKeyboard() {
-    wx.hideKeyboard();
-  },
+  hideKeyboard,
   confirmRating() {
     const rating = parseFloat(this.data.rating);
     if (isNaN(rating) || rating < 0 || rating > 7) {

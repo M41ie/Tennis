@@ -1,4 +1,5 @@
 const BASE_URL = getApp().globalData.BASE_URL;
+const { hideKeyboard } = require('../../utils/hideKeyboard');
 
 Page({
   data: {
@@ -337,9 +338,7 @@ Page({
     this.setData({ showRatingDialog: false, ratingInput: '', ratingApplicantId: '' });
     this.approveById(uid, rating);
   },
-  hideKeyboard() {
-    wx.hideKeyboard();
-  },
+  hideKeyboard,
   noop() {},
   approve(e) {
     this.handleApproval(e.currentTarget.dataset.uid);

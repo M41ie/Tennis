@@ -1,4 +1,5 @@
 const BASE_URL = getApp().globalData.BASE_URL;
+const { hideKeyboard } = require('../../utils/hideKeyboard');
 
 Page({
   data: {
@@ -151,9 +152,7 @@ Page({
   cancelJoin() {
     this.setData({ showDialog: false });
   },
-  hideKeyboard() {
-    wx.hideKeyboard();
-  },
+  hideKeyboard,
   noop() {},
   viewReject(e) {
     const reason = e.currentTarget.dataset.reason;
