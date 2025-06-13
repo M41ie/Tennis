@@ -154,6 +154,7 @@ Page({
   cancelJoin() {
     this.setData({ showDialog: false });
   },
+  noop() {},
   viewReject(e) {
     const reason = e.currentTarget.dataset.reason;
     const cid = e.currentTarget.dataset.id;

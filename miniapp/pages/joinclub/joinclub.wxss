@@ -100,16 +100,42 @@
   align-items: flex-start;
 }
 
-.dialog {
+.dialog-mask {
   position: fixed;
   left: 0;
   right: 0;
+  top: 0;
   bottom: 0;
-  background: #fff;
-  padding: 20rpx;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
 }
-.actions {
+
+.dialog-card {
+  background: #fff;
+  padding: 30rpx;
+  border-radius: 16rpx;
+  width: 80%;
+  box-sizing: border-box;
+}
+
+.dialog-input {
+  width: 100%;
+  margin-bottom: 20rpx;
+  padding: 20rpx;
+  border: 1rpx solid #ccc;
+  border-radius: 8rpx;
+  box-sizing: border-box;
+  font-size: 28rpx;
+}
+
+.dialog-actions {
   display: flex;
   justify-content: space-between;
-  margin-top: 10rpx;
+}
+
+.dialog-actions button {
+  width: 45%;
 }
