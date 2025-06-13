@@ -152,6 +152,15 @@ def resolve_user(users, identifier: str) -> User | None:
     return user
 
 
+def set_user_limits(users, user_id: str, max_joinable: int, max_creatable: int) -> None:
+    """Update per-user club limits."""
+    u = users.get(user_id)
+    if not u:
+        raise ValueError("User not found")
+    u.max_joinable_clubs = max_joinable
+    u.max_creatable_clubs = max_creatable
+
+
 def login_user(users, identifier: str, password: str) -> bool:
     """Verify a user's password by ID or name."""
     user = resolve_user(users, identifier)
@@ -225,7 +234,7 @@ def approve_member(
     user = users.get(user_id)
     if not user:
         raise ValueError("User not registered")
-    if user.joined_clubs >= MAX_JOINED_CLUBS:
+    if user.joined_clubs >= user.max_joinable_clubs:
         raise ValueError("Club membership limit reached")
     club.pending_members.pop(user_id, None)
     player = players.get(user_id)
@@ -288,9 +297,9 @@ def create_club(users, clubs, user_id: str, club_id: str, name: str, logo: Optio
     user = users.get(user_id)
     if not user or not user.can_create_club:
         raise ValueError('User not allowed to create club')
-    if user.created_clubs >= MAX_CREATED_CLUBS:
+    if user.created_clubs >= user.max_creatable_clubs:
         raise ValueError('Club creation limit reached')
-    if user.joined_clubs >= MAX_JOINED_CLUBS:
+    if user.joined_clubs >= user.max_joinable_clubs:
         raise ValueError('Club membership limit reached')
     if club_id in clubs:
         raise ValueError('Club already exists')

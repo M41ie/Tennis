@@ -2,10 +2,12 @@
 .section-title{margin:20rpx 0 10rpx 0;font-size:30rpx;font-weight:bold;}
 .club-list{}
 .club-card{width:100%;background:#fff;border-radius:16rpx;margin-bottom:20rpx;padding:24rpx;box-shadow:0 4rpx 12rpx rgba(0,0,0,0.05);display:flex;justify-content:space-between;}
-.card-left{display:flex;flex-direction:column;}
-.club-name{font-size:32rpx;font-weight:600;color:#333;}
-.club-slogan{font-size:24rpx;color:#888;margin-top:6rpx;}
-.card-right{display:flex;align-items:flex-start;}
+.card-left{display:flex;flex-direction:column;flex-grow:1;padding-right:20rpx;}
+.club-name{font-size:36rpx;font-weight:bold;color:#333;margin-bottom:10rpx;}
+.club-slogan{font-size:26rpx;color:#888;margin-bottom:20rpx;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.club-stats{font-size:24rpx;color:#666;display:flex;flex-direction:column;}
+.club-stats text{margin-bottom:6rpx;}
+.card-right{flex-shrink:0;display:flex;align-items:flex-start;}
 .club-role{font-size:26rpx;}
 .role-tag.leader{color:#007aff;}
 .role-tag.admin{color:#1aad19;}

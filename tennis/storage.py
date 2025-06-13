@@ -41,7 +41,9 @@ def _init_schema(conn: sqlite3.Connection) -> None:
         can_create_club INTEGER,
         is_sys_admin INTEGER DEFAULT 0,
         created_clubs INTEGER DEFAULT 0,
-        joined_clubs INTEGER DEFAULT 0
+        joined_clubs INTEGER DEFAULT 0,
+        max_creatable_clubs INTEGER DEFAULT 1,
+        max_joinable_clubs INTEGER DEFAULT 5
     )"""
     )
     cur.execute(
@@ -96,6 +98,10 @@ def _init_schema(conn: sqlite3.Connection) -> None:
     cols = {row[1] for row in cur.execute("PRAGMA table_info('users')")}
     if 'is_sys_admin' not in cols:
         cur.execute("ALTER TABLE users ADD COLUMN is_sys_admin INTEGER DEFAULT 0")
+    if 'max_creatable_clubs' not in cols:
+        cur.execute("ALTER TABLE users ADD COLUMN max_creatable_clubs INTEGER DEFAULT 1")
+    if 'max_joinable_clubs' not in cols:
+        cur.execute("ALTER TABLE users ADD COLUMN max_joinable_clubs INTEGER DEFAULT 5")
     cols = {row[1] for row in cur.execute("PRAGMA table_info('club_meta')")}
     if 'leader_id' not in cols:
         cur.execute("ALTER TABLE club_meta ADD COLUMN leader_id TEXT")
@@ -515,6 +521,8 @@ def load_users() -> Dict[str, User]:
             is_sys_admin=bool(row["is_sys_admin"]) if "is_sys_admin" in row.keys() else False,
             created_clubs=row["created_clubs"],
             joined_clubs=row["joined_clubs"],
+            max_creatable_clubs=row["max_creatable_clubs"] if "max_creatable_clubs" in row.keys() else 1,
+            max_joinable_clubs=row["max_joinable_clubs"] if "max_joinable_clubs" in row.keys() else 5,
         )
     for row in cur.execute("SELECT * FROM messages ORDER BY id"):
         msg = Message(
@@ -537,7 +545,7 @@ def save_users(users: Dict[str, User]) -> None:
     cur.execute("DELETE FROM messages")
     for u in users.values():
         cur.execute(
-            "INSERT INTO users(user_id, name, password_hash, wechat_openid, can_create_club, is_sys_admin, created_clubs, joined_clubs) VALUES (?,?,?,?,?,?,?,?)",
+            "INSERT INTO users(user_id, name, password_hash, wechat_openid, can_create_club, is_sys_admin, created_clubs, joined_clubs, max_creatable_clubs, max_joinable_clubs) VALUES (?,?,?,?,?,?,?,?,?,?)",
             (
                 u.user_id,
                 u.name,
@@ -547,6 +555,8 @@ def save_users(users: Dict[str, User]) -> None:
                 int(getattr(u, 'is_sys_admin', False)),
                 u.created_clubs,
                 u.joined_clubs,
+                getattr(u, 'max_creatable_clubs', 1),
+                getattr(u, 'max_joinable_clubs', 5),
             ),
         )
         for msg in u.messages:
