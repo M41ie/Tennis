@@ -2,33 +2,52 @@ const BASE_URL = getApp().globalData.BASE_URL;
 
 Page({
   data: {
-    userId: '',
     name: '',
     password: ''
   },
-  onUserId(e) { this.setData({ userId: e.detail.value }); },
   onName(e) { this.setData({ name: e.detail.value }); },
   onPassword(e) { this.setData({ password: e.detail.value }); },
   register() {
-    if (!this.data.userId || !this.data.name || !this.data.password) {
+    if (!this.data.name || !this.data.password) {
       wx.showToast({ title: '信息不完整', icon: 'none' });
       return;
     }
+    const that = this;
     wx.request({
       url: `${BASE_URL}/users`,
       method: 'POST',
       data: {
-        user_id: this.data.userId,
         name: this.data.name,
         password: this.data.password
       },
       success(res) {
-        if (res.statusCode === 200) {
-          wx.showToast({ title: '注册成功', icon: 'success' });
-          wx.navigateBack();
+        if (res.statusCode === 200 && res.data.user_id) {
+          const uid = res.data.user_id;
+          wx.request({
+            url: `${BASE_URL}/login`,
+            method: 'POST',
+            data: { user_id: uid, password: that.data.password },
+            success(r2) {
+              if (r2.data.success) {
+                wx.setStorageSync('token', r2.data.token);
+                wx.setStorageSync('user_id', uid);
+                wx.showToast({ title: '注册成功', icon: 'success' });
+                wx.navigateTo({ url: '/pages/editprofile/editprofile' });
+              } else {
+                wx.showToast({ title: '请稍后登录', icon: 'none' });
+                wx.navigateBack();
+              }
+            },
+            fail() {
+              wx.showToast({ title: '网络错误', icon: 'none' });
+            }
+          });
         } else {
           wx.showToast({ title: '失败', icon: 'none' });
         }
+      },
+      fail() {
+        wx.showToast({ title: '网络错误', icon: 'none' });
       }
     });
   },
@@ -45,7 +64,7 @@ Page({
             if (resp.statusCode === 200 && resp.data.token) {
               wx.setStorageSync('token', resp.data.token);
               wx.setStorageSync('user_id', resp.data.user_id);
-              wx.navigateBack();
+              wx.navigateTo({ url: '/pages/editprofile/editprofile' });
             } else {
               wx.showToast({ title: '失败', icon: 'none' });
             }
