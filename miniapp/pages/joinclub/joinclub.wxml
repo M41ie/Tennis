@@ -31,7 +31,7 @@
       <input
         wx:if="{{needRating}}"
         class="dialog-input"
-        placeholder="请输入自我评分，格式如 3.250"
+        placeholder="请输入自我评分，参考格式：3.250"
         type="digit"
         bindinput="onRating"
       />
