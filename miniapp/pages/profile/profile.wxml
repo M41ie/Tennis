@@ -8,17 +8,14 @@
 
 <view class="menu-list">
   <view wx:if="{{loggedIn}}" class="menu-item" bindtap="goMyClub">
-    <image class="icon" src="{{iconClub}}" />
     <view class="title">{{myClubBtnText}}</view>
     <text class="arrow">›</text>
   </view>
   <view wx:else class="menu-item disabled">
-    <image class="icon" src="{{iconClub}}" />
     <view class="title">{{myClubBtnText}}</view>
     <text class="arrow">›</text>
   </view>
   <view class="menu-item disabled">
-    <image class="icon" src="{{iconComing}}" />
     <view class="title">我的笔记（Coming Soon）</view>
   </view>
 </view>
