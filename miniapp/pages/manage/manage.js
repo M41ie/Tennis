@@ -469,33 +469,6 @@ Page({
       complete() { that.fetchClub(); }
     });
   },
-  setLeader(e) {
-    const uid = e.currentTarget.dataset.uid;
-    const name = e.currentTarget.dataset.name || '';
-    const cid = wx.getStorageSync('club_id');
-    const token = wx.getStorageSync('token');
-    const that = this;
-    wx.showModal({
-      title: '设为负责人',
-      content: `确定要将 ${name} 设为 ${that.data.clubName} 的负责人吗？此操作不可逆`,
-      success(res) {
-        if (res.confirm) {
-          wx.request({
-            url: `${BASE_URL}/sys/clubs/${cid}/leader`,
-            method: 'POST',
-            data: { user_id: uid, token },
-            success() {
-              wx.showToast({ title: '操作成功', icon: 'none' });
-            },
-            complete() {
-              that.fetchClub();
-              that.fetchPlayers();
-            }
-          });
-        }
-      }
-    });
-  },
   dissolveClub() {
     const cid = wx.getStorageSync('club_id');
     const token = wx.getStorageSync('token');
