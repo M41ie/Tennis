@@ -1,0 +1,13 @@
+{
+  "name": "miniapp",
+  "private": true,
+  "scripts": {
+    "lint": "eslint .",
+    "test": "jest"
+  },
+  "devDependencies": {
+    "eslint": "^8.56.0",
+    "jest": "^29.7.0",
+    "miniprogram-simulate": "^2.4.7"
+  }
+}
