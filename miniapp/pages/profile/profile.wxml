@@ -19,6 +19,10 @@
     <view class="title">系统管理</view>
     <text class="arrow">›</text>
   </view>
+  <button open-type="contact" class="menu-item contact-btn">
+    <view class="title">联系开发者</view>
+    <text class="arrow">›</text>
+  </button>
 </view>
 
 <button wx:if="{{loggedIn}}" class="logout-btn" bindtap="logout">退出登录</button>
