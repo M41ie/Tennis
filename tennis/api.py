@@ -601,7 +601,7 @@ def get_user_info(user_id: str):
         "user_id": user.user_id,
         "name": user.name,
         "joined_clubs": joined,
-        "can_create_club": created < max_created,
+        "can_create_club": created < max_created if max_created else user.can_create_club,
         "max_joinable_clubs": getattr(user, "max_joinable_clubs", 5),
         "max_creatable_clubs": max_created,
         "created_clubs": created,
