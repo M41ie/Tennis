@@ -32,7 +32,7 @@
         wx:if="{{needRating}}"
         class="dialog-input"
         placeholder="自我评分：如 3.250"
-        type="number"
+        type="digit"
         bindinput="onRating"
       />
       <view class="dialog-actions">
