@@ -22,6 +22,7 @@
     "pages/sysmanage/sysmanage",
     "pages/sys-user-list/index",
     "pages/sys-user-detail/index",
+    "pages/sys-match-list/index",
     "pages/sys-club-list/index"
   ],
   "tabBar": {
