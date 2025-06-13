@@ -47,13 +47,16 @@ def expected_score(rating_a: float, rating_b: float) -> float:
     return 1 / (1 + math.exp(-4 * (rating_a - rating_b)))
 
 
+DEFAULT_RATING = 1000.0
+
+
 def update_ratings(match: Match) -> Tuple[float, float]:
     """Update player ratings based on a match result.
 
     Returns the new ratings for player_a and player_b.
     """
-    a_rating = match.player_a.singles_rating
-    b_rating = match.player_b.singles_rating
+    a_rating = match.player_a.singles_rating if match.player_a.singles_rating is not None else DEFAULT_RATING
+    b_rating = match.player_b.singles_rating if match.player_b.singles_rating is not None else DEFAULT_RATING
     pre_a = a_rating
     pre_b = b_rating
 
@@ -118,17 +121,31 @@ def update_doubles_ratings(match: DoublesMatch) -> Tuple[float, float, float, fl
     pre-match rating. Experience gain also uses the same formula as singles.
     """
 
-    team_a_rating = (match.player_a1.doubles_rating + match.player_a2.doubles_rating) / 2
-    team_b_rating = (match.player_b1.doubles_rating + match.player_b2.doubles_rating) / 2
+    if match.player_a1.doubles_rating is None:
+        match.player_a1.doubles_rating = DEFAULT_RATING
+    if match.player_a2.doubles_rating is None:
+        match.player_a2.doubles_rating = DEFAULT_RATING
+    if match.player_b1.doubles_rating is None:
+        match.player_b1.doubles_rating = DEFAULT_RATING
+    if match.player_b2.doubles_rating is None:
+        match.player_b2.doubles_rating = DEFAULT_RATING
 
-    match.rating_a1_before = match.player_a1.doubles_rating
-    match.rating_a2_before = match.player_a2.doubles_rating
-    match.rating_b1_before = match.player_b1.doubles_rating
-    match.rating_b2_before = match.player_b2.doubles_rating
-    pre_a1 = match.player_a1.doubles_rating
-    pre_a2 = match.player_a2.doubles_rating
-    pre_b1 = match.player_b1.doubles_rating
-    pre_b2 = match.player_b2.doubles_rating
+    a1_rating = match.player_a1.doubles_rating
+    a2_rating = match.player_a2.doubles_rating
+    b1_rating = match.player_b1.doubles_rating
+    b2_rating = match.player_b2.doubles_rating
+
+    team_a_rating = (a1_rating + a2_rating) / 2
+    team_b_rating = (b1_rating + b2_rating) / 2
+
+    match.rating_a1_before = a1_rating
+    match.rating_a2_before = a2_rating
+    match.rating_b1_before = b1_rating
+    match.rating_b2_before = b2_rating
+    pre_a1 = a1_rating
+    pre_a2 = a2_rating
+    pre_b1 = b1_rating
+    pre_b2 = b2_rating
 
     exp_a = expected_score(team_a_rating, team_b_rating)
 
@@ -141,22 +158,22 @@ def update_doubles_ratings(match: DoublesMatch) -> Tuple[float, float, float, fl
     # competitive skill adjustment computed on the team averages
     delta_team = match.format_weight * 0.25 * (actual_a - exp_a)
 
-    total_a = match.player_a1.doubles_rating + match.player_a2.doubles_rating
-    total_b = match.player_b1.doubles_rating + match.player_b2.doubles_rating
+    total_a = a1_rating + a2_rating
+    total_b = b1_rating + b2_rating
 
     if total_a == 0:
         delta_a1 = delta_team / 2
         delta_a2 = delta_team / 2
     else:
-        delta_a1 = delta_team * (match.player_a1.doubles_rating / total_a)
-        delta_a2 = delta_team * (match.player_a2.doubles_rating / total_a)
+        delta_a1 = delta_team * (a1_rating / total_a)
+        delta_a2 = delta_team * (a2_rating / total_a)
 
     if total_b == 0:
         delta_b1 = -delta_team / 2
         delta_b2 = -delta_team / 2
     else:
-        delta_b1 = -delta_team * (match.player_b1.doubles_rating / total_b)
-        delta_b2 = -delta_team * (match.player_b2.doubles_rating / total_b)
+        delta_b1 = -delta_team * (b1_rating / total_b)
+        delta_b2 = -delta_team * (b2_rating / total_b)
 
     def _exp_gain(rating: float) -> float:
         if rating <= 0:

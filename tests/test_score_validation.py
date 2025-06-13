@@ -7,8 +7,8 @@ from tennis.models import Club, Player
 
 def _setup_singles():
     club = Club(club_id="c", name="Club")
-    p1 = Player("p1", "P1")
-    p2 = Player("p2", "P2")
+    p1 = Player("p1", "P1", singles_rating=1000.0)
+    p2 = Player("p2", "P2", singles_rating=1000.0)
     club.members[p1.user_id] = p1
     club.members[p2.user_id] = p2
     clubs = {club.club_id: club}
@@ -17,10 +17,10 @@ def _setup_singles():
 
 def _setup_doubles():
     club = Club(club_id="c", name="Club")
-    a1 = Player("a1", "A1")
-    a2 = Player("a2", "A2")
-    b1 = Player("b1", "B1")
-    b2 = Player("b2", "B2")
+    a1 = Player("a1", "A1", doubles_rating=1000.0)
+    a2 = Player("a2", "A2", doubles_rating=1000.0)
+    b1 = Player("b1", "B1", doubles_rating=1000.0)
+    b2 = Player("b2", "B2", doubles_rating=1000.0)
     for p in (a1, a2, b1, b2):
         club.members[p.user_id] = p
     clubs = {club.club_id: club}

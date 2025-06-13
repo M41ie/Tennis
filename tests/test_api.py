@@ -99,8 +99,8 @@ def test_api_match_flow(tmp_path, monkeypatch):
     from tennis.models import Player, Match
     from tennis.rating import update_ratings, weighted_rating
 
-    ref_p1 = Player("p1", "P1")
-    ref_p2 = Player("p2", "P2")
+    ref_p1 = Player("p1", "P1", singles_rating=1000.0)
+    ref_p2 = Player("p2", "P2", singles_rating=1000.0)
     match = Match(
         date=datetime.date(2023, 1, 1),
         player_a=ref_p1,
@@ -957,7 +957,7 @@ def test_pending_match_includes_ratings(tmp_path, monkeypatch):
     resp = client.get(f"/clubs/c1/pending_matches?token={tokens['p1']}")
     rec = resp.json()[0]
     assert "rating_a_before" in rec and "rating_b_before" in rec
-    assert isinstance(rec["rating_a_before"], float)
+    assert rec["rating_a_before"] is None
 
 
 
@@ -1041,7 +1041,7 @@ def test_doubles_leaderboard_api(tmp_path, monkeypatch):
         assert p["weighted_singles_matches"] == 0.0
         assert p["weighted_doubles_matches"] == 0.0
     ids = [p["user_id"] for p in board]
-    assert ids == ["p3", "p1", "p2", "leader", "p4"]
+    assert ids == ["p3", "p1", "p2", "p4", "leader"]
 
 
 def test_token_persistence(tmp_path, monkeypatch):

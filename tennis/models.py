@@ -29,8 +29,8 @@ class User:
 class Player:
     user_id: str
     name: str
-    singles_rating: float = 1000.0
-    doubles_rating: float = 1000.0
+    singles_rating: Optional[float] = None
+    doubles_rating: Optional[float] = None
     experience: float = 0.0
     singles_matches: List['Match'] = field(default_factory=list)
     doubles_matches: List['DoublesMatch'] = field(default_factory=list)

@@ -228,8 +228,8 @@ def _pending_status_for_user(
 
 def _club_stats(club: Club) -> dict[str, object]:
     """Aggregate statistics for a club."""
-    singles = [p.singles_rating for p in club.members.values()]
-    doubles = [p.doubles_rating for p in club.members.values()]
+    singles = [p.singles_rating for p in club.members.values() if p.singles_rating is not None]
+    doubles = [p.doubles_rating for p in club.members.values() if p.doubles_rating is not None]
     total_singles = sum(len(p.singles_matches) for p in club.members.values()) // 2
     total_doubles = sum(len(p.doubles_matches) for p in club.members.values()) // 4
     singles_avg = statistics.mean(singles) if singles else 0
@@ -665,9 +665,9 @@ def list_players(
         rating = get_rating(p, today)
         singles_count = weighted_singles_matches(p)
         doubles_count = weighted_doubles_matches(p)
-        if min_rating is not None and rating < min_rating:
+        if min_rating is not None and (rating is None or rating < min_rating):
             continue
-        if max_rating is not None and rating > max_rating:
+        if max_rating is not None and (rating is None or rating > max_rating):
             continue
         if min_age is not None and (p.age is None or p.age < min_age):
             continue
@@ -688,7 +688,7 @@ def list_players(
             }
         )
 
-    players.sort(key=lambda x: x["rating"], reverse=True)
+    players.sort(key=lambda x: x["rating"] if x["rating"] is not None else float('-inf'), reverse=True)
     return players
 
 
@@ -780,9 +780,9 @@ def list_all_players(
             rating = get_rating(p, today)
             singles_count = weighted_singles_matches(p)
             doubles_count = weighted_doubles_matches(p)
-            if min_rating is not None and rating < min_rating:
+            if min_rating is not None and (rating is None or rating < min_rating):
                 continue
-            if max_rating is not None and rating > max_rating:
+            if max_rating is not None and (rating is None or rating > max_rating):
                 continue
             if min_age is not None and (p.age is None or p.age < min_age):
                 continue
@@ -803,7 +803,7 @@ def list_all_players(
                     "weighted_doubles_matches": round(doubles_count, 2),
                 }
             )
-    players.sort(key=lambda x: x["rating"], reverse=True)
+    players.sort(key=lambda x: x["rating"] if x["rating"] is not None else float('-inf'), reverse=True)
     return players
 
 
