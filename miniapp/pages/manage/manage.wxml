@@ -17,6 +17,7 @@
     <profile-card
       user="{{item}}"
       editable="{{false}}"
+      info="{{item.genderText}}"
       showRoleTag="{{false}}"
       bind:cardtap="reviewApplication"
       data-uid="{{item.user_id}}"
@@ -30,9 +31,9 @@
     <profile-card
       user="{{item}}"
       editable="{{false}}"
-      info="{{item.genderRoleText}}"
+      info="{{item.genderText}}"
       info2="{{item.daysText}}"
-      showRoleTag="{{false}}"
+      showRoleTag="{{true}}"
       bind:cardtap="viewPlayer"
       data-uid="{{item.user_id}}"
     />
