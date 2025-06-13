@@ -14,6 +14,10 @@ Component({
     showRoleTag: {
       type: Boolean,
       value: true
+    },
+    roleInInfo: {
+      type: Boolean,
+      value: false
     }
   },
   methods: {
