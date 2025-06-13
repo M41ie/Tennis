@@ -33,8 +33,8 @@ Page({
           id: d.id || uid,
           name: d.name,
           avatar_url: d.avatar_url || d.avatar,
-          rating_singles: formatRating(d.rating_singles),
-          rating_doubles: formatRating(d.rating_doubles),
+          singles_rating: formatRating(d.singles_rating),
+          doubles_rating: formatRating(d.doubles_rating),
           weighted_games_singles: formatGames(d.weighted_games_singles),
           weighted_games_doubles: formatGames(d.weighted_games_doubles),
           clubs: []

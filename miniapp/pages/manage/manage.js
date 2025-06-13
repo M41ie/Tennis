@@ -69,9 +69,9 @@ Page({
                   avatar_url: '',
                   gender: '',
                   genderText: '-',
-                  rating_singles:
+                  singles_rating:
                     p.singles_rating != null ? p.singles_rating.toFixed(3) : '--',
-                  rating_doubles:
+                  doubles_rating:
                     p.doubles_rating != null ? p.doubles_rating.toFixed(3) : '--',
                   weighted_games_singles: '--',
                   weighted_games_doubles: '--',
@@ -104,8 +104,8 @@ Page({
             avatar_url: d.avatar_url || d.avatar || '',
             gender,
             genderText,
-            rating_singles: rating != null ? rating.toFixed(3) : '--',
-            rating_doubles: doublesRating != null ? doublesRating.toFixed(3) : '--',
+            singles_rating: rating != null ? rating.toFixed(3) : '--',
+            doubles_rating: doublesRating != null ? doublesRating.toFixed(3) : '--',
             weighted_games_singles:
               d.weighted_games_singles != null
                 ? Number(d.weighted_games_singles).toFixed(2)
@@ -133,9 +133,9 @@ Page({
                 avatar_url: '',
                 gender: '',
                 genderText: '-',
-                rating_singles:
+                singles_rating:
                   p.singles_rating != null ? p.singles_rating.toFixed(3) : '--',
-                rating_doubles:
+                doubles_rating:
                   p.doubles_rating != null ? p.doubles_rating.toFixed(3) : '--',
                 weighted_games_singles: '--',
                 weighted_games_doubles: '--',
@@ -226,8 +226,8 @@ Page({
                 avatar_url: p.avatar,
                 gender: p.gender,
                 joined: p.joined,
-                rating_singles: p.rating != null ? p.rating.toFixed(3) : '--',
-                ratingSinglesNum: typeof p.rating === 'number' ? p.rating : null,
+                singles_rating: p.singles_rating != null ? p.singles_rating.toFixed(3) : '--',
+                ratingSinglesNum: typeof p.singles_rating === 'number' ? p.singles_rating : null,
                 weighted_games_singles:
                   p.weighted_singles_matches != null
                     ? p.weighted_singles_matches.toFixed(2)
@@ -244,9 +244,9 @@ Page({
                 gender: p.gender,
                 joined: p.joined
               };
-              t.rating_doubles = p.rating != null ? p.rating.toFixed(3) : '--';
+              t.doubles_rating = p.doubles_rating != null ? p.doubles_rating.toFixed(3) : '--';
               t.ratingDoublesNum =
-                typeof p.rating === 'number' ? p.rating : null;
+                typeof p.doubles_rating === 'number' ? p.doubles_rating : null;
               t.weighted_games_doubles =
                 p.weighted_doubles_matches != null
                   ? p.weighted_doubles_matches.toFixed(2)

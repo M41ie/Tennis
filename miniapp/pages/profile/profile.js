@@ -9,8 +9,8 @@ Page({
     guestUser: {
       id: '-',
       name: '点击登陆/注册',
-      rating_singles: '-',
-      rating_doubles: '-',
+      singles_rating: '-',
+      doubles_rating: '-',
       weighted_games_singles: '-',
       weighted_games_doubles: '-',
       avatar_url: ''
@@ -59,8 +59,8 @@ Page({
           id: raw.id || raw.user_id,
           avatar_url: raw.avatar_url || raw.avatar,
           name: raw.name,
-          rating_singles: formatRating(raw.rating_singles ?? raw.singles_rating),
-          rating_doubles: formatRating(raw.rating_doubles ?? raw.doubles_rating),
+          singles_rating: formatRating(raw.singles_rating),
+          doubles_rating: formatRating(raw.doubles_rating),
           weighted_games_singles: typeof singlesCount === 'number'
             ? singlesCount.toFixed(2)
             : (singlesCount ? Number(singlesCount).toFixed(2) : '--'),

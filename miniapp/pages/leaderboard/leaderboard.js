@@ -50,7 +50,9 @@ Page({
         const index = options.findIndex(o => o.id === selected);
         data.players = data.players || [];
         data.players.forEach(p => {
-          if (p.rating != null) p.rating = p.rating.toFixed(3);
+          const key = that.data.filter.mode === 'Doubles' ? 'doubles_rating' : 'singles_rating';
+          const rating = p[key];
+          p.rating = rating != null ? Number(rating).toFixed(3) : '--';
           if (p.weighted_singles_matches != null) p.weighted_singles_matches = p.weighted_singles_matches.toFixed(2);
           if (p.weighted_doubles_matches != null) p.weighted_doubles_matches = p.weighted_doubles_matches.toFixed(2);
         });
@@ -141,7 +143,9 @@ Page({
       success(res) {
         const list = (res.data && res.data.players) || [];
         list.forEach(p => {
-          if (p.rating != null) p.rating = p.rating.toFixed(3);
+          const key = that.data.filter.mode === 'Doubles' ? 'doubles_rating' : 'singles_rating';
+          const rating = p[key];
+          p.rating = rating != null ? Number(rating).toFixed(3) : '--';
           if (p.weighted_singles_matches != null) p.weighted_singles_matches = p.weighted_singles_matches.toFixed(2);
           if (p.weighted_doubles_matches != null) p.weighted_doubles_matches = p.weighted_doubles_matches.toFixed(2);
         });

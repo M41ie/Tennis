@@ -29,8 +29,8 @@ Page({
         const raw = res.data || [];
         const list = raw.map(u => ({
           ...u,
-          rating_singles: formatRating(u.rating_singles),
-          rating_doubles: formatRating(u.rating_doubles),
+          singles_rating: formatRating(u.singles_rating),
+          doubles_rating: formatRating(u.doubles_rating),
           weighted_games_singles: formatGames(u.weighted_games_singles),
           weighted_games_doubles: formatGames(u.weighted_games_doubles)
         }));
