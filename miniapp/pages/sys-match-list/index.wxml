@@ -1,6 +1,10 @@
 <view class="page-container">
+  <view class="mode-switch">
+    <view class="mode-item {{modeIndex==0?'active':''}}" data-index="0" bindtap="switchMode">单打</view>
+    <view class="mode-item {{modeIndex==1?'active':''}}" data-index="1" bindtap="switchMode">双打</view>
+  </view>
   <block wx:for="{{records}}" wx:key="index">
-    <record-card record="{{item}}" />
+    <record-card record="{{item}}" doubles="{{doubles}}" />
   </block>
   <view wx:if="{{!records.length}}" class="empty">暂无数据</view>
 </view>
