@@ -1,4 +1,4 @@
-<view class="weui-cells weui-cells_form">
+<view class="weui-cells weui-cells_form" bindtap="hideKeyboard">
   <view class="weui-cell">
     <view class="weui-label">账号</view>
     <input class="weui-input" placeholder="用户名或ID" bindinput="onUserId" />

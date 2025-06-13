@@ -24,6 +24,9 @@ Page({
   cancelRating() {
     this.setData({ showDialog: false });
   },
+  hideKeyboard() {
+    wx.hideKeyboard();
+  },
   confirmRating() {
     const rating = parseFloat(this.data.rating);
     if (isNaN(rating) || rating < 0 || rating > 7) {

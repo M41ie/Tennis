@@ -114,6 +114,9 @@ Page({
   },
   onUserInput(e) { this.setData({ userQuery: e.detail.value }); },
   onClubInput(e) { this.setData({ clubQuery: e.detail.value }); },
+  hideKeyboard() {
+    wx.hideKeyboard();
+  },
   searchUsers() {
     const q = this.data.userQuery.trim();
     const url = q ? `/pages/sys-user-list/index?query=${q}` : '/pages/sys-user-list/index';

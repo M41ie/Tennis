@@ -109,6 +109,9 @@ Page({
     this.setData({ showEdit: true, inputJoin: String(this.data.limits.max_joinable_clubs), inputCreate: String(this.data.limits.max_creatable_clubs) });
   },
   close() { this.setData({ showEdit: false }); },
+  hideKeyboard() {
+    wx.hideKeyboard();
+  },
   noop() {},
   onJoinInput(e) { this.setData({ inputJoin: e.detail.value }); },
   onCreateInput(e) { this.setData({ inputCreate: e.detail.value }); },

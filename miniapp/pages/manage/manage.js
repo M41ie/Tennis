@@ -337,6 +337,9 @@ Page({
     this.setData({ showRatingDialog: false, ratingInput: '', ratingApplicantId: '' });
     this.approveById(uid, rating);
   },
+  hideKeyboard() {
+    wx.hideKeyboard();
+  },
   noop() {},
   approve(e) {
     this.handleApproval(e.currentTarget.dataset.uid);

@@ -18,6 +18,9 @@ Page({
     const url = q ? `/pages/joinclub/joinclub?query=${q}` : '/pages/joinclub/joinclub';
     wx.navigateTo({ url });
   },
+  hideKeyboard() {
+    wx.hideKeyboard();
+  },
   joinClub(e) {
     const cid = e.currentTarget.dataset.id;
     const uid = wx.getStorageSync('user_id');

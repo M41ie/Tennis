@@ -56,6 +56,9 @@ Page({
       }
     });
   },
+  hideKeyboard() {
+    wx.hideKeyboard();
+  },
   wechatLogin() {
     wx.login({
       success(res) {

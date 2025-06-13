@@ -1,4 +1,4 @@
-<view class="page-container">
+<view class="page-container" bindtap="hideKeyboard">
   <profile-card user="{{user}}" placeholder="" editable="{{false}}" />
   <view class="section-title">所属俱乐部</view>
   <view class="club-list">

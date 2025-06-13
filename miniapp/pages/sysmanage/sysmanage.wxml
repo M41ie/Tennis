@@ -1,4 +1,4 @@
-<view class="page-container">
+<view class="page-container" bindtap="hideKeyboard">
   <view class="tab-bar">
     <view class="tab-item {{currentTab==0?'active':''}}" data-index="0" bindtap="switchTab">用户管理</view>
     <view class="tab-item {{currentTab==1?'active':''}}" data-index="1" bindtap="switchTab">俱乐部管理</view>
