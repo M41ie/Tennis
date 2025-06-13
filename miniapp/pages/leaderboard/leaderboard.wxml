@@ -7,11 +7,11 @@
   <picker mode="selector" range="{{clubs}}" range-key="name" value="{{selectedClubIndex}}" bindchange="onClubSelect">
     <view class="filter-item">{{selectedClubText}}</view>
   </picker>
-  <picker mode="region" bindchange="onRegionChange" value="{{region}}">
-    <view class="filter-item">{{regionText}}</view>
-  </picker>
   <picker mode="selector" range="{{genderOptions}}" value="{{genderIndex}}" bindchange="onGender">
     <view class="filter-item">{{genderText}}</view>
+  </picker>
+  <picker mode="region" bindchange="onRegionChange" value="{{region}}">
+    <view class="filter-item">{{regionText}}</view>
   </picker>
   <!-- Level and age filters removed -->
 </view>
