@@ -751,6 +751,7 @@ def list_players(
     if not club:
         raise HTTPException(404, "Club not found")
 
+    gender = normalize_gender(gender)
     today = datetime.date.today()
     get_rating = weighted_doubles_rating if doubles else weighted_rating
 
@@ -859,6 +860,7 @@ def list_all_players(
     if not club:
         return []
 
+    gender = normalize_gender(gender)
     club_ids = club.split(",")
     clubs_to_iter = []
     for cid in club_ids:
