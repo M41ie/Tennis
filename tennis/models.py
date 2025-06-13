@@ -43,6 +43,7 @@ class Player:
     birth: Optional[str] = None
     handedness: Optional[str] = None
     backhand: Optional[str] = None
+    region: Optional[str] = None
     # date the player joined the club
     joined: datetime.date = field(default_factory=datetime.date.today)
 
