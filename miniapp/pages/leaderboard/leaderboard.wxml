@@ -13,11 +13,13 @@
 </view>
 
 <view wx:if="{{showClubDialog}}" class="dialog">
-  <radio-group bindchange="onClubsChange">
-    <label wx:for="{{clubs}}" wx:key="id" class="chk">
-      <radio value="{{item.id}}" checked="{{item.id === selectedClub}}">{{item.name}}</radio>
-    </label>
-  </radio-group>
+  <scroll-view scroll-y="true" class="club-scroll">
+    <radio-group bindchange="onClubsChange">
+      <label wx:for="{{clubs}}" wx:key="id" class="chk">
+        <radio value="{{item.id}}" checked="{{item.id === selectedClub}}">{{item.name}}</radio>
+      </label>
+    </radio-group>
+  </scroll-view>
   <button bindtap="confirmClub">确定</button>
 </view>
 
