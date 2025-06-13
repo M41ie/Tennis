@@ -88,6 +88,54 @@ def _load_tokens() -> dict[str, tuple[str, datetime.datetime]]:
     return result
 
 
+@app.get("/players/{user_id}/pending_doubles")
+def list_global_pending_doubles(user_id: str, token: str):
+    """Return pending doubles matches for the user across all clubs."""
+    uid = require_auth(token)
+    if uid != user_id:
+        raise HTTPException(401, "Token mismatch")
+
+    combined: list[dict] = []
+    for cid, club in clubs.items():
+        try:
+            entries = list_pending_doubles(cid, token)
+        except HTTPException:
+            continue
+        is_admin = uid == club.leader_id or uid in club.admin_ids
+        for e in entries:
+            e["club_id"] = cid
+            e["can_approve"] = is_admin and e.get("confirmed_a") and e.get("confirmed_b")
+            e["can_veto"] = e["can_approve"]
+            combined.append(e)
+
+    combined.sort(key=lambda x: x["date"], reverse=True)
+    return combined
+
+
+@app.get("/players/{user_id}/pending_matches")
+def list_global_pending_matches(user_id: str, token: str):
+    """Return pending singles matches for the user across all clubs."""
+    uid = require_auth(token)
+    if uid != user_id:
+        raise HTTPException(401, "Token mismatch")
+
+    combined: list[dict] = []
+    for cid, club in clubs.items():
+        try:
+            entries = list_pending_matches(cid, token)
+        except HTTPException:
+            continue
+        is_admin = uid == club.leader_id or uid in club.admin_ids
+        for e in entries:
+            e["club_id"] = cid
+            e["can_approve"] = is_admin and e.get("confirmed_a") and e.get("confirmed_b")
+            e["can_veto"] = e["can_approve"]
+            combined.append(e)
+
+    combined.sort(key=lambda x: x["date"], reverse=True)
+    return combined
+
+
 def _save_tokens() -> None:
     try:
         TOKENS_FILE.write_text(
@@ -1242,6 +1290,10 @@ def list_pending_doubles(club_id: str, token: str):
         entry["rating_a2_before"] = a2.doubles_rating if a2 else None
         entry["rating_b1_before"] = b1.doubles_rating if b1 else None
         entry["rating_b2_before"] = b2.doubles_rating if b2 else None
+        entry["a1_avatar"] = a1.avatar if a1 else None
+        entry["a2_avatar"] = a2.avatar if a2 else None
+        entry["b1_avatar"] = b1.avatar if b1 else None
+        entry["b2_avatar"] = b2.avatar if b2 else None
         if m.initiator and (submitter := club.members.get(m.initiator)):
             entry["submitted_by_player_name"] = submitter.name
 
@@ -1338,6 +1390,50 @@ def get_player_doubles_records(club_id: str, user_id: str):
         raise HTTPException(404, str(e))
     for c in cards:
         c["date"] = c["date"].isoformat()
+    return cards
+
+
+@app.get("/players/{user_id}/records")
+def get_global_player_records(user_id: str):
+    """Return singles match history across all clubs for a player."""
+    from .cli import get_player_match_cards
+
+    cards = []
+    for cid, club in clubs.items():
+        if user_id not in club.members:
+            continue
+        try:
+            recs = get_player_match_cards(clubs, cid, user_id)
+        except ValueError:
+            continue
+        for c in recs:
+            c["date"] = c["date"].isoformat()
+            c["club_id"] = cid
+            cards.append(c)
+
+    cards.sort(key=lambda x: x["date"], reverse=True)
+    return cards
+
+
+@app.get("/players/{user_id}/doubles_records")
+def get_global_player_doubles_records(user_id: str):
+    """Return doubles match history across all clubs for a player."""
+    from .cli import get_player_doubles_cards
+
+    cards = []
+    for cid, club in clubs.items():
+        if user_id not in club.members:
+            continue
+        try:
+            recs = get_player_doubles_cards(clubs, cid, user_id)
+        except ValueError:
+            continue
+        for c in recs:
+            c["date"] = c["date"].isoformat()
+            c["club_id"] = cid
+            cards.append(c)
+
+    cards.sort(key=lambda x: x["date"], reverse=True)
     return cards
 
 
@@ -1514,6 +1610,8 @@ def list_pending_matches(club_id: str, token: str):
         entry["player_b_name"] = pb.name if pb else m.player_b.user_id
         entry["rating_a_before"] = pa.singles_rating if pa else None
         entry["rating_b_before"] = pb.singles_rating if pb else None
+        entry["player_a_avatar"] = pa.avatar if pa else None
+        entry["player_b_avatar"] = pb.avatar if pb else None
         if m.initiator and (submitter := club.members.get(m.initiator)):
             entry["submitted_by_player_name"] = submitter.name
 
