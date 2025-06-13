@@ -34,6 +34,7 @@
       info="{{item.genderText}}"
       info2="{{item.daysText}}"
       showRoleTag="{{true}}"
+      roleInInfo="{{true}}"
       bind:cardtap="viewPlayer"
       data-uid="{{item.user_id}}"
     />

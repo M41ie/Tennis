@@ -3,13 +3,19 @@
   <view class="info">
     <view class="name-row">
       <text class="name">{{user.name}}</text>
-      <text wx:if="{{showRoleTag}}" class="role-tag {{user.role}}">{{user.roleText}}</text>
+      <text wx:if="{{showRoleTag && !roleInInfo}}" class="role-tag {{user.role}}">{{user.roleText}}</text>
     </view>
     <block wx:if="{{info2}}">
-      <view class="meta">{{info}}</view>
+      <view class="meta">
+        {{info}}
+        <text wx:if="{{showRoleTag && roleInInfo}}" class="role-tag {{user.role}}">{{user.roleText}}</text>
+      </view>
       <view class="meta2">{{info2}}</view>
     </block>
-    <view wx:else class="meta">{{info || ('ID: ' + user.id)}}</view>
+    <view wx:else class="meta">
+      {{info || ('ID: ' + user.id)}}
+      <text wx:if="{{showRoleTag && roleInInfo}}" class="role-tag {{user.role}}">{{user.roleText}}</text>
+    </view>
   </view>
   <view class="stats">
     <view class="col">
