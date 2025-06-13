@@ -4,22 +4,18 @@
 </view>
 
 <view class="filter-bar">
-  <view class="filter-item" bindtap="openClub">俱乐部</view>
+  <picker mode="selector" range="{{clubs}}" range-key="name" value="{{selectedClubIndex}}" bindchange="onClubSelect">
+    <view class="filter-item">{{selectedClubText}}</view>
+  </picker>
   <picker mode="region" bindchange="onRegionChange" value="{{region}}">
     <view class="filter-item">{{regionText}}</view>
   </picker>
-  <view class="filter-item" bindtap="chooseGender">{{genderText}}</view>
+  <picker mode="selector" range="{{genderOptions}}" value="{{genderIndex}}" bindchange="onGender">
+    <view class="filter-item">{{genderText}}</view>
+  </picker>
   <!-- Level and age filters removed -->
 </view>
 
-<view wx:if="{{showClubDialog}}" class="dialog">
-  <radio-group bindchange="onClubsChange">
-    <label wx:for="{{clubs}}" wx:key="id" class="chk">
-      <radio value="{{item.id}}" checked="{{item.id === selectedClub}}">{{item.name}}</radio>
-    </label>
-  </radio-group>
-  <button bindtap="confirmClub">确定</button>
-</view>
 
 <!-- Dialogs for level and age filters removed -->
 <view>

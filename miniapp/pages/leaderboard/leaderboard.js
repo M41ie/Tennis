@@ -2,10 +2,12 @@ const BASE_URL = getApp().globalData.BASE_URL;
 
 Page({
   data: {
-    clubs: [], // radio options {id, name}
+    clubs: [], // picker options {id, name}
     allClubIds: [],
     joinedClubIds: [],
     selectedClub: '_global',
+    selectedClubIndex: 0,
+    selectedClubText: '全局排行',
     players: [],
     filter: {
       clubs: [],
@@ -13,7 +15,8 @@ Page({
       gender: 'All',
       region: ''
     },
-    showClubDialog: false,
+    genderOptions: ['男子&女子', '男子', '女子'],
+    genderIndex: 0,
     genderText: '男子&女子',
     region: [],
     regionText: '全国'
@@ -40,9 +43,15 @@ Page({
     const uid = wx.getStorageSync('user_id');
     const that = this;
     if (!uid) {
-      that.buildClubOptions([]);
+      const options = that.buildClubOptions([]);
       const filter = { ...that.data.filter, clubs: that.data.allClubIds };
-      that.setData({ selectedClub: '_global', joinedClubIds: [], filter });
+      that.setData({
+        selectedClub: '_global',
+        selectedClubIndex: 0,
+        selectedClubText: options[0].name,
+        joinedClubIds: [],
+        filter
+      });
       that.fetchList(filter);
       return;
     }
@@ -51,16 +60,28 @@ Page({
       success(res) {
         const joined = res.data.joined_clubs || [];
         that.setData({ joinedClubIds: joined });
-        that.buildClubOptions(joined);
+        const options = that.buildClubOptions(joined);
         const selected = joined.length ? '_my' : '_global';
         const clubs = joined.length ? joined.slice() : that.data.allClubIds;
-        that.setData({ selectedClub: selected, filter: { ...that.data.filter, clubs } });
+        const index = options.findIndex(o => o.id === selected);
+        that.setData({
+          selectedClub: selected,
+          selectedClubIndex: index,
+          selectedClubText: options[index].name,
+          filter: { ...that.data.filter, clubs }
+        });
         that.fetchList(that.data.filter);
       },
       fail() {
-        that.buildClubOptions([]);
+        const options = that.buildClubOptions([]);
         const filter = { ...that.data.filter, clubs: that.data.allClubIds };
-        that.setData({ selectedClub: '_global', joinedClubIds: [], filter });
+        that.setData({
+          selectedClub: '_global',
+          selectedClubIndex: 0,
+          selectedClubText: options[0].name,
+          joinedClubIds: [],
+          filter
+        });
         that.fetchList(filter);
       }
     });
@@ -75,19 +96,24 @@ Page({
       options.push({ id: cid, name });
     });
     this.setData({ clubs: options });
+    return options;
   },
-  openClub() { this.setData({ showClubDialog: true }); },
-  onClubsChange(e) {
-    this.setData({ selectedClub: e.detail.value });
-  },
-  confirmClub() {
+  onClubSelect(e) {
+    const index = Number(e.detail.value);
+    const item = this.data.clubs[index];
+    if (!item) return;
+    const selected = item.id;
     let clubs = [];
-    const selected = this.data.selectedClub;
     if (selected === '_global') clubs = this.data.allClubIds;
     else if (selected === '_my') clubs = this.data.joinedClubIds;
     else clubs = [selected];
     const filter = { ...this.data.filter, clubs };
-    this.setData({ filter, showClubDialog: false });
+    this.setData({
+      selectedClub: selected,
+      selectedClubIndex: index,
+      selectedClubText: item.name,
+      filter
+    });
     this.fetchList(filter);
   },
   switchMode(e) {
@@ -97,22 +123,14 @@ Page({
     this.setData({ filter });
     this.fetchList(filter);
   },
-  chooseGender() {
-    const that = this;
-    wx.showActionSheet({
-      itemList: ['男子&女子', '男子', '女子'],
-      success(res) {
-        if (res.tapIndex >= 0) {
-          const genders = ['All', 'Male', 'Female'];
-          const texts = ['男子&女子', '男子', '女子'];
-          const gender = genders[res.tapIndex];
-          const genderText = texts[res.tapIndex];
-          const filter = { ...that.data.filter, gender };
-          that.setData({ filter, genderText });
-          that.fetchList(filter);
-        }
-      }
-    });
+  onGender(e) {
+    const index = Number(e.detail.value);
+    const genders = ['All', 'Male', 'Female'];
+    const gender = genders[index] || 'All';
+    const genderText = this.data.genderOptions[index] || '男子&女子';
+    const filter = { ...this.data.filter, gender };
+    this.setData({ genderIndex: index, genderText, filter });
+    this.fetchList(filter);
   },
   onRegionChange(e) {
     const region = e.detail.value;
