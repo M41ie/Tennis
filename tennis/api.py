@@ -1839,12 +1839,40 @@ def list_all_users(query: str | None = None) -> list[dict[str, object]]:
     return result
 
 
+@app.get("/sys/clubs")
+def list_all_clubs(query: str | None = None) -> list[dict[str, object]]:
+    """Return clubs optionally filtered by a search query with stats."""
+    q = query.lower() if query else None
+    result = []
+    for c in clubs.values():
+        if q and q not in c.club_id.lower() and q not in c.name.lower():
+            continue
+        result.append(
+            {
+                "club_id": c.club_id,
+                "name": c.name,
+                "pending_members": len(c.pending_members),
+                "pending_matches": len(c.pending_matches),
+                "total_matches": len(c.matches),
+            }
+        )
+    result.sort(key=lambda x: x["club_id"])
+    return result
+
+
 @app.get("/sys/stats")
 def system_stats() -> dict[str, int]:
-    """Return total user and match counts."""
+    """Return aggregated statistics for system overview."""
     total_users = len(users)
     total_matches = sum(len(c.matches) for c in clubs.values())
-    return {"total_users": total_users, "total_matches": total_matches}
+    total_clubs = len(clubs)
+    pending_items = sum(len(c.pending_members) + len(c.pending_matches) for c in clubs.values())
+    return {
+        "total_users": total_users,
+        "total_matches": total_matches,
+        "total_clubs": total_clubs,
+        "pending_items": pending_items,
+    }
 
 
 if __name__ == "__main__":
