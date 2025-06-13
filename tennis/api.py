@@ -2010,6 +2010,39 @@ def system_stats() -> dict[str, int]:
     }
 
 
+@app.get("/sys/matches")
+def list_all_matches() -> list[dict[str, object]]:
+    """Return all singles match records across all clubs."""
+    result = []
+    for cid, club in clubs.items():
+        for m in club.matches:
+            result.append(
+                {
+                    "date": m.date.isoformat(),
+                    "created_ts": m.created_ts,
+                    "club_id": cid,
+                    "player_a": m.player_a.user_id,
+                    "player_b": m.player_b.user_id,
+                    "a_name": m.player_a.name,
+                    "b_name": m.player_b.name,
+                    "a_avatar": m.player_a.avatar,
+                    "b_avatar": m.player_b.avatar,
+                    "score_a": m.score_a,
+                    "score_b": m.score_b,
+                    "location": m.location,
+                    "format": m.format_name,
+                    "a_before": m.rating_a_before,
+                    "a_after": m.rating_a_after,
+                    "b_before": m.rating_b_before,
+                    "b_after": m.rating_b_after,
+                }
+            )
+    result.sort(key=lambda x: (x["date"], x["created_ts"]), reverse=True)
+    for r in result:
+        r.pop("created_ts", None)
+    return result
+
+
 if __name__ == "__main__":
     import uvicorn
 

@@ -56,5 +56,11 @@ Page({
     const q = this.data.clubQuery.trim();
     const url = q ? `/pages/sys-club-list/index?query=${q}` : '/pages/sys-club-list/index';
     wx.navigateTo({ url });
+  },
+  openAllUsers() {
+    wx.navigateTo({ url: '/pages/sys-user-list/index' });
+  },
+  openAllMatches() {
+    wx.navigateTo({ url: '/pages/sys-match-list/index' });
   }
 });

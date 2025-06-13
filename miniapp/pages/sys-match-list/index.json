@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "全部战绩",
+  "usingComponents": {
+    "record-card": "/components/record-card/record-card"
+  }
+}
