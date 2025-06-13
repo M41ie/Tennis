@@ -1,4 +1,5 @@
 const BASE_URL = getApp().globalData.BASE_URL;
+const { hideKeyboard } = require('../../utils/hideKeyboard');
 
 Page({
   data: {
@@ -32,9 +33,7 @@ Page({
       }
     });
   },
-  hideKeyboard() {
-    wx.hideKeyboard();
-  },
+  hideKeyboard,
   wechatLogin() {
     const that = this;
     wx.login({

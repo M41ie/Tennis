@@ -1,4 +1,5 @@
 const BASE_URL = getApp().globalData.BASE_URL;
+const { hideKeyboard } = require('../../utils/hideKeyboard');
 
 Page({
   data: {
@@ -22,9 +23,7 @@ Page({
   },
   onDate(e) { this.setData({ date: e.detail.value }); },
   onLocation(e) { this.setData({ location: e.detail.value }); },
-  hideKeyboard() {
-    wx.hideKeyboard();
-  },
+  hideKeyboard,
   create() {
     const cid = wx.getStorageSync('club_id');
     const userId = wx.getStorageSync('user_id');

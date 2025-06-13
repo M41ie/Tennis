@@ -1,4 +1,5 @@
 const BASE_URL = getApp().globalData.BASE_URL;
+const { hideKeyboard } = require('../../utils/hideKeyboard');
 
 Page({
   data: {
@@ -18,9 +19,7 @@ Page({
     const url = q ? `/pages/joinclub/joinclub?query=${q}` : '/pages/joinclub/joinclub';
     wx.navigateTo({ url });
   },
-  hideKeyboard() {
-    wx.hideKeyboard();
-  },
+  hideKeyboard,
   joinClub(e) {
     const cid = e.currentTarget.dataset.id;
     const uid = wx.getStorageSync('user_id');

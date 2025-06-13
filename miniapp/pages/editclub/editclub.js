@@ -1,4 +1,5 @@
 const BASE_URL = getApp().globalData.BASE_URL;
+const { hideKeyboard } = require('../../utils/hideKeyboard');
 
 Page({
   data: {
@@ -35,9 +36,7 @@ Page({
       regionString: e.detail.value.join(' ')
     });
   },
-  hideKeyboard() {
-    wx.hideKeyboard();
-  },
+  hideKeyboard,
   chooseLogo() {
     const that = this;
     wx.chooseImage({

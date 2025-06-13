@@ -1,4 +1,5 @@
 const BASE_URL = getApp().globalData.BASE_URL;
+const { hideKeyboard } = require('../../utils/hideKeyboard');
 const { formatRating, formatGames } = require('../../utils/format');
 
 Page({
@@ -109,9 +110,7 @@ Page({
     this.setData({ showEdit: true, inputJoin: String(this.data.limits.max_joinable_clubs), inputCreate: String(this.data.limits.max_creatable_clubs) });
   },
   close() { this.setData({ showEdit: false }); },
-  hideKeyboard() {
-    wx.hideKeyboard();
-  },
+  hideKeyboard,
   noop() {},
   onJoinInput(e) { this.setData({ inputJoin: e.detail.value }); },
   onCreateInput(e) { this.setData({ inputCreate: e.detail.value }); },
