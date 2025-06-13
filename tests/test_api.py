@@ -1271,7 +1271,12 @@ def test_remove_member_api(tmp_path, monkeypatch):
     # join and approve member
     client.post(
         "/clubs/c1/join",
-        json={"user_id": "member", "token": token_member},
+        json={
+            "user_id": "member",
+            "token": token_member,
+            "singles_rating": 1000.0,
+            "doubles_rating": 1000.0,
+        },
     )
     client.post(
         "/clubs/c1/approve",
@@ -1428,7 +1433,15 @@ def test_get_user_info_api(tmp_path, monkeypatch):
     token_leader = client.post("/login", json={"user_id": "leader", "password": "pw"}).json()["token"]
     token_u1 = client.post("/login", json={"user_id": "u1", "password": "pw"}).json()["token"]
     client.post("/clubs", json={"club_id": "c1", "name": "C1", "user_id": "leader", "token": token_leader})
-    client.post("/clubs/c1/join", json={"user_id": "u1", "token": token_u1})
+    client.post(
+        "/clubs/c1/join",
+        json={
+            "user_id": "u1",
+            "token": token_u1,
+            "singles_rating": 1000.0,
+            "doubles_rating": 1000.0,
+        },
+    )
     client.post(
         "/clubs/c1/approve",
         json={

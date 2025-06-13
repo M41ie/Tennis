@@ -10,6 +10,7 @@ from .models import (
     DoublesMatch,
     User,
     Message,
+    JoinApplication,
     MAX_CREATED_CLUBS,
     MAX_JOINED_CLUBS,
     players,
@@ -118,7 +119,15 @@ def login_user(users, user_id: str, password: str) -> bool:
     return check_password(user, password)
 
 
-def request_join(clubs, users, club_id: str, user_id: str):
+def request_join(
+    clubs,
+    users,
+    club_id: str,
+    user_id: str,
+    singles_rating: float | None = None,
+    doubles_rating: float | None = None,
+    reason: str | None = None,
+):
     """User requests to join a club."""
     club = clubs.get(club_id)
     if not club:
@@ -129,7 +138,17 @@ def request_join(clubs, users, club_id: str, user_id: str):
         raise ValueError("Already member")
     if user_id not in users:
         raise ValueError("User not registered")
-    club.pending_members.add(user_id)
+    player = players.get(user_id)
+    if player is None or (
+        player.singles_rating is None and player.doubles_rating is None
+    ):
+        if singles_rating is None or doubles_rating is None:
+            raise ValueError("Rating required")
+    club.pending_members[user_id] = JoinApplication(
+        reason=reason,
+        singles_rating=singles_rating,
+        doubles_rating=doubles_rating,
+    )
 
     # notify leader and admins of pending request
     today = datetime.date.today()
@@ -165,7 +184,7 @@ def approve_member(
         raise ValueError("User not registered")
     if user.joined_clubs >= MAX_JOINED_CLUBS:
         raise ValueError("Club membership limit reached")
-    club.pending_members.remove(user_id)
+    club.pending_members.pop(user_id, None)
     player = players.get(user_id)
     if player is None:
         player = Player(user_id=user.user_id, name=user.name)
@@ -1153,6 +1172,9 @@ def main():
     join = sub.add_parser('request_join')
     join.add_argument('club_id')
     join.add_argument('user_id')
+    join.add_argument('--singles', type=float)
+    join.add_argument('--doubles', type=float)
+    join.add_argument('--reason')
 
     approve = sub.add_parser('approve_member')
     approve.add_argument('club_id')
@@ -1253,7 +1275,15 @@ def main():
             print('Login failed')
         return
     elif args.cmd == 'request_join':
-        request_join(clubs, users, args.club_id, args.user_id)
+        request_join(
+            clubs,
+            users,
+            args.club_id,
+            args.user_id,
+            singles_rating=args.singles,
+            doubles_rating=args.doubles,
+            reason=args.reason,
+        )
     elif args.cmd == 'approve_member':
         approve_member(
             clubs,

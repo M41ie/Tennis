@@ -23,7 +23,7 @@ def test_join_and_approve():
     register_user(users, "leader", "Leader", "pw", allow_create=True)
     register_user(users, "member", "Member", "pw")
     create_club(users, clubs, "leader", "c1", "Club1", None, None)
-    request_join(clubs, users, "c1", "member")
+    request_join(clubs, users, "c1", "member", singles_rating=1000.0, doubles_rating=1000.0)
     assert "member" in clubs["c1"].pending_members
     approve_member(clubs, users, "c1", "leader", "member", 1100.0)
     assert "member" in clubs["c1"].members
@@ -60,13 +60,13 @@ def test_join_club_limit():
         cid = f"c{i}"
         register_user(users, lid, f"L{i}", "pw", allow_create=True)
         create_club(users, clubs, lid, cid, f"Club{i}", None, None)
-        request_join(clubs, users, cid, "joiner")
+        request_join(clubs, users, cid, "joiner", singles_rating=1000.0, doubles_rating=1000.0)
         approve_member(clubs, users, cid, lid, "joiner", 1000.0)
 
     # attempt to join one more club
     register_user(users, "extra_leader", "EL", "pw", allow_create=True)
     create_club(users, clubs, "extra_leader", "cx", "ClubX", None, None)
-    request_join(clubs, users, "cx", "joiner")
+    request_join(clubs, users, "cx", "joiner", singles_rating=1000.0, doubles_rating=1000.0)
     with pytest.raises(ValueError):
         approve_member(clubs, users, "cx", "extra_leader", "joiner", 1000.0)
 
@@ -81,12 +81,12 @@ def test_admin_limit():
     for i in range(3):
         uid = f"admin{i}"
         register_user(users, uid, f"A{i}", "pw")
-        request_join(clubs, users, "c1", uid)
+        request_join(clubs, users, "c1", uid, singles_rating=1000.0, doubles_rating=1000.0)
         approve_member(clubs, users, "c1", "leader", uid, 1000.0, make_admin=True)
         assert uid in clubs["c1"].admin_ids
 
     # fourth admin should fail
     register_user(users, "extra", "Extra", "pw")
-    request_join(clubs, users, "c1", "extra")
+    request_join(clubs, users, "c1", "extra", singles_rating=1000.0, doubles_rating=1000.0)
     with pytest.raises(ValueError):
         approve_member(clubs, users, "c1", "leader", "extra", 1000.0, make_admin=True)
