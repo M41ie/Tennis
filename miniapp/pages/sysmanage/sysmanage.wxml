@@ -41,11 +41,16 @@
       <view class="card">待处理事项: {{pendingItems}}</view>
     </view>
     <view class="section-title">俱乐部活跃度排名</view>
+    <view class="rank-tabs">
+      <view class="rank-tab {{rankMode=='members'?'active':''}}" data-mode="members" bindtap="switchRankMode">总成员数</view>
+      <view class="rank-tab {{rankMode=='matches'?'active':''}}" data-mode="matches" bindtap="switchRankMode">总比赛数</view>
+    </view>
     <view class="rank-list">
       <block wx:for="{{topClubs}}" wx:key="club_id" wx:for-index="index">
         <view class="club-card" data-id="{{item.club_id}}" bindtap="openClub">
+          <view class="rank-number">{{index+1}}</view>
           <view class="card-left">
-            <view class="club-name">{{index+1}}. {{item.name}}</view>
+            <view class="club-name">{{item.name}}</view>
             <view class="club-slogan" wx:if="{{item.slogan}}">{{item.slogan}}</view>
             <view class="club-stats" wx:if="{{item.member_count}}">
               <text>{{item.region}} · 成员 {{item.member_count}} 人</text>
