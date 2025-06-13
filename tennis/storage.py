@@ -572,3 +572,170 @@ def save_users(users: Dict[str, User]) -> None:
             )
     conn.commit()
     conn.close()
+
+
+# --- New transactional helper APIs ---
+
+def create_club(club: Club) -> None:
+    """Insert a new club record into the database."""
+    with sqlite3.connect(DB_FILE) as conn:
+        _init_schema(conn)
+        cur = conn.cursor()
+        cur.execute(
+            "INSERT INTO clubs(club_id, name, logo, region, slogan) VALUES (?,?,?,?,?)",
+            (club.club_id, club.name, club.logo, club.region, club.slogan),
+        )
+        cur.execute(
+            "INSERT INTO club_meta(club_id, banned_ids, leader_id, admin_ids) VALUES (?,?,?,?)",
+            (
+                club.club_id,
+                "[]",
+                club.leader_id,
+                "[]",
+            ),
+        )
+        conn.commit()
+
+
+def create_user(user: User) -> None:
+    """Insert a new user account."""
+    with sqlite3.connect(DB_FILE) as conn:
+        _init_schema(conn)
+        cur = conn.cursor()
+        cur.execute(
+            """
+            INSERT INTO users(
+                user_id, name, password_hash, wechat_openid, can_create_club,
+                is_sys_admin, created_clubs, joined_clubs, max_creatable_clubs,
+                max_joinable_clubs
+            ) VALUES (?,?,?,?,?,?,?,?,?,?)
+            """,
+            (
+                user.user_id,
+                user.name,
+                user.password_hash,
+                user.wechat_openid,
+                int(user.can_create_club),
+                int(getattr(user, "is_sys_admin", False)),
+                user.created_clubs,
+                user.joined_clubs,
+                getattr(user, "max_creatable_clubs", 0),
+                getattr(user, "max_joinable_clubs", 5),
+            ),
+        )
+        conn.commit()
+
+
+def create_player(club_id: str, player: Player) -> None:
+    """Add a player to a club."""
+    with sqlite3.connect(DB_FILE) as conn:
+        _init_schema(conn)
+        cur = conn.cursor()
+        cur.execute(
+            """
+            INSERT OR IGNORE INTO players(
+                user_id, name, singles_rating, doubles_rating, experience,
+                pre_ratings, age, gender, avatar, birth, handedness, backhand,
+                region, joined
+            ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+            """,
+            (
+                player.user_id,
+                player.name,
+                player.singles_rating,
+                player.doubles_rating,
+                player.experience,
+                "{}",
+                player.age,
+                player.gender,
+                player.avatar,
+                player.birth,
+                player.handedness,
+                player.backhand,
+                player.region,
+                player.joined.isoformat(),
+            ),
+        )
+        cur.execute(
+            "INSERT OR IGNORE INTO club_members(club_id, user_id) VALUES (?, ?)",
+            (club_id, player.user_id),
+        )
+        conn.commit()
+
+
+def create_match(club_id: str, match: Match | DoublesMatch, pending: bool = False) -> None:
+    """Insert a match record."""
+    with sqlite3.connect(DB_FILE) as conn:
+        _init_schema(conn)
+        cur = conn.cursor()
+        table = "pending_matches" if pending else "matches"
+        if isinstance(match, DoublesMatch):
+            data = {
+                "a1": match.player_a1.user_id,
+                "a2": match.player_a2.user_id,
+                "b1": match.player_b1.user_id,
+                "b2": match.player_b2.user_id,
+                "score_a": match.score_a,
+                "score_b": match.score_b,
+                "weight": match.format_weight,
+                "location": match.location,
+                "format_name": match.format_name,
+                "initiator": match.initiator,
+                "confirmed_a": match.confirmed_a,
+                "confirmed_b": match.confirmed_b,
+                "created": match.created.isoformat(),
+                "created_ts": match.created_ts.isoformat(),
+                "confirmed_on": match.confirmed_on.isoformat() if match.confirmed_on else None,
+                "status": match.status,
+                "status_date": match.status_date.isoformat() if match.status_date else None,
+            }
+            cur.execute(
+                f"INSERT INTO {table}(club_id, type, date, data) VALUES (?,?,?,?)",
+                (
+                    club_id,
+                    "doubles",
+                    match.date.isoformat(),
+                    json.dumps(data),
+                ),
+            )
+        else:
+            data = {
+                "player_a": match.player_a.user_id,
+                "player_b": match.player_b.user_id,
+                "score_a": match.score_a,
+                "score_b": match.score_b,
+                "weight": match.format_weight,
+                "location": match.location,
+                "format_name": match.format_name,
+                "initiator": match.initiator,
+                "confirmed_a": match.confirmed_a,
+                "confirmed_b": match.confirmed_b,
+                "created": match.created.isoformat(),
+                "created_ts": match.created_ts.isoformat(),
+                "confirmed_on": match.confirmed_on.isoformat() if match.confirmed_on else None,
+                "status": match.status,
+                "status_date": match.status_date.isoformat() if match.status_date else None,
+            }
+            cur.execute(
+                f"INSERT INTO {table}(club_id, type, date, data) VALUES (?,?,?,?)",
+                (
+                    club_id,
+                    "singles",
+                    match.date.isoformat(),
+                    json.dumps(data),
+                ),
+            )
+        conn.commit()
+
+
+def update_match_record(table: str, match_id: int, data: dict) -> None:
+    """Update a match JSON data by id."""
+    with sqlite3.connect(DB_FILE) as conn:
+        _init_schema(conn)
+        cur = conn.cursor()
+        cur.execute(
+            f"UPDATE {table} SET data = ? WHERE id = ?",
+            (json.dumps(data), match_id),
+        )
+        conn.commit()
+
