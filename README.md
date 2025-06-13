@@ -15,6 +15,10 @@ python3 -m tennis.cli confirm_match CLUB_ID INDEX USER_ID
 python3 -m tennis.cli approve_match CLUB_ID INDEX APPROVER
 ```
 
+When calling `register_user` you can omit the `USER_ID` argument. The server will
+assign the next available alphabetic ID automatically (A, B, ..., Z, AA, AB,
+...).
+
 Creating a club automatically makes the creator a member. This also counts
 toward their joined club limit (default 5).
 
