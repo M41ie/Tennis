@@ -2095,6 +2095,8 @@ def list_all_matches() -> list[dict[str, object]]:
     result = []
     for cid, club in clubs.items():
         for m in club.matches:
+            if isinstance(m, DoublesMatch):
+                continue
             result.append(
                 {
                     "date": m.date.isoformat(),
@@ -2114,6 +2116,51 @@ def list_all_matches() -> list[dict[str, object]]:
                     "a_after": m.rating_a_after,
                     "b_before": m.rating_b_before,
                     "b_after": m.rating_b_after,
+                }
+            )
+    result.sort(key=lambda x: (x["date"], x["created_ts"]), reverse=True)
+    for r in result:
+        r.pop("created_ts", None)
+    return result
+
+
+@app.get("/sys/doubles")
+def list_all_doubles() -> list[dict[str, object]]:
+    """Return all doubles match records across all clubs."""
+    result = []
+    for cid, club in clubs.items():
+        for m in club.matches:
+            if not isinstance(m, DoublesMatch):
+                continue
+            result.append(
+                {
+                    "date": m.date.isoformat(),
+                    "created_ts": m.created_ts,
+                    "club_id": cid,
+                    "a1": m.player_a1.user_id,
+                    "a2": m.player_a2.user_id,
+                    "b1": m.player_b1.user_id,
+                    "b2": m.player_b2.user_id,
+                    "a1_name": m.player_a1.name,
+                    "a2_name": m.player_a2.name,
+                    "b1_name": m.player_b1.name,
+                    "b2_name": m.player_b2.name,
+                    "a1_avatar": m.player_a1.avatar,
+                    "a2_avatar": m.player_a2.avatar,
+                    "b1_avatar": m.player_b1.avatar,
+                    "b2_avatar": m.player_b2.avatar,
+                    "score_a": m.score_a,
+                    "score_b": m.score_b,
+                    "location": m.location,
+                    "format": m.format_name,
+                    "rating_a1_before": m.rating_a1_before,
+                    "rating_a2_before": m.rating_a2_before,
+                    "rating_b1_before": m.rating_b1_before,
+                    "rating_b2_before": m.rating_b2_before,
+                    "rating_a1_after": m.rating_a1_after,
+                    "rating_a2_after": m.rating_a2_after,
+                    "rating_b1_after": m.rating_b1_after,
+                    "rating_b2_after": m.rating_b2_after,
                 }
             )
     result.sort(key=lambda x: (x["date"], x["created_ts"]), reverse=True)

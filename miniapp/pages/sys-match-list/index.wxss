@@ -1,2 +1,5 @@
 .page-container { padding: 12rpx; }
 .empty { text-align: center; color: #999; padding: 20rpx 0; }
+.mode-switch{display:flex;background:#f7f7f7;margin:10rpx;border-radius:32rpx;overflow:hidden;}
+.mode-item{flex:1;padding:12rpx 0;text-align:center;font-size:28rpx;color:#333;}
+.mode-item.active{background:#07C160;color:#fff;}

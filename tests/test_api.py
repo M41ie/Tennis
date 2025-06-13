@@ -1616,3 +1616,51 @@ def test_dissolve_club(tmp_path, monkeypatch):
     assert users["leader"].created_clubs == 0
     assert users["leader"].joined_clubs == 0
     assert users["m1"].joined_clubs == 0
+
+
+def test_sys_matches_and_doubles(tmp_path, monkeypatch):
+    db = tmp_path / "tennis.db"
+    monkeypatch.setattr(storage, "DB_FILE", db)
+
+    api = importlib.reload(importlib.import_module("tennis.api"))
+    cli = importlib.import_module("tennis.cli")
+
+    cli.register_user(api.users, "admin", "A", "pw", allow_create=True)
+    for uid in ("p1", "p2", "p3", "p4"):
+        cli.register_user(api.users, uid, uid.upper(), "pw")
+
+    cli.create_club(api.users, api.clubs, "admin", "c1", "C1", None, None)
+    for uid in ("p1", "p2", "p3", "p4"):
+        cli.add_player(api.clubs, "c1", uid, uid.upper())
+
+    cli.record_match(
+        api.clubs,
+        "c1",
+        "p1",
+        "p2",
+        6,
+        4,
+        datetime.date(2023, 1, 1),
+        1.0,
+    )
+    cli.record_doubles(
+        api.clubs,
+        "c1",
+        "p1",
+        "p2",
+        "p3",
+        "p4",
+        6,
+        3,
+        datetime.date(2023, 1, 2),
+        1.0,
+    )
+
+    client = TestClient(api.app)
+    resp = client.get("/sys/matches")
+    assert resp.status_code == 200
+    assert len(resp.json()) == 1
+
+    resp = client.get("/sys/doubles")
+    assert resp.status_code == 200
+    assert len(resp.json()) == 1
