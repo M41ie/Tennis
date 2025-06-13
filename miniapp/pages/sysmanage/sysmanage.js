@@ -9,6 +9,8 @@ Page({
     totalMatches: '--',
     totalClubs: '--',
     pendingItems: '--',
+    rankMode: 'matches',
+    clubStatsRaw: [],
     topClubs: [],
     userDays: 7,
     matchDays: 7,
@@ -42,15 +44,13 @@ Page({
       url: `${BASE_URL}/sys/clubs`,
       success(res) {
         const list = res.data || [];
-        list.sort((a, b) => (b.total_matches || 0) - (a.total_matches || 0));
-        const top = list.slice(0, 10);
-        if (!top.length) {
-          that.setData({ topClubs: [] });
+        if (!list.length) {
+          that.setData({ clubStatsRaw: [], topClubs: [] });
           return;
         }
         const result = [];
         let count = 0;
-        top.forEach(c => {
+        list.forEach(c => {
           wx.request({
             url: `${BASE_URL}/clubs/${c.club_id}`,
             success(r) {
@@ -91,17 +91,22 @@ Page({
             },
             complete() {
               count++;
-              if (count === top.length) {
-                result.sort(
-                  (a, b) => (b.total_matches || 0) - (a.total_matches || 0)
-                );
-                that.setData({ topClubs: result });
+              if (count === list.length) {
+                that.setData({ clubStatsRaw: result });
+                that.sortClubs();
               }
             }
           });
         });
       }
     });
+  },
+  sortClubs() {
+    const mode = this.data.rankMode;
+    const key = mode === 'members' ? 'member_count' : 'total_matches';
+    const arr = (this.data.clubStatsRaw || []).slice();
+    arr.sort((a, b) => (b[key] || 0) - (a[key] || 0));
+    this.setData({ topClubs: arr.slice(0, 10) });
   },
   switchTab(e) {
     const idx = e.currentTarget.dataset.index;
@@ -128,6 +133,12 @@ Page({
     const d = Number(e.currentTarget.dataset.days);
     this.setData({ matchDays: d });
     this.fetchMatchActivity();
+  },
+  switchRankMode(e) {
+    const mode = e.currentTarget.dataset.mode;
+    if (mode === this.data.rankMode) return;
+    this.setData({ rankMode: mode });
+    this.sortClubs();
   },
   fetchUserTrend() {
     const that = this;
