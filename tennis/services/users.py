@@ -2,17 +2,17 @@ from __future__ import annotations
 import secrets
 import datetime
 from fastapi import HTTPException
-from .state import clubs, users, tokens, _save_tokens
+from . import state
 from ..cli import register_user, resolve_user, check_password
 from ..storage import save_users, save_data
 from ..models import Player, players, User
 
 
 def create_user(data) -> str:
-    if data.user_id and data.user_id in users:
+    if data.user_id and data.user_id in state.users:
         raise HTTPException(400, "User exists")
     uid = register_user(
-        users,
+        state.users,
         data.user_id,
         data.name,
         data.password,
@@ -24,41 +24,71 @@ def create_user(data) -> str:
         backhand=data.backhand,
         region=data.region,
     )
-    save_users(users)
-    save_data(clubs)
+    save_users(state.users)
+    save_data(state.clubs)
     return uid
 
 
 def login(user_id: str, password: str):
-    user = resolve_user(users, user_id)
+    user = resolve_user(state.users, user_id)
     if user and check_password(user, password):
         token = secrets.token_hex(16)
-        tokens[token] = (user.user_id, datetime.datetime.utcnow())
-        _save_tokens()
+        state.tokens[token] = (user.user_id, datetime.datetime.utcnow())
+        state._save_tokens()
         return True, token, user.user_id
     return False, None, None
 
 
+def wechat_login(code: str, exchange_func) -> tuple[str, str]:
+    """Login or register using a WeChat mini program code."""
+    info = exchange_func(code)
+    openid = info.get("openid")
+    if not openid:
+        raise HTTPException(400, "Invalid code")
+
+    user = None
+    for u in state.users.values():
+        if u.wechat_openid == openid:
+            user = u
+            break
+
+    if not user:
+        uid = openid
+        user = User(
+            user_id=uid,
+            name=info.get("nickname", uid),
+            password_hash="",
+            wechat_openid=openid,
+        )
+        state.users[uid] = user
+        save_users(state.users)
+
+    token = secrets.token_hex(16)
+    state.tokens[token] = (user.user_id, datetime.datetime.utcnow())
+    state._save_tokens()
+    return token, user.user_id
+
+
 def logout(token: str):
-    tokens.pop(token, None)
-    _save_tokens()
+    state.tokens.pop(token, None)
+    state._save_tokens()
 
 
 def refresh_token(token: str):
-    info = tokens.get(token)
+    info = state.tokens.get(token)
     if not info:
         raise HTTPException(401, "Invalid token")
     uid, _ = info
-    tokens[token] = (uid, datetime.datetime.utcnow())
-    _save_tokens()
+    state.tokens[token] = (uid, datetime.datetime.utcnow())
+    state._save_tokens()
     return uid
 
 
 def user_info(user_id: str):
-    user = users.get(user_id)
+    user = state.users.get(user_id)
     if not user:
         raise HTTPException(404, "User not found")
-    joined = [cid for cid, c in clubs.items() if user_id in c.members]
+    joined = [cid for cid, c in state.clubs.items() if user_id in c.members]
     created = getattr(user, "created_clubs", 0)
     max_created = getattr(user, "max_creatable_clubs", 0)
     return {
@@ -85,4 +115,4 @@ def mark_read(user: User, index: int):
     if index >= len(user.messages):
         raise HTTPException(404, "Message not found")
     user.messages[index].read = True
-    save_users(users)
+    save_users(state.users)

@@ -1,18 +1,18 @@
 from __future__ import annotations
 import datetime
 from fastapi import HTTPException
-from .state import tokens, TOKEN_TTL, _save_tokens
+from . import state
 
 
 def require_auth(token: str) -> str:
     """Validate token and return associated user id."""
-    info = tokens.get(token)
+    info = state.tokens.get(token)
     if not info:
         raise HTTPException(401, "Invalid token")
     user_id, ts = info
-    if datetime.datetime.utcnow() - ts > TOKEN_TTL:
-        tokens.pop(token, None)
-        _save_tokens()
+    if datetime.datetime.utcnow() - ts > state.TOKEN_TTL:
+        state.tokens.pop(token, None)
+        state._save_tokens()
         raise HTTPException(401, "Token expired")
     return user_id
 
