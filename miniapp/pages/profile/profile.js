@@ -78,7 +78,24 @@ Page({
   toRegister() { wx.navigateTo({ url: '/pages/register/register' }); },
   onCardTap() {
     if (!this.data.loggedIn) {
-      wx.navigateTo({ url: '/pages/login/index' });
+      wx.login({
+        success: res => {
+          if (!res.code) return;
+          userService
+            .wechatLogin(res.code)
+            .then(resp => {
+              if (resp.token) {
+                wx.setStorageSync('token', resp.token);
+                wx.setStorageSync('user_id', resp.user_id);
+                this.setData({ loggedIn: true });
+                this.loadJoinedClubs(resp.user_id, wx.getStorageSync('club_id'));
+              } else {
+                wx.showToast({ title: '登录失败', icon: 'none' });
+              }
+            })
+            .catch(() => {});
+        }
+      });
     } else {
       wx.navigateTo({ url: '/pages/playercard/playercard' });
     }
