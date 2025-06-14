@@ -88,7 +88,14 @@ Page({
                 wx.setStorageSync('token', resp.token);
                 wx.setStorageSync('user_id', resp.user_id);
                 this.setData({ loggedIn: true });
-                this.loadJoinedClubs(resp.user_id, wx.getStorageSync('club_id'));
+                if (resp.just_created) {
+                  wx.navigateTo({ url: '/pages/editprofile/editprofile' });
+                } else {
+                  this.loadJoinedClubs(
+                    resp.user_id,
+                    wx.getStorageSync('club_id')
+                  );
+                }
               } else {
                 wx.showToast({ title: '登录失败', icon: 'none' });
               }
