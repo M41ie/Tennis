@@ -14,7 +14,11 @@ Component({
     canConfirm: Boolean,
     canReject: Boolean,
     canApprove: Boolean,
-    canVeto: Boolean
+    canVeto: Boolean,
+    canShare: {
+      type: Boolean,
+      value: true
+    }
   },
   methods: {
     onConfirm() {

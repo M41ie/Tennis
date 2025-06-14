@@ -30,7 +30,7 @@
     <block wx:for="{{pendingSingles}}" wx:key="index">
       <record-card data-index="{{item.index}}" data-club="{{item.club_id}}" record="{{item}}" doubles="{{false}}" show-actions="{{true}}"
         status-text="{{item.statusText}}" can-confirm="{{item.canConfirm}}" can-reject="{{item.canReject}}"
-        can-approve="{{item.canApprove}}" can-veto="{{item.canVeto}}" bind:confirm="confirmSingle"
+        can-approve="{{item.canApprove}}" can-veto="{{item.canVeto}}" can-share="{{item.canShare}}" bind:confirm="confirmSingle"
         bind:reject="rejectSingle" bind:approve="approveSingle" bind:veto="vetoSingle" />
     </block>
   </view>
@@ -38,7 +38,7 @@
     <block wx:for="{{pendingDoubles}}" wx:key="index">
       <record-card data-index="{{item.index}}" data-club="{{item.club_id}}" record="{{item}}" doubles="{{true}}" show-actions="{{true}}"
         status-text="{{item.statusText}}" can-confirm="{{item.canConfirm}}" can-reject="{{item.canReject}}"
-        can-approve="{{item.canApprove}}" can-veto="{{item.canVeto}}" bind:confirm="confirmDouble"
+        can-approve="{{item.canApprove}}" can-veto="{{item.canVeto}}" can-share="{{item.canShare}}" bind:confirm="confirmDouble"
         bind:reject="rejectDouble" bind:approve="approveDouble" bind:veto="vetoDouble" />
     </block>
   </view>
