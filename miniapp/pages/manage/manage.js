@@ -90,6 +90,18 @@ Page({
             typeof d.singles_rating === 'number' ? d.singles_rating : null;
           const doublesRating =
             typeof d.doubles_rating === 'number' ? d.doubles_rating : null;
+          const singlesDisplay =
+            rating != null
+              ? rating.toFixed(3)
+              : p.singles_rating != null
+              ? p.singles_rating.toFixed(3)
+              : '--';
+          const doublesDisplay =
+            doublesRating != null
+              ? doublesRating.toFixed(3)
+              : p.doubles_rating != null
+              ? p.doubles_rating.toFixed(3)
+              : '--';
           const gender = d.gender || '';
           const genderText =
             gender === 'M' || gender === 'Male' || gender === '男'
@@ -104,8 +116,8 @@ Page({
             avatar_url: d.avatar_url || d.avatar || '',
             gender,
             genderText,
-            singles_rating: rating != null ? rating.toFixed(3) : '--',
-            doubles_rating: doublesRating != null ? doublesRating.toFixed(3) : '--',
+            singles_rating: singlesDisplay,
+            doubles_rating: doublesDisplay,
             weighted_games_singles:
               d.weighted_games_singles != null
                 ? Number(d.weighted_games_singles).toFixed(2)
