@@ -2064,6 +2064,8 @@ def list_all_pending_matches(token: str) -> list[dict[str, object]]:
         for idx, m in enumerate(club.pending_matches):
             if isinstance(m, DoublesMatch):
                 continue
+            if m.status in {"rejected", "vetoed"}:
+                continue
             entry = {
                 "club_id": cid,
                 "index": idx,
@@ -2127,6 +2129,8 @@ def list_all_pending_doubles(token: str) -> list[dict[str, object]]:
         cleanup_pending_matches(club)
         for idx, m in enumerate(club.pending_matches):
             if not isinstance(m, DoublesMatch):
+                continue
+            if m.status in {"rejected", "vetoed"}:
                 continue
             entry = {
                 "club_id": cid,
