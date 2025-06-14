@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from ..services import users as user_service
 from ..services.auth import require_auth, assert_token_matches
 from ..services.helpers import get_user_or_404
+from .. import api
 
 router = APIRouter()
 
@@ -33,6 +34,10 @@ class TokenOnly(BaseModel):
     token: str
 
 
+class WeChatLoginRequest(BaseModel):
+    code: str
+
+
 @router.post("/users")
 def register_user_api(data: UserCreate):
     uid = user_service.create_user(data)
@@ -45,6 +50,12 @@ def login_api(data: LoginRequest):
     if success:
         return {"success": True, "token": token, "user_id": user_id}
     return {"success": False}
+
+
+@router.post("/wechat_login")
+def wechat_login_api(data: WeChatLoginRequest):
+    token, uid = user_service.wechat_login(data.code, api._exchange_wechat_code)
+    return {"token": token, "user_id": uid}
 
 
 @router.post("/logout")
