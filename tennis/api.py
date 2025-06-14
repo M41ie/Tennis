@@ -1207,7 +1207,9 @@ def get_player(club_id: str, user_id: str, recent: int = 0):
 
 
 @app.get("/clubs/{club_id}/players/{user_id}/records")
-def get_player_records(club_id: str, user_id: str):
+def get_player_records(
+    club_id: str, user_id: str, limit: int | None = None, offset: int = 0
+):
     from .cli import get_player_match_cards
 
     try:
@@ -1217,11 +1219,17 @@ def get_player_records(club_id: str, user_id: str):
     # convert dates to iso strings
     for c in cards:
         c["date"] = c["date"].isoformat()
+    if offset:
+        cards = cards[offset:]
+    if limit is not None:
+        cards = cards[:limit]
     return cards
 
 
 @app.get("/clubs/{club_id}/players/{user_id}/doubles_records")
-def get_player_doubles_records(club_id: str, user_id: str):
+def get_player_doubles_records(
+    club_id: str, user_id: str, limit: int | None = None, offset: int = 0
+):
     """Return doubles match history cards for a player."""
     from .cli import get_player_doubles_cards
 
@@ -1231,11 +1239,17 @@ def get_player_doubles_records(club_id: str, user_id: str):
         raise HTTPException(404, str(e))
     for c in cards:
         c["date"] = c["date"].isoformat()
+    if offset:
+        cards = cards[offset:]
+    if limit is not None:
+        cards = cards[:limit]
     return cards
 
 
 @app.get("/players/{user_id}/records")
-def get_global_player_records(user_id: str):
+def get_global_player_records(
+    user_id: str, limit: int | None = None, offset: int = 0
+):
     """Return singles match history across all clubs for a player."""
     from .cli import get_player_match_cards
 
@@ -1253,11 +1267,17 @@ def get_global_player_records(user_id: str):
             cards.append(c)
 
     cards.sort(key=lambda x: x["date"], reverse=True)
+    if offset:
+        cards = cards[offset:]
+    if limit is not None:
+        cards = cards[:limit]
     return cards
 
 
 @app.get("/players/{user_id}/doubles_records")
-def get_global_player_doubles_records(user_id: str):
+def get_global_player_doubles_records(
+    user_id: str, limit: int | None = None, offset: int = 0
+):
     """Return doubles match history across all clubs for a player."""
     from .cli import get_player_doubles_cards
 
@@ -1275,6 +1295,10 @@ def get_global_player_doubles_records(user_id: str):
             cards.append(c)
 
     cards.sort(key=lambda x: x["date"], reverse=True)
+    if offset:
+        cards = cards[offset:]
+    if limit is not None:
+        cards = cards[:limit]
     return cards
 
 
@@ -1928,7 +1952,9 @@ def system_match_activity(days: int = 7) -> list[dict[str, object]]:
 
 
 @app.get("/sys/matches")
-def list_all_matches() -> list[dict[str, object]]:
+def list_all_matches(
+    limit: int | None = None, offset: int = 0
+) -> list[dict[str, object]]:
     """Return all singles match records across all clubs."""
     result = []
     for cid, club in clubs.items():
@@ -1957,13 +1983,19 @@ def list_all_matches() -> list[dict[str, object]]:
                 }
             )
     result.sort(key=lambda x: (x["date"], x["created_ts"]), reverse=True)
+    if offset:
+        result = result[offset:]
+    if limit is not None:
+        result = result[:limit]
     for r in result:
         r.pop("created_ts", None)
     return result
 
 
 @app.get("/sys/doubles")
-def list_all_doubles() -> list[dict[str, object]]:
+def list_all_doubles(
+    limit: int | None = None, offset: int = 0
+) -> list[dict[str, object]]:
     """Return all doubles match records across all clubs."""
     result = []
     for cid, club in clubs.items():
@@ -2002,6 +2034,10 @@ def list_all_doubles() -> list[dict[str, object]]:
                 }
             )
     result.sort(key=lambda x: (x["date"], x["created_ts"]), reverse=True)
+    if offset:
+        result = result[offset:]
+    if limit is not None:
+        result = result[:limit]
     for r in result:
         r.pop("created_ts", None)
     return result
