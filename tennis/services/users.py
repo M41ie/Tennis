@@ -53,13 +53,12 @@ def wechat_login(code: str, exchange_func) -> tuple[str, str]:
             break
 
     if not user:
-        uid = openid
-        user = User(
-            user_id=uid,
-            name=info.get("nickname", uid),
-            password_hash="",
-            wechat_openid=openid,
-        )
+        # allocate a sequential user ID using the normal registration flow
+        nickname = info.get("nickname") or openid
+        uid = register_user(state.users, None, nickname, "")
+        user = state.users[uid]
+        user.password_hash = ""
+        user.wechat_openid = openid
         state.users[uid] = user
         save_users(state.users)
 
