@@ -16,7 +16,9 @@ export default [
         test: false,
         expect: false,
         document: false,
-        __dirname: false
+        __dirname: false,
+        setTimeout: false,
+        getCurrentPages: false
       }
     },
     linterOptions: {

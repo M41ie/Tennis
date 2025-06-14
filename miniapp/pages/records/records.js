@@ -22,6 +22,8 @@ Page({
     records: [],
     doubles: false,
     modeIndex: 0,
+    page: 1,
+    finished: false,
     pendingTabIndex: 0,
     pendingSingles: [],
     pendingDoubles: [],
@@ -29,7 +31,7 @@ Page({
     isAdmin: false
   },
   onLoad() {
-    this.setData({ userId: wx.getStorageSync('user_id') });
+    this.setData({ userId: wx.getStorageSync('user_id'), page: 1, finished: false, records: [] });
     this.fetchRecords();
     this.fetchPendings();
   },
@@ -37,6 +39,7 @@ Page({
     const idx = e.currentTarget.dataset.index;
     this.setData({ tabIndex: idx });
     if (idx == 0) {
+      this.setData({ page: 1, records: [], finished: false });
       this.fetchRecords();
     } else {
       this.fetchPendings();
@@ -44,7 +47,7 @@ Page({
   },
   switchMode(e) {
     const idx = e.currentTarget.dataset.index;
-    this.setData({ modeIndex: idx, doubles: idx == 1 });
+    this.setData({ modeIndex: idx, doubles: idx == 1, page: 1, records: [], finished: false });
     this.fetchRecords();
   },
   switchPendingMode(e) {
@@ -56,13 +59,15 @@ Page({
     if (!userId) return;
     const placeholder = require('../../assets/base64.js').DEFAULT_AVATAR;
     const that = this;
+    const limit = 10;
+    const offset = (this.data.page - 1) * limit;
     wx.request({
       url: `${BASE_URL}/players/${userId}`,
       success(res) {
         const player = res.data || {};
         const path = that.data.doubles ? 'doubles_records' : 'records';
         wx.request({
-          url: `${BASE_URL}/players/${userId}/${path}`,
+          url: `${BASE_URL}/players/${userId}/${path}?limit=${limit}&offset=${offset}`,
           success(r) {
             const list = r.data || [];
             list.forEach(rec => {
@@ -137,7 +142,12 @@ Page({
 
               rec.displayFormat = displayFormat(rec.format);
             });
-            that.setData({ records: list });
+            const records =
+              that.data.page === 1 ? list : that.data.records.concat(list);
+            that.setData({
+              records,
+              finished: list.length < limit,
+            });
           }
         });
       }
@@ -413,5 +423,15 @@ Page({
   },
   addMatch() {
     wx.navigateTo({ url: '/pages/addmatch/addmatch' });
+  },
+  onPullDownRefresh() {
+    this.setData({ page: 1, records: [], finished: false });
+    this.fetchRecords();
+    wx.stopPullDownRefresh();
+  },
+  onReachBottom() {
+    if (this.data.finished || this.data.tabIndex !== 0) return;
+    this.setData({ page: this.data.page + 1 });
+    this.fetchRecords();
   }
 });

@@ -13,21 +13,23 @@ function displayFormat(fmt) {
   return FORMAT_DISPLAY[fmt] || fmt;
 }
 Page({
-  data: { records: [], doubles: false, modeIndex: 0 },
+  data: { records: [], doubles: false, modeIndex: 0, page: 1, finished: false },
   onLoad() {
     this.fetchRecords();
   },
   switchMode(e) {
     const idx = e.currentTarget.dataset.index;
-    this.setData({ modeIndex: idx, doubles: idx == 1 });
+    this.setData({ modeIndex: idx, doubles: idx == 1, page: 1, records: [], finished: false });
     this.fetchRecords();
   },
   fetchRecords() {
     const that = this;
     const placeholder = require('../../assets/base64.js').DEFAULT_AVATAR;
+    const limit = 10;
+    const offset = (this.data.page - 1) * limit;
     const url = this.data.doubles ? `${BASE_URL}/sys/doubles` : `${BASE_URL}/sys/matches`;
     wx.request({
-      url,
+      url: `${url}?limit=${limit}&offset=${offset}`,
       success(res) {
         const list = res.data || [];
         list.forEach(rec => {
@@ -81,8 +83,19 @@ Page({
           }
           rec.displayFormat = displayFormat(rec.format);
         });
-        that.setData({ records: list });
+        const records = that.data.page === 1 ? list : that.data.records.concat(list);
+        that.setData({ records, finished: list.length < limit });
       }
     });
+  },
+  onPullDownRefresh() {
+    this.setData({ page: 1, records: [], finished: false });
+    this.fetchRecords();
+    wx.stopPullDownRefresh();
+  },
+  onReachBottom() {
+    if (this.data.finished) return;
+    this.setData({ page: this.data.page + 1 });
+    this.fetchRecords();
   }
 });
