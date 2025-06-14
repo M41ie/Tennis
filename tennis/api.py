@@ -2049,9 +2049,20 @@ def list_all_pending_matches(token: str) -> list[dict[str, object]]:
                 entry["submitted_by_player_name"] = submitter.name
 
             ready = m.confirmed_a and m.confirmed_b
-            entry["display_status_text"] = "双方已确认，请审核" if ready else "待确认"
-            entry["can_approve"] = ready
-            entry["can_veto"] = ready
+            if m.status == "vetoed":
+                days_left = 3 - (datetime.date.today() - (m.status_date or datetime.date.today())).days
+                entry["display_status_text"] = f"已否决，将在{days_left}日后删除"
+                entry["can_approve"] = False
+                entry["can_veto"] = False
+            elif m.status == "rejected":
+                days_left = 3 - (datetime.date.today() - (m.status_date or datetime.date.today())).days
+                entry["display_status_text"] = f"已拒绝，将在{days_left}日后删除"
+                entry["can_approve"] = False
+                entry["can_veto"] = False
+            else:
+                entry["display_status_text"] = "双方已确认，请审核" if ready else "待确认"
+                entry["can_approve"] = ready
+                entry["can_veto"] = ready
 
             combined.append(entry)
 
@@ -2111,9 +2122,20 @@ def list_all_pending_doubles(token: str) -> list[dict[str, object]]:
                 entry["submitted_by_player_name"] = submitter.name
 
             ready = m.confirmed_a and m.confirmed_b
-            entry["display_status_text"] = "双方已确认，请审核" if ready else "待确认"
-            entry["can_approve"] = ready
-            entry["can_veto"] = ready
+            if m.status == "vetoed":
+                days_left = 3 - (datetime.date.today() - (m.status_date or datetime.date.today())).days
+                entry["display_status_text"] = f"已否决，将在{days_left}日后删除"
+                entry["can_approve"] = False
+                entry["can_veto"] = False
+            elif m.status == "rejected":
+                days_left = 3 - (datetime.date.today() - (m.status_date or datetime.date.today())).days
+                entry["display_status_text"] = f"已拒绝，将在{days_left}日后删除"
+                entry["can_approve"] = False
+                entry["can_veto"] = False
+            else:
+                entry["display_status_text"] = "双方已确认，请审核" if ready else "待确认"
+                entry["can_approve"] = ready
+                entry["can_veto"] = ready
 
             combined.append(entry)
 
