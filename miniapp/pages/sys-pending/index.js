@@ -98,6 +98,13 @@ Page({
     const cid = e.currentTarget.dataset.club;
     const token = wx.getStorageSync('token');
     const that = this;
+    // Optimistically remove the item so the UI updates immediately
+    const arr = this.data.singles.slice();
+    const pos = arr.findIndex(it => it.index === idx);
+    if (pos !== -1) {
+      arr.splice(pos, 1);
+      this.setData({ singles: arr });
+    }
     wx.request({
       url: `${BASE_URL}/clubs/${cid}/pending_matches/${idx}/veto`,
       method: 'POST',
@@ -122,6 +129,13 @@ Page({
     const cid = e.currentTarget.dataset.club;
     const token = wx.getStorageSync('token');
     const that = this;
+    // Optimistically remove the item so the UI updates immediately
+    const arr = this.data.doublesList.slice();
+    const pos = arr.findIndex(it => it.index === idx);
+    if (pos !== -1) {
+      arr.splice(pos, 1);
+      this.setData({ doublesList: arr });
+    }
     wx.request({
       url: `${BASE_URL}/clubs/${cid}/pending_doubles/${idx}/veto`,
       method: 'POST',
