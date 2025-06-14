@@ -97,7 +97,7 @@ Page({
     }
     const nameOk = /^[A-Za-z\u4e00-\u9fa5]{1,20}$/.test(this.data.name);
     if (!nameOk) {
-      wx.showToast({ title: '俱乐部名格式错误', icon: 'none' });
+      wx.showToast({ title: '俱乐部名仅支持中英文，且不能超过20字符', icon: 'none' });
       return;
     }
     const that = this;
