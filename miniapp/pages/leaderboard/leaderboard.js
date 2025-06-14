@@ -19,7 +19,9 @@ Page({
     genderIndex: 0,
     genderText: '男子&女子',
     region: ['-', '-', '-'],
-    regionText: '全国'
+    regionText: '全国',
+    page: 1,
+    finished: false
   },
   onLoad() {
     this.fetchInitial();
@@ -64,7 +66,9 @@ Page({
           selectedClubIndex: index,
           selectedClubText: options[index].name,
           filter,
-          players: data.players
+          players: [],
+          page: 1,
+          finished: false
         }, () => {
           that.fetchList(filter);
         });
@@ -100,7 +104,10 @@ Page({
       selectedClub: selected,
       selectedClubIndex: index,
       selectedClubText: item.name,
-      filter
+      filter,
+      page: 1,
+      players: [],
+      finished: false
     });
     this.fetchList(filter);
   },
@@ -108,7 +115,7 @@ Page({
     const mode = e.currentTarget.dataset.mode;
     if (mode === this.data.filter.mode) return;
     const filter = { ...this.data.filter, mode };
-    this.setData({ filter });
+    this.setData({ filter, page: 1, players: [], finished: false });
     this.fetchList(filter);
   },
   onGender(e) {
@@ -117,7 +124,7 @@ Page({
     const gender = genders[index] || 'All';
     const genderText = this.data.genderOptions[index] || '男子&女子';
     const filter = { ...this.data.filter, gender };
-    this.setData({ genderIndex: index, genderText, filter });
+    this.setData({ genderIndex: index, genderText, filter, page: 1, players: [], finished: false });
     this.fetchList(filter);
   },
   onRegionChange(e) {
@@ -126,18 +133,22 @@ Page({
     const regionString = parts.join(' ');
     const regionText = parts.length ? parts.join('-') : '全国';
     const filter = { ...this.data.filter, region: regionString };
-    this.setData({ region, regionText, filter });
+    this.setData({ region, regionText, filter, page: 1, players: [], finished: false });
     this.fetchList(filter);
   },
   fetchList(filter) {
     const clubs = filter.clubs && filter.clubs.length ? filter.clubs : [];
     const that = this;
     const params = [];
+    const limit = 50;
+    const offset = (this.data.page - 1) * limit;
     if (filter.gender && filter.gender !== 'All') params.push('gender=' + filter.gender);
     if (filter.mode === 'Doubles') params.push('doubles=true');
     if (filter.region) params.push('region=' + encodeURIComponent(filter.region));
     params.push('include_clubs=false');
     params.push('include_joined=false');
+    params.push('limit=' + limit);
+    if (offset) params.push('offset=' + offset);
     if (clubs.length) params.push('club=' + clubs.join(','));
     const url = `${BASE_URL}/leaderboard_full` + (params.length ? '?' + params.join('&') : '');
 
@@ -152,7 +163,8 @@ Page({
           if (p.weighted_singles_matches != null) p.weighted_singles_matches = p.weighted_singles_matches.toFixed(2);
           if (p.weighted_doubles_matches != null) p.weighted_doubles_matches = p.weighted_doubles_matches.toFixed(2);
         });
-        that.setData({ players: list });
+        const players = that.data.page === 1 ? list : that.data.players.concat(list);
+        that.setData({ players, finished: list.length < limit });
       }
     });
   },
@@ -160,5 +172,10 @@ Page({
     const id = e.currentTarget.dataset.id;
     const cid = e.currentTarget.dataset.cid;
     wx.navigateTo({ url: '/pages/profile/profile?id=' + id + '&cid=' + cid });
+  },
+  onReachBottom() {
+    if (this.data.finished) return;
+    this.setData({ page: this.data.page + 1 });
+    this.fetchList(this.data.filter);
   }
 });

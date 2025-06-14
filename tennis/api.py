@@ -743,6 +743,8 @@ def list_all_players(
     club: str | None = None,
     doubles: bool = False,
     region: str | None = None,
+    limit: int | None = None,
+    offset: int = 0,
 ):
     """Return players from one or more clubs optionally filtered and sorted."""
 
@@ -796,6 +798,10 @@ def list_all_players(
             players.append(entry)
     key = "doubles_rating" if doubles else "singles_rating"
     players.sort(key=lambda x: x.get(key, float('-inf')) if x.get(key) is not None else float('-inf'), reverse=True)
+    if offset:
+        players = players[offset:]
+    if limit is not None:
+        players = players[:limit]
     return players
 
 
@@ -813,6 +819,8 @@ def leaderboard_full(
     club: str | None = None,
     doubles: bool = False,
     region: str | None = None,
+    limit: int | None = None,
+    offset: int = 0,
 ):
     """Return club list, joined clubs and leaderboard data in one call."""
 
@@ -840,6 +848,8 @@ def leaderboard_full(
             club=club,
             doubles=doubles,
             region=region,
+            limit=limit,
+            offset=offset,
         )
 
     return result
@@ -1806,7 +1816,11 @@ def _user_summary(user: User) -> dict[str, object]:
 
 
 @app.get("/sys/users")
-def list_all_users(query: str | None = None) -> list[dict[str, object]]:
+def list_all_users(
+    query: str | None = None,
+    limit: int | None = None,
+    offset: int = 0,
+) -> list[dict[str, object]]:
     """Return users optionally filtered by a search query."""
     q = query.lower() if query else None
     result = []
@@ -1815,6 +1829,10 @@ def list_all_users(query: str | None = None) -> list[dict[str, object]]:
             continue
         result.append(_user_summary(u))
     result.sort(key=lambda x: x["user_id"])
+    if offset:
+        result = result[offset:]
+    if limit is not None:
+        result = result[:limit]
     return result
 
 
@@ -1844,7 +1862,11 @@ def update_user_limits(user_id: str, data: LimitsUpdateRequest):
 
 
 @app.get("/sys/clubs")
-def list_all_clubs(query: str | None = None) -> list[dict[str, object]]:
+def list_all_clubs(
+    query: str | None = None,
+    limit: int | None = None,
+    offset: int = 0,
+) -> list[dict[str, object]]:
     """Return clubs optionally filtered by a search query with stats."""
     q = query.lower() if query else None
     result = []
@@ -1861,6 +1883,10 @@ def list_all_clubs(query: str | None = None) -> list[dict[str, object]]:
             }
         )
     result.sort(key=lambda x: x["club_id"])
+    if offset:
+        result = result[offset:]
+    if limit is not None:
+        result = result[:limit]
     return result
 
 

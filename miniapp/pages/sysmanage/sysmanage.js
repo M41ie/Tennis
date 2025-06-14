@@ -13,6 +13,8 @@ Page({
     rankMode: 'matches',
     clubStatsRaw: [],
     topClubs: [],
+    rankPage: 1,
+    rankFinished: false,
     userDays: 7,
     matchDays: 7,
     userTrend: [],
@@ -41,12 +43,17 @@ Page({
   },
   loadClubStats() {
     const that = this;
+    const limit = 20;
+    const offset = (this.data.rankPage - 1) * limit;
     wx.request({
-      url: `${BASE_URL}/sys/clubs`,
+      url: `${BASE_URL}/sys/clubs?limit=${limit}&offset=${offset}`,
       success(res) {
         const list = res.data || [];
         if (!list.length) {
-          that.setData({ clubStatsRaw: [], topClubs: [] });
+          if (that.data.rankPage === 1) {
+            that.setData({ clubStatsRaw: [], topClubs: [] });
+          }
+          that.setData({ rankFinished: true });
           return;
         }
         const result = [];
@@ -93,7 +100,8 @@ Page({
             complete() {
               count++;
               if (count === list.length) {
-                that.setData({ clubStatsRaw: result });
+                const clubStatsRaw = that.data.rankPage === 1 ? result : that.data.clubStatsRaw.concat(result);
+                that.setData({ clubStatsRaw, rankFinished: list.length < limit });
                 that.sortClubs();
               }
             }
@@ -107,7 +115,8 @@ Page({
     const key = mode === 'members' ? 'member_count' : 'total_matches';
     const arr = (this.data.clubStatsRaw || []).slice();
     arr.sort((a, b) => (b[key] || 0) - (a[key] || 0));
-    this.setData({ topClubs: arr.slice(0, 10) });
+    const limit = this.data.rankPage * 20;
+    this.setData({ topClubs: arr.slice(0, limit) });
   },
   switchTab(e) {
     const idx = e.currentTarget.dataset.index;
@@ -213,5 +222,10 @@ Page({
     const cid = e.currentTarget.dataset.id;
     if (!cid) return;
     wx.navigateTo({ url: `/pages/manage/manage?cid=${cid}` });
+  },
+  onReachBottom() {
+    if (this.data.currentTab !== 1 || this.data.rankFinished) return;
+    this.setData({ rankPage: this.data.rankPage + 1 });
+    this.loadClubStats();
   }
 });

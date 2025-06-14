@@ -18,13 +18,20 @@ Page({
     const q = this.data.query.trim();
     const that = this;
     let url = `${BASE_URL}/sys/clubs`;
-    if (q) url += `?query=${encodeURIComponent(q)}`;
+    const limit = 20;
+    const offset = (this.data.page - 1) * limit;
+    const params = [];
+    if (q) params.push(`query=${encodeURIComponent(q)}`);
+    params.push('limit=' + limit);
+    if (offset) params.push('offset=' + offset);
+    if (params.length) url += '?' + params.join('&');
     wx.request({
       url,
       success(res) {
         const list = res.data || [];
         if (!list.length) {
-          that.setData({ clubs: [], finished: true });
+          const clubs = that.data.page === 1 ? [] : that.data.clubs;
+          that.setData({ clubs, finished: true });
           return;
         }
         const result = [];
@@ -73,7 +80,7 @@ Page({
                   that.data.page === 1
                     ? result
                     : that.data.clubs.concat(result);
-                that.setData({ clubs, finished: true });
+                that.setData({ clubs, finished: list.length < limit });
               }
             }
           });
