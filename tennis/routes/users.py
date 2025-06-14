@@ -3,7 +3,6 @@ from pydantic import BaseModel
 from ..services import users as user_service
 from ..services.auth import require_auth, assert_token_matches
 from ..services.helpers import get_user_or_404
-from .. import api
 
 router = APIRouter()
 
@@ -54,6 +53,7 @@ def login_api(data: LoginRequest):
 
 @router.post("/wechat_login")
 def wechat_login_api(data: WeChatLoginRequest):
+    from .. import api  # local import to avoid circular dependency
     token, uid = user_service.wechat_login(data.code, api._exchange_wechat_code)
     return {"token": token, "user_id": uid}
 
