@@ -1105,7 +1105,8 @@ def list_pending_doubles(club_id: str, token: str):
                 else:
                     status_text = "待确认"
 
-        if is_admin and m.confirmed_a and m.confirmed_b:
+        # Only treat as admin-reviewable when still pending
+        if not m.status and is_admin and m.confirmed_a and m.confirmed_b:
             role = "admin"
             status_text = "双方已确认，请审核"
             can_confirm = False
@@ -1453,7 +1454,8 @@ def list_pending_matches(club_id: str, token: str):
                 else:
                     status_text = "待确认"
 
-        if is_admin and m.confirmed_a and m.confirmed_b:
+        # Only treat as admin-reviewable when still pending
+        if not m.status and is_admin and m.confirmed_a and m.confirmed_b:
             role = "admin"
             status_text = "双方已确认，请审核"
             can_confirm = False
