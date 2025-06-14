@@ -1,13 +1,3 @@
 <view class="weui-cells weui-cells_form" bindtap="hideKeyboard">
-  <view class="weui-cell">
-    <view class="weui-label">账号</view>
-    <input class="weui-input" placeholder="用户名或ID" bindinput="onUserId" />
-  </view>
-  <view class="weui-cell">
-    <view class="weui-label">Password</view>
-    <input class="weui-input" password placeholder="Password" bindinput="onPassword" />
-  </view>
 </view>
-<button class="weui-btn weui-btn_primary" bindtap="login">登录</button>
-<button class="weui-btn" bindtap="wechatLogin">微信登录</button>
-<button class="weui-btn" bindtap="toRegister">注册</button>
+<button class="weui-btn weui-btn_primary" bindtap="wechatLogin">微信登录</button>

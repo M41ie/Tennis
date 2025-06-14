@@ -2,30 +2,7 @@ const { hideKeyboard } = require('../../utils/hideKeyboard');
 const userService = require('../../services/user');
 
 Page({
-  data: {
-    loginId: '',
-    loginPw: ''
-  },
-  onUserId(e) { this.setData({ loginId: e.detail.value }); },
-  onPassword(e) { this.setData({ loginPw: e.detail.value }); },
-  login() {
-    if (!this.data.loginId || !this.data.loginPw) {
-      wx.showToast({ title: '信息不完整', icon: 'none' });
-      return;
-    }
-    userService
-      .login(this.data.loginId, this.data.loginPw)
-      .then(res => {
-        if (res.success) {
-          wx.setStorageSync('token', res.token);
-          wx.setStorageSync('user_id', res.user_id || this.data.loginId);
-          wx.navigateBack();
-        } else {
-          wx.showToast({ title: '登录失败', icon: 'none' });
-        }
-      })
-      .catch(() => {});
-  },
+  data: {},
   hideKeyboard,
   wechatLogin() {
     wx.login({
@@ -45,8 +22,5 @@ Page({
           .catch(() => {});
       }
     });
-  },
-  toRegister() {
-    wx.navigateTo({ url: '/pages/register/register' });
   }
 });
