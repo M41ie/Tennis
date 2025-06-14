@@ -23,6 +23,7 @@ def test_wechat_login_creates_user(tmp_path, monkeypatch):
     data = resp.json()
     assert data["token"]
     uid = data["user_id"]
+    assert data["just_created"] is True
 
     users = storage.load_users()
     assert uid in users

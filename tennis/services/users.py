@@ -39,14 +39,19 @@ def login(user_id: str, password: str):
     return False, None, None
 
 
-def wechat_login(code: str, exchange_func) -> tuple[str, str]:
-    """Login or register using a WeChat mini program code."""
+def wechat_login(code: str, exchange_func) -> tuple[str, str, bool]:
+    """Login or register using a WeChat mini program code.
+
+    Returns a tuple ``(token, user_id, just_created)`` where ``just_created``
+    is ``True`` if this call resulted in creating a brand new user.
+    """
     info = exchange_func(code)
     openid = info.get("openid")
     if not openid:
         raise HTTPException(400, "Invalid code")
 
     user = None
+    created = False
     for u in state.users.values():
         if u.wechat_openid == openid:
             user = u
@@ -61,11 +66,12 @@ def wechat_login(code: str, exchange_func) -> tuple[str, str]:
         user.wechat_openid = openid
         state.users[uid] = user
         save_users(state.users)
+        created = True
 
     token = secrets.token_hex(16)
     state.tokens[token] = (user.user_id, datetime.datetime.utcnow())
     state._save_tokens()
-    return token, user.user_id
+    return token, user.user_id, created
 
 
 def logout(token: str):
