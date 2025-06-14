@@ -56,14 +56,17 @@ Page({
           if (p.weighted_singles_matches != null) p.weighted_singles_matches = p.weighted_singles_matches.toFixed(2);
           if (p.weighted_doubles_matches != null) p.weighted_doubles_matches = p.weighted_doubles_matches.toFixed(2);
         });
+        const filter = { ...that.data.filter, clubs: clubIds };
         that.setData({
           allClubIds: ids,
           joinedClubIds: joined,
           selectedClub: selected,
           selectedClubIndex: index,
           selectedClubText: options[index].name,
-          filter: { ...that.data.filter, clubs: clubIds },
+          filter,
           players: data.players
+        }, () => {
+          that.fetchList(filter);
         });
       },
       fail() {
