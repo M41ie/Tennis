@@ -81,7 +81,8 @@ def list_global_pending_doubles(user_id: str, token: str):
         is_admin = uid == club.leader_id or uid in club.admin_ids
         for e in entries:
             e["club_id"] = cid
-            e["can_approve"] = is_admin and e.get("confirmed_a") and e.get("confirmed_b")
+            ready = e.get("confirmed_a") and e.get("confirmed_b") and not e.get("status")
+            e["can_approve"] = is_admin and ready
             e["can_veto"] = e["can_approve"]
             combined.append(e)
 
@@ -105,7 +106,8 @@ def list_global_pending_matches(user_id: str, token: str):
         is_admin = uid == club.leader_id or uid in club.admin_ids
         for e in entries:
             e["club_id"] = cid
-            e["can_approve"] = is_admin and e.get("confirmed_a") and e.get("confirmed_b")
+            ready = e.get("confirmed_a") and e.get("confirmed_b") and not e.get("status")
+            e["can_approve"] = is_admin and ready
             e["can_veto"] = e["can_approve"]
             combined.append(e)
 
