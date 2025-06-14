@@ -20,8 +20,11 @@ Page({
     const that = this;
     let url = `${BASE_URL}/sys/users`;
     const params = [];
+    const limit = 50;
+    const offset = (this.data.page - 1) * limit;
     if (q) params.push('query=' + encodeURIComponent(q));
-    if (this.data.page > 1) params.push('page=' + this.data.page);
+    params.push('limit=' + limit);
+    if (offset) params.push('offset=' + offset);
     if (params.length) url += '?' + params.join('&');
     wx.request({
       url,
@@ -35,7 +38,7 @@ Page({
           weighted_games_doubles: formatGames(u.weighted_games_doubles)
         }));
         const users = that.data.page === 1 ? list : that.data.users.concat(list);
-        that.setData({ users, finished: !list.length });
+        that.setData({ users, finished: list.length < limit });
       }
     });
   },
