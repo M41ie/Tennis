@@ -115,8 +115,8 @@ Page({
     const key = mode === 'members' ? 'member_count' : 'total_matches';
     const arr = (this.data.clubStatsRaw || []).slice();
     arr.sort((a, b) => (b[key] || 0) - (a[key] || 0));
-    const limit = this.data.rankPage * 20;
-    this.setData({ topClubs: arr.slice(0, limit) });
+    // Show all loaded clubs without slicing so the list isn't capped
+    this.setData({ topClubs: arr });
   },
   switchTab(e) {
     const idx = e.currentTarget.dataset.index;
