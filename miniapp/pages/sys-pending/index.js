@@ -34,6 +34,7 @@ Page({
             it.statusText = it.display_status_text || '';
             it.canApprove = it.can_approve;
             it.canVeto = it.can_veto;
+            it.canShare = it.status !== 'vetoed' && it.status !== 'rejected';
             it.scoreA = it.score_a;
             it.scoreB = it.score_b;
             it.playerAName = it.player_a_name || it.player_a;
@@ -58,6 +59,7 @@ Page({
             it.statusText = it.display_status_text || '';
             it.canApprove = it.can_approve;
             it.canVeto = it.can_veto;
+            it.canShare = it.status !== 'vetoed' && it.status !== 'rejected';
             it.scoreA = it.score_a;
             it.scoreB = it.score_b;
             it.playerAName = it.a1_name || it.a1;

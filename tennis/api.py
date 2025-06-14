@@ -1024,6 +1024,7 @@ def list_pending_doubles(club_id: str, token: str):
             "confirmed_b": m.confirmed_b,
             "location": m.location,
             "format_name": m.format_name,
+            "status": m.status,
         }
 
         is_admin = uid in admins
@@ -1389,6 +1390,7 @@ def list_pending_matches(club_id: str, token: str):
             "confirmed_b": m.confirmed_b,
             "location": m.location,
             "format_name": m.format_name,
+            "status": m.status,
         }
 
         is_admin = uid in admins
@@ -2074,6 +2076,7 @@ def list_all_pending_matches(token: str) -> list[dict[str, object]]:
                 "confirmed_b": m.confirmed_b,
                 "location": m.location,
                 "format_name": m.format_name,
+                "status": m.status,
             }
             pa = club.members.get(m.player_a.user_id)
             pb = club.members.get(m.player_b.user_id)
@@ -2139,6 +2142,7 @@ def list_all_pending_doubles(token: str) -> list[dict[str, object]]:
                 "confirmed_b": m.confirmed_b,
                 "location": m.location,
                 "format_name": m.format_name,
+                "status": m.status,
             }
             a1 = club.members.get(m.player_a1.user_id)
             a2 = club.members.get(m.player_a2.user_id)
