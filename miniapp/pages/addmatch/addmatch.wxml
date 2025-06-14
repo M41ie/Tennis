@@ -6,6 +6,9 @@
   <picker mode="selector" range="{{modeOptions}}" value="{{modeIndex}}" bindchange="onModeChange">
     <view class="weui-cell {{modeIndex == 0 ? 'placeholder' : ''}}">{{t.matchType}}: {{modeOptions[modeIndex]}}</view>
   </picker>
+  <picker mode="selector" range="{{formatOptions}}" value="{{formatIndex}}" bindchange="onFormatChange">
+    <view class="weui-cell {{formatIndex == 0 ? 'placeholder' : ''}}">{{t.format}}: {{formatOptions[formatIndex]}}</view>
+  </picker>
   <block wx:if="{{modeIndex == 1}}">
     <picker mode="selector" range="{{playerNames}}" value="{{opponentIndex}}" bindchange="onOpponentChange">
       <view class="weui-cell {{opponentIndex == 0 ? 'placeholder' : ''}}">{{t.opponent}}: {{playerNames[opponentIndex]}}</view>
@@ -29,9 +32,6 @@
     <view class="weui-label dark-label">{{t.location}}:</view>
     <input class="weui-input" placeholder="{{t.inputLocation}}" bindinput="onLocation" cursor-spacing="80" bindblur="hideKeyboard" />
   </view>
-  <picker mode="selector" range="{{formatOptions}}" value="{{formatIndex}}" bindchange="onFormatChange">
-    <view class="weui-cell {{formatIndex == 0 ? 'placeholder' : ''}}">{{t.format}}: {{formatOptions[formatIndex]}}</view>
-  </picker>
   <view class="weui-cell">
     <view class="weui-label dark-label">{{t.yourScore}}:</view>
     <input class="weui-input" type="number" placeholder="{{t.inputYourScore}}" bindinput="onScoreA" cursor-spacing="80" bindblur="hideKeyboard" />
