@@ -2,11 +2,13 @@ import importlib
 from fastapi.testclient import TestClient
 import pytest
 import tennis.storage as storage
+import tennis.services.state as state
 
 
 def setup_api(tmp_path, monkeypatch):
     db = tmp_path / "tennis.db"
     monkeypatch.setattr(storage, "DB_FILE", db)
+    importlib.reload(state)
     api = importlib.reload(importlib.import_module("tennis.api"))
     client = TestClient(api.app)
     return client

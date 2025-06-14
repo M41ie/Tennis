@@ -3,11 +3,14 @@ import datetime
 from fastapi.testclient import TestClient
 import pytest
 import tennis.storage as storage
+import tennis.services.state as state
 
 
 def test_api_match_flow(tmp_path, monkeypatch):
     db = tmp_path / "tennis.db"
     monkeypatch.setattr(storage, "DB_FILE", db)
+    importlib.reload(state)
+    importlib.reload(state)
 
     api = importlib.reload(importlib.import_module("tennis.api"))
     client = TestClient(api.app)
@@ -119,6 +122,7 @@ def test_api_match_flow(tmp_path, monkeypatch):
 def test_invalid_token(tmp_path, monkeypatch):
     db = tmp_path / "tennis.db"
     monkeypatch.setattr(storage, "DB_FILE", db)
+    importlib.reload(state)
 
     api = importlib.reload(importlib.import_module("tennis.api"))
     client = TestClient(api.app)
@@ -144,6 +148,7 @@ def test_invalid_token(tmp_path, monkeypatch):
 def test_prerate_api(tmp_path, monkeypatch):
     db = tmp_path / "tennis.db"
     monkeypatch.setattr(storage, "DB_FILE", db)
+    importlib.reload(state)
 
     api = importlib.reload(importlib.import_module("tennis.api"))
     client = TestClient(api.app)
@@ -187,6 +192,7 @@ def test_prerate_api(tmp_path, monkeypatch):
 def test_doubles_match_flow(tmp_path, monkeypatch):
     db = tmp_path / "tennis.db"
     monkeypatch.setattr(storage, "DB_FILE", db)
+    importlib.reload(state)
 
     api = importlib.reload(importlib.import_module("tennis.api"))
     client = TestClient(api.app)
@@ -250,6 +256,7 @@ def test_doubles_match_flow(tmp_path, monkeypatch):
 def test_doubles_records_api(tmp_path, monkeypatch):
     db = tmp_path / "tennis.db"
     monkeypatch.setattr(storage, "DB_FILE", db)
+    importlib.reload(state)
 
     api = importlib.reload(importlib.import_module("tennis.api"))
     client = TestClient(api.app)
@@ -316,6 +323,7 @@ def test_doubles_records_api(tmp_path, monkeypatch):
 def test_pending_match_query(tmp_path, monkeypatch):
     db = tmp_path / "tennis.db"
     monkeypatch.setattr(storage, "DB_FILE", db)
+    importlib.reload(state)
 
     api = importlib.reload(importlib.import_module("tennis.api"))
     client = TestClient(api.app)
@@ -368,6 +376,7 @@ def test_pending_match_query(tmp_path, monkeypatch):
 def test_pending_match_role_fields(tmp_path, monkeypatch):
     db = tmp_path / "tennis.db"
     monkeypatch.setattr(storage, "DB_FILE", db)
+    importlib.reload(state)
 
     api = importlib.reload(importlib.import_module("tennis.api"))
     client = TestClient(api.app)
@@ -429,6 +438,7 @@ def test_pending_match_role_fields(tmp_path, monkeypatch):
 def test_pending_doubles_query(tmp_path, monkeypatch):
     db = tmp_path / "tennis.db"
     monkeypatch.setattr(storage, "DB_FILE", db)
+    importlib.reload(state)
 
     api = importlib.reload(importlib.import_module("tennis.api"))
     client = TestClient(api.app)
@@ -496,6 +506,7 @@ def test_pending_doubles_query(tmp_path, monkeypatch):
 def test_doubles_opponent_confirmed_text(tmp_path, monkeypatch):
     db = tmp_path / "tennis.db"
     monkeypatch.setattr(storage, "DB_FILE", db)
+    importlib.reload(state)
 
     api = importlib.reload(importlib.import_module("tennis.api"))
     client = TestClient(api.app)
@@ -555,6 +566,7 @@ def test_doubles_opponent_confirmed_text(tmp_path, monkeypatch):
 def test_admin_submitter_review_text(tmp_path, monkeypatch):
     db = tmp_path / "tennis.db"
     monkeypatch.setattr(storage, "DB_FILE", db)
+    importlib.reload(state)
 
     api = importlib.reload(importlib.import_module("tennis.api"))
     client = TestClient(api.app)
@@ -604,6 +616,7 @@ def test_admin_submitter_review_text(tmp_path, monkeypatch):
 def test_admin_opponent_review_text_doubles(tmp_path, monkeypatch):
     db = tmp_path / "tennis.db"
     monkeypatch.setattr(storage, "DB_FILE", db)
+    importlib.reload(state)
 
     api = importlib.reload(importlib.import_module("tennis.api"))
     client = TestClient(api.app)
@@ -655,6 +668,7 @@ def test_admin_opponent_review_text_doubles(tmp_path, monkeypatch):
 def test_reject_pending_match(tmp_path, monkeypatch):
     db = tmp_path / "tennis.db"
     monkeypatch.setattr(storage, "DB_FILE", db)
+    importlib.reload(state)
 
     api = importlib.reload(importlib.import_module("tennis.api"))
     client = TestClient(api.app)
@@ -721,6 +735,7 @@ def test_reject_pending_match(tmp_path, monkeypatch):
 def test_reject_pending_doubles(tmp_path, monkeypatch):
     db = tmp_path / "tennis.db"
     monkeypatch.setattr(storage, "DB_FILE", db)
+    importlib.reload(state)
 
     api = importlib.reload(importlib.import_module("tennis.api"))
     client = TestClient(api.app)
@@ -773,6 +788,7 @@ def test_reject_pending_doubles(tmp_path, monkeypatch):
 def test_veto_pending_match(tmp_path, monkeypatch):
     db = tmp_path / "tennis.db"
     monkeypatch.setattr(storage, "DB_FILE", db)
+    importlib.reload(state)
 
     api = importlib.reload(importlib.import_module("tennis.api"))
     client = TestClient(api.app)
@@ -818,6 +834,7 @@ def test_veto_pending_match(tmp_path, monkeypatch):
 def test_veto_pending_doubles(tmp_path, monkeypatch):
     db = tmp_path / "tennis.db"
     monkeypatch.setattr(storage, "DB_FILE", db)
+    importlib.reload(state)
 
     api = importlib.reload(importlib.import_module("tennis.api"))
     client = TestClient(api.app)
@@ -871,6 +888,7 @@ def test_veto_pending_doubles(tmp_path, monkeypatch):
 def test_pending_visibility_rules(tmp_path, monkeypatch):
     db = tmp_path / "tennis.db"
     monkeypatch.setattr(storage, "DB_FILE", db)
+    importlib.reload(state)
 
     api = importlib.reload(importlib.import_module("tennis.api"))
     client = TestClient(api.app)
@@ -926,6 +944,7 @@ def test_pending_visibility_rules(tmp_path, monkeypatch):
 def test_pending_match_includes_ratings(tmp_path, monkeypatch):
     db = tmp_path / "tennis.db"
     monkeypatch.setattr(storage, "DB_FILE", db)
+    importlib.reload(state)
 
     api = importlib.reload(importlib.import_module("tennis.api"))
     client = TestClient(api.app)
@@ -964,6 +983,7 @@ def test_pending_match_includes_ratings(tmp_path, monkeypatch):
 def test_token_logout_and_expiry(tmp_path, monkeypatch):
     db = tmp_path / "tennis.db"
     monkeypatch.setattr(storage, "DB_FILE", db)
+    importlib.reload(state)
 
     api = importlib.reload(importlib.import_module("tennis.api"))
     client = TestClient(api.app)
@@ -984,6 +1004,7 @@ def test_token_logout_and_expiry(tmp_path, monkeypatch):
 def test_check_token_endpoint(tmp_path, monkeypatch):
     db = tmp_path / "tennis.db"
     monkeypatch.setattr(storage, "DB_FILE", db)
+    importlib.reload(state)
 
     api = importlib.reload(importlib.import_module("tennis.api"))
     client = TestClient(api.app)
@@ -1002,6 +1023,7 @@ def test_check_token_endpoint(tmp_path, monkeypatch):
 def test_doubles_leaderboard_api(tmp_path, monkeypatch):
     db = tmp_path / "tennis.db"
     monkeypatch.setattr(storage, "DB_FILE", db)
+    importlib.reload(state)
 
     api = importlib.reload(importlib.import_module("tennis.api"))
     client = TestClient(api.app)
@@ -1047,6 +1069,7 @@ def test_doubles_leaderboard_api(tmp_path, monkeypatch):
 def test_token_persistence(tmp_path, monkeypatch):
     db = tmp_path / "tennis.db"
     monkeypatch.setattr(storage, "DB_FILE", db)
+    importlib.reload(state)
 
     api = importlib.reload(importlib.import_module("tennis.api"))
     client = TestClient(api.app)
@@ -1079,6 +1102,7 @@ def test_token_persistence(tmp_path, monkeypatch):
 def test_list_players_filters(tmp_path, monkeypatch):
     db = tmp_path / "tennis.db"
     monkeypatch.setattr(storage, "DB_FILE", db)
+    importlib.reload(state)
 
     api = importlib.reload(importlib.import_module("tennis.api"))
     client = TestClient(api.app)
@@ -1129,6 +1153,7 @@ def test_list_players_filters(tmp_path, monkeypatch):
 def test_list_all_players_multi_club(tmp_path, monkeypatch):
     db = tmp_path / "tennis.db"
     monkeypatch.setattr(storage, "DB_FILE", db)
+    importlib.reload(state)
 
     api = importlib.reload(importlib.import_module("tennis.api"))
     client = TestClient(api.app)
@@ -1189,6 +1214,7 @@ def test_list_all_players_multi_club(tmp_path, monkeypatch):
 def test_update_player_api(tmp_path, monkeypatch):
     db = tmp_path / "tennis.db"
     monkeypatch.setattr(storage, "DB_FILE", db)
+    importlib.reload(state)
 
     api = importlib.reload(importlib.import_module("tennis.api"))
     client = TestClient(api.app)
@@ -1246,6 +1272,7 @@ def test_update_player_api(tmp_path, monkeypatch):
 def test_update_global_player_api(tmp_path, monkeypatch):
     db = tmp_path / "tennis.db"
     monkeypatch.setattr(storage, "DB_FILE", db)
+    importlib.reload(state)
 
     api = importlib.reload(importlib.import_module("tennis.api"))
     client = TestClient(api.app)
@@ -1280,6 +1307,7 @@ def test_update_global_player_api(tmp_path, monkeypatch):
 def test_login_by_name(tmp_path, monkeypatch):
     db = tmp_path / "tennis.db"
     monkeypatch.setattr(storage, "DB_FILE", db)
+    importlib.reload(state)
 
     api = importlib.reload(importlib.import_module("tennis.api"))
     client = TestClient(api.app)
@@ -1302,6 +1330,7 @@ def test_login_by_name(tmp_path, monkeypatch):
 def test_remove_member_api(tmp_path, monkeypatch):
     db = tmp_path / "tennis.db"
     monkeypatch.setattr(storage, "DB_FILE", db)
+    importlib.reload(state)
 
     api = importlib.reload(importlib.import_module("tennis.api"))
     client = TestClient(api.app)
@@ -1368,6 +1397,7 @@ def test_remove_member_api(tmp_path, monkeypatch):
 def test_appointment_flow(tmp_path, monkeypatch):
     db = tmp_path / "tennis.db"
     monkeypatch.setattr(storage, "DB_FILE", db)
+    importlib.reload(state)
 
     api = importlib.reload(importlib.import_module("tennis.api"))
     client = TestClient(api.app)
@@ -1425,6 +1455,7 @@ def test_appointment_flow(tmp_path, monkeypatch):
 def test_player_recent_api(tmp_path, monkeypatch):
     db = tmp_path / "tennis.db"
     monkeypatch.setattr(storage, "DB_FILE", db)
+    importlib.reload(state)
 
     api = importlib.reload(importlib.import_module("tennis.api"))
     client = TestClient(api.app)
@@ -1479,6 +1510,7 @@ def test_player_recent_api(tmp_path, monkeypatch):
 def test_get_user_info_api(tmp_path, monkeypatch):
     db = tmp_path / "tennis.db"
     monkeypatch.setattr(storage, "DB_FILE", db)
+    importlib.reload(state)
 
     api = importlib.reload(importlib.import_module("tennis.api"))
     client = TestClient(api.app)
@@ -1526,6 +1558,7 @@ def test_get_user_info_api(tmp_path, monkeypatch):
 def test_join_rejection_flow(tmp_path, monkeypatch):
     db = tmp_path / "tennis.db"
     monkeypatch.setattr(storage, "DB_FILE", db)
+    importlib.reload(state)
 
     api = importlib.reload(importlib.import_module("tennis.api"))
     client = TestClient(api.app)
@@ -1573,6 +1606,7 @@ def test_join_rejection_flow(tmp_path, monkeypatch):
 def test_dissolve_club(tmp_path, monkeypatch):
     db = tmp_path / "tennis.db"
     monkeypatch.setattr(storage, "DB_FILE", db)
+    importlib.reload(state)
 
     api = importlib.reload(importlib.import_module("tennis.api"))
     client = TestClient(api.app)
@@ -1621,6 +1655,7 @@ def test_dissolve_club(tmp_path, monkeypatch):
 def test_sys_matches_and_doubles(tmp_path, monkeypatch):
     db = tmp_path / "tennis.db"
     monkeypatch.setattr(storage, "DB_FILE", db)
+    importlib.reload(state)
 
     api = importlib.reload(importlib.import_module("tennis.api"))
     cli = importlib.import_module("tennis.cli")

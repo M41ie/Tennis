@@ -3,7 +3,6 @@ from __future__ import annotations
 from fastapi import FastAPI, HTTPException
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
-import secrets
 from pydantic import BaseModel, StrictInt
 import statistics
 import datetime
@@ -14,7 +13,7 @@ import urllib.parse
 from pathlib import Path
 
 import tennis.storage as storage
-from .storage import load_data, save_data, load_users, save_users
+from .storage import save_data, save_users
 from .cli import (
     register_user,
     resolve_user,
@@ -55,37 +54,15 @@ app = FastAPI()
 def validation_exception_handler(request, exc):
     return JSONResponse(status_code=400, content={"detail": exc.errors()})
 
-clubs = load_data()
-users = load_users()
-if "A" in users:
-    users["A"].is_sys_admin = True
+# shared state handled by services.state
+from .services.state import clubs, users, tokens, _save_tokens, TOKEN_TTL
+from .services.auth import require_auth, assert_token_matches
+from .services.helpers import get_user_or_404, get_club_or_404
+from .routes.users import router as users_router
+from .routes.clubs import router as clubs_router
 
-# token persistence file next to the database
-TOKENS_FILE = Path(str(storage.DB_FILE)).with_name("tokens.json")
-
-# tokens expire after 24 hours
-TOKEN_TTL = datetime.timedelta(hours=24)
-
-# simple in-memory token store mapping token -> (user_id, timestamp)
-def _load_tokens() -> dict[str, tuple[str, datetime.datetime]]:
-    try:
-        text = TOKENS_FILE.read_text()
-    except FileNotFoundError:
-        return {}
-    except OSError:
-        # if the file is unreadable we simply skip loading tokens
-        return {}
-    try:
-        data = json.loads(text)
-    except json.JSONDecodeError:
-        return {}
-    now = datetime.datetime.utcnow()
-    result: dict[str, tuple[str, datetime.datetime]] = {}
-    for tok, (uid, ts) in data.items():
-        ts_dt = datetime.datetime.fromisoformat(ts)
-        if now - ts_dt < TOKEN_TTL:
-            result[tok] = (uid, ts_dt)
-    return result
+app.include_router(users_router)
+app.include_router(clubs_router)
 
 
 @app.get("/players/{user_id}/pending_doubles")
@@ -145,8 +122,7 @@ def _save_tokens() -> None:
         # Failing to persist tokens should not block authentication
         pass
 
-# load tokens on startup
-tokens: dict[str, tuple[str, datetime.datetime]] = _load_tokens()
+
 
 # WeChat mini program credentials from environment (optional)
 WECHAT_APPID = os.getenv("WECHAT_APPID", "")
@@ -176,39 +152,7 @@ def _exchange_wechat_code(code: str) -> dict:
         return json.loads(resp.read().decode())
 
 
-def require_auth(token: str) -> str:
-    """Validate token and return the associated user id."""
-    info = tokens.get(token)
-    if not info:
-        raise HTTPException(401, "Invalid token")
-    user_id, ts = info
-    if datetime.datetime.utcnow() - ts > TOKEN_TTL:
-        tokens.pop(token, None)
-        _save_tokens()
-        raise HTTPException(401, "Token expired")
-    return user_id
-
-
-def assert_token_matches(token_user: str, target_user: str) -> None:
-    """Ensure the token owner matches the target user."""
-    if token_user != target_user:
-        raise HTTPException(401, "Token mismatch")
-
-
-def get_user_or_404(user_id: str) -> User:
-    """Return a user or raise 404."""
-    user = users.get(user_id)
-    if not user:
-        raise HTTPException(404, "User not found")
-    return user
-
-
-def get_club_or_404(club_id: str) -> Club:
-    """Return a club or raise 404."""
-    club = clubs.get(club_id)
-    if not club:
-        raise HTTPException(404, "Club not found")
-    return club
+# authentication helpers now provided by services.auth
 
 
 def _pending_status_for_user(
@@ -438,28 +382,6 @@ class SignupRequest(BaseModel):
     token: str
 
 
-class UserCreate(BaseModel):
-    user_id: str | None = None
-    name: str
-    password: str
-    allow_create: bool = False
-    avatar: str | None = None
-    gender: str | None = None
-    birth: str | None = None
-    handedness: str | None = None
-    backhand: str | None = None
-    region: str | None = None
-
-
-class LoginRequest(BaseModel):
-    user_id: str
-    password: str
-
-
-class LogoutRequest(BaseModel):
-    token: str
-
-
 class WeChatLoginRequest(BaseModel):
     code: str
 
@@ -498,10 +420,6 @@ class RemoveRequest(BaseModel):
     ban: bool = False
 
 
-class TokenOnly(BaseModel):
-    token: str
-
-
 class RoleRequest(BaseModel):
     user_id: str
     action: str
@@ -524,143 +442,7 @@ class DissolveRequest(BaseModel):
     token: str
 
 
-@app.post("/users")
-def register_user_api(data: UserCreate):
-    if data.user_id and data.user_id in users:
-        raise HTTPException(400, "User exists")
-    uid = register_user(
-        users,
-        data.user_id,
-        data.name,
-        data.password,
-        allow_create=data.allow_create,
-        avatar=data.avatar,
-        gender=data.gender,
-        birth=data.birth,
-        handedness=data.handedness,
-        backhand=data.backhand,
-        region=data.region,
-    )
-    save_users(users)
-    save_data(clubs)
-    return {"status": "ok", "user_id": uid}
 
-
-@app.post("/login")
-def login_api(data: LoginRequest):
-    user = resolve_user(users, data.user_id)
-    if user and check_password(user, data.password):
-        token = secrets.token_hex(16)
-        tokens[token] = (user.user_id, datetime.datetime.utcnow())
-        _save_tokens()
-        return {"success": True, "token": token, "user_id": user.user_id}
-    return {"success": False}
-
-
-@app.post("/wechat_login")
-def wechat_login_api(data: WeChatLoginRequest):
-    """Login or register using a WeChat mini program code."""
-    info = _exchange_wechat_code(data.code)
-    openid = info.get("openid")
-    if not openid:
-        raise HTTPException(400, "Invalid code")
-
-    user = None
-    for u in users.values():
-        if u.wechat_openid == openid:
-            user = u
-            break
-
-    if not user:
-        uid = openid
-        user = User(
-            user_id=uid,
-            name=info.get("nickname", uid),
-            password_hash="",
-            wechat_openid=openid,
-        )
-        users[uid] = user
-        if uid not in players:
-            players[uid] = Player(user_id=uid, name=user.name)
-        save_users(users)
-        save_data(clubs)
-
-    token = secrets.token_hex(16)
-    tokens[token] = (user.user_id, datetime.datetime.utcnow())
-    _save_tokens()
-    return {"token": token, "user_id": user.user_id}
-
-
-@app.post("/logout")
-def logout_api(data: LogoutRequest):
-    tokens.pop(data.token, None)
-    _save_tokens()
-    return {"status": "ok"}
-
-
-@app.post("/check_token")
-def check_token_api(data: TokenOnly):
-    """Validate and refresh a token."""
-    info = tokens.get(data.token)
-    if not info:
-        raise HTTPException(401, "Invalid token")
-    uid, _ = info
-    tokens[data.token] = (uid, datetime.datetime.utcnow())
-    _save_tokens()
-    return {"status": "ok", "user_id": uid}
-
-
-@app.get("/users/{user_id}")
-def get_user_info(user_id: str):
-    """Return basic user info including joined clubs and permissions."""
-    user = users.get(user_id)
-    if not user:
-        raise HTTPException(404, "User not found")
-    joined = [cid for cid, c in clubs.items() if user_id in c.members]
-    created = getattr(user, "created_clubs", 0)
-    max_created = getattr(user, "max_creatable_clubs", 0)
-    return {
-        "user_id": user.user_id,
-        "name": user.name,
-        "joined_clubs": joined,
-        "can_create_club": created < max_created if max_created else user.can_create_club,
-        "max_joinable_clubs": getattr(user, "max_joinable_clubs", 5),
-        "max_creatable_clubs": max_created,
-        "created_clubs": created,
-        "sys_admin": getattr(user, "is_sys_admin", False),
-    }
-
-
-@app.get("/users/{user_id}/messages")
-def get_user_messages(user_id: str, token: str):
-    uid = require_auth(token)
-    assert_token_matches(uid, user_id)
-    user = get_user_or_404(user_id)
-    return [
-        {"date": m.date.isoformat(), "text": m.text, "read": m.read}
-        for m in user.messages
-    ]
-
-
-@app.get("/users/{user_id}/messages/unread_count")
-def get_unread_count(user_id: str, token: str):
-    """Return the number of unread messages for the user."""
-    uid = require_auth(token)
-    assert_token_matches(uid, user_id)
-    user = get_user_or_404(user_id)
-    return {"unread": sum(1 for m in user.messages if not m.read)}
-
-
-@app.post("/users/{user_id}/messages/{index}/read")
-def mark_message_read(user_id: str, index: int, data: TokenOnly):
-    uid = require_auth(data.token)
-    assert_token_matches(uid, user_id)
-    user = get_user_or_404(user_id)
-    if index >= len(user.messages):
-        raise HTTPException(404, "Message not found")
-    user.messages[index].read = True
-    save_users(users)
-    return {"status": "ok"}
 
 
 @app.post("/clubs/{club_id}/join")
