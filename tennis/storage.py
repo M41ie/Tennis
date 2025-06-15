@@ -747,188 +747,284 @@ def update_match_record(table: str, match_id: int, data: dict) -> None:
         conn.commit()
 
 
-# --- Token management helpers ---
-
-def insert_token(token: str, user_id: str) -> None:
-    """Persist a newly generated auth token."""
-    with _connect() as conn:
-        conn.execute(
-            "INSERT OR REPLACE INTO auth_tokens(token, user_id, ts) VALUES (?,?,?)",
-            (token, user_id, datetime.datetime.utcnow().isoformat()),
-        )
-        conn.commit()
-
-
-def delete_token(token: str) -> None:
-    """Remove an auth token."""
-    with _connect() as conn:
-        conn.execute("DELETE FROM auth_tokens WHERE token = ?", (token,))
-        conn.commit()
+def add_club_member(club_id: str, user_id: str) -> None:
+    """Insert a user into ``club_members``."""
+    conn = _connect()
+    cur = conn.cursor()
+    cur.execute(
+        "INSERT OR IGNORE INTO club_members(club_id, user_id) VALUES (?, ?)",
+        (club_id, user_id),
+    )
+    conn.commit()
+    conn.close()
 
 
-def get_token(token: str) -> tuple[str, datetime.datetime] | None:
-    """Return ``(user_id, timestamp)`` if token exists, else ``None``."""
-    with _connect() as conn:
-        cur = conn.execute(
-            "SELECT user_id, ts FROM auth_tokens WHERE token = ?",
-            (token,),
-        )
-        row = cur.fetchone()
-        if not row:
-            return None
-        return row["user_id"], datetime.datetime.fromisoformat(row["ts"])
+def get_club_member(club_id: str, user_id: str) -> bool:
+    """Return ``True`` if the user is a member of the club."""
+    conn = _connect()
+    cur = conn.cursor()
+    cur.execute(
+        "SELECT 1 FROM club_members WHERE club_id = ? AND user_id = ?",
+        (club_id, user_id),
+    )
+    result = cur.fetchone() is not None
+    conn.close()
+    return result
 
 
-# --- User and club helpers ---
-
-def get_user(user_id: str) -> User | None:
-    """Fetch a single user record from the database."""
-    with _connect() as conn:
-        cur = conn.execute("SELECT * FROM users WHERE user_id = ?", (user_id,))
-        row = cur.fetchone()
-        if not row:
-            return None
-        wechat_openid = row["wechat_openid"] if "wechat_openid" in row.keys() else None
-        user = User(
-            user_id=row["user_id"],
-            name=row["name"],
-            password_hash=row["password_hash"],
-            wechat_openid=wechat_openid,
-            can_create_club=bool(row["can_create_club"]),
-            is_sys_admin=bool(row["is_sys_admin"]) if "is_sys_admin" in row.keys() else False,
-            created_clubs=row["created_clubs"],
-            joined_clubs=row["joined_clubs"],
-            max_creatable_clubs=row["max_creatable_clubs"] if "max_creatable_clubs" in row.keys() else 0,
-            max_joinable_clubs=row["max_joinable_clubs"] if "max_joinable_clubs" in row.keys() else 5,
-        )
-        for m in conn.execute(
-            "SELECT date, text, read FROM messages WHERE user_id = ? ORDER BY id",
-            (user_id,),
-        ):
-            msg = Message(
-                date=datetime.date.fromisoformat(m["date"]),
-                text=m["text"],
-                read=bool(m["read"]),
-            )
-            user.messages.append(msg)
-        return user
+def remove_club_member(club_id: str, user_id: str) -> None:
+    """Delete a membership record."""
+    conn = _connect()
+    cur = conn.cursor()
+    cur.execute(
+        "DELETE FROM club_members WHERE club_id = ? AND user_id = ?",
+        (club_id, user_id),
+    )
+    conn.commit()
+    conn.close()
 
 
-def update_user(user_id: str, **fields) -> None:
-    """Update columns in the users table."""
-    if not fields:
-        return
-    allowed = {
-        "name",
-        "password_hash",
-        "wechat_openid",
-        "can_create_club",
-        "is_sys_admin",
-        "created_clubs",
-        "joined_clubs",
-        "max_creatable_clubs",
-        "max_joinable_clubs",
-    }
-    assignments = []
-    values = []
-    for k, v in fields.items():
-        if k not in allowed:
-            continue
-        assignments.append(f"{k}=?")
-        values.append(v)
-    if not assignments:
-        return
-    values.append(user_id)
-    with _connect() as conn:
-        conn.execute(
-            f"UPDATE users SET {', '.join(assignments)} WHERE user_id = ?",
-            values,
-        )
-        conn.commit()
-
-
-def get_club(club_id: str) -> Club | None:
-    """Fetch a club without loading the entire dataset."""
+def get_player_record(user_id: str) -> Player | None:
+    """Load a single player from the ``players`` table."""
+    conn = _connect()
+    cur = conn.cursor()
+    row = cur.execute(
+        "SELECT * FROM players WHERE user_id = ?",
+        (user_id,),
+    ).fetchone()
+    if not row:
+        conn.close()
+        return None
     from .cli import normalize_gender
 
-    with _connect() as conn:
-        cur = conn.execute("SELECT * FROM clubs WHERE club_id = ?", (club_id,))
-        row = cur.fetchone()
-        if not row:
-            return None
-        club = Club(
-            club_id=row["club_id"],
-            name=row["name"],
-            logo=row["logo"],
-            region=row["region"],
-            slogan=row["slogan"],
-        )
-        meta = conn.execute(
-            "SELECT banned_ids, leader_id, admin_ids FROM club_meta WHERE club_id = ?",
-            (club_id,),
-        ).fetchone()
-        if meta:
-            club.banned_ids.update(json.loads(meta["banned_ids"] or "[]"))
-            club.leader_id = meta["leader_id"]
-            club.admin_ids.update(json.loads(meta["admin_ids"] or "[]"))
-        for row in conn.execute(
+    p = Player(
+        user_id=row["user_id"],
+        name=row["name"],
+        singles_rating=row["singles_rating"],
+        doubles_rating=row["doubles_rating"],
+        experience=row["experience"],
+        age=row["age"],
+        gender=normalize_gender(row["gender"]),
+        avatar=row["avatar"],
+        birth=row["birth"],
+        handedness=row["handedness"],
+        backhand=row["backhand"],
+        region=row["region"],
+        joined=datetime.date.fromisoformat(row["joined"])
+        if row["joined"]
+        else datetime.date.today(),
+    )
+    p.pre_ratings.update(json.loads(row["pre_ratings"] or "{}"))
+    conn.close()
+    return p
+
+
+def update_player_record(player: Player) -> None:
+    """Update a player's information."""
+    conn = _connect()
+    cur = conn.cursor()
+    cur.execute(
             """
-            SELECT p.* FROM club_members m JOIN players p ON m.user_id = p.user_id
-            WHERE m.club_id = ?
+            UPDATE players SET
+                name = ?,
+                singles_rating = ?,
+                doubles_rating = ?,
+                experience = ?,
+                pre_ratings = ?,
+                age = ?,
+                gender = ?,
+                avatar = ?,
+                birth = ?,
+                handedness = ?,
+                backhand = ?,
+                region = ?,
+                joined = ?
+            WHERE user_id = ?
             """,
-            (club_id,),
-        ):
-            p = Player(
-                user_id=row["user_id"],
-                name=row["name"],
-                singles_rating=row["singles_rating"],
-                doubles_rating=row["doubles_rating"],
-                experience=row["experience"],
-                age=row["age"],
-                gender=normalize_gender(row["gender"]),
-                avatar=row["avatar"],
-                birth=row["birth"],
-                handedness=row["handedness"],
-                backhand=row["backhand"],
-                region=row["region"],
-                joined=datetime.date.fromisoformat(row["joined"])
-                if row["joined"]
-                else datetime.date.today(),
-            )
-            p.pre_ratings.update(json.loads(row["pre_ratings"] or "{}"))
-            club.members[p.user_id] = p
-        return club
+            (
+                player.name,
+                player.singles_rating,
+                player.doubles_rating,
+                player.experience,
+                json.dumps(player.pre_ratings),
+                player.age,
+                player.gender,
+                player.avatar,
+                player.birth,
+                player.handedness,
+                player.backhand,
+                player.region,
+                player.joined.isoformat(),
+                player.user_id,
+            ),
+    )
+    conn.commit()
+    conn.close()
 
 
-def update_club(club_id: str, **fields) -> None:
-    """Update club or club_meta columns."""
+def delete_player(user_id: str) -> None:
+    """Remove a player from the ``players`` table."""
+    conn = _connect()
+    cur = conn.cursor()
+    cur.execute("DELETE FROM players WHERE user_id = ?", (user_id,))
+    cur.execute("DELETE FROM club_members WHERE user_id = ?", (user_id,))
+    conn.commit()
+    conn.close()
+
+
+def get_match_record(table: str, match_id: int) -> sqlite3.Row | None:
+    """Fetch a single match or pending match row."""
+    conn = _connect()
+    cur = conn.cursor()
+    row = cur.execute(
+        f"SELECT * FROM {table} WHERE id = ?",
+        (match_id,),
+    ).fetchone()
+    conn.close()
+    return row
+
+
+def delete_match_record(table: str, match_id: int) -> None:
+    """Delete a match or pending match by ID."""
+    conn = _connect()
+    cur = conn.cursor()
+    cur.execute(f"DELETE FROM {table} WHERE id = ?", (match_id,))
+    conn.commit()
+    conn.close()
+
+
+def create_appointment_record(club_id: str, appt: Appointment) -> int:
+    """Insert an appointment and return the new row id."""
+    conn = _connect()
+    cur = conn.cursor()
+    cur.execute(
+            """
+            INSERT INTO appointments(
+                club_id, date, creator, location, info, signups
+            ) VALUES (?,?,?,?,?,?)
+            """,
+            (
+                club_id,
+                appt.date.isoformat(),
+                appt.creator,
+                appt.location,
+                appt.info,
+                json.dumps(list(appt.signups)),
+            ),
+    )
+    conn.commit()
+    row_id = cur.lastrowid
+    conn.close()
+    return row_id
+
+
+def get_appointment_record(app_id: int) -> sqlite3.Row | None:
+    """Retrieve an appointment by ID."""
+    conn = _connect()
+    cur = conn.cursor()
+    row = cur.execute(
+        "SELECT * FROM appointments WHERE id = ?",
+        (app_id,),
+    ).fetchone()
+    conn.close()
+    return row
+
+
+def update_appointment_record(app_id: int, **fields) -> None:
+    """Update fields of an appointment."""
     if not fields:
         return
-    club_fields = {}
-    meta_fields = {}
+    conn = _connect()
+    cur = conn.cursor()
+    cols = []
+    values = []
     for k, v in fields.items():
-        if k in {"name", "logo", "region", "slogan"}:
-            club_fields[k] = v
-        elif k in {"leader_id", "admin_ids", "banned_ids"}:
-            meta_fields[k] = v
-    with _connect() as conn:
-        if club_fields:
-            sets = ", ".join(f"{k}=?" for k in club_fields)
-            values = list(club_fields.values()) + [club_id]
-            conn.execute(
-                f"UPDATE clubs SET {sets} WHERE club_id = ?",
-                values,
-            )
-        if meta_fields:
-            if "admin_ids" in meta_fields and isinstance(meta_fields["admin_ids"], set):
-                meta_fields["admin_ids"] = json.dumps(list(meta_fields["admin_ids"]))
-            if "banned_ids" in meta_fields and isinstance(meta_fields["banned_ids"], set):
-                meta_fields["banned_ids"] = json.dumps(list(meta_fields["banned_ids"]))
-            sets = ", ".join(f"{k}=?" for k in meta_fields)
-            values = list(meta_fields.values()) + [club_id]
-            conn.execute(
-                f"UPDATE club_meta SET {sets} WHERE club_id = ?",
-                values,
-            )
-        conn.commit()
+        if k == "signups":
+            v = json.dumps(list(v))
+        if k == "date" and isinstance(v, datetime.date):
+            v = v.isoformat()
+        cols.append(f"{k} = ?")
+        values.append(v)
+    values.append(app_id)
+    cur.execute(
+        f"UPDATE appointments SET {', '.join(cols)} WHERE id = ?",
+        values,
+    )
+    conn.commit()
+    conn.close()
+
+
+def delete_appointment_record(app_id: int) -> None:
+    """Delete an appointment by ID."""
+    conn = _connect()
+    cur = conn.cursor()
+    cur.execute("DELETE FROM appointments WHERE id = ?", (app_id,))
+    conn.commit()
+    conn.close()
+
+
+def create_message_record(
+    user_id: str,
+    text: str,
+    *,
+    date: datetime.date | None = None,
+    read: bool = False,
+) -> int:
+    """Insert a message for a user and return its row id."""
+    conn = _connect()
+    cur = conn.cursor()
+    if date is None:
+        date = datetime.date.today()
+    cur.execute(
+        "INSERT INTO messages(user_id, date, text, read) VALUES (?,?,?,?)",
+        (user_id, date.isoformat(), text, int(read)),
+    )
+    conn.commit()
+    row_id = cur.lastrowid
+    conn.close()
+    return row_id
+
+
+def get_message_record(msg_id: int) -> sqlite3.Row | None:
+    """Load a message row by ID."""
+    conn = _connect()
+    cur = conn.cursor()
+    row = cur.execute(
+        "SELECT * FROM messages WHERE id = ?",
+        (msg_id,),
+    ).fetchone()
+    conn.close()
+    return row
+
+
+def update_message_record(msg_id: int, *, text: str | None = None, read: bool | None = None) -> None:
+    """Update the text or read state of a message."""
+    if text is None and read is None:
+        return
+    conn = _connect()
+    cur = conn.cursor()
+    cols = []
+    values = []
+    if text is not None:
+        cols.append("text = ?")
+        values.append(text)
+    if read is not None:
+        cols.append("read = ?")
+        values.append(int(read))
+    values.append(msg_id)
+    cur.execute(
+        f"UPDATE messages SET {', '.join(cols)} WHERE id = ?",
+        values,
+    )
+    conn.commit()
+    conn.close()
+
+
+def delete_message_record(msg_id: int) -> None:
+    """Remove a message from the database."""
+    conn = _connect()
+    cur = conn.cursor()
+    cur.execute("DELETE FROM messages WHERE id = ?", (msg_id,))
+    conn.commit()
+    conn.close()
 
