@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from pydantic import BaseModel
-from ..services.auth import require_auth
+from ..services.auth import require_auth, assert_token_matches
 from ..cli import create_club as cli_create_club, add_player as cli_add_player
 from ..storage import save_data, save_users
 from .. import api
@@ -33,7 +33,8 @@ class PlayerCreate(BaseModel):
 
 @router.post("/clubs")
 def create_club(data: ClubCreate):
-    require_auth(data.token)
+    uid = require_auth(data.token)
+    assert_token_matches(uid, data.user_id)
     cid = data.club_id or api._generate_club_id()
     cli_create_club(
         api.users,
