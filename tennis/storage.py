@@ -1062,3 +1062,90 @@ def get_token(token: str) -> tuple[str, datetime.datetime] | None:
         return None
     return row["user_id"], datetime.datetime.fromisoformat(row["ts"])
 
+
+def get_user(user_id: str) -> User | None:
+    """Return a single :class:`User` by id or ``None`` if not found."""
+    conn = _connect()
+    cur = conn.cursor()
+    row = cur.execute(
+        "SELECT * FROM users WHERE user_id = ?",
+        (user_id,),
+    ).fetchone()
+    if not row:
+        conn.close()
+        return None
+    u = User(
+        user_id=row["user_id"],
+        name=row["name"],
+        password_hash=row["password_hash"],
+        wechat_openid=row["wechat_openid"],
+        can_create_club=True,
+        is_sys_admin=bool(row["is_sys_admin"]) if "is_sys_admin" in row.keys() else False,
+        created_clubs=row["created_clubs"],
+        joined_clubs=row["joined_clubs"],
+        max_creatable_clubs=row["max_creatable_clubs"] if "max_creatable_clubs" in row.keys() else 0,
+        max_joinable_clubs=row["max_joinable_clubs"] if "max_joinable_clubs" in row.keys() else 5,
+    )
+    for m in cur.execute(
+        "SELECT id, date, text, read FROM messages WHERE user_id = ? ORDER BY id",
+        (user_id,),
+    ):
+        u.messages.append(
+            Message(
+                date=datetime.date.fromisoformat(m["date"]),
+                text=m["text"],
+                read=bool(m["read"]),
+            )
+        )
+    conn.close()
+    return u
+
+
+def get_club(club_id: str) -> Club | None:
+    """Return a single :class:`Club` by id or ``None`` if not found."""
+    clubs = load_data()
+    return clubs.get(club_id)
+
+
+def list_user_messages(user_id: str) -> list[tuple[int, Message]]:
+    """Return all messages for a user as ``(id, Message)`` tuples."""
+    conn = _connect()
+    cur = conn.cursor()
+    rows = cur.execute(
+        "SELECT id, date, text, read FROM messages WHERE user_id = ? ORDER BY id",
+        (user_id,),
+    ).fetchall()
+    messages = [
+        (
+            r["id"],
+            Message(
+                date=datetime.date.fromisoformat(r["date"]),
+                text=r["text"],
+                read=bool(r["read"]),
+            ),
+        )
+        for r in rows
+    ]
+    conn.close()
+    return messages
+
+
+def mark_user_message_read(user_id: str, index: int) -> None:
+    """Mark a user's message by list index as read."""
+    conn = _connect()
+    cur = conn.cursor()
+    ids = cur.execute(
+        "SELECT id FROM messages WHERE user_id = ? ORDER BY id",
+        (user_id,),
+    ).fetchall()
+    if index >= len(ids):
+        conn.close()
+        raise IndexError("Message not found")
+    msg_id = ids[index]["id"]
+    cur.execute(
+        "UPDATE messages SET read = 1 WHERE id = ?",
+        (msg_id,),
+    )
+    conn.commit()
+    conn.close()
+

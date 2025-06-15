@@ -1,18 +1,20 @@
 from __future__ import annotations
 import secrets
-import datetime
 from fastapi import HTTPException
 from ..cli import register_user, resolve_user, check_password
 from ..storage import (
     load_users,
     load_data,
-    save_users,
-    save_data,
     insert_token,
     delete_token,
     get_token,
+    create_user as create_user_record,
+    create_player,
+    get_user as get_user_record,
+    list_user_messages,
+    mark_user_message_read,
 )
-from ..models import Player, players, User
+from ..models import players, User
 
 
 def create_user(data) -> str:
@@ -33,14 +35,23 @@ def create_user(data) -> str:
         backhand=data.backhand,
         region=data.region,
     )
-    save_users(users)
-    save_data(clubs)
+    # persist new records individually
+    create_user_record(users[uid])
+    create_player("", players[uid])
+    try:
+        import tennis.api as api
+        api.users.clear()
+        api.users.update(load_users())
+    except Exception:
+        pass
     return uid
 
 
 def login(user_id: str, password: str):
-    users = load_users()
-    user = resolve_user(users, user_id)
+    user = get_user_record(user_id)
+    if not user:
+        users = load_users()
+        user = resolve_user(users, user_id)
     if user and check_password(user, password):
         token = secrets.token_hex(16)
         insert_token(token, user.user_id)
@@ -75,7 +86,13 @@ def wechat_login(code: str, exchange_func) -> tuple[str, str, bool]:
         user.password_hash = ""
         user.wechat_openid = openid
         users[uid] = user
-        save_users(users)
+        create_user_record(user)
+        create_player("", players[uid])
+        try:
+            import tennis.api as api
+            api.users = load_users()
+        except Exception:
+            pass
         created = True
 
     token = secrets.token_hex(16)
@@ -97,11 +114,10 @@ def refresh_token(token: str):
 
 
 def user_info(user_id: str):
-    users = load_users()
-    clubs = load_data()
-    user = users.get(user_id)
+    user = get_user_record(user_id)
     if not user:
         raise HTTPException(404, "User not found")
+    clubs = load_data()
     joined = [cid for cid, c in clubs.items() if user_id in c.members]
     created = getattr(user, "created_clubs", 0)
     max_created = getattr(user, "max_creatable_clubs", 0)
@@ -118,17 +134,20 @@ def user_info(user_id: str):
 
 
 def list_messages(user: User):
-    return [{"date": m.date.isoformat(), "text": m.text, "read": m.read} for m in user.messages]
+    msgs = list_user_messages(user.user_id)
+    return [{"date": m.date.isoformat(), "text": m.text, "read": m.read} for _, m in msgs]
 
 
 def unread_count(user: User) -> int:
-    return sum(1 for m in user.messages if not m.read)
+    msgs = list_user_messages(user.user_id)
+    return sum(1 for _, m in msgs if not m.read)
 
 
 def mark_read(user: User, index: int):
-    if index >= len(user.messages):
+    try:
+        mark_user_message_read(user.user_id, index)
+        import tennis.api as api
+        api.users.clear()
+        api.users.update(load_users())
+    except IndexError:
         raise HTTPException(404, "Message not found")
-    user.messages[index].read = True
-    users = load_users()
-    users[user.user_id] = user
-    save_users(users)
