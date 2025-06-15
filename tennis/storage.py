@@ -742,80 +742,81 @@ def update_match_record(table: str, match_id: int, data: dict) -> None:
 
 def add_club_member(club_id: str, user_id: str) -> None:
     """Insert a user into ``club_members``."""
-    with sqlite3.connect(DB_FILE) as conn:
-        _init_schema(conn)
-        cur = conn.cursor()
-        cur.execute(
-            "INSERT OR IGNORE INTO club_members(club_id, user_id) VALUES (?, ?)",
-            (club_id, user_id),
-        )
-        conn.commit()
+    conn = _connect()
+    cur = conn.cursor()
+    cur.execute(
+        "INSERT OR IGNORE INTO club_members(club_id, user_id) VALUES (?, ?)",
+        (club_id, user_id),
+    )
+    conn.commit()
+    conn.close()
 
 
 def get_club_member(club_id: str, user_id: str) -> bool:
     """Return ``True`` if the user is a member of the club."""
-    with sqlite3.connect(DB_FILE) as conn:
-        _init_schema(conn)
-        cur = conn.cursor()
-        cur.execute(
-            "SELECT 1 FROM club_members WHERE club_id = ? AND user_id = ?",
-            (club_id, user_id),
-        )
-        return cur.fetchone() is not None
+    conn = _connect()
+    cur = conn.cursor()
+    cur.execute(
+        "SELECT 1 FROM club_members WHERE club_id = ? AND user_id = ?",
+        (club_id, user_id),
+    )
+    result = cur.fetchone() is not None
+    conn.close()
+    return result
 
 
 def remove_club_member(club_id: str, user_id: str) -> None:
     """Delete a membership record."""
-    with sqlite3.connect(DB_FILE) as conn:
-        _init_schema(conn)
-        cur = conn.cursor()
-        cur.execute(
-            "DELETE FROM club_members WHERE club_id = ? AND user_id = ?",
-            (club_id, user_id),
-        )
-        conn.commit()
+    conn = _connect()
+    cur = conn.cursor()
+    cur.execute(
+        "DELETE FROM club_members WHERE club_id = ? AND user_id = ?",
+        (club_id, user_id),
+    )
+    conn.commit()
+    conn.close()
 
 
 def get_player_record(user_id: str) -> Player | None:
     """Load a single player from the ``players`` table."""
-    with sqlite3.connect(DB_FILE) as conn:
-        _init_schema(conn)
-        cur = conn.cursor()
-        row = cur.execute(
-            "SELECT * FROM players WHERE user_id = ?",
-            (user_id,),
-        ).fetchone()
-        if not row:
-            return None
-        from .cli import normalize_gender
+    conn = _connect()
+    cur = conn.cursor()
+    row = cur.execute(
+        "SELECT * FROM players WHERE user_id = ?",
+        (user_id,),
+    ).fetchone()
+    if not row:
+        conn.close()
+        return None
+    from .cli import normalize_gender
 
-        p = Player(
-            user_id=row["user_id"],
-            name=row["name"],
-            singles_rating=row["singles_rating"],
-            doubles_rating=row["doubles_rating"],
-            experience=row["experience"],
-            age=row["age"],
-            gender=normalize_gender(row["gender"]),
-            avatar=row["avatar"],
-            birth=row["birth"],
-            handedness=row["handedness"],
-            backhand=row["backhand"],
-            region=row["region"],
-            joined=datetime.date.fromisoformat(row["joined"])
-            if row["joined"]
-            else datetime.date.today(),
-        )
-        p.pre_ratings.update(json.loads(row["pre_ratings"] or "{}"))
-        return p
+    p = Player(
+        user_id=row["user_id"],
+        name=row["name"],
+        singles_rating=row["singles_rating"],
+        doubles_rating=row["doubles_rating"],
+        experience=row["experience"],
+        age=row["age"],
+        gender=normalize_gender(row["gender"]),
+        avatar=row["avatar"],
+        birth=row["birth"],
+        handedness=row["handedness"],
+        backhand=row["backhand"],
+        region=row["region"],
+        joined=datetime.date.fromisoformat(row["joined"])
+        if row["joined"]
+        else datetime.date.today(),
+    )
+    p.pre_ratings.update(json.loads(row["pre_ratings"] or "{}"))
+    conn.close()
+    return p
 
 
 def update_player_record(player: Player) -> None:
     """Update a player's information."""
-    with sqlite3.connect(DB_FILE) as conn:
-        _init_schema(conn)
-        cur = conn.cursor()
-        cur.execute(
+    conn = _connect()
+    cur = conn.cursor()
+    cur.execute(
             """
             UPDATE players SET
                 name = ?,
@@ -849,46 +850,47 @@ def update_player_record(player: Player) -> None:
                 player.joined.isoformat(),
                 player.user_id,
             ),
-        )
-        conn.commit()
+    )
+    conn.commit()
+    conn.close()
 
 
 def delete_player(user_id: str) -> None:
     """Remove a player from the ``players`` table."""
-    with sqlite3.connect(DB_FILE) as conn:
-        _init_schema(conn)
-        cur = conn.cursor()
-        cur.execute("DELETE FROM players WHERE user_id = ?", (user_id,))
-        cur.execute("DELETE FROM club_members WHERE user_id = ?", (user_id,))
-        conn.commit()
+    conn = _connect()
+    cur = conn.cursor()
+    cur.execute("DELETE FROM players WHERE user_id = ?", (user_id,))
+    cur.execute("DELETE FROM club_members WHERE user_id = ?", (user_id,))
+    conn.commit()
+    conn.close()
 
 
 def get_match_record(table: str, match_id: int) -> sqlite3.Row | None:
     """Fetch a single match or pending match row."""
-    with sqlite3.connect(DB_FILE) as conn:
-        _init_schema(conn)
-        cur = conn.cursor()
-        return cur.execute(
-            f"SELECT * FROM {table} WHERE id = ?",
-            (match_id,),
-        ).fetchone()
+    conn = _connect()
+    cur = conn.cursor()
+    row = cur.execute(
+        f"SELECT * FROM {table} WHERE id = ?",
+        (match_id,),
+    ).fetchone()
+    conn.close()
+    return row
 
 
 def delete_match_record(table: str, match_id: int) -> None:
     """Delete a match or pending match by ID."""
-    with sqlite3.connect(DB_FILE) as conn:
-        _init_schema(conn)
-        cur = conn.cursor()
-        cur.execute(f"DELETE FROM {table} WHERE id = ?", (match_id,))
-        conn.commit()
+    conn = _connect()
+    cur = conn.cursor()
+    cur.execute(f"DELETE FROM {table} WHERE id = ?", (match_id,))
+    conn.commit()
+    conn.close()
 
 
 def create_appointment_record(club_id: str, appt: Appointment) -> int:
     """Insert an appointment and return the new row id."""
-    with sqlite3.connect(DB_FILE) as conn:
-        _init_schema(conn)
-        cur = conn.cursor()
-        cur.execute(
+    conn = _connect()
+    cur = conn.cursor()
+    cur.execute(
             """
             INSERT INTO appointments(
                 club_id, date, creator, location, info, signups
@@ -902,53 +904,56 @@ def create_appointment_record(club_id: str, appt: Appointment) -> int:
                 appt.info,
                 json.dumps(list(appt.signups)),
             ),
-        )
-        conn.commit()
-        return cur.lastrowid
+    )
+    conn.commit()
+    row_id = cur.lastrowid
+    conn.close()
+    return row_id
 
 
 def get_appointment_record(app_id: int) -> sqlite3.Row | None:
     """Retrieve an appointment by ID."""
-    with sqlite3.connect(DB_FILE) as conn:
-        _init_schema(conn)
-        cur = conn.cursor()
-        return cur.execute(
-            "SELECT * FROM appointments WHERE id = ?",
-            (app_id,),
-        ).fetchone()
+    conn = _connect()
+    cur = conn.cursor()
+    row = cur.execute(
+        "SELECT * FROM appointments WHERE id = ?",
+        (app_id,),
+    ).fetchone()
+    conn.close()
+    return row
 
 
 def update_appointment_record(app_id: int, **fields) -> None:
     """Update fields of an appointment."""
     if not fields:
         return
-    with sqlite3.connect(DB_FILE) as conn:
-        _init_schema(conn)
-        cur = conn.cursor()
-        cols = []
-        values = []
-        for k, v in fields.items():
-            if k == "signups":
-                v = json.dumps(list(v))
-            if k == "date" and isinstance(v, datetime.date):
-                v = v.isoformat()
-            cols.append(f"{k} = ?")
-            values.append(v)
-        values.append(app_id)
-        cur.execute(
-            f"UPDATE appointments SET {', '.join(cols)} WHERE id = ?",
-            values,
-        )
-        conn.commit()
+    conn = _connect()
+    cur = conn.cursor()
+    cols = []
+    values = []
+    for k, v in fields.items():
+        if k == "signups":
+            v = json.dumps(list(v))
+        if k == "date" and isinstance(v, datetime.date):
+            v = v.isoformat()
+        cols.append(f"{k} = ?")
+        values.append(v)
+    values.append(app_id)
+    cur.execute(
+        f"UPDATE appointments SET {', '.join(cols)} WHERE id = ?",
+        values,
+    )
+    conn.commit()
+    conn.close()
 
 
 def delete_appointment_record(app_id: int) -> None:
     """Delete an appointment by ID."""
-    with sqlite3.connect(DB_FILE) as conn:
-        _init_schema(conn)
-        cur = conn.cursor()
-        cur.execute("DELETE FROM appointments WHERE id = ?", (app_id,))
-        conn.commit()
+    conn = _connect()
+    cur = conn.cursor()
+    cur.execute("DELETE FROM appointments WHERE id = ?", (app_id,))
+    conn.commit()
+    conn.close()
 
 
 def create_message_record(
@@ -959,58 +964,60 @@ def create_message_record(
     read: bool = False,
 ) -> int:
     """Insert a message for a user and return its row id."""
-    with sqlite3.connect(DB_FILE) as conn:
-        _init_schema(conn)
-        cur = conn.cursor()
-        if date is None:
-            date = datetime.date.today()
-        cur.execute(
-            "INSERT INTO messages(user_id, date, text, read) VALUES (?,?,?,?)",
-            (user_id, date.isoformat(), text, int(read)),
-        )
-        conn.commit()
-        return cur.lastrowid
+    conn = _connect()
+    cur = conn.cursor()
+    if date is None:
+        date = datetime.date.today()
+    cur.execute(
+        "INSERT INTO messages(user_id, date, text, read) VALUES (?,?,?,?)",
+        (user_id, date.isoformat(), text, int(read)),
+    )
+    conn.commit()
+    row_id = cur.lastrowid
+    conn.close()
+    return row_id
 
 
 def get_message_record(msg_id: int) -> sqlite3.Row | None:
     """Load a message row by ID."""
-    with sqlite3.connect(DB_FILE) as conn:
-        _init_schema(conn)
-        cur = conn.cursor()
-        return cur.execute(
-            "SELECT * FROM messages WHERE id = ?",
-            (msg_id,),
-        ).fetchone()
+    conn = _connect()
+    cur = conn.cursor()
+    row = cur.execute(
+        "SELECT * FROM messages WHERE id = ?",
+        (msg_id,),
+    ).fetchone()
+    conn.close()
+    return row
 
 
 def update_message_record(msg_id: int, *, text: str | None = None, read: bool | None = None) -> None:
     """Update the text or read state of a message."""
     if text is None and read is None:
         return
-    with sqlite3.connect(DB_FILE) as conn:
-        _init_schema(conn)
-        cur = conn.cursor()
-        cols = []
-        values = []
-        if text is not None:
-            cols.append("text = ?")
-            values.append(text)
-        if read is not None:
-            cols.append("read = ?")
-            values.append(int(read))
-        values.append(msg_id)
-        cur.execute(
-            f"UPDATE messages SET {', '.join(cols)} WHERE id = ?",
-            values,
-        )
-        conn.commit()
+    conn = _connect()
+    cur = conn.cursor()
+    cols = []
+    values = []
+    if text is not None:
+        cols.append("text = ?")
+        values.append(text)
+    if read is not None:
+        cols.append("read = ?")
+        values.append(int(read))
+    values.append(msg_id)
+    cur.execute(
+        f"UPDATE messages SET {', '.join(cols)} WHERE id = ?",
+        values,
+    )
+    conn.commit()
+    conn.close()
 
 
 def delete_message_record(msg_id: int) -> None:
     """Remove a message from the database."""
-    with sqlite3.connect(DB_FILE) as conn:
-        _init_schema(conn)
-        cur = conn.cursor()
-        cur.execute("DELETE FROM messages WHERE id = ?", (msg_id,))
-        conn.commit()
+    conn = _connect()
+    cur = conn.cursor()
+    cur.execute("DELETE FROM messages WHERE id = ?", (msg_id,))
+    conn.commit()
+    conn.close()
 
