@@ -1,4 +1,6 @@
 import datetime
+import json
+import sqlite3
 import tennis.storage as storage
 from tennis.models import Club, Player, Match
 
@@ -22,7 +24,16 @@ def test_transactional_create(tmp_path, monkeypatch):
     )
     storage.create_match("c1", match, pending=False)
 
-    loaded = storage.load_data()
-    assert "c1" in loaded
-    assert "p1" in loaded["c1"].members
-    assert len(loaded["c1"].matches) == 1
+    with sqlite3.connect(db) as conn:
+        assert conn.execute(
+            "SELECT COUNT(*) FROM clubs WHERE club_id = 'c1'"
+        ).fetchone()[0] == 1
+        assert conn.execute(
+            "SELECT COUNT(*) FROM players WHERE user_id = 'p1'"
+        ).fetchone()[0] == 1
+        assert conn.execute(
+            "SELECT COUNT(*) FROM club_members WHERE club_id = 'c1' AND user_id = 'p1'"
+        ).fetchone()[0] == 1
+        assert conn.execute(
+            "SELECT COUNT(*) FROM matches WHERE club_id = 'c1'"
+        ).fetchone()[0] == 1

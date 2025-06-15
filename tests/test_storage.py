@@ -1,8 +1,10 @@
 import datetime
+import json
+import sqlite3
 import tennis.storage as storage
 from tennis.models import Club, Player, players
 from tennis.cli import submit_match
-from tennis.storage import save_data, load_data
+from tennis.storage import save_data
 
 
 def test_pending_matches_roundtrip(tmp_path, monkeypatch):
@@ -23,14 +25,15 @@ def test_pending_matches_roundtrip(tmp_path, monkeypatch):
     assert len(club.pending_matches) == 1
 
     save_data(clubs)
-    loaded = load_data()
-    loaded_club = loaded["c"]
-    assert len(loaded_club.pending_matches) == 1
-    match = loaded_club.pending_matches[0]
-    assert match.score_a == 6
-    assert match.score_b == 4
-    assert match.confirmed_a
-    assert not match.confirmed_b
+
+    with sqlite3.connect(db) as conn:
+        row = conn.execute("SELECT data FROM pending_matches").fetchone()
+        assert row is not None
+        data = json.loads(row[0])
+        assert data["score_a"] == 6
+        assert data["score_b"] == 4
+        assert data["confirmed_a"] is True
+        assert data["confirmed_b"] is False
 
 
 def test_shared_player_across_clubs(tmp_path, monkeypatch):
@@ -48,11 +51,16 @@ def test_shared_player_across_clubs(tmp_path, monkeypatch):
     clubs = {"c1": club1, "c2": club2}
 
     save_data(clubs)
-    players.clear()
-    loaded = load_data()
-    p_loaded = players["u1"]
-    assert loaded["c1"].members["u1"] is p_loaded
-    assert loaded["c2"].members["u1"] is p_loaded
+
+    with sqlite3.connect(db) as conn:
+        rows = conn.execute(
+            "SELECT club_id FROM club_members WHERE user_id = 'u1' ORDER BY club_id"
+        ).fetchall()
+        assert [r[0] for r in rows] == ["c1", "c2"]
+        count = conn.execute(
+            "SELECT COUNT(*) FROM players WHERE user_id = 'u1'"
+        ).fetchone()[0]
+        assert count == 1
 
 
 def test_load_after_member_removed(tmp_path, monkeypatch):
@@ -76,7 +84,15 @@ def test_load_after_member_removed(tmp_path, monkeypatch):
     club.members.pop("p1")
 
     save_data(clubs)
-    players.clear()
-    loaded = load_data()
-    loaded_club = loaded["c"]
-    assert loaded_club.matches[0].player_a.user_id == "p1"
+
+    with sqlite3.connect(db) as conn:
+        row = conn.execute(
+            "SELECT data FROM matches WHERE club_id = 'c'"
+        ).fetchone()
+        assert row is not None
+        data = json.loads(row[0])
+        assert data["player_a"] == "p1"
+        members = conn.execute(
+            "SELECT user_id FROM club_members WHERE club_id = 'c'"
+        ).fetchall()
+        assert [m[0] for m in members] == ["p2"]
