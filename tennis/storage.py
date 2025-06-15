@@ -127,6 +127,13 @@ def _init_schema(conn: sqlite3.Connection) -> None:
         read INTEGER
     )"""
     )
+    cur.execute(
+        """CREATE TABLE IF NOT EXISTS auth_tokens (
+        token TEXT PRIMARY KEY,
+        user_id TEXT,
+        ts TEXT
+    )"""
+    )
     conn.commit()
 
 
