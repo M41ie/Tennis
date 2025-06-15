@@ -1,6 +1,7 @@
 import importlib
 import datetime
 import sqlite3
+import json
 from fastapi.testclient import TestClient
 import pytest
 import tennis.storage as storage
@@ -94,11 +95,17 @@ def test_api_match_flow(tmp_path, monkeypatch):
     assert resp.json()["unread"] == 1
 
     # verify persisted ratings
-    loaded = storage.load_data()
-    club = loaded["c1"]
-    assert len(club.matches) == 1
-    p1 = club.members["p1"]
-    p2 = club.members["p2"]
+    with sqlite3.connect(storage.DB_FILE) as conn:
+        count = conn.execute(
+            "SELECT COUNT(*) FROM matches WHERE club_id = 'c1'"
+        ).fetchone()[0]
+        assert count == 1
+        rating_p1 = conn.execute(
+            "SELECT singles_rating FROM players WHERE user_id = 'p1'"
+        ).fetchone()[0]
+        rating_p2 = conn.execute(
+            "SELECT singles_rating FROM players WHERE user_id = 'p2'"
+        ).fetchone()[0]
 
     from tennis.models import Player, Match
     from tennis.rating import update_ratings, weighted_rating
@@ -116,8 +123,8 @@ def test_api_match_flow(tmp_path, monkeypatch):
     expected_p1 = weighted_rating(ref_p1, match.date)
     expected_p2 = weighted_rating(ref_p2, match.date)
 
-    assert p1.singles_rating == pytest.approx(expected_p1)
-    assert p2.singles_rating == pytest.approx(expected_p2)
+    assert rating_p1 == pytest.approx(expected_p1)
+    assert rating_p2 == pytest.approx(expected_p2)
 
 
 def test_invalid_token(tmp_path, monkeypatch):
@@ -180,8 +187,12 @@ def test_prerate_api(tmp_path, monkeypatch):
     )
     assert resp.status_code == 200
 
-    data = storage.load_data()
-    assert data["c1"].members["r2"].pre_ratings["r1"] == 1200
+    with sqlite3.connect(storage.DB_FILE) as conn:
+        row = conn.execute(
+            "SELECT pre_ratings FROM players WHERE user_id = 'r2'"
+        ).fetchone()
+        pr = json.loads(row[0])
+        assert pr["r1"] == 1200
 
     resp = client.post(
         "/clubs/c1/prerate",
@@ -249,9 +260,11 @@ def test_doubles_match_flow(tmp_path, monkeypatch):
     )
     assert resp.status_code == 200
 
-    data = storage.load_data()
-    club = data["c1"]
-    assert len(club.matches) == 1
+    with sqlite3.connect(storage.DB_FILE) as conn:
+        count = conn.execute(
+            "SELECT COUNT(*) FROM matches WHERE club_id = 'c1'"
+        ).fetchone()[0]
+        assert count == 1
 
 
 def test_doubles_records_api(tmp_path, monkeypatch):
@@ -825,11 +838,14 @@ def test_veto_pending_match(tmp_path, monkeypatch):
     assert resp.status_code == 200
     assert resp.json()["status"] == "vetoed"
 
-    data = storage.load_data()
-    assert data["c1"].pending_matches
-    assert data["c1"].pending_matches[0].status == "vetoed"
-    users = storage.load_users()
-    assert any("vetoed" in m.text for m in users["p1"].messages)
+    with sqlite3.connect(storage.DB_FILE) as conn:
+        row = conn.execute("SELECT data FROM pending_matches").fetchone()
+        assert row is not None
+        assert json.loads(row[0])["status"] == "vetoed"
+        msgs = conn.execute(
+            "SELECT text FROM messages WHERE user_id = 'p1'"
+        ).fetchall()
+        assert any("vetoed" in m[0] for m in msgs)
 
 
 def test_veto_pending_doubles(tmp_path, monkeypatch):
@@ -879,11 +895,13 @@ def test_veto_pending_doubles(tmp_path, monkeypatch):
     assert resp.status_code == 200
     assert resp.json()["status"] == "vetoed"
 
-    data = storage.load_data()
-    assert data["c1"].pending_matches
-    assert data["c1"].pending_matches[0].status == "vetoed"
-    users = storage.load_users()
-    assert any("vetoed" in m.text for m in users["p1"].messages)
+    with sqlite3.connect(storage.DB_FILE) as conn:
+        row = conn.execute("SELECT data FROM pending_matches").fetchone()
+        assert json.loads(row[0])["status"] == "vetoed"
+        msgs = conn.execute(
+            "SELECT text FROM messages WHERE user_id = 'p1'"
+        ).fetchall()
+        assert any("vetoed" in m[0] for m in msgs)
 
 
 def test_pending_visibility_rules(tmp_path, monkeypatch):
@@ -1264,15 +1282,17 @@ def test_update_player_api(tmp_path, monkeypatch):
     assert resp.status_code == 200
     assert resp.json()["status"] == "ok"
 
-    data = storage.load_data()
-    p1 = data["c1"].members["p1"]
-    assert p1.name == "New"
-    assert p1.age == 30
-    assert p1.gender == "M"
-    assert p1.avatar == "img.png"
-    assert p1.birth == "1990-01-01"
-    assert p1.handedness == "right"
-    assert p1.backhand == "double"
+    with sqlite3.connect(storage.DB_FILE) as conn:
+        row = conn.execute(
+            "SELECT name, age, gender, avatar, birth, handedness, backhand FROM players WHERE user_id = 'p1'"
+        ).fetchone()
+        assert row[0] == "New"
+        assert row[1] == 30
+        assert row[2] == "M"
+        assert row[3] == "img.png"
+        assert row[4] == "1990-01-01"
+        assert row[5] == "right"
+        assert row[6] == "double"
 
 
 def test_update_global_player_api(tmp_path, monkeypatch):
@@ -1303,11 +1323,11 @@ def test_update_global_player_api(tmp_path, monkeypatch):
     assert resp.status_code == 200
     assert resp.json()["status"] == "ok"
 
-    storage.load_data()
-    p1 = storage.players["p1"]
-    assert p1.name == "New"
-    assert p1.gender == "M"
-    assert p1.region == "Beijing"
+    with sqlite3.connect(storage.DB_FILE) as conn:
+        row = conn.execute(
+            "SELECT name, gender, region FROM players WHERE user_id = 'p1'"
+        ).fetchone()
+        assert row == ("New", "M", "Beijing")
 
 
 def test_login_by_name(tmp_path, monkeypatch):
@@ -1379,10 +1399,15 @@ def test_remove_member_api(tmp_path, monkeypatch):
         },
     )
 
-    data = storage.load_data()
-    assert data["c1"].members.get("member")
-    assert data["c1"].members["member"].singles_rating == 1200.0
-    assert storage.load_users()["member"].joined_clubs == 1
+    with sqlite3.connect(storage.DB_FILE) as conn:
+        rating = conn.execute(
+            "SELECT singles_rating FROM players WHERE user_id = 'member'"
+        ).fetchone()[0]
+        assert rating == 1200.0
+        joined = conn.execute(
+            "SELECT joined_clubs FROM users WHERE user_id = 'member'"
+        ).fetchone()[0]
+        assert joined == 1
 
     resp = client.request(
         "DELETE",
@@ -1392,12 +1417,19 @@ def test_remove_member_api(tmp_path, monkeypatch):
     assert resp.status_code == 200
     assert resp.json()["status"] == "ok"
 
-    data = storage.load_data()
-    users = storage.load_users()
-    club = data["c1"]
-    assert "member" not in club.members
-    assert "member" in club.banned_ids
-    assert users["member"].joined_clubs == 0
+    with sqlite3.connect(storage.DB_FILE) as conn:
+        rows = conn.execute(
+            "SELECT user_id FROM club_members WHERE club_id = 'c1'"
+        ).fetchall()
+        assert all(r[0] != 'member' for r in rows)
+        banned = conn.execute(
+            "SELECT banned_ids FROM club_meta WHERE club_id = 'c1'"
+        ).fetchone()[0]
+        assert 'member' in json.loads(banned)
+        joined = conn.execute(
+            "SELECT joined_clubs FROM users WHERE user_id = 'member'"
+        ).fetchone()[0]
+        assert joined == 0
 
 
 def test_appointment_flow(tmp_path, monkeypatch):
@@ -1452,10 +1484,12 @@ def test_appointment_flow(tmp_path, monkeypatch):
     )
     assert resp.status_code == 200
 
-    data = storage.load_data()
-    club = data["c1"]
-    assert len(club.appointments) == 1
-    assert not club.appointments[0].signups
+    with sqlite3.connect(storage.DB_FILE) as conn:
+        rows = conn.execute(
+            "SELECT id, signups FROM appointments WHERE club_id = 'c1'"
+        ).fetchall()
+        assert len(rows) == 1
+        assert json.loads(rows[0][1]) == []
 
 
 def test_player_recent_api(tmp_path, monkeypatch):
@@ -1545,7 +1579,11 @@ def test_get_user_info_api(tmp_path, monkeypatch):
             "token": token_leader,
         },
     )
-    assert storage.load_data()["c1"].members["u1"].singles_rating == 1300.0
+    with sqlite3.connect(storage.DB_FILE) as conn:
+        rating = conn.execute(
+            "SELECT singles_rating FROM players WHERE user_id = 'u1'"
+        ).fetchone()[0]
+        assert rating == 1300.0
 
     resp = client.get("/users/u1")
     assert resp.status_code == 200
@@ -1650,12 +1688,18 @@ def test_dissolve_club(tmp_path, monkeypatch):
     assert resp.status_code == 200
     assert resp.json()["status"] == "ok"
 
-    data = storage.load_data()
-    users = storage.load_users()
-    assert "c1" not in data
-    assert users["leader"].created_clubs == 0
-    assert users["leader"].joined_clubs == 0
-    assert users["m1"].joined_clubs == 0
+    with sqlite3.connect(storage.DB_FILE) as conn:
+        assert conn.execute(
+            "SELECT COUNT(*) FROM clubs WHERE club_id = 'c1'"
+        ).fetchone()[0] == 0
+        leader = conn.execute(
+            "SELECT created_clubs, joined_clubs FROM users WHERE user_id = 'leader'"
+        ).fetchone()
+        member = conn.execute(
+            "SELECT joined_clubs FROM users WHERE user_id = 'm1'"
+        ).fetchone()
+        assert leader == (0, 0)
+        assert member[0] == 0
 
 
 def test_sys_matches_and_doubles(tmp_path, monkeypatch):
