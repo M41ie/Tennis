@@ -1,7 +1,9 @@
 from fastapi import APIRouter
 from pydantic import BaseModel
-from ..services import clubs as clubs_service
 from ..services.auth import require_auth
+from ..cli import create_club as cli_create_club, add_player as cli_add_player
+from ..storage import save_data, save_users
+from .. import api
 
 router = APIRouter()
 
@@ -32,31 +34,41 @@ class PlayerCreate(BaseModel):
 @router.post("/clubs")
 def create_club(data: ClubCreate):
     require_auth(data.token)
-    cid = data.club_id or clubs_service.generate_club_id()
-    clubs_service.create_club(
+    cid = data.club_id or api._generate_club_id()
+    cli_create_club(
+        api.users,
+        api.clubs,
         data.user_id,
+        cid,
         data.name,
-        club_id=cid,
-        logo=data.logo,
-        region=data.region,
-        slogan=data.slogan,
+        data.logo,
+        data.region,
+        data.slogan,
     )
+    save_data(api.clubs)
+    save_users(api.users)
     return {"status": "ok", "club_id": cid}
 
 
 @router.post("/clubs/{club_id}/players")
 def add_player(club_id: str, data: PlayerCreate):
     require_auth(data.token)
-    clubs_service.add_player(
-        club_id,
-        data.user_id,
-        data.name,
-        age=data.age,
-        gender=data.gender,
-        avatar=data.avatar,
-        birth=data.birth,
-        handedness=data.handedness,
-        backhand=data.backhand,
-        region=data.region,
-    )
+    try:
+        cli_add_player(
+            api.clubs,
+            club_id,
+            data.user_id,
+            data.name,
+            age=data.age,
+            gender=data.gender,
+            avatar=data.avatar,
+            birth=data.birth,
+            handedness=data.handedness,
+            backhand=data.backhand,
+            region=data.region,
+        )
+    except ValueError as e:
+        if str(e) != "Player already in club":
+            raise
+    save_data(api.clubs)
     return {"status": "ok"}
