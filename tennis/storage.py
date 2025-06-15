@@ -1028,3 +1028,37 @@ def delete_message_record(msg_id: int) -> None:
     conn.commit()
     conn.close()
 
+
+def insert_token(token: str, user_id: str) -> None:
+    """Persist or update an authentication token."""
+    conn = _connect()
+    cur = conn.cursor()
+    cur.execute(
+        "INSERT OR REPLACE INTO auth_tokens(token, user_id, ts) VALUES (?,?,?)",
+        (token, user_id, datetime.datetime.utcnow().isoformat()),
+    )
+    conn.commit()
+    conn.close()
+
+
+def delete_token(token: str) -> None:
+    """Remove an authentication token."""
+    conn = _connect()
+    conn.execute("DELETE FROM auth_tokens WHERE token = ?", (token,))
+    conn.commit()
+    conn.close()
+
+
+def get_token(token: str) -> tuple[str, datetime.datetime] | None:
+    """Retrieve a ``(user_id, timestamp)`` tuple for the token."""
+    conn = _connect()
+    cur = conn.cursor()
+    row = cur.execute(
+        "SELECT user_id, ts FROM auth_tokens WHERE token = ?",
+        (token,),
+    ).fetchone()
+    conn.close()
+    if not row:
+        return None
+    return row["user_id"], datetime.datetime.fromisoformat(row["ts"])
+

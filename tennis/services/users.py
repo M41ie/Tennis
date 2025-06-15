@@ -2,17 +2,26 @@ from __future__ import annotations
 import secrets
 import datetime
 from fastapi import HTTPException
-from . import state
 from ..cli import register_user, resolve_user, check_password
-from ..storage import save_users, save_data, insert_token, delete_token, get_token
+from ..storage import (
+    load_users,
+    load_data,
+    save_users,
+    save_data,
+    insert_token,
+    delete_token,
+    get_token,
+)
 from ..models import Player, players, User
 
 
 def create_user(data) -> str:
-    if data.user_id and data.user_id in state.users:
+    users = load_users()
+    clubs = load_data()
+    if data.user_id and data.user_id in users:
         raise HTTPException(400, "User exists")
     uid = register_user(
-        state.users,
+        users,
         data.user_id,
         data.name,
         data.password,
@@ -24,13 +33,14 @@ def create_user(data) -> str:
         backhand=data.backhand,
         region=data.region,
     )
-    save_users(state.users)
-    save_data(state.clubs)
+    save_users(users)
+    save_data(clubs)
     return uid
 
 
 def login(user_id: str, password: str):
-    user = resolve_user(state.users, user_id)
+    users = load_users()
+    user = resolve_user(users, user_id)
     if user and check_password(user, password):
         token = secrets.token_hex(16)
         insert_token(token, user.user_id)
@@ -49,9 +59,10 @@ def wechat_login(code: str, exchange_func) -> tuple[str, str, bool]:
     if not openid:
         raise HTTPException(400, "Invalid code")
 
+    users = load_users()
     user = None
     created = False
-    for u in state.users.values():
+    for u in users.values():
         if u.wechat_openid == openid:
             user = u
             break
@@ -59,12 +70,12 @@ def wechat_login(code: str, exchange_func) -> tuple[str, str, bool]:
     if not user:
         # allocate a sequential user ID using the normal registration flow
         nickname = info.get("nickname") or openid
-        uid = register_user(state.users, None, nickname, "")
-        user = state.users[uid]
+        uid = register_user(users, None, nickname, "")
+        user = users[uid]
         user.password_hash = ""
         user.wechat_openid = openid
-        state.users[uid] = user
-        save_users(state.users)
+        users[uid] = user
+        save_users(users)
         created = True
 
     token = secrets.token_hex(16)
@@ -86,10 +97,12 @@ def refresh_token(token: str):
 
 
 def user_info(user_id: str):
-    user = state.users.get(user_id)
+    users = load_users()
+    clubs = load_data()
+    user = users.get(user_id)
     if not user:
         raise HTTPException(404, "User not found")
-    joined = [cid for cid, c in state.clubs.items() if user_id in c.members]
+    joined = [cid for cid, c in clubs.items() if user_id in c.members]
     created = getattr(user, "created_clubs", 0)
     max_created = getattr(user, "max_creatable_clubs", 0)
     return {
@@ -116,4 +129,6 @@ def mark_read(user: User, index: int):
     if index >= len(user.messages):
         raise HTTPException(404, "Message not found")
     user.messages[index].read = True
-    save_users(state.users)
+    users = load_users()
+    users[user.user_id] = user
+    save_users(users)
