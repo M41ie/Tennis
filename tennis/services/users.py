@@ -4,7 +4,7 @@ import datetime
 from fastapi import HTTPException
 from . import state
 from ..cli import register_user, resolve_user, check_password
-from ..storage import save_users, save_data
+from ..storage import save_users, save_data, insert_token, delete_token, get_token
 from ..models import Player, players, User
 
 
@@ -33,8 +33,7 @@ def login(user_id: str, password: str):
     user = resolve_user(state.users, user_id)
     if user and check_password(user, password):
         token = secrets.token_hex(16)
-        state.tokens[token] = (user.user_id, datetime.datetime.utcnow())
-        state._save_tokens()
+        insert_token(token, user.user_id)
         return True, token, user.user_id
     return False, None, None
 
@@ -69,23 +68,20 @@ def wechat_login(code: str, exchange_func) -> tuple[str, str, bool]:
         created = True
 
     token = secrets.token_hex(16)
-    state.tokens[token] = (user.user_id, datetime.datetime.utcnow())
-    state._save_tokens()
+    insert_token(token, user.user_id)
     return token, user.user_id, created
 
 
 def logout(token: str):
-    state.tokens.pop(token, None)
-    state._save_tokens()
+    delete_token(token)
 
 
 def refresh_token(token: str):
-    info = state.tokens.get(token)
+    info = get_token(token)
     if not info:
         raise HTTPException(401, "Invalid token")
     uid, _ = info
-    state.tokens[token] = (uid, datetime.datetime.utcnow())
-    state._save_tokens()
+    insert_token(token, uid)
     return uid
 
 
