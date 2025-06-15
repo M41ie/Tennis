@@ -201,6 +201,34 @@ def test_prerate_api(tmp_path, monkeypatch):
     assert resp.status_code == 400
 
 
+def test_self_prerate_after_creation(tmp_path, monkeypatch):
+    db = tmp_path / "tennis.db"
+    monkeypatch.setattr(storage, "DB_FILE", db)
+    importlib.reload(state)
+
+    api = importlib.reload(importlib.import_module("tennis.api"))
+    client = TestClient(api.app)
+
+    client.post(
+        "/users",
+        json={"user_id": "u1", "name": "U1", "password": "pw", "allow_create": True},
+    )
+    token = client.post("/login", json={"user_id": "u1", "password": "pw"}).json()["token"]
+
+    resp = client.post(
+        "/clubs",
+        json={"name": "Club", "user_id": "u1", "token": token},
+    )
+    assert resp.status_code == 200
+    club_id = resp.json()["club_id"]
+
+    resp = client.post(
+        f"/clubs/{club_id}/prerate",
+        json={"rater_id": "u1", "target_id": "u1", "rating": 1200, "token": token},
+    )
+    assert resp.status_code == 200
+
+
 def test_doubles_match_flow(tmp_path, monkeypatch):
     db = tmp_path / "tennis.db"
     monkeypatch.setattr(storage, "DB_FILE", db)
