@@ -38,12 +38,6 @@ def create_user(data) -> str:
     # persist new records individually
     create_user_record(users[uid])
     create_player("", players[uid])
-    try:
-        import tennis.api as api
-        api.users.clear()
-        api.users.update(load_users())
-    except Exception:
-        pass
     return uid
 
 
@@ -88,11 +82,6 @@ def wechat_login(code: str, exchange_func) -> tuple[str, str, bool]:
         users[uid] = user
         create_user_record(user)
         create_player("", players[uid])
-        try:
-            import tennis.api as api
-            api.users = load_users()
-        except Exception:
-            pass
         created = True
 
     token = secrets.token_hex(16)
@@ -146,8 +135,6 @@ def unread_count(user: User) -> int:
 def mark_read(user: User, index: int):
     try:
         mark_user_message_read(user.user_id, index)
-        import tennis.api as api
-        api.users.clear()
-        api.users.update(load_users())
     except IndexError:
         raise HTTPException(404, "Message not found")
+
