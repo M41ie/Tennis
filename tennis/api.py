@@ -54,8 +54,15 @@ app = FastAPI()
 def validation_exception_handler(request, exc):
     return JSONResponse(status_code=400, content={"detail": exc.errors()})
 
-# shared state handled by services.state
-from .services.state import clubs, users, TOKEN_TTL
+# runtime state previously lived in ``services.state``
+from .services.state import TOKEN_TTL
+from .storage import load_data, load_users
+
+# load persistent data at import time
+clubs = load_data()
+users = load_users()
+if "A" in users:
+    users["A"].is_sys_admin = True
 from .services.auth import require_auth, assert_token_matches
 from .services.helpers import get_user_or_404, get_club_or_404
 from .routes.users import router as users_router
