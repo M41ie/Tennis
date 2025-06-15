@@ -889,7 +889,16 @@ def update_global_player(user_id: str, data: PlayerUpdate):
         raise HTTPException(404, "Player not found")
 
     if data.name is not None:
+        # ensure unique names across users and players
+        for u in users.values():
+            if u.user_id != user_id and u.name == data.name:
+                raise HTTPException(400, "用户名已存在")
+        for p in players.values():
+            if p.user_id != user_id and p.name == data.name:
+                raise HTTPException(400, "用户名已存在")
         player.name = data.name
+        if user_id in users:
+            users[user_id].name = data.name
     if data.age is not None:
         player.age = data.age
     if data.gender is not None:
@@ -906,6 +915,7 @@ def update_global_player(user_id: str, data: PlayerUpdate):
         player.region = data.region
 
     save_data(clubs)
+    save_users(users)
     return {"status": "ok"}
 
 
@@ -931,7 +941,17 @@ def update_player_api(club_id: str, user_id: str, data: PlayerUpdate):
         )
     except ValueError as e:
         raise HTTPException(400, str(e))
+    if data.name is not None:
+        for u in users.values():
+            if u.user_id != user_id and u.name == data.name:
+                raise HTTPException(400, "用户名已存在")
+        for p in players.values():
+            if p.user_id != user_id and p.name == data.name:
+                raise HTTPException(400, "用户名已存在")
+        if user_id in users:
+            users[user_id].name = data.name
     save_data(clubs)
+    save_users(users)
     return {"status": "ok"}
 
 

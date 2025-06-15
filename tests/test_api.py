@@ -1293,6 +1293,9 @@ def test_update_player_api(tmp_path, monkeypatch):
         assert row[4] == "1990-01-01"
         assert row[5] == "right"
         assert row[6] == "double"
+        # user account name should update as well
+        urow = conn.execute("SELECT name FROM users WHERE user_id = 'p1'").fetchone()
+        assert urow[0] == "New"
 
 
 def test_update_global_player_api(tmp_path, monkeypatch):
@@ -1328,6 +1331,8 @@ def test_update_global_player_api(tmp_path, monkeypatch):
             "SELECT name, gender, region FROM players WHERE user_id = 'p1'"
         ).fetchone()
         assert row == ("New", "M", "Beijing")
+        urow = conn.execute("SELECT name FROM users WHERE user_id = 'p1'").fetchone()
+        assert urow[0] == "New"
 
 
 def test_login_by_name(tmp_path, monkeypatch):
