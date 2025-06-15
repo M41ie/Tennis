@@ -1,7 +1,5 @@
 from __future__ import annotations
 import datetime
-import json
-from pathlib import Path
 import tennis.storage as storage
 from ..storage import load_data, load_users
 
@@ -11,36 +9,13 @@ users = load_users()
 if "A" in users:
     users["A"].is_sys_admin = True
 
-# token persistence
-TOKENS_FILE = Path(str(storage.DB_FILE)).with_name("tokens.json")
 TOKEN_TTL = datetime.timedelta(hours=24)
 
-def _load_tokens() -> dict[str, tuple[str, datetime.datetime]]:
-    try:
-        text = TOKENS_FILE.read_text()
-    except FileNotFoundError:
-        return {}
-    except OSError:
-        return {}
-    try:
-        data = json.loads(text)
-    except json.JSONDecodeError:
-        return {}
-    now = datetime.datetime.utcnow()
-    result: dict[str, tuple[str, datetime.datetime]] = {}
-    for tok, (uid, ts) in data.items():
-        ts_dt = datetime.datetime.fromisoformat(ts)
-        if now - ts_dt < TOKEN_TTL:
-            result[tok] = (uid, ts_dt)
-    return result
+# token state is now stored in the database; these helpers remain for
+# backward compatibility but do nothing.
 
 def _save_tokens() -> None:
-    try:
-        TOKENS_FILE.write_text(
-            json.dumps({t: (uid, ts.isoformat()) for t, (uid, ts) in tokens.items()})
-        )
-    except OSError:
-        pass
+    """Deprecated: token persistence handled by storage layer."""
+    pass
 
-# load tokens on import
-tokens: dict[str, tuple[str, datetime.datetime]] = _load_tokens()
+tokens: dict[str, tuple[str, datetime.datetime]] = {}

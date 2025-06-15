@@ -1,5 +1,6 @@
 import importlib
 import datetime
+import sqlite3
 from fastapi.testclient import TestClient
 import pytest
 import tennis.storage as storage
@@ -996,7 +997,12 @@ def test_token_logout_and_expiry(tmp_path, monkeypatch):
     assert resp.status_code == 401
 
     token2 = client.post("/login", json={"user_id": "u", "password": "pw"}).json()["token"]
-    api.tokens[token2] = (api.tokens[token2][0], datetime.datetime.utcnow() - datetime.timedelta(days=2))
+    with sqlite3.connect(storage.DB_FILE) as conn:
+        conn.execute(
+            "UPDATE auth_tokens SET ts = ? WHERE token = ?",
+            ((datetime.datetime.utcnow() - datetime.timedelta(days=2)).isoformat(), token2),
+        )
+        conn.commit()
     resp = client.post("/clubs", json={"club_id": "c", "name": "C", "user_id": "u", "token": token2})
     assert resp.status_code == 401
 

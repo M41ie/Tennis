@@ -55,7 +55,7 @@ def validation_exception_handler(request, exc):
     return JSONResponse(status_code=400, content={"detail": exc.errors()})
 
 # shared state handled by services.state
-from .services.state import clubs, users, tokens, _save_tokens, TOKEN_TTL
+from .services.state import clubs, users, TOKEN_TTL
 from .services.auth import require_auth, assert_token_matches
 from .services.helpers import get_user_or_404, get_club_or_404
 from .routes.users import router as users_router
@@ -113,16 +113,6 @@ def list_global_pending_matches(user_id: str, token: str):
 
     combined.sort(key=lambda x: x["date"], reverse=True)
     return combined
-
-
-def _save_tokens() -> None:
-    try:
-        TOKENS_FILE.write_text(
-            json.dumps({t: (uid, ts.isoformat()) for t, (uid, ts) in tokens.items()})
-        )
-    except OSError:
-        # Failing to persist tokens should not block authentication
-        pass
 
 
 
