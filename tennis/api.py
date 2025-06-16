@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, StrictInt
@@ -13,7 +13,7 @@ import urllib.parse
 from pathlib import Path
 
 import tennis.storage as storage
-from .storage import save_data, save_users
+from .storage import save_data, save_users, load_data, load_users
 from .cli import (
     register_user,
     resolve_user,
@@ -47,7 +47,24 @@ from .rating import (
 )
 from .models import Player, Club, Match, DoublesMatch, Appointment, User, players
 
-app = FastAPI()
+
+# runtime state loaded fresh for each request
+clubs: dict[str, Club] | None = None
+users: dict[str, User] | None = None
+
+def _refresh_state() -> None:
+    """Reload clubs and users from persistent storage."""
+    global clubs, users
+    clubs = load_data()
+    users = load_users()
+    if "A" in users:
+        users["A"].is_sys_admin = True
+
+
+app = FastAPI(dependencies=[Depends(_refresh_state)])
+
+# initialize state at import time so CLI utilities can operate
+_refresh_state()
 
 
 @app.exception_handler(RequestValidationError)
@@ -56,13 +73,6 @@ def validation_exception_handler(request, exc):
 
 # runtime state previously lived in ``services.state``
 from .services.state import TOKEN_TTL
-from .storage import load_data, load_users
-
-# load persistent data at import time
-clubs = load_data()
-users = load_users()
-if "A" in users:
-    users["A"].is_sys_admin = True
 from .services.auth import require_auth, assert_token_matches
 from .services.helpers import get_user_or_404, get_club_or_404
 from .routes.users import router as users_router

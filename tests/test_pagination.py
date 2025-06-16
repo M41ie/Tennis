@@ -49,7 +49,9 @@ def test_leaderboard_pagination(tmp_path, monkeypatch):
         client.post("/users", json={"user_id": uid, "name": uid.upper(), "password": "pw"})
         t = client.post("/login", json={"user_id": uid, "password": "pw"}).json()["token"]
         client.post(f"/clubs/c1/players", json={"user_id": uid, "name": uid.upper(), "token": t})
-        api.clubs["c1"].members[uid].singles_rating = r
+        clubs = storage.load_data()
+        clubs["c1"].members[uid].singles_rating = r
+        storage.save_data(clubs)
     resp = client.get("/leaderboard_full?club=c1&limit=1&offset=1")
     assert resp.status_code == 200
     players = resp.json()["players"]

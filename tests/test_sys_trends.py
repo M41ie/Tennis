@@ -39,8 +39,10 @@ def test_trend_endpoints(tmp_path, monkeypatch):
     )
 
     today = datetime.date.today()
-    api.clubs["c1"].members["u1"].joined = today - datetime.timedelta(days=5)
-    api.clubs["c1"].members["u2"].joined = today - datetime.timedelta(days=2)
+    clubs = storage.load_data()
+    clubs["c1"].members["u1"].joined = today - datetime.timedelta(days=5)
+    clubs["c1"].members["u2"].joined = today - datetime.timedelta(days=2)
+    storage.save_data(clubs)
 
     client.post(
         "/clubs/c1/matches",

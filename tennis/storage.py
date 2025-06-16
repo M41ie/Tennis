@@ -16,6 +16,7 @@ from .models import (
     User,
     Appointment,
     Message,
+    JoinApplication,
     players,
 )
 
@@ -89,7 +90,14 @@ def _init_schema(conn: sqlite3.Connection) -> None:
     )"""
     )
     cur.execute(
-        "CREATE TABLE IF NOT EXISTS club_meta (club_id TEXT PRIMARY KEY, banned_ids TEXT, leader_id TEXT, admin_ids TEXT)"
+        """CREATE TABLE IF NOT EXISTS club_meta (
+        club_id TEXT PRIMARY KEY,
+        banned_ids TEXT,
+        leader_id TEXT,
+        admin_ids TEXT,
+        pending_members TEXT,
+        rejected_members TEXT
+    )"""
     )
     # add new columns if an older database is missing them
     cols = {row[1] for row in cur.execute("PRAGMA table_info('clubs')")}
@@ -107,6 +115,10 @@ def _init_schema(conn: sqlite3.Connection) -> None:
         cur.execute("ALTER TABLE club_meta ADD COLUMN leader_id TEXT")
     if 'admin_ids' not in cols:
         cur.execute("ALTER TABLE club_meta ADD COLUMN admin_ids TEXT")
+    if 'pending_members' not in cols:
+        cur.execute("ALTER TABLE club_meta ADD COLUMN pending_members TEXT")
+    if 'rejected_members' not in cols:
+        cur.execute("ALTER TABLE club_meta ADD COLUMN rejected_members TEXT")
     cols = {row[1] for row in cur.execute("PRAGMA table_info('players')")}
     if 'birth' not in cols:
         cur.execute("ALTER TABLE players ADD COLUMN birth TEXT")
@@ -158,6 +170,15 @@ def load_data() -> Dict[str, Club]:
         club.banned_ids.update(json.loads(row["banned_ids"] or "[]"))
         club.leader_id = row["leader_id"]
         club.admin_ids.update(json.loads(row["admin_ids"] or "[]"))
+        pending = json.loads(row["pending_members"] or "{}")
+        for uid, info in pending.items():
+            club.pending_members[uid] = JoinApplication(
+                reason=info.get("reason"),
+                singles_rating=info.get("singles_rating"),
+                doubles_rating=info.get("doubles_rating"),
+            )
+        rejected = json.loads(row["rejected_members"] or "{}")
+        club.rejected_members.update(rejected)
 
     players.clear()
     for row in cur.execute("SELECT * FROM players"):
@@ -367,12 +388,14 @@ def save_data(clubs: Dict[str, Club]) -> None:
             (cid, club.name, club.logo, club.region, club.slogan),
         )
         cur.execute(
-            "INSERT INTO club_meta(club_id, banned_ids, leader_id, admin_ids) VALUES (?,?,?,?)",
+            "INSERT INTO club_meta(club_id, banned_ids, leader_id, admin_ids, pending_members, rejected_members) VALUES (?,?,?,?,?,?)",
             (
                 cid,
                 json.dumps(list(club.banned_ids)),
                 club.leader_id,
                 json.dumps(list(club.admin_ids)),
+                json.dumps({uid: vars(pm) for uid, pm in club.pending_members.items()}),
+                json.dumps(club.rejected_members),
             ),
         )
         for uid in club.members:
@@ -593,12 +616,14 @@ def create_club(club: Club) -> None:
             (club.club_id, club.name, club.logo, club.region, club.slogan),
         )
         cur.execute(
-            "INSERT INTO club_meta(club_id, banned_ids, leader_id, admin_ids) VALUES (?,?,?,?)",
+            "INSERT INTO club_meta(club_id, banned_ids, leader_id, admin_ids, pending_members, rejected_members) VALUES (?,?,?,?,?,?)",
             (
                 club.club_id,
                 "[]",
                 club.leader_id,
                 "[]",
+                "{}",
+                "{}",
             ),
         )
         conn.commit()
