@@ -1103,10 +1103,12 @@ def test_doubles_leaderboard_api(tmp_path, monkeypatch):
         )
 
     # adjust doubles ratings for predictable ordering
-    api.clubs["c1"].members["p1"].doubles_rating = 1200
-    api.clubs["c1"].members["p2"].doubles_rating = 1100
-    api.clubs["c1"].members["p3"].doubles_rating = 1300
-    api.clubs["c1"].members["p4"].doubles_rating = 1000
+    clubs = storage.load_data()
+    clubs["c1"].members["p1"].doubles_rating = 1200
+    clubs["c1"].members["p2"].doubles_rating = 1100
+    clubs["c1"].members["p3"].doubles_rating = 1300
+    clubs["c1"].members["p4"].doubles_rating = 1000
+    storage.save_data(clubs)
 
     resp = client.get("/clubs/c1/players?doubles=true")
     assert resp.status_code == 200
@@ -1188,9 +1190,11 @@ def test_list_players_filters(tmp_path, monkeypatch):
         json={"user_id": "p3", "name": "P3", "age": 22, "gender": "M", "token": tokens["p3"]},
     )
 
-    api.clubs["c1"].members["p1"].singles_rating = 1200
-    api.clubs["c1"].members["p2"].singles_rating = 1100
-    api.clubs["c1"].members["p3"].singles_rating = 1300
+    clubs = storage.load_data()
+    clubs["c1"].members["p1"].singles_rating = 1200
+    clubs["c1"].members["p2"].singles_rating = 1100
+    clubs["c1"].members["p3"].singles_rating = 1300
+    storage.save_data(clubs)
 
     resp = client.get("/clubs/c1/players?min_rating=1100&max_age=25&gender=M")
     assert resp.status_code == 200
@@ -1248,10 +1252,12 @@ def test_list_all_players_multi_club(tmp_path, monkeypatch):
         json={"user_id": "p4", "name": "P4", "token": tokens["p4"]},
     )
 
-    api.clubs["c1"].members["p1"].singles_rating = 1200
-    api.clubs["c2"].members["p2"].singles_rating = 1100
-    api.clubs["c1"].members["p3"].singles_rating = 1300
-    api.clubs["c2"].members["p4"].singles_rating = 1250
+    clubs = storage.load_data()
+    clubs["c1"].members["p1"].singles_rating = 1200
+    clubs["c2"].members["p2"].singles_rating = 1100
+    clubs["c1"].members["p3"].singles_rating = 1300
+    clubs["c2"].members["p4"].singles_rating = 1250
+    storage.save_data(clubs)
 
     resp = client.get("/players?club=c1,c2&min_rating=1200")
     assert resp.status_code == 200
@@ -1751,6 +1757,9 @@ def test_sys_matches_and_doubles(tmp_path, monkeypatch):
     for uid in ("p1", "p2", "p3", "p4"):
         cli.add_player(api.clubs, "c1", uid, uid.upper())
 
+    storage.save_users(api.users)
+    storage.save_data(api.clubs)
+
     cli.record_match(
         api.clubs,
         "c1",
@@ -1773,6 +1782,7 @@ def test_sys_matches_and_doubles(tmp_path, monkeypatch):
         datetime.date(2023, 1, 2),
         1.0,
     )
+    storage.save_data(api.clubs)
 
     client = TestClient(api.app)
     resp = client.get("/sys/matches")

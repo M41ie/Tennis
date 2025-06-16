@@ -34,7 +34,9 @@ def test_leaderboard_full(tmp_path, monkeypatch):
         json={"user_id": "p1", "name": "P1", "token": token_p1},
     )
 
-    api.clubs["c1"].members["p1"].singles_rating = 1200
+    clubs = storage.load_data()
+    clubs["c1"].members["p1"].singles_rating = 1200
+    storage.save_data(clubs)
 
     resp = client.get("/leaderboard_full?club=c1&user_id=p1")
     assert resp.status_code == 200
