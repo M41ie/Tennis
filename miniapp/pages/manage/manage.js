@@ -1,6 +1,7 @@
 const BASE_URL = getApp().globalData.BASE_URL;
 const request = require('../../services/api');
 const { hideKeyboard } = require('../../utils/hideKeyboard');
+const store = require('../../store/store');
 
 Page({
   data: {
@@ -22,9 +23,9 @@ Page({
   },
   onLoad(options) {
     if (options && options.cid) {
-      wx.setStorageSync('club_id', options.cid);
+      store.setClubId(options.cid);
     }
-    this.setData({ userId: wx.getStorageSync('user_id') });
+    this.setData({ userId: store.userId });
     this.checkSysAdmin();
   },
   checkSysAdmin() {
@@ -47,7 +48,7 @@ Page({
     });
   },
   loadPendingNames() {
-    const cid = wx.getStorageSync('club_id');
+    const cid = store.clubId;
     if (!cid) {
       this.setData({ pending: [] });
       return;
@@ -89,7 +90,7 @@ Page({
     });
   },
   fetchClub() {
-    const cid = wx.getStorageSync('club_id');
+    const cid = store.clubId;
     if (!cid) return;
     const that = this;
     request({
@@ -142,7 +143,7 @@ Page({
     });
   },
   fetchPlayers() {
-    const cid = wx.getStorageSync('club_id');
+    const cid = store.clubId;
     if (!cid) return;
     const that = this;
     request({
@@ -231,8 +232,8 @@ Page({
     });
   },
   approveById(uid, rating) {
-    const cid = wx.getStorageSync('club_id');
-    const token = wx.getStorageSync('token');
+    const cid = store.clubId;
+    const token = store.token;
     const that = this;
     request({
       url: `${BASE_URL}/clubs/${cid}/approve`,
@@ -281,8 +282,8 @@ Page({
     this.handleApproval(e.currentTarget.dataset.uid);
   },
   rejectById(uid, reason) {
-    const cid = wx.getStorageSync('club_id');
-    const token = wx.getStorageSync('token');
+    const cid = store.clubId;
+    const token = store.token;
     const that = this;
     request({
       url: `${BASE_URL}/clubs/${cid}/reject`,
@@ -328,8 +329,8 @@ Page({
   },
   kick(e) {
     const uid = e.currentTarget.dataset.uid;
-    const cid = wx.getStorageSync('club_id');
-    const token = wx.getStorageSync('token');
+    const cid = store.clubId;
+    const token = store.token;
     const that = this;
     request({
       url: `${BASE_URL}/clubs/${cid}/members/${uid}`,
@@ -340,8 +341,8 @@ Page({
   },
   ban(e) {
     const uid = e.currentTarget.dataset.uid;
-    const cid = wx.getStorageSync('club_id');
-    const token = wx.getStorageSync('token');
+    const cid = store.clubId;
+    const token = store.token;
     const that = this;
     request({
       url: `${BASE_URL}/clubs/${cid}/members/${uid}`,
@@ -355,8 +356,8 @@ Page({
     wx.navigateTo({ url: '/pages/membercard/membercard?uid=' + uid });
   },
   quitClub() {
-    const cid = wx.getStorageSync('club_id');
-    const token = wx.getStorageSync('token');
+    const cid = store.clubId;
+    const token = store.token;
     const uid = this.data.userId;
     const that = this;
     wx.showModal({
@@ -376,8 +377,8 @@ Page({
     });
   },
   resignAdmin() {
-    const cid = wx.getStorageSync('club_id');
-    const token = wx.getStorageSync('token');
+    const cid = store.clubId;
+    const token = store.token;
     const uid = this.data.userId;
     const that = this;
     wx.showModal({
@@ -397,8 +398,8 @@ Page({
     });
   },
   transferLeader() {
-    const cid = wx.getStorageSync('club_id');
-    const token = wx.getStorageSync('token');
+    const cid = store.clubId;
+    const token = store.token;
     const uid = this.data.userId;
     const that = this;
     request({
@@ -409,8 +410,8 @@ Page({
     });
   },
   dissolveClub() {
-    const cid = wx.getStorageSync('club_id');
-    const token = wx.getStorageSync('token');
+    const cid = store.clubId;
+    const token = store.token;
     const uid = this.data.userId;
     const that = this;
     wx.showModal({

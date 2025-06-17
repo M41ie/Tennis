@@ -1,6 +1,7 @@
 const BASE_URL = getApp().globalData.BASE_URL;
 const request = require('../../services/api');
 const { hideKeyboard } = require('../../utils/hideKeyboard');
+const store = require('../../store/store');
 
 Page({
   data: {
@@ -12,9 +13,9 @@ Page({
   onRating(e) { this.setData({ rating: e.detail.value }); },
   hideKeyboard,
   submit() {
-    const clubId = wx.getStorageSync('club_id');
-    const raterId = wx.getStorageSync('user_id');
-    const token = wx.getStorageSync('token');
+    const clubId = store.clubId;
+    const raterId = store.userId;
+    const token = store.token;
     const rating = parseFloat(this.data.rating);
     const targetId = this.data.targetId;
     const that = this;
@@ -30,7 +31,7 @@ Page({
     });
   },
   fetchTarget(id) {
-    const clubId = wx.getStorageSync('club_id');
+    const clubId = store.clubId;
     const that = this;
     if (!clubId || !id) return;
     request({

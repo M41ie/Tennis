@@ -2,6 +2,7 @@ const BASE_URL = getApp().globalData.BASE_URL;
 const request = require('../../services/api');
 const IMAGES = require('../../assets/base64.js');
 const { formatRating } = require('../../utils/format');
+const store = require('../../store/store');
 
 function calcAge(birth) {
   const d = new Date(birth);
@@ -40,13 +41,13 @@ Page({
     viewId: ''
   },
   onLoad(options) {
-    this.setData({ viewId: options && options.uid ? options.uid : wx.getStorageSync('user_id') });
+    this.setData({ viewId: options && options.uid ? options.uid : store.userId });
   },
   onShow() {
     this.loadUser();
   },
   loadUser() {
-    const uid = this.data.viewId || wx.getStorageSync('user_id');
+    const uid = this.data.viewId || store.userId;
     if (!uid) return;
     const that = this;
     request({

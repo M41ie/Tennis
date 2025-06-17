@@ -1,13 +1,14 @@
 const BASE_URL = getApp().globalData.BASE_URL;
 const request = require('../../services/api');
+const store = require('../../store/store');
 
 Page({
   data: {
     list: []
   },
   onShow() {
-    const uid = wx.getStorageSync('user_id');
-    const token = wx.getStorageSync('token');
+    const uid = store.userId;
+    const token = store.token;
     const that = this;
     if (!uid || !token) return;
     request({
@@ -19,8 +20,8 @@ Page({
   },
   markRead(e) {
     const idx = e.currentTarget.dataset.index;
-    const uid = wx.getStorageSync('user_id');
-    const token = wx.getStorageSync('token');
+    const uid = store.userId;
+    const token = store.token;
     const that = this;
     request({
       url: `${BASE_URL}/users/${uid}/messages/${idx}/read`,

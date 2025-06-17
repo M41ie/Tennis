@@ -1,6 +1,7 @@
 const BASE_URL = getApp().globalData.BASE_URL;
 const request = require('../../services/api');
 const { hideKeyboard } = require('../../utils/hideKeyboard');
+const store = require('../../store/store');
 
 Page({
   data: {
@@ -37,8 +38,8 @@ Page({
     this.createClub(rating);
   },
   createClub(initialRating) {
-    const userId = wx.getStorageSync('user_id');
-    const token = wx.getStorageSync('token');
+    const userId = store.userId;
+    const token = store.token;
     const that = this;
     request({
       url: `${BASE_URL}/clubs`,
@@ -90,8 +91,8 @@ Page({
     });
   },
   submit() {
-    const userId = wx.getStorageSync('user_id');
-    const token = wx.getStorageSync('token');
+    const userId = store.userId;
+    const token = store.token;
     if (!userId || !token || !this.data.name || !this.data.slogan || this.data.region.length === 0) {
       wx.showToast({ title: '请填写完整信息', icon: 'none' });
       return;

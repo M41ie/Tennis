@@ -1,6 +1,7 @@
 const BASE_URL = getApp().globalData.BASE_URL;
 const request = require('../../services/api');
 const { hideKeyboard } = require('../../utils/hideKeyboard');
+const store = require('../../store/store');
 
 Page({
   data: {
@@ -18,7 +19,7 @@ Page({
     userId: ''
   },
   onLoad() {
-    const uid = wx.getStorageSync('user_id');
+    const uid = store.userId;
     if (!uid) return;
     this.setData({ userId: uid });
     const that = this;
@@ -70,7 +71,7 @@ Page({
     });
   },
   submit() {
-    const token = wx.getStorageSync('token');
+    const token = store.token;
     if (!token || !this.data.userId) return;
     const incomplete =
       !this.data.name ||

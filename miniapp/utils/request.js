@@ -1,7 +1,8 @@
 const BASE_URL = getApp().globalData.BASE_URL;
+const store = require('../store/store');
 
 function request(options = {}) {
-  const token = wx.getStorageSync('token');
+  const token = store.token;
   const opts = { ...options };
   const url = opts.url || '';
   opts.url = url.startsWith('http') ? url : `${BASE_URL}${url}`;
@@ -17,9 +18,7 @@ function request(options = {}) {
       ...opts,
       success(res) {
         if (res.statusCode === 401) {
-          wx.removeStorageSync('token');
-          wx.removeStorageSync('user_id');
-          wx.removeStorageSync('club_id');
+          store.clearAuth();
           wx.navigateTo({ url: '/pages/login/index' });
           wx.showToast({ title: '请重新登录', icon: 'none' });
           opts.fail && opts.fail(res);
