@@ -13,18 +13,10 @@ import urllib.parse
 from pathlib import Path
 
 import tennis.storage as storage
-from .storage import save_data, save_users, load_data, load_users
+from .storage import load_data, load_users
 from .cli import (
     register_user,
     resolve_user,
-    reject_application,
-    clear_rejection,
-    remove_member as cli_remove_member,
-    toggle_admin as cli_toggle_admin,
-    transfer_leader as cli_transfer_leader,
-    resign_admin as cli_resign_admin,
-    quit_club as cli_quit_club,
-    set_user_limits,
     hash_password,
     check_password,
     validate_scores,
@@ -36,7 +28,28 @@ from .services.clubs import (
     approve_member_request,
     dissolve_existing_club,
     approve_pending_match,
+    reject_join_request as svc_reject_join,
+    clear_member_rejection as svc_clear_rejection,
+    update_club_info as svc_update_club,
+    update_player_profile as svc_update_player,
+    update_global_player as svc_update_global_player,
+    remove_club_member as svc_remove_member,
+    update_member_role as svc_update_role,
+    submit_pending_match as svc_submit_match,
+    confirm_pending_match as svc_confirm_match,
+    reject_pending_match as svc_reject_match,
+    veto_pending_match as svc_veto_match,
+    submit_pending_doubles as svc_submit_doubles,
+    confirm_pending_doubles as svc_confirm_doubles,
+    reject_pending_doubles as svc_reject_doubles,
+    veto_pending_doubles as svc_veto_doubles,
+    create_appointment_entry as svc_create_appointment,
+    update_appointment_signups as svc_update_signup,
+    pre_rate_member as svc_pre_rate,
+    record_match_result as svc_record_match,
+    sys_set_leader as svc_sys_set_leader,
 )
+from .services.users import update_user_limits as svc_update_limits
 from .rating import (
     update_ratings,
     update_doubles_ratings,
@@ -523,19 +536,8 @@ def dissolve_club_api(club_id: str, data: DissolveRequest):
 def reject_join_request(club_id: str, data: RejectRequest):
     user = require_auth(data.token)
     assert_token_matches(user, data.approver_id)
-    try:
-        reject_application(
-            clubs,
-            users,
-            club_id,
-            data.approver_id,
-            data.user_id,
-            data.reason,
-        )
-    except ValueError as e:
-        raise HTTPException(400, str(e))
-    save_data(clubs)
-    save_users(users)
+    svc_reject_join(club_id, data.approver_id, data.user_id, data.reason)
+    _refresh_state()
     return {"status": "ok"}
 
 
@@ -543,11 +545,8 @@ def reject_join_request(club_id: str, data: RejectRequest):
 def clear_rejection_api(club_id: str, data: ClearRejectRequest):
     user = require_auth(data.token)
     assert_token_matches(user, data.user_id)
-    try:
-        clear_rejection(clubs, club_id, data.user_id)
-    except ValueError as e:
-        raise HTTPException(400, str(e))
-    save_data(clubs)
+    svc_clear_rejection(club_id, data.user_id)
+    _refresh_state()
     return {"status": "ok"}
 
 
@@ -559,15 +558,14 @@ def update_club_info(club_id: str, data: ClubUpdate):
     assert_token_matches(user, data.user_id)
     if user != club.leader_id and user not in club.admin_ids:
         raise HTTPException(403, "Forbidden")
-    if data.name is not None:
-        club.name = data.name
-    if data.logo is not None:
-        club.logo = data.logo
-    if data.region is not None:
-        club.region = data.region
-    if data.slogan is not None:
-        club.slogan = data.slogan
-    save_data(clubs)
+    svc_update_club(
+        club_id,
+        name=data.name,
+        logo=data.logo,
+        region=data.region,
+        slogan=data.slogan,
+    )
+    _refresh_state()
     return {"status": "ok"}
 
 
@@ -876,38 +874,18 @@ def update_global_player(user_id: str, data: PlayerUpdate):
     if user != data.user_id or data.user_id != user_id:
         raise HTTPException(401, "Token mismatch")
 
-    player = players.get(user_id)
-    if not player:
-        raise HTTPException(404, "Player not found")
-
-    if data.name is not None:
-        # ensure unique names across users and players
-        for u in users.values():
-            if u.user_id != user_id and u.name == data.name:
-                raise HTTPException(400, "用户名已存在")
-        for p in players.values():
-            if p.user_id != user_id and p.name == data.name:
-                raise HTTPException(400, "用户名已存在")
-        player.name = data.name
-        if user_id in users:
-            users[user_id].name = data.name
-    if data.age is not None:
-        player.age = data.age
-    if data.gender is not None:
-        player.gender = normalize_gender(data.gender)
-    if data.avatar is not None:
-        player.avatar = data.avatar
-    if data.birth is not None:
-        player.birth = data.birth
-    if data.handedness is not None:
-        player.handedness = data.handedness
-    if data.backhand is not None:
-        player.backhand = data.backhand
-    if data.region is not None:
-        player.region = data.region
-
-    save_data(clubs)
-    save_users(users)
+    svc_update_global_player(
+        user_id,
+        name=data.name,
+        age=data.age,
+        gender=data.gender,
+        avatar=data.avatar,
+        birth=data.birth,
+        handedness=data.handedness,
+        backhand=data.backhand,
+        region=data.region,
+    )
+    _refresh_state()
     return {"status": "ok"}
 
 
@@ -918,8 +896,7 @@ def update_player_api(club_id: str, user_id: str, data: PlayerUpdate):
     if user != data.user_id or data.user_id != user_id:
         raise HTTPException(401, "Token mismatch")
     try:
-        cli_update_player(
-            clubs,
+        svc_update_player(
             club_id,
             user_id,
             name=data.name,
@@ -933,17 +910,7 @@ def update_player_api(club_id: str, user_id: str, data: PlayerUpdate):
         )
     except ValueError as e:
         raise HTTPException(400, str(e))
-    if data.name is not None:
-        for u in users.values():
-            if u.user_id != user_id and u.name == data.name:
-                raise HTTPException(400, "用户名已存在")
-        for p in players.values():
-            if p.user_id != user_id and p.name == data.name:
-                raise HTTPException(400, "用户名已存在")
-        if user_id in users:
-            users[user_id].name = data.name
-    save_data(clubs)
-    save_users(users)
+    _refresh_state()
     return {"status": "ok"}
 
 
@@ -954,18 +921,10 @@ def remove_member_api(club_id: str, user_id: str, data: RemoveRequest):
     if user != data.remover_id:
         raise HTTPException(401, "Token mismatch")
     try:
-        cli_remove_member(
-            clubs,
-            users,
-            club_id,
-            data.remover_id,
-            user_id,
-            ban=data.ban,
-        )
+        svc_remove_member(club_id, data.remover_id, user_id, ban=data.ban)
     except ValueError as e:
         raise HTTPException(400, str(e))
-    save_data(clubs)
-    save_users(users)
+    _refresh_state()
     return {"status": "ok"}
 
 
@@ -974,24 +933,10 @@ def update_role_api(club_id: str, data: RoleRequest):
     """Update member roles within a club."""
     actor = require_auth(data.token)
     try:
-        if data.action == "toggle_admin":
-            cli_toggle_admin(clubs, club_id, actor, data.user_id)
-        elif data.action == "transfer_leader":
-            cli_transfer_leader(clubs, club_id, actor, data.user_id)
-        elif data.action == "resign_admin":
-            if actor != data.user_id:
-                raise ValueError("Token mismatch")
-            cli_resign_admin(clubs, club_id, actor)
-        elif data.action == "quit":
-            if actor != data.user_id:
-                raise ValueError("Token mismatch")
-            cli_quit_club(clubs, users, club_id, actor)
-        else:
-            raise ValueError("Invalid action")
+        svc_update_role(club_id, data.action, actor, data.user_id)
     except ValueError as e:
         raise HTTPException(400, str(e))
-    save_data(clubs)
-    save_users(users)
+    _refresh_state()
     return {"status": "ok"}
 
 
@@ -1173,13 +1118,11 @@ def pre_rate_api(club_id: str, data: PreRateRequest):
     user = require_auth(data.token)
     if user != data.rater_id:
         raise HTTPException(401, "Token mismatch")
-    from .cli import pre_rate
-
     try:
-        pre_rate(clubs, club_id, data.rater_id, data.target_id, data.rating)
+        svc_pre_rate(club_id, data.rater_id, data.target_id, data.rating)
     except ValueError as e:
         raise HTTPException(400, str(e))
-    save_data(clubs)
+    _refresh_state()
     return {"status": "ok"}
 
 
@@ -1336,34 +1279,18 @@ def record_match_api(club_id: str, data: MatchCreate):
     except ValueError as e:
         raise HTTPException(400, str(e))
 
-    club = clubs.get(club_id)
-    if not club:
-        raise HTTPException(404, "Club not found")
-    pa = club.members.get(data.user_a)
-    pb = club.members.get(data.user_b)
-    if not pa or not pb:
-        raise HTTPException(400, "Players not found")
-    date = data.date or datetime.date.today()
-    weight = data.weight
-    if data.format:
-        weight = format_weight_from_name(data.format)
-    if weight is None:
-        weight = format_weight_from_name("6_game")
-    match = Match(
-        date=date,
-        player_a=pa,
-        player_b=pb,
-        score_a=data.score_a,
-        score_b=data.score_b,
-        format_weight=weight,
+    svc_record_match(
+        club_id,
+        data.user_a,
+        data.user_b,
+        data.score_a,
+        data.score_b,
+        data.date or datetime.date.today(),
+        data.weight or (format_weight_from_name(data.format) if data.format else format_weight_from_name("6_game")),
         location=data.location,
         format_name=data.format,
     )
-    update_ratings(match)
-    club.matches.append(match)
-    pa.singles_rating = weighted_rating(pa, date)
-    pb.singles_rating = weighted_rating(pb, date)
-    save_data(clubs)
+    _refresh_state()
     return {"status": "ok"}
 
 
@@ -1513,7 +1440,6 @@ def list_pending_matches(club_id: str, token: str):
 
 @app.post("/clubs/{club_id}/pending_matches")
 def submit_match_api(club_id: str, data: PendingMatchCreate):
-    from .cli import submit_match
 
     user = require_auth(data.token)
     if user != data.initiator:
@@ -1522,8 +1448,7 @@ def submit_match_api(club_id: str, data: PendingMatchCreate):
     cid = data.club_id or club_id
     try:
         validate_scores(data.score_initiator, data.score_opponent)
-        submit_match(
-            clubs,
+        svc_submit_match(
             cid,
             data.initiator,
             data.opponent,
@@ -1533,12 +1458,10 @@ def submit_match_api(club_id: str, data: PendingMatchCreate):
             data.weight or (format_weight_from_name(data.format) if data.format else format_weight_from_name("6_game")),
             location=data.location,
             format_name=data.format,
-            users=users,
         )
     except ValueError as e:
         raise HTTPException(400, str(e))
-    save_data(clubs)
-    save_users(users)
+    _refresh_state()
     return {"status": "pending"}
 
 
@@ -1554,35 +1477,31 @@ class ApproveMatchRequest(BaseModel):
 
 @app.post("/clubs/{club_id}/pending_matches/{index}/confirm")
 def confirm_match_api(club_id: str, index: int, data: ConfirmRequest):
-    from .cli import confirm_match
-
     user = require_auth(data.token)
     if user != data.user_id:
         raise HTTPException(401, "Token mismatch")
 
     try:
-        confirm_match(clubs, club_id, index, data.user_id, users)
+        svc_confirm_match(club_id, index, data.user_id)
     except ValueError as e:
         raise HTTPException(400, str(e))
-    save_data(clubs)
+    _refresh_state()
     return {"status": "ok"}
 
 
 @app.post("/clubs/{club_id}/pending_matches/{index}/reject")
 def reject_match_api(club_id: str, index: int, data: ConfirmRequest):
     """Participant rejects a pending singles match."""
-    from .cli import reject_match
 
     user = require_auth(data.token)
     if user != data.user_id:
         raise HTTPException(401, "Token mismatch")
 
     try:
-        reject_match(clubs, club_id, index, data.user_id, users)
+        svc_reject_match(club_id, index, data.user_id)
     except ValueError as e:
         raise HTTPException(400, str(e))
-    save_data(clubs)
-    save_users(users)
+    _refresh_state()
     return {"status": "rejected"}
 
 
@@ -1593,31 +1512,27 @@ def approve_match_api(club_id: str, index: int, data: ApproveMatchRequest):
         raise HTTPException(401, "Token mismatch")
 
     approve_pending_match(club_id, index, data.approver)
+    _refresh_state()
     return {"status": "ok"}
 
 
 @app.post("/clubs/{club_id}/pending_matches/{index}/veto")
 def veto_match_api(club_id: str, index: int, data: ApproveMatchRequest):
     """Admin vetoes a pending singles match."""
-    from .cli import veto_match
-
     user = require_auth(data.token)
     if user != data.approver:
         raise HTTPException(401, "Token mismatch")
 
     try:
-        veto_match(clubs, club_id, index, data.approver, users)
+        svc_veto_match(club_id, index, data.approver)
     except ValueError as e:
         raise HTTPException(400, str(e))
-    save_data(clubs)
-    save_users(users)
+    _refresh_state()
     return {"status": "vetoed"}
 
 
 @app.post("/clubs/{club_id}/pending_doubles")
 def submit_doubles_api(club_id: str, data: PendingDoublesCreate):
-    from .cli import submit_doubles
-
     user = require_auth(data.token)
     if user != data.initiator:
         raise HTTPException(401, "Token mismatch")
@@ -1625,8 +1540,7 @@ def submit_doubles_api(club_id: str, data: PendingDoublesCreate):
     cid = data.club_id or club_id
     try:
         validate_scores(data.score_initiator, data.score_opponent)
-        submit_doubles(
-            clubs,
+        svc_submit_doubles(
             cid,
             data.initiator,
             data.partner,
@@ -1642,46 +1556,39 @@ def submit_doubles_api(club_id: str, data: PendingDoublesCreate):
             ),
             location=data.location,
             format_name=data.format,
-            users=users,
         )
     except ValueError as e:
         raise HTTPException(400, str(e))
-    save_data(clubs)
-    save_users(users)
+    _refresh_state()
     return {"status": "pending"}
 
 
 @app.post("/clubs/{club_id}/pending_doubles/{index}/confirm")
 def confirm_doubles_api(club_id: str, index: int, data: ConfirmRequest):
-    from .cli import confirm_doubles
-
     user = require_auth(data.token)
     if user != data.user_id:
         raise HTTPException(401, "Token mismatch")
 
     try:
-        confirm_doubles(clubs, club_id, index, data.user_id, users)
+        svc_confirm_doubles(club_id, index, data.user_id)
     except ValueError as e:
         raise HTTPException(400, str(e))
-    save_data(clubs)
+    _refresh_state()
     return {"status": "ok"}
 
 
 @app.post("/clubs/{club_id}/pending_doubles/{index}/reject")
 def reject_doubles_api(club_id: str, index: int, data: ConfirmRequest):
     """Participant rejects a pending doubles match."""
-    from .cli import reject_doubles
-
     user = require_auth(data.token)
     if user != data.user_id:
         raise HTTPException(401, "Token mismatch")
 
     try:
-        reject_doubles(clubs, club_id, index, data.user_id, users)
+        svc_reject_doubles(club_id, index, data.user_id)
     except ValueError as e:
         raise HTTPException(400, str(e))
-    save_data(clubs)
-    save_users(users)
+    _refresh_state()
     return {"status": "rejected"}
 
 
@@ -1692,24 +1599,23 @@ def approve_doubles_api(club_id: str, index: int, data: ApproveMatchRequest):
         raise HTTPException(401, "Token mismatch")
 
     approve_pending_match(club_id, index, data.approver)
+    _refresh_state()
     return {"status": "ok"}
 
 
 @app.post("/clubs/{club_id}/pending_doubles/{index}/veto")
 def veto_doubles_api(club_id: str, index: int, data: ApproveMatchRequest):
     """Admin vetoes a pending doubles match."""
-    from .cli import veto_doubles
 
     user = require_auth(data.token)
     if user != data.approver:
         raise HTTPException(401, "Token mismatch")
 
     try:
-        veto_doubles(clubs, club_id, index, data.approver, users)
+        svc_veto_doubles(club_id, index, data.approver)
     except ValueError as e:
         raise HTTPException(400, str(e))
-    save_data(clubs)
-    save_users(users)
+    _refresh_state()
     return {"status": "vetoed"}
 
 
@@ -1730,8 +1636,8 @@ def create_appointment(club_id: str, data: AppointmentCreate):
         location=data.location,
         info=data.info,
     )
-    club.appointments.append(appt)
-    save_data(clubs)
+    svc_create_appointment(club_id, appt)
+    _refresh_state()
     return {"status": "ok"}
 
 
@@ -1767,8 +1673,8 @@ def signup_appointment(club_id: str, index: int, data: SignupRequest):
         raise HTTPException(404, "Appointment not found")
     if data.user_id not in club.members:
         raise HTTPException(400, "Not a member")
-    club.appointments[index].signups.add(data.user_id)
-    save_data(clubs)
+    svc_update_signup(club_id, index, add=data.user_id)
+    _refresh_state()
     return {"status": "ok"}
 
 
@@ -1782,8 +1688,8 @@ def cancel_signup(club_id: str, index: int, data: SignupRequest):
         raise HTTPException(404, "Club not found")
     if index >= len(club.appointments):
         raise HTTPException(404, "Appointment not found")
-    club.appointments[index].signups.discard(data.user_id)
-    save_data(clubs)
+    svc_update_signup(club_id, index, remove=data.user_id)
+    _refresh_state()
     return {"status": "ok"}
 
 
@@ -1844,18 +1750,15 @@ def update_user_limits(user_id: str, data: LimitsUpdateRequest):
     target = users.get(user_id)
     if not target:
         raise HTTPException(404, "User not found")
-    from .cli import set_user_limits
-
     try:
-        set_user_limits(
-            users,
+        svc_update_limits(
             user_id,
             max_joinable=data.max_joinable_clubs,
             max_creatable=data.max_creatable_clubs,
         )
     except ValueError as e:
         raise HTTPException(400, str(e))
-    save_users(users)
+    _refresh_state()
     return {"status": "ok"}
 
 
@@ -1898,14 +1801,11 @@ def sys_set_club_leader(club_id: str, data: SysLeaderRequest):
     club = clubs.get(club_id)
     if not club:
         raise HTTPException(404, "Club not found")
-    from .cli import sys_set_leader
-
     try:
-        sys_set_leader(clubs, club_id, data.user_id)
+        svc_sys_set_leader(club_id, data.user_id)
     except ValueError as e:
         raise HTTPException(400, str(e))
-    save_data(clubs)
-    save_users(users)
+    _refresh_state()
     return {"status": "ok"}
 
 

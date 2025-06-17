@@ -1,7 +1,7 @@
 from __future__ import annotations
 import secrets
 from fastapi import HTTPException
-from ..cli import register_user, resolve_user, check_password
+from ..cli import register_user, resolve_user, check_password, set_user_limits
 from ..storage import (
     load_users,
     load_data,
@@ -14,6 +14,7 @@ from ..storage import (
     list_user_messages,
     mark_user_message_read,
     transaction,
+    save_user,
 )
 from ..models import players, User
 
@@ -141,4 +142,15 @@ def mark_read(user: User, index: int):
         mark_user_message_read(user.user_id, index)
     except IndexError:
         raise HTTPException(404, "Message not found")
+
+
+def update_user_limits(user_id: str, max_joinable: int, max_creatable: int) -> None:
+    """Update club limits for a user."""
+    users = load_users()
+    try:
+        set_user_limits(users, user_id, max_joinable=max_joinable, max_creatable=max_creatable)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    with transaction() as conn:
+        save_user(users[user_id], conn=conn)
 
