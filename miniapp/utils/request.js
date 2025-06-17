@@ -6,12 +6,9 @@ function request(path, options = {}) {
   opts.url = path.startsWith('http') ? path : `${BASE_URL}${path}`;
   opts.method = opts.method || 'GET';
   opts.data = opts.data || {};
+  opts.header = opts.header || {};
   if (token) {
-    if (opts.method === 'GET' || opts.method === 'DELETE') {
-      opts.data = { ...opts.data, token };
-    } else {
-      opts.data = { token, ...opts.data };
-    }
+    opts.header['Authorization'] = `Bearer ${token}`;
   }
   return new Promise((resolve, reject) => {
     wx.request({

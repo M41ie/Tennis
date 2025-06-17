@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Header
 from pydantic import BaseModel
 from ..services.auth import require_auth, assert_token_matches
 from ..services.clubs import create_club as svc_create_club, add_player as svc_add_player
@@ -39,8 +39,8 @@ class PlayerCreate(BaseModel):
 
 
 @router.post("/clubs")
-def create_club(data: ClubCreate):
-    uid = require_auth(data.token)
+def create_club(data: ClubCreate, authorization: str | None = Header(None)):
+    uid = require_auth(data.token, authorization)
     assert_token_matches(uid, data.user_id)
     cid = data.club_id or api._generate_club_id()
     svc_create_club(
@@ -60,8 +60,8 @@ def create_club(data: ClubCreate):
 
 
 @router.post("/clubs/{club_id}/players")
-def add_player(club_id: str, data: PlayerCreate):
-    require_auth(data.token)
+def add_player(club_id: str, data: PlayerCreate, authorization: str | None = Header(None)):
+    require_auth(data.token, authorization)
     try:
         svc_add_player(
             club_id,
