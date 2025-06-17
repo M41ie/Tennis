@@ -1,6 +1,6 @@
 import argparse
 import datetime
-import hashlib
+from passlib.context import CryptContext
 from typing import Optional
 
 from .models import (
@@ -28,12 +28,18 @@ from .rating import (
 from .storage import load_data, save_data, load_users, save_users
 
 
+pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
+
+
 def hash_password(password: str) -> str:
-    return hashlib.sha256(password.encode("utf-8")).hexdigest()
+    return pwd_context.hash(password)
 
 
 def check_password(user: User, password: str) -> bool:
-    return user.password_hash == hash_password(password)
+    try:
+        return pwd_context.verify(password, user.password_hash)
+    except Exception:
+        return False
 
 
 def normalize_gender(g: str | None) -> str | None:
