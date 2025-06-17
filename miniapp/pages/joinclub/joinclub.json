@@ -1,3 +1,6 @@
 {
-  "navigationBarTitleText": "加入俱乐部"
+  "navigationBarTitleText": "加入俱乐部",
+  "usingComponents": {
+    "club-card": "/components/club-card/club-card"
+  }
 }

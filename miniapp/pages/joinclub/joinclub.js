@@ -1,10 +1,12 @@
 const BASE_URL = getApp().globalData.BASE_URL;
 const request = require('../../services/api');
 const { hideKeyboard } = require('../../utils/hideKeyboard');
+const { zh_CN } = require('../../utils/locales.js');
 const store = require('../../store/store');
 
 Page({
   data: {
+    t: zh_CN,
     clubs: [],
     query: '',
     joined: [],
@@ -78,6 +80,13 @@ Page({
               const rejected = info.rejected_members
                 ? info.rejected_members[uid]
                 : '';
+              const join_status = that.data.joined.includes(c.club_id)
+                ? 'joined'
+                : pending
+                ? 'pending'
+                : rejected
+                ? 'rejected'
+                : 'apply';
               result.push({
                 club_id: c.club_id,
                 name: c.name,
@@ -96,8 +105,7 @@ Page({
                     : '--',
                 singles_avg: singlesAvg,
                 doubles_avg: doublesAvg,
-                joined: that.data.joined.includes(c.club_id),
-                pending,
+                join_status,
                 rejected_reason: rejected
               });
             },
@@ -113,7 +121,7 @@ Page({
     });
   },
   join(e) {
-    const cid = e.currentTarget.dataset.id;
+    const cid = e.detail.club ? e.detail.club.club_id : '';
     const userId = store.userId;
     const token = store.token;
     const that = this;
@@ -124,7 +132,7 @@ Page({
         const limit =
           res.data.max_joinable_clubs != null ? res.data.max_joinable_clubs : 5;
         if (res.data.joined_clubs && res.data.joined_clubs.length >= limit) {
-          wx.showToast({ title: '加入俱乐部的数量已达上限', icon: 'none' });
+          wx.showToast({ title: that.data.t.joinLimitReached, icon: 'none' });
           return;
         }
         request({
@@ -157,16 +165,16 @@ Page({
   hideKeyboard,
   noop() {},
   viewReject(e) {
-    const reason = e.currentTarget.dataset.reason;
-    const cid = e.currentTarget.dataset.id;
+    const reason = e.detail.reason || '';
+    const cid = e.detail.club ? e.detail.club.club_id : '';
     const uid = store.userId;
     const token = store.token;
     const that = this;
     wx.showModal({
-      title: '未通过原因',
+      title: that.data.t.rejectReason || '未通过原因',
       content: reason || '',
       showCancel: false,
-      confirmText: '了解',
+      confirmText: that.data.t.acknowledge || '了解',
       success() {
         request({
           url: `${BASE_URL}/clubs/${cid}/clear_rejection`,
@@ -188,7 +196,7 @@ Page({
       (this.data.needRating && (isNaN(rating) || rating < 0 || rating > 7)) ||
       !this.data.reason
     ) {
-      wx.showToast({ title: '请完善信息', icon: 'none' });
+      wx.showToast({ title: that.data.t.incompleteInfo, icon: 'none' });
       return;
     }
     const that = this;
@@ -205,13 +213,13 @@ Page({
       success(r) {
         if (r.statusCode === 200) {
           store.setClubId(cid);
-          wx.showToast({ title: '已申请', icon: 'success' });
+          wx.showToast({ title: that.data.t.applied, icon: 'success' });
           const clubs = that.data.clubs.map(c =>
             c.club_id === cid ? { ...c, pending: true, rejected_reason: '' } : c
           );
           that.setData({ clubs, showDialog: false });
         } else {
-          wx.showToast({ title: '失败', icon: 'none' });
+          wx.showToast({ title: that.data.t.failed, icon: 'none' });
         }
       }
     });

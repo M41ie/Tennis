@@ -1,5 +1,6 @@
 const { BASE_URL } = require('./config');
 const store = require('./store/store');
+const { zh_CN: t } = require('./utils/locales');
 
 App({
   globalData: {
@@ -32,7 +33,7 @@ App({
           }
         },
         fail() {
-          wx.showToast({ title: '网络错误', icon: 'none' });
+          wx.showToast({ title: t.networkError, icon: 'none' });
         }
       });
     }

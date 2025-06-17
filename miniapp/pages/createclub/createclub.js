@@ -1,10 +1,12 @@
 const BASE_URL = getApp().globalData.BASE_URL;
 const request = require('../../services/api');
 const { hideKeyboard } = require('../../utils/hideKeyboard');
+const { zh_CN } = require('../../utils/locales.js');
 const store = require('../../store/store');
 
 Page({
   data: {
+    t: zh_CN,
     name: '',
     slogan: '',
     logo: '',
@@ -31,7 +33,7 @@ Page({
   confirmRating() {
     const rating = parseFloat(this.data.rating);
     if (isNaN(rating) || rating < 0 || rating > 7) {
-      wx.showToast({ title: '评分格式错误', icon: 'none' });
+      wx.showToast({ title: that.data.t.ratingFormatError, icon: 'none' });
       return;
     }
     this.setData({ showDialog: false });
@@ -66,16 +68,16 @@ Page({
                 token
               },
               complete() {
-                wx.showToast({ title: '已创建', icon: 'success' });
+                wx.showToast({ title: that.data.t.created, icon: 'success' });
                 wx.navigateBack();
               }
             });
           } else {
-            wx.showToast({ title: '已创建', icon: 'success' });
+            wx.showToast({ title: that.data.t.created, icon: 'success' });
             wx.navigateBack();
           }
         } else {
-          const msg = (res.data && res.data.detail) || 'Failed';
+          const msg = (res.data && res.data.detail) || that.data.t.failed;
           wx.showToast({ title: msg, icon: 'none' });
         }
       }
@@ -94,12 +96,12 @@ Page({
     const userId = store.userId;
     const token = store.token;
     if (!userId || !token || !this.data.name || !this.data.slogan || this.data.region.length === 0) {
-      wx.showToast({ title: '请填写完整信息', icon: 'none' });
+      wx.showToast({ title: that.data.t.incompleteInfo, icon: 'none' });
       return;
     }
     const nameOk = /^[A-Za-z\u4e00-\u9fa5]{1,20}$/.test(this.data.name);
     if (!nameOk) {
-      wx.showToast({ title: '俱乐部名仅支持中英文，且不能超过20字符', icon: 'none' });
+      wx.showToast({ title: that.data.t.clubNameRule, icon: 'none' });
       return;
     }
     const that = this;
@@ -115,7 +117,7 @@ Page({
         }
       },
       fail() {
-        wx.showToast({ title: '获取信息失败', icon: 'none' });
+        wx.showToast({ title: that.data.t.loadFailed, icon: 'none' });
       }
     });
   },

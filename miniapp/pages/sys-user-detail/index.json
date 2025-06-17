@@ -1,6 +1,7 @@
 {
   "navigationBarTitleText": "用户管理",
   "usingComponents": {
-    "profile-card": "/components/profile-card/profile-card"
+    "profile-card": "/components/profile-card/profile-card",
+    "club-card": "/components/club-card/club-card"
   }
 }

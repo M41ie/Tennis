@@ -1,10 +1,12 @@
 const BASE_URL = getApp().globalData.BASE_URL;
 const request = require('../../services/api');
 const { hideKeyboard } = require('../../utils/hideKeyboard');
+const { zh_CN } = require('../../utils/locales.js');
 const store = require('../../store/store');
 
 Page({
   data: {
+    t: zh_CN,
     name: '',
     genderIndex: 0,
     avatar: '',
@@ -63,7 +65,7 @@ Page({
       success(res) {
         const path = res.tempFilePaths[0];
         if (!/\.(jpg|jpeg|png)$/i.test(path)) {
-          wx.showToast({ title: '请上传 jpg/png 图片', icon: 'none' });
+          wx.showToast({ title: that.data.t.uploadImageError, icon: 'none' });
           return;
         }
         that.setData({ avatar: path });
@@ -81,12 +83,12 @@ Page({
       this.data.backhandIndex === 0 ||
       !this.data.regionString;
     if (incomplete) {
-      wx.showToast({ title: '信息不完整，请完善后保存。', icon: 'none' });
+      wx.showToast({ title: that.data.t.incompleteInfo, icon: 'none' });
       return;
     }
     const nameOk = /^[A-Za-z\u4e00-\u9fa5]{1,12}$/.test(this.data.name);
     if (!nameOk) {
-      wx.showToast({ title: '用户名仅支持中英文，且不能超过12字符', icon: 'none' });
+      wx.showToast({ title: that.data.t.nameRule, icon: 'none' });
       return;
     }
     const that = this;
@@ -106,10 +108,10 @@ Page({
       },
       success(res) {
         if (res.statusCode === 200) {
-          wx.showToast({ title: '已更新', icon: 'success' });
+          wx.showToast({ title: that.data.t.updated, icon: 'success' });
           wx.navigateBack();
         } else {
-          wx.showToast({ title: '失败', icon: 'none' });
+          wx.showToast({ title: that.data.t.failed, icon: 'none' });
         }
       }
     });

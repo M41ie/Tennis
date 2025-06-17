@@ -1,5 +1,6 @@
 const BASE_URL = getApp().globalData.BASE_URL;
 const store = require('../store/store');
+const { zh_CN: t } = require('./locales');
 
 function request(options = {}) {
   const token = store.token;
@@ -12,7 +13,7 @@ function request(options = {}) {
   if (token) {
     opts.header['Authorization'] = `Bearer ${token}`;
   }
-  wx.showLoading({ title: '加载中', mask: true });
+  wx.showLoading({ title: t.loading, mask: true });
   return new Promise((resolve, reject) => {
     wx.request({
       ...opts,
@@ -20,7 +21,7 @@ function request(options = {}) {
         if (res.statusCode === 401) {
           store.clearAuth();
           wx.navigateTo({ url: '/pages/login/index' });
-          wx.showToast({ title: '请重新登录', icon: 'none' });
+          wx.showToast({ title: t.pleaseRelogin, icon: 'none' });
           opts.fail && opts.fail(res);
           reject(res);
           return;
@@ -29,13 +30,13 @@ function request(options = {}) {
           opts.success && opts.success(res);
           resolve(res.data);
         } else {
-          wx.showToast({ title: res.data.detail || '请求失败', icon: 'none' });
+          wx.showToast({ title: res.data.detail || t.requestFailed, icon: 'none' });
           opts.fail && opts.fail(res);
           reject(res);
         }
       },
       fail(err) {
-        wx.showToast({ title: '网络错误', icon: 'none' });
+        wx.showToast({ title: t.networkError, icon: 'none' });
         opts.fail && opts.fail(err);
         reject(err);
       },

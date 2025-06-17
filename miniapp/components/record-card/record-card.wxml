@@ -56,11 +56,11 @@
   <view class="action-bar" wx:if="{{showActions}}">
     <text class="status-text" wx:if="{{statusText}}">{{statusText}}</text>
     <view class="button-group" wx:if="{{canConfirm || canReject || canApprove || canVeto || canShare}}">
-      <button wx:if="{{canConfirm}}" class="action-btn confirm" bindtap="onConfirm">确认</button>
-      <button wx:if="{{canReject}}" class="action-btn reject" bindtap="onReject">拒绝</button>
-      <button wx:if="{{canApprove}}" class="action-btn approve" bindtap="onApprove">通过</button>
-      <button wx:if="{{canVeto}}" class="action-btn veto" bindtap="onVeto">否决</button>
-      <button wx:if="{{canShare}}" class="action-btn share" open-type="share" bindtap="onShare">分享</button>
+      <button wx:if="{{canConfirm}}" class="action-btn confirm" bindtap="onConfirm">{{t.confirm}}</button>
+      <button wx:if="{{canReject}}" class="action-btn reject" bindtap="onReject">{{t.reject}}</button>
+      <button wx:if="{{canApprove}}" class="action-btn approve" bindtap="onApprove">{{t.approve}}</button>
+      <button wx:if="{{canVeto}}" class="action-btn veto" bindtap="onVeto">{{t.veto}}</button>
+      <button wx:if="{{canShare}}" class="action-btn share" open-type="share" bindtap="onShare">{{t.share}}</button>
     </view>
   </view>
 </view>

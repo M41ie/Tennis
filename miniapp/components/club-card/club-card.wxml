@@ -1,0 +1,18 @@
+<view class="club-card" bindtap="tapCard">
+  <view class="card-left">
+    <view class="club-name">{{club.name}}</view>
+    <view class="club-slogan" wx:if="{{club.slogan}}">{{club.slogan}}</view>
+    <view class="club-stats" wx:if="{{club.member_count}}">
+      <text>{{club.region}} · {{t.club}} {{club.member_count}} 人</text>
+      <text>{{t.singles}}：{{club.singles_range}}，平均 {{club.singles_avg}}，共计 {{club.total_singles}} 场</text>
+      <text>{{t.doubles}}：{{club.doubles_range}}，平均 {{club.doubles_avg}}，共计 {{club.total_doubles}} 场</text>
+    </view>
+  </view>
+  <view class="card-right">
+    <text wx:if="{{showRoleTag}}" class="club-role role-tag {{club.role}}">{{club.roleText}}</text>
+    <button wx:if="{{joinStatus=='apply'}}" class="join-btn" bindtap="onJoin">{{t.applyJoin}}</button>
+    <button wx:elif="{{joinStatus=='pending'}}" class="join-btn pending" disabled>{{t.reviewing}}</button>
+    <button wx:elif="{{joinStatus=='rejected'}}" class="join-btn pending" bindtap="onViewReject">{{t.viewRejectReason}}</button>
+    <button wx:elif="{{joinStatus=='joined'}}" class="join-btn disabled" disabled>{{t.joined}}</button>
+  </view>
+</view>
