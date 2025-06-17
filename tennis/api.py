@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException, Depends, Header
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, StrictInt
@@ -472,8 +472,8 @@ class DissolveRequest(BaseModel):
 
 
 @app.post("/clubs/{club_id}/join")
-def join_club(club_id: str, data: JoinRequest):
-    user = require_auth(data.token)
+def join_club(club_id: str, data: JoinRequest, authorization: str | None = Header(None)):
+    user = require_auth(data.token, authorization)
     assert_token_matches(user, data.user_id)
     request_join_club(
         club_id,
@@ -486,34 +486,34 @@ def join_club(club_id: str, data: JoinRequest):
 
 
 @app.delete("/clubs/{club_id}")
-def dissolve_club_api(club_id: str, data: DissolveRequest):
+def dissolve_club_api(club_id: str, data: DissolveRequest, authorization: str | None = Header(None)):
     """Delete a club (leader only)."""
-    user = require_auth(data.token)
+    user = require_auth(data.token, authorization)
     assert_token_matches(user, data.user_id)
     dissolve_existing_club(club_id, user)
     return {"status": "ok"}
 
 
 @app.post("/clubs/{club_id}/reject")
-def reject_join_request(club_id: str, data: RejectRequest):
-    user = require_auth(data.token)
+def reject_join_request(club_id: str, data: RejectRequest, authorization: str | None = Header(None)):
+    user = require_auth(data.token, authorization)
     assert_token_matches(user, data.approver_id)
     svc_reject_join(club_id, data.approver_id, data.user_id, data.reason)
     return {"status": "ok"}
 
 
 @app.post("/clubs/{club_id}/clear_rejection")
-def clear_rejection_api(club_id: str, data: ClearRejectRequest):
-    user = require_auth(data.token)
+def clear_rejection_api(club_id: str, data: ClearRejectRequest, authorization: str | None = Header(None)):
+    user = require_auth(data.token, authorization)
     assert_token_matches(user, data.user_id)
     svc_clear_rejection(club_id, data.user_id)
     return {"status": "ok"}
 
 
 @app.patch("/clubs/{club_id}")
-def update_club_info(club_id: str, data: ClubUpdate):
+def update_club_info(club_id: str, data: ClubUpdate, authorization: str | None = Header(None)):
     """Update club basic information (leader or admin only)."""
-    user = require_auth(data.token)
+    user = require_auth(data.token, authorization)
     club = get_club_or_404(club_id)
     assert_token_matches(user, data.user_id)
     if user != club.leader_id and user not in club.admin_ids:
@@ -529,8 +529,8 @@ def update_club_info(club_id: str, data: ClubUpdate):
 
 
 @app.post("/clubs/{club_id}/approve")
-def approve_club_member(club_id: str, data: ApproveRequest):
-    user = require_auth(data.token)
+def approve_club_member(club_id: str, data: ApproveRequest, authorization: str | None = Header(None)):
+    user = require_auth(data.token, authorization)
     assert_token_matches(user, data.approver_id)
     approve_member_request(
         club_id,
@@ -827,9 +827,9 @@ def leaderboard_full(
 
 
 @app.patch("/players/{user_id}")
-def update_global_player(user_id: str, data: PlayerUpdate):
+def update_global_player(user_id: str, data: PlayerUpdate, authorization: str | None = Header(None)):
     """Update player information without specifying a club."""
-    user = require_auth(data.token)
+    user = require_auth(data.token, authorization)
     if user != data.user_id or data.user_id != user_id:
         raise HTTPException(401, "Token mismatch")
 
@@ -848,9 +848,9 @@ def update_global_player(user_id: str, data: PlayerUpdate):
 
 
 @app.patch("/clubs/{club_id}/players/{user_id}")
-def update_player_api(club_id: str, user_id: str, data: PlayerUpdate):
+def update_player_api(club_id: str, user_id: str, data: PlayerUpdate, authorization: str | None = Header(None)):
     """Update existing player information."""
-    user = require_auth(data.token)
+    user = require_auth(data.token, authorization)
     if user != data.user_id or data.user_id != user_id:
         raise HTTPException(401, "Token mismatch")
     try:
@@ -872,9 +872,9 @@ def update_player_api(club_id: str, user_id: str, data: PlayerUpdate):
 
 
 @app.delete("/clubs/{club_id}/members/{user_id}")
-def remove_member_api(club_id: str, user_id: str, data: RemoveRequest):
+def remove_member_api(club_id: str, user_id: str, data: RemoveRequest, authorization: str | None = Header(None)):
     """Remove a club member (leader or admin only)."""
-    user = require_auth(data.token)
+    user = require_auth(data.token, authorization)
     if user != data.remover_id:
         raise HTTPException(401, "Token mismatch")
     try:
@@ -885,9 +885,9 @@ def remove_member_api(club_id: str, user_id: str, data: RemoveRequest):
 
 
 @app.post("/clubs/{club_id}/role")
-def update_role_api(club_id: str, data: RoleRequest):
+def update_role_api(club_id: str, data: RoleRequest, authorization: str | None = Header(None)):
     """Update member roles within a club."""
-    actor = require_auth(data.token)
+    actor = require_auth(data.token, authorization)
     try:
         svc_update_role(club_id, data.action, actor, data.user_id)
     except ValueError as e:
@@ -896,8 +896,8 @@ def update_role_api(club_id: str, data: RoleRequest):
 
 
 @app.post("/clubs/{club_id}/prerate")
-def pre_rate_api(club_id: str, data: PreRateRequest):
-    user = require_auth(data.token)
+def pre_rate_api(club_id: str, data: PreRateRequest, authorization: str | None = Header(None)):
+    user = require_auth(data.token, authorization)
     if user != data.rater_id:
         raise HTTPException(401, "Token mismatch")
     try:
@@ -1051,8 +1051,8 @@ def get_global_player_doubles_records(
 
 
 @app.post("/clubs/{club_id}/matches")
-def record_match_api(club_id: str, data: MatchCreate):
-    user = require_auth(data.token)
+def record_match_api(club_id: str, data: MatchCreate, authorization: str | None = Header(None)):
+    user = require_auth(data.token, authorization)
     if user != data.user_id:
         raise HTTPException(401, "Token mismatch")
     try:
@@ -1075,9 +1075,9 @@ def record_match_api(club_id: str, data: MatchCreate):
 
 
 @app.post("/clubs/{club_id}/pending_matches")
-def submit_match_api(club_id: str, data: PendingMatchCreate):
+def submit_match_api(club_id: str, data: PendingMatchCreate, authorization: str | None = Header(None)):
 
-    user = require_auth(data.token)
+    user = require_auth(data.token, authorization)
     if user != data.initiator:
         raise HTTPException(401, "Token mismatch")
 
@@ -1111,8 +1111,8 @@ class ApproveMatchRequest(BaseModel):
 
 
 @app.post("/clubs/{club_id}/pending_matches/{index}/confirm")
-def confirm_match_api(club_id: str, index: int, data: ConfirmRequest):
-    user = require_auth(data.token)
+def confirm_match_api(club_id: str, index: int, data: ConfirmRequest, authorization: str | None = Header(None)):
+    user = require_auth(data.token, authorization)
     if user != data.user_id:
         raise HTTPException(401, "Token mismatch")
 
@@ -1124,10 +1124,10 @@ def confirm_match_api(club_id: str, index: int, data: ConfirmRequest):
 
 
 @app.post("/clubs/{club_id}/pending_matches/{index}/reject")
-def reject_match_api(club_id: str, index: int, data: ConfirmRequest):
+def reject_match_api(club_id: str, index: int, data: ConfirmRequest, authorization: str | None = Header(None)):
     """Participant rejects a pending singles match."""
 
-    user = require_auth(data.token)
+    user = require_auth(data.token, authorization)
     if user != data.user_id:
         raise HTTPException(401, "Token mismatch")
 
@@ -1139,8 +1139,8 @@ def reject_match_api(club_id: str, index: int, data: ConfirmRequest):
 
 
 @app.post("/clubs/{club_id}/pending_matches/{index}/approve")
-def approve_match_api(club_id: str, index: int, data: ApproveMatchRequest):
-    user = require_auth(data.token)
+def approve_match_api(club_id: str, index: int, data: ApproveMatchRequest, authorization: str | None = Header(None)):
+    user = require_auth(data.token, authorization)
     if user != data.approver:
         raise HTTPException(401, "Token mismatch")
 
@@ -1149,9 +1149,9 @@ def approve_match_api(club_id: str, index: int, data: ApproveMatchRequest):
 
 
 @app.post("/clubs/{club_id}/pending_matches/{index}/veto")
-def veto_match_api(club_id: str, index: int, data: ApproveMatchRequest):
+def veto_match_api(club_id: str, index: int, data: ApproveMatchRequest, authorization: str | None = Header(None)):
     """Admin vetoes a pending singles match."""
-    user = require_auth(data.token)
+    user = require_auth(data.token, authorization)
     if user != data.approver:
         raise HTTPException(401, "Token mismatch")
 
@@ -1163,8 +1163,8 @@ def veto_match_api(club_id: str, index: int, data: ApproveMatchRequest):
 
 
 @app.post("/clubs/{club_id}/pending_doubles")
-def submit_doubles_api(club_id: str, data: PendingDoublesCreate):
-    user = require_auth(data.token)
+def submit_doubles_api(club_id: str, data: PendingDoublesCreate, authorization: str | None = Header(None)):
+    user = require_auth(data.token, authorization)
     if user != data.initiator:
         raise HTTPException(401, "Token mismatch")
 
@@ -1194,8 +1194,8 @@ def submit_doubles_api(club_id: str, data: PendingDoublesCreate):
 
 
 @app.post("/clubs/{club_id}/pending_doubles/{index}/confirm")
-def confirm_doubles_api(club_id: str, index: int, data: ConfirmRequest):
-    user = require_auth(data.token)
+def confirm_doubles_api(club_id: str, index: int, data: ConfirmRequest, authorization: str | None = Header(None)):
+    user = require_auth(data.token, authorization)
     if user != data.user_id:
         raise HTTPException(401, "Token mismatch")
 
@@ -1207,9 +1207,9 @@ def confirm_doubles_api(club_id: str, index: int, data: ConfirmRequest):
 
 
 @app.post("/clubs/{club_id}/pending_doubles/{index}/reject")
-def reject_doubles_api(club_id: str, index: int, data: ConfirmRequest):
+def reject_doubles_api(club_id: str, index: int, data: ConfirmRequest, authorization: str | None = Header(None)):
     """Participant rejects a pending doubles match."""
-    user = require_auth(data.token)
+    user = require_auth(data.token, authorization)
     if user != data.user_id:
         raise HTTPException(401, "Token mismatch")
 
@@ -1221,8 +1221,8 @@ def reject_doubles_api(club_id: str, index: int, data: ConfirmRequest):
 
 
 @app.post("/clubs/{club_id}/pending_doubles/{index}/approve")
-def approve_doubles_api(club_id: str, index: int, data: ApproveMatchRequest):
-    user = require_auth(data.token)
+def approve_doubles_api(club_id: str, index: int, data: ApproveMatchRequest, authorization: str | None = Header(None)):
+    user = require_auth(data.token, authorization)
     if user != data.approver:
         raise HTTPException(401, "Token mismatch")
 
@@ -1231,10 +1231,10 @@ def approve_doubles_api(club_id: str, index: int, data: ApproveMatchRequest):
 
 
 @app.post("/clubs/{club_id}/pending_doubles/{index}/veto")
-def veto_doubles_api(club_id: str, index: int, data: ApproveMatchRequest):
+def veto_doubles_api(club_id: str, index: int, data: ApproveMatchRequest, authorization: str | None = Header(None)):
     """Admin vetoes a pending doubles match."""
 
-    user = require_auth(data.token)
+    user = require_auth(data.token, authorization)
     if user != data.approver:
         raise HTTPException(401, "Token mismatch")
 
@@ -1246,9 +1246,9 @@ def veto_doubles_api(club_id: str, index: int, data: ApproveMatchRequest):
 
 
 @app.post("/clubs/{club_id}/appointments")
-def create_appointment(club_id: str, data: AppointmentCreate):
+def create_appointment(club_id: str, data: AppointmentCreate, authorization: str | None = Header(None)):
     """Create a new appointment in a club."""
-    user = require_auth(data.token)
+    user = require_auth(data.token, authorization)
     if user != data.user_id:
         raise HTTPException(401, "Token mismatch")
     club = clubs.get(club_id)
@@ -1287,8 +1287,8 @@ def list_appointments(club_id: str):
 
 
 @app.post("/clubs/{club_id}/appointments/{index}/signup")
-def signup_appointment(club_id: str, index: int, data: SignupRequest):
-    user = require_auth(data.token)
+def signup_appointment(club_id: str, index: int, data: SignupRequest, authorization: str | None = Header(None)):
+    user = require_auth(data.token, authorization)
     if user != data.user_id:
         raise HTTPException(401, "Token mismatch")
     club = clubs.get(club_id)
@@ -1303,8 +1303,8 @@ def signup_appointment(club_id: str, index: int, data: SignupRequest):
 
 
 @app.post("/clubs/{club_id}/appointments/{index}/cancel")
-def cancel_signup(club_id: str, index: int, data: SignupRequest):
-    user = require_auth(data.token)
+def cancel_signup(club_id: str, index: int, data: SignupRequest, authorization: str | None = Header(None)):
+    user = require_auth(data.token, authorization)
     if user != data.user_id:
         raise HTTPException(401, "Token mismatch")
     club = clubs.get(club_id)
@@ -1364,9 +1364,9 @@ def list_all_users(
 
 
 @app.post("/sys/users/{user_id}/limits")
-def update_user_limits(user_id: str, data: LimitsUpdateRequest):
+def update_user_limits(user_id: str, data: LimitsUpdateRequest, authorization: str | None = Header(None)):
     """System admin updates a user's club limits."""
-    actor = require_auth(data.token)
+    actor = require_auth(data.token, authorization)
     user = users.get(actor)
     if not user or not getattr(user, "is_sys_admin", False):
         raise HTTPException(401, "Not authorized")
@@ -1414,9 +1414,9 @@ def list_all_clubs(
 
 
 @app.post("/sys/clubs/{club_id}/leader")
-def sys_set_club_leader(club_id: str, data: SysLeaderRequest):
+def sys_set_club_leader(club_id: str, data: SysLeaderRequest, authorization: str | None = Header(None)):
     """System admin sets club leader."""
-    actor = require_auth(data.token)
+    actor = require_auth(data.token, authorization)
     user = users.get(actor)
     if not user or not getattr(user, "is_sys_admin", False):
         raise HTTPException(401, "Not authorized")
@@ -1593,9 +1593,9 @@ def list_all_doubles(
 
 
 @app.get("/sys/pending_matches")
-def list_all_pending_matches(token: str) -> list[dict[str, object]]:
+def list_all_pending_matches(token: str, authorization: str | None = Header(None)) -> list[dict[str, object]]:
     """Return all pending singles matches awaiting admin review."""
-    uid = require_auth(token)
+    uid = require_auth(token, authorization)
     user = users.get(uid)
     if not user or not getattr(user, "is_sys_admin", False):
         raise HTTPException(401, "Not authorized")
@@ -1659,9 +1659,9 @@ def list_all_pending_matches(token: str) -> list[dict[str, object]]:
 
 
 @app.get("/sys/pending_doubles")
-def list_all_pending_doubles(token: str) -> list[dict[str, object]]:
+def list_all_pending_doubles(token: str, authorization: str | None = Header(None)) -> list[dict[str, object]]:
     """Return all pending doubles matches awaiting admin review."""
-    uid = require_auth(token)
+    uid = require_auth(token, authorization)
     user = users.get(uid)
     if not user or not getattr(user, "is_sys_admin", False):
         raise HTTPException(401, "Not authorized")

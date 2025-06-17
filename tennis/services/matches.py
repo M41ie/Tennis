@@ -9,8 +9,8 @@ from .auth import require_auth
 from .. import api
 
 
-def list_pending_doubles_service(club_id: str, token: str):
-    uid = require_auth(token)
+def list_pending_doubles_service(club_id: str, token: str, authorization: str | None = None):
+    uid = require_auth(token, authorization)
     club = api.clubs.get(club_id)
     if not club:
         raise HTTPException(404, "Club not found")
@@ -178,8 +178,8 @@ def list_pending_doubles_service(club_id: str, token: str):
     return result
 
 
-def list_pending_matches_service(club_id: str, token: str):
-    uid = require_auth(token)
+def list_pending_matches_service(club_id: str, token: str, authorization: str | None = None):
+    uid = require_auth(token, authorization)
     club = api.clubs.get(club_id)
     if not club:
         raise HTTPException(404, "Club not found")
@@ -318,15 +318,15 @@ def list_pending_matches_service(club_id: str, token: str):
     return result
 
 
-def list_global_pending_doubles_service(user_id: str, token: str):
-    uid = require_auth(token)
+def list_global_pending_doubles_service(user_id: str, token: str, authorization: str | None = None):
+    uid = require_auth(token, authorization)
     if uid != user_id:
         raise HTTPException(401, "Token mismatch")
 
     combined = []
     for cid, club in api.clubs.items():
         try:
-            entries = list_pending_doubles_service(cid, token)
+            entries = list_pending_doubles_service(cid, token, authorization)
         except HTTPException:
             continue
         is_admin = uid == club.leader_id or uid in club.admin_ids
@@ -341,15 +341,15 @@ def list_global_pending_doubles_service(user_id: str, token: str):
     return combined
 
 
-def list_global_pending_matches_service(user_id: str, token: str):
-    uid = require_auth(token)
+def list_global_pending_matches_service(user_id: str, token: str, authorization: str | None = None):
+    uid = require_auth(token, authorization)
     if uid != user_id:
         raise HTTPException(401, "Token mismatch")
 
     combined = []
     for cid, club in api.clubs.items():
         try:
-            entries = list_pending_matches_service(cid, token)
+            entries = list_pending_matches_service(cid, token, authorization)
         except HTTPException:
             continue
         is_admin = uid == club.leader_id or uid in club.admin_ids

@@ -60,13 +60,21 @@ curl -X POST http://localhost:8000/login \
 You may supply a username instead of `USER` and the server will look up the
 corresponding ID automatically.
 
-Include the returned `token` value in the `token` field when calling protected
-endpoints. Creating a club or adding a player requires the caller's token, e.g.:
+Include the returned `token` value in the `Authorization` header when calling
+protected endpoints:
+
+```bash
+Authorization: Bearer TOKEN
+```
+
+Older clients can still pass a `token` field or query parameter. Creating a club
+or adding a player requires authentication, e.g.:
 
 ```bash
 curl -X POST http://localhost:8000/clubs \
      -H "Content-Type: application/json" \
-     -d '{"name": "Club", "user_id": "USER", "token": "TOKEN"}'
+     -H "Authorization: Bearer TOKEN" \
+     -d '{"name": "Club", "user_id": "USER"}'
 ```
 The API automatically assigns a `club_id` and returns it in the response.
 
@@ -77,7 +85,8 @@ To update profile information before joining a club, use the global endpoint:
 ```bash
 curl -X PATCH http://localhost:8000/players/USER \
      -H "Content-Type: application/json" \
-     -d '{"user_id":"USER","token":"TOKEN","name":"New"}'
+     -H "Authorization: Bearer TOKEN" \
+     -d '{"user_id":"USER","name":"New"}'
 ```
 This accepts the same fields as the club specific `/clubs/{club_id}/players/{user_id}` route.
 
@@ -86,14 +95,15 @@ Similarly, recording a match uses:
 ```bash
 curl -X POST http://localhost:8000/clubs/c1/matches \
      -H "Content-Type: application/json" \
-     -d '{"user_id":"USER","user_a":"A","user_b":"B","score_a":6,"score_b":4,"token":"TOKEN"}'
+     -H "Authorization: Bearer TOKEN" \
+     -d '{"user_id":"USER","user_a":"A","user_b":"B","score_a":6,"score_b":4}'
 ```
 
 Pending matches can be reviewed via (authentication required):
 
 ```bash
-curl "http://localhost:8000/clubs/c1/pending_matches?token=TOKEN"
-curl "http://localhost:8000/clubs/c1/pending_doubles?token=TOKEN"
+curl -H "Authorization: Bearer TOKEN" "http://localhost:8000/clubs/c1/pending_matches"
+curl -H "Authorization: Bearer TOKEN" "http://localhost:8000/clubs/c1/pending_doubles"
 ```
 
 Each item contains the index to use when confirming, rejecting or approving the match.
@@ -103,13 +113,16 @@ Use the following authenticated endpoints to respond:
 ```bash
 curl -X POST http://localhost:8000/clubs/c1/pending_matches/INDEX/confirm \
      -H "Content-Type: application/json" \
-     -d '{"user_id":"USER","token":"TOKEN"}'
+     -H "Authorization: Bearer TOKEN" \
+     -d '{"user_id":"USER"}'
 curl -X POST http://localhost:8000/clubs/c1/pending_matches/INDEX/reject \
      -H "Content-Type: application/json" \
-     -d '{"user_id":"USER","token":"TOKEN"}'
+     -H "Authorization: Bearer TOKEN" \
+     -d '{"user_id":"USER"}'
 curl -X POST http://localhost:8000/clubs/c1/pending_matches/INDEX/approve \
      -H "Content-Type: application/json" \
-     -d '{"approver":"ADMIN","token":"TOKEN"}'
+     -H "Authorization: Bearer TOKEN" \
+     -d '{"approver":"ADMIN"}'
 ```
 
 Doubles matches use the corresponding `/pending_doubles/...` routes.
