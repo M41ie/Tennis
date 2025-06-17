@@ -57,20 +57,23 @@ class Player:
 
 
 # thread-local storage for runtime state
-_thread_state = threading.local()
+
+# use simple module-level storage instead of thread-local data
+_global_state: dict[str, dict] = {}
 
 
 class _StateProxy(MutableMapping):
-    """Dictionary-like proxy backed by ``threading.local`` storage."""
+    """Dictionary-like proxy backed by module-level storage."""
 
     def __init__(self, name: str):
         self._name = name
+        _global_state.setdefault(name, {})
 
     def _data(self) -> dict:
-        return getattr(_thread_state, self._name)
+        return _global_state[self._name]
 
     def set(self, value: dict) -> None:
-        setattr(_thread_state, self._name, value)
+        _global_state[self._name] = value
 
     # MutableMapping interface
     def __getitem__(self, key):

@@ -13,7 +13,10 @@ import urllib.parse
 from pathlib import Path
 
 import tennis.storage as storage
-from .storage import load_data, load_users
+from .storage import load_data, load_users, invalidate_cache
+
+# ensure cached data does not leak across reloads
+invalidate_cache()
 from .cli import (
     register_user,
     resolve_user,
@@ -60,23 +63,23 @@ from .rating import (
     weighted_doubles_matches,
 )
 from .models import Player, Club, Match, DoublesMatch, Appointment, User, players
-import threading
 from collections.abc import MutableMapping
 
-_thread_state = threading.local()
+_global_state: dict[str, dict] = {}
 
 
 class _StateProxy(MutableMapping):
-    """Dictionary-like proxy backed by ``threading.local`` storage."""
+    """Dictionary-like proxy backed by module-level storage."""
 
     def __init__(self, name: str):
         self._name = name
+        _global_state.setdefault(name, {})
 
     def _data(self) -> dict:
-        return getattr(_thread_state, self._name)
+        return _global_state[self._name]
 
     def set(self, value: dict) -> None:
-        setattr(_thread_state, self._name, value)
+        _global_state[self._name] = value
 
     # MutableMapping interface
     def __getitem__(self, key):
@@ -116,9 +119,14 @@ def _refresh_state() -> None:
         users["A"].is_sys_admin = True
 
 
-app = FastAPI(dependencies=[Depends(_refresh_state)])
+app = FastAPI()
 
-# initialize state at import time so CLI utilities can operate
+
+@app.on_event("startup")
+def _load_state() -> None:
+    _refresh_state()
+
+# load initial state so CLI utilities and tests have immediate access
 _refresh_state()
 
 
@@ -537,7 +545,6 @@ def reject_join_request(club_id: str, data: RejectRequest):
     user = require_auth(data.token)
     assert_token_matches(user, data.approver_id)
     svc_reject_join(club_id, data.approver_id, data.user_id, data.reason)
-    _refresh_state()
     return {"status": "ok"}
 
 
@@ -546,7 +553,6 @@ def clear_rejection_api(club_id: str, data: ClearRejectRequest):
     user = require_auth(data.token)
     assert_token_matches(user, data.user_id)
     svc_clear_rejection(club_id, data.user_id)
-    _refresh_state()
     return {"status": "ok"}
 
 
@@ -565,7 +571,6 @@ def update_club_info(club_id: str, data: ClubUpdate):
         region=data.region,
         slogan=data.slogan,
     )
-    _refresh_state()
     return {"status": "ok"}
 
 
@@ -885,7 +890,6 @@ def update_global_player(user_id: str, data: PlayerUpdate):
         backhand=data.backhand,
         region=data.region,
     )
-    _refresh_state()
     return {"status": "ok"}
 
 
@@ -910,7 +914,6 @@ def update_player_api(club_id: str, user_id: str, data: PlayerUpdate):
         )
     except ValueError as e:
         raise HTTPException(400, str(e))
-    _refresh_state()
     return {"status": "ok"}
 
 
@@ -924,7 +927,6 @@ def remove_member_api(club_id: str, user_id: str, data: RemoveRequest):
         svc_remove_member(club_id, data.remover_id, user_id, ban=data.ban)
     except ValueError as e:
         raise HTTPException(400, str(e))
-    _refresh_state()
     return {"status": "ok"}
 
 
@@ -936,7 +938,6 @@ def update_role_api(club_id: str, data: RoleRequest):
         svc_update_role(club_id, data.action, actor, data.user_id)
     except ValueError as e:
         raise HTTPException(400, str(e))
-    _refresh_state()
     return {"status": "ok"}
 
 
@@ -1122,7 +1123,6 @@ def pre_rate_api(club_id: str, data: PreRateRequest):
         svc_pre_rate(club_id, data.rater_id, data.target_id, data.rating)
     except ValueError as e:
         raise HTTPException(400, str(e))
-    _refresh_state()
     return {"status": "ok"}
 
 
@@ -1290,7 +1290,6 @@ def record_match_api(club_id: str, data: MatchCreate):
         location=data.location,
         format_name=data.format,
     )
-    _refresh_state()
     return {"status": "ok"}
 
 
@@ -1461,7 +1460,6 @@ def submit_match_api(club_id: str, data: PendingMatchCreate):
         )
     except ValueError as e:
         raise HTTPException(400, str(e))
-    _refresh_state()
     return {"status": "pending"}
 
 
@@ -1485,7 +1483,6 @@ def confirm_match_api(club_id: str, index: int, data: ConfirmRequest):
         svc_confirm_match(club_id, index, data.user_id)
     except ValueError as e:
         raise HTTPException(400, str(e))
-    _refresh_state()
     return {"status": "ok"}
 
 
@@ -1501,7 +1498,6 @@ def reject_match_api(club_id: str, index: int, data: ConfirmRequest):
         svc_reject_match(club_id, index, data.user_id)
     except ValueError as e:
         raise HTTPException(400, str(e))
-    _refresh_state()
     return {"status": "rejected"}
 
 
@@ -1512,7 +1508,6 @@ def approve_match_api(club_id: str, index: int, data: ApproveMatchRequest):
         raise HTTPException(401, "Token mismatch")
 
     approve_pending_match(club_id, index, data.approver)
-    _refresh_state()
     return {"status": "ok"}
 
 
@@ -1527,7 +1522,6 @@ def veto_match_api(club_id: str, index: int, data: ApproveMatchRequest):
         svc_veto_match(club_id, index, data.approver)
     except ValueError as e:
         raise HTTPException(400, str(e))
-    _refresh_state()
     return {"status": "vetoed"}
 
 
@@ -1559,7 +1553,6 @@ def submit_doubles_api(club_id: str, data: PendingDoublesCreate):
         )
     except ValueError as e:
         raise HTTPException(400, str(e))
-    _refresh_state()
     return {"status": "pending"}
 
 
@@ -1573,7 +1566,6 @@ def confirm_doubles_api(club_id: str, index: int, data: ConfirmRequest):
         svc_confirm_doubles(club_id, index, data.user_id)
     except ValueError as e:
         raise HTTPException(400, str(e))
-    _refresh_state()
     return {"status": "ok"}
 
 
@@ -1588,7 +1580,6 @@ def reject_doubles_api(club_id: str, index: int, data: ConfirmRequest):
         svc_reject_doubles(club_id, index, data.user_id)
     except ValueError as e:
         raise HTTPException(400, str(e))
-    _refresh_state()
     return {"status": "rejected"}
 
 
@@ -1599,7 +1590,6 @@ def approve_doubles_api(club_id: str, index: int, data: ApproveMatchRequest):
         raise HTTPException(401, "Token mismatch")
 
     approve_pending_match(club_id, index, data.approver)
-    _refresh_state()
     return {"status": "ok"}
 
 
@@ -1615,7 +1605,6 @@ def veto_doubles_api(club_id: str, index: int, data: ApproveMatchRequest):
         svc_veto_doubles(club_id, index, data.approver)
     except ValueError as e:
         raise HTTPException(400, str(e))
-    _refresh_state()
     return {"status": "vetoed"}
 
 
@@ -1637,7 +1626,6 @@ def create_appointment(club_id: str, data: AppointmentCreate):
         info=data.info,
     )
     svc_create_appointment(club_id, appt)
-    _refresh_state()
     return {"status": "ok"}
 
 
@@ -1674,7 +1662,6 @@ def signup_appointment(club_id: str, index: int, data: SignupRequest):
     if data.user_id not in club.members:
         raise HTTPException(400, "Not a member")
     svc_update_signup(club_id, index, add=data.user_id)
-    _refresh_state()
     return {"status": "ok"}
 
 
@@ -1689,7 +1676,6 @@ def cancel_signup(club_id: str, index: int, data: SignupRequest):
     if index >= len(club.appointments):
         raise HTTPException(404, "Appointment not found")
     svc_update_signup(club_id, index, remove=data.user_id)
-    _refresh_state()
     return {"status": "ok"}
 
 
@@ -1758,7 +1744,6 @@ def update_user_limits(user_id: str, data: LimitsUpdateRequest):
         )
     except ValueError as e:
         raise HTTPException(400, str(e))
-    _refresh_state()
     return {"status": "ok"}
 
 
@@ -1805,7 +1790,6 @@ def sys_set_club_leader(club_id: str, data: SysLeaderRequest):
         svc_sys_set_leader(club_id, data.user_id)
     except ValueError as e:
         raise HTTPException(400, str(e))
-    _refresh_state()
     return {"status": "ok"}
 
 
