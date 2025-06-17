@@ -1,6 +1,5 @@
 import datetime
 import json
-import sqlite3
 import tennis.storage as storage
 from tennis.models import Club, Player, players
 from tennis.cli import submit_match
@@ -26,7 +25,7 @@ def test_pending_matches_roundtrip(tmp_path, monkeypatch):
 
     save_data(clubs)
 
-    with sqlite3.connect(db) as conn:
+    with storage._connect() as conn:
         row = conn.execute("SELECT data FROM pending_matches").fetchone()
         assert row is not None
         data = json.loads(row[0])
@@ -52,7 +51,7 @@ def test_shared_player_across_clubs(tmp_path, monkeypatch):
 
     save_data(clubs)
 
-    with sqlite3.connect(db) as conn:
+    with storage._connect() as conn:
         rows = conn.execute(
             "SELECT club_id FROM club_members WHERE user_id = 'u1' ORDER BY club_id"
         ).fetchall()
@@ -85,7 +84,7 @@ def test_load_after_member_removed(tmp_path, monkeypatch):
 
     save_data(clubs)
 
-    with sqlite3.connect(db) as conn:
+    with storage._connect() as conn:
         row = conn.execute(
             "SELECT data FROM matches WHERE club_id = 'c'"
         ).fetchone()

@@ -1,13 +1,67 @@
 import json
 import datetime
+import os
 import sqlite3
 from pathlib import Path
 from typing import Dict, Generator
 from contextlib import contextmanager
+from urllib.parse import urlparse
+
+import psycopg2
+import psycopg2.extras
 
 # Absolute path to the repository root database file. Using a fixed location
 # ensures scripts behave the same regardless of the working directory.
 DB_FILE = Path(__file__).resolve().parent.parent / "tennis.db"
+DATABASE_URL = os.environ.get("DATABASE_URL", f"sqlite:///{DB_FILE}")
+IS_PG = DATABASE_URL.startswith("postgres")
+
+
+class _PgCursor:
+    def __init__(self, cursor):
+        self._c = cursor
+
+    def execute(self, query, params=None):
+        q = query.replace("?", "%s")
+        self._c.execute(q, params or [])
+        return self
+
+    def executemany(self, query, seq):
+        q = query.replace("?", "%s")
+        self._c.executemany(q, seq)
+        return self
+
+    def fetchone(self):
+        return self._c.fetchone()
+
+    def fetchall(self):
+        return self._c.fetchall()
+
+    def __iter__(self):
+        return iter(self._c)
+
+    def __getattr__(self, name):
+        return getattr(self._c, name)
+
+
+class _PgConnection:
+    def __init__(self, conn):
+        self._conn = conn
+
+    def cursor(self, *a, **kw):
+        return _PgCursor(self._conn.cursor(*a, **kw))
+
+    def commit(self):
+        self._conn.commit()
+
+    def rollback(self):
+        self._conn.rollback()
+
+    def close(self):
+        self._conn.close()
+
+    def __getattr__(self, name):
+        return getattr(self._conn, name)
 
 # track which database file the caches were loaded from
 _db_file: Path | None = None
@@ -41,18 +95,25 @@ def invalidate_cache() -> None:
 
 
 def _connect():
-    conn = sqlite3.connect(DB_FILE)
-    conn.row_factory = sqlite3.Row
-    _init_schema(conn)
-    return conn
+    """Return a DB connection based on ``DATABASE_URL``."""
+    if IS_PG:
+        conn = psycopg2.connect(DATABASE_URL, cursor_factory=psycopg2.extras.RealDictCursor)
+        _init_schema(conn)
+        return _PgConnection(conn)
+    else:
+        path = DB_FILE
+        if DATABASE_URL.startswith("sqlite://"):
+            path = Path(urlparse(DATABASE_URL).path)
+        conn = sqlite3.connect(path)
+        conn.row_factory = sqlite3.Row
+        _init_schema(conn)
+        return conn
 
 
 @contextmanager
-def transaction() -> Generator[sqlite3.Connection, None, None]:
+def transaction() -> Generator[object, None, None]:
     """Context manager yielding a connection with an active transaction."""
-    conn = sqlite3.connect(DB_FILE)
-    conn.row_factory = sqlite3.Row
-    _init_schema(conn)
+    conn = _connect()
     try:
         yield conn
         conn.commit()
@@ -63,108 +124,180 @@ def transaction() -> Generator[sqlite3.Connection, None, None]:
         conn.close()
 
 
-def _init_schema(conn: sqlite3.Connection) -> None:
+def _init_schema(conn) -> None:
     cur = conn.cursor()
-    cur.execute(
-        "CREATE TABLE IF NOT EXISTS clubs (club_id TEXT PRIMARY KEY, name TEXT, logo TEXT, region TEXT, slogan TEXT)"
-    )
-    cur.execute(
-        """CREATE TABLE IF NOT EXISTS users (
-        user_id TEXT PRIMARY KEY,
-        name TEXT,
-        password_hash TEXT,
-        wechat_openid TEXT,
-        can_create_club INTEGER DEFAULT 1,
-        is_sys_admin INTEGER DEFAULT 0,
-        created_clubs INTEGER DEFAULT 0,
-        joined_clubs INTEGER DEFAULT 0,
-        max_creatable_clubs INTEGER DEFAULT 0,
-        max_joinable_clubs INTEGER DEFAULT 5
-    )"""
-    )
-    cur.execute(
-        """CREATE TABLE IF NOT EXISTS players (
-        user_id TEXT PRIMARY KEY,
-        name TEXT,
-        singles_rating REAL,
-        doubles_rating REAL,
-        experience REAL,
-        pre_ratings TEXT,
-        age INTEGER,
-        gender TEXT,
-        avatar TEXT,
-        birth TEXT,
-        handedness TEXT,
-        backhand TEXT,
-        region TEXT,
-        joined TEXT
-    )"""
-    )
-    cur.execute(
-        """CREATE TABLE IF NOT EXISTS club_members (
-        club_id TEXT,
-        user_id TEXT,
-        PRIMARY KEY (club_id, user_id)
-    )"""
-    )
-    cur.execute(
-        "CREATE TABLE IF NOT EXISTS matches (id INTEGER PRIMARY KEY AUTOINCREMENT, club_id TEXT, type TEXT, date TEXT, data TEXT)"
-    )
-    cur.execute(
-        "CREATE TABLE IF NOT EXISTS pending_matches (id INTEGER PRIMARY KEY AUTOINCREMENT, club_id TEXT, type TEXT, date TEXT, data TEXT)"
-    )
-    cur.execute(
-        """CREATE TABLE IF NOT EXISTS appointments (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        club_id TEXT,
-        date TEXT,
-        creator TEXT,
-        location TEXT,
-        info TEXT,
-        signups TEXT
-    )"""
-    )
-    cur.execute(
-        """CREATE TABLE IF NOT EXISTS club_meta (
-        club_id TEXT PRIMARY KEY,
-        banned_ids TEXT,
-        leader_id TEXT,
-        admin_ids TEXT,
-        pending_members TEXT,
-        rejected_members TEXT
-    )"""
-    )
+    if IS_PG:
+        cur.execute(
+            "CREATE TABLE IF NOT EXISTS clubs (club_id TEXT PRIMARY KEY, name TEXT, logo TEXT, region TEXT, slogan TEXT)"
+        )
+        cur.execute(
+            """CREATE TABLE IF NOT EXISTS users (
+            user_id TEXT PRIMARY KEY,
+            name TEXT,
+            password_hash TEXT,
+            wechat_openid TEXT,
+            can_create_club INTEGER DEFAULT 1,
+            is_sys_admin INTEGER DEFAULT 0,
+            created_clubs INTEGER DEFAULT 0,
+            joined_clubs INTEGER DEFAULT 0,
+            max_creatable_clubs INTEGER DEFAULT 0,
+            max_joinable_clubs INTEGER DEFAULT 5
+        )"""
+        )
+        cur.execute(
+            """CREATE TABLE IF NOT EXISTS players (
+            user_id TEXT PRIMARY KEY,
+            name TEXT,
+            singles_rating REAL,
+            doubles_rating REAL,
+            experience REAL,
+            pre_ratings JSONB,
+            age INTEGER,
+            gender TEXT,
+            avatar TEXT,
+            birth TEXT,
+            handedness TEXT,
+            backhand TEXT,
+            region TEXT,
+            joined TEXT
+        )"""
+        )
+        cur.execute(
+            """CREATE TABLE IF NOT EXISTS club_members (
+            club_id TEXT,
+            user_id TEXT,
+            PRIMARY KEY (club_id, user_id)
+        )"""
+        )
+        cur.execute(
+            "CREATE TABLE IF NOT EXISTS matches (id SERIAL PRIMARY KEY, club_id TEXT, type TEXT, date TEXT, data JSONB)"
+        )
+        cur.execute(
+            "CREATE TABLE IF NOT EXISTS pending_matches (id SERIAL PRIMARY KEY, club_id TEXT, type TEXT, date TEXT, data JSONB)"
+        )
+        cur.execute(
+            """CREATE TABLE IF NOT EXISTS appointments (
+            id SERIAL PRIMARY KEY,
+            club_id TEXT,
+            date TEXT,
+            creator TEXT,
+            location TEXT,
+            info TEXT,
+            signups JSONB
+        )"""
+        )
+        cur.execute(
+            """CREATE TABLE IF NOT EXISTS club_meta (
+            club_id TEXT PRIMARY KEY,
+            banned_ids JSONB,
+            leader_id TEXT,
+            admin_ids JSONB,
+            pending_members JSONB,
+            rejected_members JSONB
+        )"""
+        )
+    else:
+        cur.execute(
+            "CREATE TABLE IF NOT EXISTS clubs (club_id TEXT PRIMARY KEY, name TEXT, logo TEXT, region TEXT, slogan TEXT)"
+        )
+        cur.execute(
+            """CREATE TABLE IF NOT EXISTS users (
+            user_id TEXT PRIMARY KEY,
+            name TEXT,
+            password_hash TEXT,
+            wechat_openid TEXT,
+            can_create_club INTEGER DEFAULT 1,
+            is_sys_admin INTEGER DEFAULT 0,
+            created_clubs INTEGER DEFAULT 0,
+            joined_clubs INTEGER DEFAULT 0,
+            max_creatable_clubs INTEGER DEFAULT 0,
+            max_joinable_clubs INTEGER DEFAULT 5
+        )"""
+        )
+        cur.execute(
+            """CREATE TABLE IF NOT EXISTS players (
+            user_id TEXT PRIMARY KEY,
+            name TEXT,
+            singles_rating REAL,
+            doubles_rating REAL,
+            experience REAL,
+            pre_ratings TEXT,
+            age INTEGER,
+            gender TEXT,
+            avatar TEXT,
+            birth TEXT,
+            handedness TEXT,
+            backhand TEXT,
+            region TEXT,
+            joined TEXT
+        )"""
+        )
+        cur.execute(
+            """CREATE TABLE IF NOT EXISTS club_members (
+            club_id TEXT,
+            user_id TEXT,
+            PRIMARY KEY (club_id, user_id)
+        )"""
+        )
+        cur.execute(
+            "CREATE TABLE IF NOT EXISTS matches (id INTEGER PRIMARY KEY AUTOINCREMENT, club_id TEXT, type TEXT, date TEXT, data TEXT)"
+        )
+        cur.execute(
+            "CREATE TABLE IF NOT EXISTS pending_matches (id INTEGER PRIMARY KEY AUTOINCREMENT, club_id TEXT, type TEXT, date TEXT, data TEXT)"
+        )
+        cur.execute(
+            """CREATE TABLE IF NOT EXISTS appointments (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            club_id TEXT,
+            date TEXT,
+            creator TEXT,
+            location TEXT,
+            info TEXT,
+            signups TEXT
+        )"""
+        )
+        cur.execute(
+            """CREATE TABLE IF NOT EXISTS club_meta (
+            club_id TEXT PRIMARY KEY,
+            banned_ids TEXT,
+            leader_id TEXT,
+            admin_ids TEXT,
+            pending_members TEXT,
+            rejected_members TEXT
+        )"""
+        )
     # add new columns if an older database is missing them
-    cols = {row[1] for row in cur.execute("PRAGMA table_info('clubs')")}
-    if 'slogan' not in cols:
-        cur.execute("ALTER TABLE clubs ADD COLUMN slogan TEXT")
-    cols = {row[1] for row in cur.execute("PRAGMA table_info('users')")}
-    if 'is_sys_admin' not in cols:
-        cur.execute("ALTER TABLE users ADD COLUMN is_sys_admin INTEGER DEFAULT 0")
-    if 'max_creatable_clubs' not in cols:
-        cur.execute("ALTER TABLE users ADD COLUMN max_creatable_clubs INTEGER DEFAULT 0")
-    if 'max_joinable_clubs' not in cols:
-        cur.execute("ALTER TABLE users ADD COLUMN max_joinable_clubs INTEGER DEFAULT 5")
-    cols = {row[1] for row in cur.execute("PRAGMA table_info('club_meta')")}
-    if 'leader_id' not in cols:
-        cur.execute("ALTER TABLE club_meta ADD COLUMN leader_id TEXT")
-    if 'admin_ids' not in cols:
-        cur.execute("ALTER TABLE club_meta ADD COLUMN admin_ids TEXT")
-    if 'pending_members' not in cols:
-        cur.execute("ALTER TABLE club_meta ADD COLUMN pending_members TEXT")
-    if 'rejected_members' not in cols:
-        cur.execute("ALTER TABLE club_meta ADD COLUMN rejected_members TEXT")
-    cols = {row[1] for row in cur.execute("PRAGMA table_info('players')")}
-    if 'birth' not in cols:
-        cur.execute("ALTER TABLE players ADD COLUMN birth TEXT")
-    if 'handedness' not in cols:
-        cur.execute("ALTER TABLE players ADD COLUMN handedness TEXT")
-    if 'backhand' not in cols:
-        cur.execute("ALTER TABLE players ADD COLUMN backhand TEXT")
-    if 'region' not in cols:
-        cur.execute("ALTER TABLE players ADD COLUMN region TEXT")
-    if 'joined' not in cols:
-        cur.execute("ALTER TABLE players ADD COLUMN joined TEXT")
+    if not IS_PG:
+        cols = {row[1] for row in cur.execute("PRAGMA table_info('clubs')")}
+        if 'slogan' not in cols:
+            cur.execute("ALTER TABLE clubs ADD COLUMN slogan TEXT")
+        cols = {row[1] for row in cur.execute("PRAGMA table_info('users')")}
+        if 'is_sys_admin' not in cols:
+            cur.execute("ALTER TABLE users ADD COLUMN is_sys_admin INTEGER DEFAULT 0")
+        if 'max_creatable_clubs' not in cols:
+            cur.execute("ALTER TABLE users ADD COLUMN max_creatable_clubs INTEGER DEFAULT 0")
+        if 'max_joinable_clubs' not in cols:
+            cur.execute("ALTER TABLE users ADD COLUMN max_joinable_clubs INTEGER DEFAULT 5")
+        cols = {row[1] for row in cur.execute("PRAGMA table_info('club_meta')")}
+        if 'leader_id' not in cols:
+            cur.execute("ALTER TABLE club_meta ADD COLUMN leader_id TEXT")
+        if 'admin_ids' not in cols:
+            cur.execute("ALTER TABLE club_meta ADD COLUMN admin_ids TEXT")
+        if 'pending_members' not in cols:
+            cur.execute("ALTER TABLE club_meta ADD COLUMN pending_members TEXT")
+        if 'rejected_members' not in cols:
+            cur.execute("ALTER TABLE club_meta ADD COLUMN rejected_members TEXT")
+        cols = {row[1] for row in cur.execute("PRAGMA table_info('players')")}
+        if 'birth' not in cols:
+            cur.execute("ALTER TABLE players ADD COLUMN birth TEXT")
+        if 'handedness' not in cols:
+            cur.execute("ALTER TABLE players ADD COLUMN handedness TEXT")
+        if 'backhand' not in cols:
+            cur.execute("ALTER TABLE players ADD COLUMN backhand TEXT")
+        if 'region' not in cols:
+            cur.execute("ALTER TABLE players ADD COLUMN region TEXT")
+        if 'joined' not in cols:
+            cur.execute("ALTER TABLE players ADD COLUMN joined TEXT")
     cur.execute(
         """CREATE TABLE IF NOT EXISTS messages (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -187,9 +320,9 @@ def _init_schema(conn: sqlite3.Connection) -> None:
 def load_data() -> tuple[Dict[str, Club], Dict[str, Player]]:
     """Load all clubs and players, using cached data when available."""
     global _clubs_cache, _db_file
-    if _clubs_cache is not None and _db_file == DB_FILE:
+    if _clubs_cache is not None and _db_file == DATABASE_URL:
         return _clubs_cache, _players_cache
-    _db_file = DB_FILE
+    _db_file = DATABASE_URL
 
     conn = _connect()
     cur = conn.cursor()
@@ -442,10 +575,16 @@ def save_data(clubs: Dict[str, Club]) -> None:
             ),
         )
         for uid in club.members:
-            cur.execute(
-                "INSERT INTO club_members(club_id, user_id) VALUES (?,?)",
-                (cid, uid),
-            )
+            if IS_PG:
+                cur.execute(
+                    "INSERT INTO club_members(club_id, user_id) VALUES (?,?) ON CONFLICT DO NOTHING",
+                    (cid, uid),
+                )
+            else:
+                cur.execute(
+                    "INSERT INTO club_members(club_id, user_id) VALUES (?,?)",
+                    (cid, uid),
+                )
         for m in club.matches:
             if isinstance(m, DoublesMatch):
                 data = {
@@ -579,9 +718,9 @@ def save_data(clubs: Dict[str, Club]) -> None:
 def load_users() -> Dict[str, User]:
     """Load user accounts from the database using a cache."""
     global _users_cache, _db_file
-    if _users_cache is not None and _db_file == DB_FILE:
+    if _users_cache is not None and _db_file == DATABASE_URL:
         return _users_cache
-    _db_file = DB_FILE
+    _db_file = DATABASE_URL
 
     conn = _connect()
     cur = conn.cursor()
@@ -719,35 +858,67 @@ def create_player(club_id: str, player: Player, conn: sqlite3.Connection | None 
     if conn is None:
         conn = _connect()
     cur = conn.cursor()
-    cur.execute(
-        """
-        INSERT OR IGNORE INTO players(
-            user_id, name, singles_rating, doubles_rating, experience,
-            pre_ratings, age, gender, avatar, birth, handedness, backhand,
-            region, joined
-        ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-        """,
-        (
-            player.user_id,
-            player.name,
-            player.singles_rating,
-            player.doubles_rating,
-            player.experience,
-            "{}",
-            player.age,
-            player.gender,
-            player.avatar,
-            player.birth,
-            player.handedness,
-            player.backhand,
-            player.region,
-            player.joined.isoformat(),
-        ),
-    )
-    cur.execute(
-        "INSERT OR IGNORE INTO club_members(club_id, user_id) VALUES (?, ?)",
-        (club_id, player.user_id),
-    )
+    if IS_PG:
+        cur.execute(
+            """
+            INSERT INTO players(
+                user_id, name, singles_rating, doubles_rating, experience,
+                pre_ratings, age, gender, avatar, birth, handedness, backhand,
+                region, joined
+            ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+            ON CONFLICT (user_id) DO NOTHING
+            """,
+            (
+                player.user_id,
+                player.name,
+                player.singles_rating,
+                player.doubles_rating,
+                player.experience,
+                "{}",
+                player.age,
+                player.gender,
+                player.avatar,
+                player.birth,
+                player.handedness,
+                player.backhand,
+                player.region,
+                player.joined.isoformat(),
+            ),
+        )
+        cur.execute(
+            "INSERT INTO club_members(club_id, user_id) VALUES (?, ?) ON CONFLICT DO NOTHING",
+            (club_id, player.user_id),
+        )
+    else:
+        cur.execute(
+            """
+            INSERT OR IGNORE INTO players(
+                user_id, name, singles_rating, doubles_rating, experience,
+                pre_ratings, age, gender, avatar, birth, handedness, backhand,
+                region, joined
+            ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+            """,
+            (
+                player.user_id,
+                player.name,
+                player.singles_rating,
+                player.doubles_rating,
+                player.experience,
+                "{}",
+                player.age,
+                player.gender,
+                player.avatar,
+                player.birth,
+                player.handedness,
+                player.backhand,
+                player.region,
+                player.joined.isoformat(),
+            ),
+        )
+        cur.execute(
+            "INSERT OR IGNORE INTO club_members(club_id, user_id) VALUES (?, ?)",
+            (club_id, player.user_id),
+        )
     if close:
         conn.commit()
         conn.close()
@@ -849,10 +1020,16 @@ def add_club_member(club_id: str, user_id: str, conn: sqlite3.Connection | None 
     if conn is None:
         conn = _connect()
     cur = conn.cursor()
-    cur.execute(
-        "INSERT OR IGNORE INTO club_members(club_id, user_id) VALUES (?, ?)",
-        (club_id, user_id),
-    )
+    if IS_PG:
+        cur.execute(
+            "INSERT INTO club_members(club_id, user_id) VALUES (?, ?) ON CONFLICT DO NOTHING",
+            (club_id, user_id),
+        )
+    else:
+        cur.execute(
+            "INSERT OR IGNORE INTO club_members(club_id, user_id) VALUES (?, ?)",
+            (club_id, user_id),
+        )
     if close:
         conn.commit()
         conn.close()
@@ -1196,10 +1373,19 @@ def insert_token(token: str, user_id: str) -> None:
     """Persist or update an authentication token."""
     conn = _connect()
     cur = conn.cursor()
-    cur.execute(
-        "INSERT OR REPLACE INTO auth_tokens(token, user_id, ts) VALUES (?,?,?)",
-        (token, user_id, datetime.datetime.utcnow().isoformat()),
-    )
+    if IS_PG:
+        cur.execute(
+            """
+            INSERT INTO auth_tokens(token, user_id, ts) VALUES (?,?,?)
+            ON CONFLICT (token) DO UPDATE SET user_id = EXCLUDED.user_id, ts = EXCLUDED.ts
+            """,
+            (token, user_id, datetime.datetime.utcnow().isoformat()),
+        )
+    else:
+        cur.execute(
+            "INSERT OR REPLACE INTO auth_tokens(token, user_id, ts) VALUES (?,?,?)",
+            (token, user_id, datetime.datetime.utcnow().isoformat()),
+        )
     conn.commit()
     conn.close()
 

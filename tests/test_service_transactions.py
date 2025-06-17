@@ -1,5 +1,4 @@
 import datetime
-import sqlite3
 import pytest
 import tennis.storage as storage
 from tennis.models import Club, Player
@@ -43,7 +42,7 @@ def test_record_match_transaction_rollback(tmp_path, monkeypatch):
             1.0,
         )
 
-    with sqlite3.connect(db) as conn:
+    with storage._connect() as conn:
         assert conn.execute("SELECT COUNT(*) FROM matches").fetchone()[0] == 0
         rating_p1 = conn.execute(
             "SELECT singles_rating FROM players WHERE user_id = 'p1'"
