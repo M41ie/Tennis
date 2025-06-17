@@ -45,122 +45,46 @@ Page({
       }
     });
   },
-  loadPendingNames(list) {
-    const that = this;
-    if (!list.length) {
+  loadPendingNames() {
+    const cid = wx.getStorageSync('club_id');
+    if (!cid) {
       this.setData({ pending: [] });
       return;
     }
-    const result = [];
-    let count = 0;
-    list.forEach(p => {
-      wx.request({
-        url: `${BASE_URL}/players/${p.user_id}`,
-        success(r) {
-          if (r.statusCode !== 200) {
-            wx.request({
-              url: `${BASE_URL}/users/${p.user_id}`,
-              success(u) {
-                const name = u.data && u.data.name ? u.data.name : p.user_id;
-                result.push({
-                  ...p,
-                  id: p.user_id,
-                  name,
-                  avatar_url: '',
-                  gender: '',
-                  genderText: '-',
-                  singles_rating:
-                    p.singles_rating != null ? p.singles_rating.toFixed(3) : '--',
-                  doubles_rating:
-                    p.doubles_rating != null ? p.doubles_rating.toFixed(3) : '--',
-                  weighted_games_singles: '--',
-                  weighted_games_doubles: '--',
-                  global_rating: null
-                });
-              },
-              complete() {
-                count++;
-                if (count === list.length) that.setData({ pending: result });
-              }
-            });
-            return;
-          }
-          const d = r.data || {};
-          const rating =
-            typeof d.singles_rating === 'number' ? d.singles_rating : null;
-          const doublesRating =
-            typeof d.doubles_rating === 'number' ? d.doubles_rating : null;
-          const singlesDisplay =
-            rating != null
-              ? rating.toFixed(3)
-              : p.singles_rating != null
-              ? p.singles_rating.toFixed(3)
-              : '--';
-          const doublesDisplay =
-            doublesRating != null
-              ? doublesRating.toFixed(3)
-              : p.doubles_rating != null
-              ? p.doubles_rating.toFixed(3)
-              : '--';
-          const gender = d.gender || '';
+    const that = this;
+    wx.request({
+      url: `${BASE_URL}/clubs/${cid}/pending_members`,
+      success(res) {
+        const list = res.data || [];
+        const result = list.map(p => {
+          const gender = p.gender || '';
           const genderText =
             gender === 'M' || gender === 'Male' || gender === '男'
               ? '男'
               : gender === 'F' || gender === 'Female' || gender === '女'
               ? '女'
               : '-';
-          result.push({
+          return {
             ...p,
-            id: p.user_id,
-            name: d.name || p.user_id,
-            avatar_url: d.avatar_url || d.avatar || '',
-            gender,
-            genderText,
-            singles_rating: singlesDisplay,
-            doubles_rating: doublesDisplay,
+            singles_rating:
+              p.singles_rating != null ? Number(p.singles_rating).toFixed(3) : '--',
+            doubles_rating:
+              p.doubles_rating != null ? Number(p.doubles_rating).toFixed(3) : '--',
             weighted_games_singles:
-              d.weighted_games_singles != null
-                ? Number(d.weighted_games_singles).toFixed(2)
+              p.weighted_games_singles != null
+                ? Number(p.weighted_games_singles).toFixed(2)
                 : '--',
             weighted_games_doubles:
-              d.weighted_games_doubles != null
-                ? Number(d.weighted_games_doubles).toFixed(2)
+              p.weighted_games_doubles != null
+                ? Number(p.weighted_games_doubles).toFixed(2)
                 : '--',
-            global_rating: rating
-          });
-          count++;
-          if (count === list.length) {
-            that.setData({ pending: result });
-          }
-        },
-        fail() {
-          wx.request({
-            url: `${BASE_URL}/users/${p.user_id}`,
-            success(r) {
-              const name = r.data && r.data.name ? r.data.name : p.user_id;
-              result.push({
-                ...p,
-                id: p.user_id,
-                name,
-                avatar_url: '',
-                gender: '',
-                genderText: '-',
-                singles_rating:
-                  p.singles_rating != null ? p.singles_rating.toFixed(3) : '--',
-                doubles_rating:
-                  p.doubles_rating != null ? p.doubles_rating.toFixed(3) : '--',
-                weighted_games_singles: '--',
-                weighted_games_doubles: '--',
-                global_rating: null
-              });
-            },
-            complete() {
-              count++;
-              if (count === list.length) that.setData({ pending: result });
-            }
-          });
-        }
-      });
+            gender,
+            genderText,
+            id: p.user_id
+          };
+        });
+        that.setData({ pending: result });
+      }
     });
   },
   fetchClub() {
@@ -212,7 +136,7 @@ Page({
           leaderId: info.leader_id,
           adminIds: info.admin_ids || []
         });
-        that.loadPendingNames(info.pending_members || []);
+        that.loadPendingNames();
       }
     });
   },

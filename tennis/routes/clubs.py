@@ -3,7 +3,14 @@ from pydantic import BaseModel
 from ..services.auth import require_auth, assert_token_matches
 from ..services.clubs import create_club as svc_create_club, add_player as svc_add_player
 from ..storage import load_data, load_users
+from ..rating import (
+    weighted_rating,
+    weighted_doubles_rating,
+    weighted_singles_matches,
+    weighted_doubles_matches,
+)
 from .. import api
+import datetime
 
 router = APIRouter()
 
@@ -75,3 +82,62 @@ def add_player(club_id: str, data: PlayerCreate):
     api.clubs.set(clubs)
     api.players.set(players)
     return {"status": "ok"}
+
+
+@router.get("/clubs/{club_id}/pending_members")
+def list_pending_members(club_id: str):
+    """Return pending member applications with player details."""
+    club = api.clubs.get(club_id)
+    if not club:
+        raise HTTPException(404, "Club not found")
+
+    today = datetime.date.today()
+    result = []
+    for uid, info in club.pending_members.items():
+        entry = {
+            "user_id": uid,
+            "id": uid,
+            "reason": info.reason,
+            "singles_rating": info.singles_rating,
+            "doubles_rating": info.doubles_rating,
+        }
+
+        player = api.players.get(uid)
+        if player:
+            singles = weighted_rating(player, today)
+            doubles = weighted_doubles_rating(player, today)
+            entry.update(
+                {
+                    "name": player.name,
+                    "avatar": player.avatar,
+                    "avatar_url": player.avatar,
+                    "gender": player.gender,
+                    "weighted_games_singles": round(
+                        weighted_singles_matches(player), 2
+                    ),
+                    "weighted_games_doubles": round(
+                        weighted_doubles_matches(player), 2
+                    ),
+                    "singles_rating": singles
+                    if singles is not None
+                    else info.singles_rating,
+                    "doubles_rating": doubles
+                    if doubles is not None
+                    else info.doubles_rating,
+                }
+            )
+        else:
+            user = api.users.get(uid)
+            entry.update(
+                {
+                    "name": user.name if user else uid,
+                    "avatar": getattr(user, "avatar", "") if user else "",
+                    "avatar_url": getattr(user, "avatar", "") if user else "",
+                    "gender": getattr(user, "gender", "") if user else "",
+                    "weighted_games_singles": None,
+                    "weighted_games_doubles": None,
+                }
+            )
+        result.append(entry)
+
+    return result
