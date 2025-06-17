@@ -544,12 +544,22 @@ def veto_pending_doubles(club_id: str, index: int, approver: str) -> None:
 
 def create_appointment_entry(club_id: str, appt: Appointment) -> None:
     """Create an appointment and persist it."""
+    clubs, _ = load_data()
+    club = clubs.get(club_id)
+    if not club:
+        raise HTTPException(404, "Club not found")
+    club.appointments.append(appt)
     with transaction() as conn:
         create_appointment_record(club_id, appt, conn=conn)
 
 
 def update_appointment_signups(club_id: str, index: int, *, add: str | None = None, remove: str | None = None) -> None:
     """Add or remove a signup for an appointment."""
+    clubs, _ = load_data()
+    club = clubs.get(club_id)
+    if not club or index >= len(club.appointments):
+        raise HTTPException(404, "Appointment not found")
+    appt = club.appointments[index]
     with transaction() as conn:
         row = conn.execute(
             "SELECT id, signups FROM appointments WHERE club_id = ? ORDER BY id LIMIT 1 OFFSET ?",
@@ -560,8 +570,10 @@ def update_appointment_signups(club_id: str, index: int, *, add: str | None = No
         signups = set(json.loads(row["signups"] or "[]"))
         if add:
             signups.add(add)
+            appt.signups.add(add)
         if remove:
             signups.discard(remove)
+            appt.signups.discard(remove)
         update_appointment_record(row["id"], conn=conn, signups=signups)
 
 

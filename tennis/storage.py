@@ -9,6 +9,9 @@ from contextlib import contextmanager
 # ensures scripts behave the same regardless of the working directory.
 DB_FILE = Path(__file__).resolve().parent.parent / "tennis.db"
 
+# track which database file the caches were loaded from
+_db_file: Path | None = None
+
 from .models import (
     Player,
     Club,
@@ -23,6 +26,18 @@ from .models import (
 
 # in-memory store used when loading player data
 _players_cache: Dict[str, Player] = {}
+# caches for loaded clubs and users
+_clubs_cache: Dict[str, Club] | None = None
+_users_cache: Dict[str, User] | None = None
+
+
+def invalidate_cache() -> None:
+    """Clear cached club, user and player data."""
+    global _clubs_cache, _users_cache, _db_file
+    _clubs_cache = None
+    _users_cache = None
+    _players_cache.clear()
+    _db_file = None
 
 
 def _connect():
@@ -170,6 +185,12 @@ def _init_schema(conn: sqlite3.Connection) -> None:
 
 
 def load_data() -> tuple[Dict[str, Club], Dict[str, Player]]:
+    """Load all clubs and players, using cached data when available."""
+    global _clubs_cache, _db_file
+    if _clubs_cache is not None and _db_file == DB_FILE:
+        return _clubs_cache, _players_cache
+    _db_file = DB_FILE
+
     conn = _connect()
     cur = conn.cursor()
     from .cli import normalize_gender
@@ -366,6 +387,7 @@ def load_data() -> tuple[Dict[str, Club], Dict[str, Player]]:
         appt.signups.update(json.loads(row["signups"] or "[]"))
         club.appointments.append(appt)
     conn.close()
+    _clubs_cache = clubs
     return clubs, players
 
 
@@ -555,7 +577,12 @@ def save_data(clubs: Dict[str, Club]) -> None:
 
 
 def load_users() -> Dict[str, User]:
-    """Load user accounts from the database."""
+    """Load user accounts from the database using a cache."""
+    global _users_cache, _db_file
+    if _users_cache is not None and _db_file == DB_FILE:
+        return _users_cache
+    _db_file = DB_FILE
+
     conn = _connect()
     cur = conn.cursor()
     users: Dict[str, User] = {}
@@ -586,6 +613,7 @@ def load_users() -> Dict[str, User]:
         if user:
             user.messages.append(msg)
     conn.close()
+    _users_cache = users
     return users
 
 
