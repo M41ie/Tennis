@@ -1,4 +1,5 @@
 import importlib
+import sqlite3
 from fastapi.testclient import TestClient
 import tennis.storage as storage
 import tennis.services.state as state
@@ -45,3 +46,8 @@ def test_sys_set_leader(tmp_path, monkeypatch):
     assert resp.status_code == 200
     info = client.get("/clubs/c1").json()
     assert info["leader_id"] == "u1"
+    with sqlite3.connect(storage.DB_FILE) as conn:
+        row = conn.execute(
+            "SELECT leader_id FROM club_meta WHERE club_id = 'c1'"
+        ).fetchone()
+        assert row[0] == "u1"
