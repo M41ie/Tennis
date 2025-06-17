@@ -1,7 +1,7 @@
 from __future__ import annotations
 import secrets
 from fastapi import HTTPException
-from ..cli import register_user, resolve_user, check_password, set_user_limits
+from ..cli import register_user, resolve_user, check_password, hash_password, set_user_limits
 from ..storage import (
     load_users,
     load_data,
@@ -50,11 +50,28 @@ def login(user_id: str, password: str):
     if not user:
         users = load_users()
         user = resolve_user(users, user_id)
-    if user and check_password(user, password):
-        token = secrets.token_hex(16)
-        insert_token(token, user.user_id)
-        return True, token, user.user_id
-    return False, None, None
+    if not user:
+        return False, None, None
+
+    hashed = user.password_hash
+    is_old = len(hashed) == 64 and all(c in "0123456789abcdef" for c in hashed)
+
+    if is_old:
+        import hashlib
+
+        if hashlib.sha256(password.encode("utf-8")).hexdigest() != hashed:
+            return False, None, None
+        # upgrade hash
+        user.password_hash = hash_password(password)
+        with transaction() as conn:
+            save_user(user, conn=conn)
+    else:
+        if not check_password(user, password):
+            return False, None, None
+
+    token = secrets.token_hex(16)
+    insert_token(token, user.user_id)
+    return True, token, user.user_id
 
 
 def wechat_login(code: str, exchange_func) -> tuple[str, str, bool]:
