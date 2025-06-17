@@ -1,4 +1,5 @@
 const BASE_URL = getApp().globalData.BASE_URL;
+const request = require('../../services/api');
 const { hideKeyboard } = require('../../utils/hideKeyboard');
 
 Page({
@@ -18,7 +19,7 @@ Page({
     const targetId = this.data.targetId;
     const that = this;
     if (!clubId || !raterId || !token || !targetId || isNaN(rating)) return;
-    wx.request({
+    request({
       url: `${BASE_URL}/clubs/${clubId}/prerate`,
       method: 'POST',
       data: { rater_id: raterId, target_id: targetId, rating, token },
@@ -32,7 +33,7 @@ Page({
     const clubId = wx.getStorageSync('club_id');
     const that = this;
     if (!clubId || !id) return;
-    wx.request({
+    request({
       url: `${BASE_URL}/clubs/${clubId}/players/${id}`,
       success(res) {
         const data = res.data;

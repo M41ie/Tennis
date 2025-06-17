@@ -1,4 +1,5 @@
 const BASE_URL = getApp().globalData.BASE_URL;
+const request = require('../../services/api');
 const IMAGES = require('../../assets/base64.js');
 const { formatRating } = require('../../utils/format');
 
@@ -48,7 +49,7 @@ Page({
     const uid = this.data.viewId || wx.getStorageSync('user_id');
     if (!uid) return;
     const that = this;
-    wx.request({
+    request({
       url: `${BASE_URL}/players/${uid}`,
       success(res) {
         const raw = res.data || {};

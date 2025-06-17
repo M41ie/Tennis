@@ -1,4 +1,5 @@
 const BASE_URL = getApp().globalData.BASE_URL;
+const request = require('../../services/api');
 const { hideKeyboard } = require('../../utils/hideKeyboard');
 
 Page({
@@ -26,7 +27,7 @@ Page({
     const token = wx.getStorageSync('token');
     const that = this;
     if (!uid || !token) return;
-    wx.request({
+    request({
       url: `${BASE_URL}/clubs/${cid}/join`,
       method: 'POST',
       data: { user_id: uid, token },
@@ -40,7 +41,7 @@ Page({
     const uid = wx.getStorageSync('user_id');
     if (!uid) return;
     const that = this;
-    wx.request({
+    request({
       url: `${BASE_URL}/users/${uid}`,
       success(res) {
         const ids = res.data.joined_clubs || [];
@@ -51,7 +52,7 @@ Page({
         const list = [];
         let count = 0;
         ids.forEach(cid => {
-          wx.request({
+          request({
             url: `${BASE_URL}/clubs/${cid}`,
             success(r) {
               const info = r.data;
@@ -111,7 +112,7 @@ Page({
     const uid = wx.getStorageSync('user_id');
     const token = wx.getStorageSync('token');
     const that = this;
-    wx.request({
+    request({
       url: `${BASE_URL}/clubs/${cid}/role`,
       method: 'POST',
       data: { user_id: uid, token, action: 'quit' },
@@ -129,7 +130,7 @@ Page({
       confirmColor: '#e03a3a',
       success(res) {
         if (res.confirm) {
-          wx.request({
+          request({
             url: `${BASE_URL}/clubs/${cid}/role`,
             method: 'POST',
             data: { user_id: uid, token, action: 'resign_admin' },
@@ -144,7 +145,7 @@ Page({
     const uid = wx.getStorageSync('user_id');
     const token = wx.getStorageSync('token');
     const that = this;
-    wx.request({
+    request({
       url: `${BASE_URL}/clubs/${cid}/role`,
       method: 'POST',
       data: { user_id: uid, token, action: 'toggle_admin' },
@@ -156,7 +157,7 @@ Page({
     const uid = wx.getStorageSync('user_id');
     const token = wx.getStorageSync('token');
     const that = this;
-    wx.request({
+    request({
       url: `${BASE_URL}/clubs/${cid}/role`,
       method: 'POST',
       data: { user_id: uid, token, action: 'transfer_leader' },
@@ -167,7 +168,7 @@ Page({
     const uid = wx.getStorageSync('user_id');
     if (!uid) return;
     const that = this;
-    wx.request({
+    request({
       url: `${BASE_URL}/users/${uid}`,
       success(res) {
         const created = res.data.created_clubs != null ? res.data.created_clubs : 0;

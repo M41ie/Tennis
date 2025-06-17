@@ -1,4 +1,5 @@
 const BASE_URL = getApp().globalData.BASE_URL;
+const request = require('../../services/api');
 const { hideKeyboard } = require('../../utils/hideKeyboard');
 
 Page({
@@ -28,7 +29,7 @@ Page({
   },
   loadStats() {
     const that = this;
-    wx.request({
+    request({
       url: `${BASE_URL}/sys/stats`,
       success(res) {
         const d = res.data || {};
@@ -45,7 +46,7 @@ Page({
     const that = this;
     const limit = 20;
     const offset = (this.data.rankPage - 1) * limit;
-    wx.request({
+    request({
       url: `${BASE_URL}/sys/clubs?limit=${limit}&offset=${offset}`,
       success(res) {
         const list = res.data || [];
@@ -59,7 +60,7 @@ Page({
         const result = [];
         let count = 0;
         list.forEach(c => {
-          wx.request({
+          request({
             url: `${BASE_URL}/clubs/${c.club_id}`,
             success(r) {
               const info = r.data || {};
@@ -153,7 +154,7 @@ Page({
   },
   fetchUserTrend() {
     const that = this;
-    wx.request({
+    request({
       url: `${BASE_URL}/sys/user_trend?days=${this.data.userDays}`,
       success(res) {
         const data = res.data || [];
@@ -164,7 +165,7 @@ Page({
   },
   fetchMatchActivity() {
     const that = this;
-    wx.request({
+    request({
       url: `${BASE_URL}/sys/match_activity?days=${this.data.matchDays}`,
       success(res) {
         const data = res.data || [];

@@ -1,4 +1,5 @@
 const BASE_URL = getApp().globalData.BASE_URL;
+const request = require('../../services/api');
 
 Page({
   data: {
@@ -36,7 +37,7 @@ Page({
       params.push('include_joined=true');
     }
     const url = `${BASE_URL}/leaderboard_full?` + params.join('&');
-    wx.request({
+    request({
       url,
       success(res) {
         const data = res.data || {};
@@ -152,7 +153,7 @@ Page({
     if (clubs.length) params.push('club=' + clubs.join(','));
     const url = `${BASE_URL}/leaderboard_full` + (params.length ? '?' + params.join('&') : '');
 
-    wx.request({
+    request({
       url,
       success(res) {
         const list = (res.data && res.data.players) || [];

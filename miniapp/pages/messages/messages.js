@@ -1,4 +1,5 @@
 const BASE_URL = getApp().globalData.BASE_URL;
+const request = require('../../services/api');
 
 Page({
   data: {
@@ -9,7 +10,7 @@ Page({
     const token = wx.getStorageSync('token');
     const that = this;
     if (!uid || !token) return;
-    wx.request({
+    request({
       url: `${BASE_URL}/users/${uid}/messages?token=${token}`,
       success(res) {
         that.setData({ list: res.data });
@@ -21,7 +22,7 @@ Page({
     const uid = wx.getStorageSync('user_id');
     const token = wx.getStorageSync('token');
     const that = this;
-    wx.request({
+    request({
       url: `${BASE_URL}/users/${uid}/messages/${idx}/read`,
       method: 'POST',
       data: { token },
@@ -29,7 +30,7 @@ Page({
         const list = that.data.list.slice();
         if (list[idx]) list[idx].read = true;
         that.setData({ list });
-        wx.request({
+        request({
           url: `${BASE_URL}/users/${uid}/messages/unread_count?token=${token}`,
           success(res2) {
             const pages = getCurrentPages();

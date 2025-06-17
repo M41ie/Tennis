@@ -1,4 +1,5 @@
 const BASE_URL = getApp().globalData.BASE_URL;
+const request = require('../../services/api');
 const IMAGES = require('../../assets/base64.js');
 const { formatRating } = require('../../utils/format');
 
@@ -61,7 +62,7 @@ Page({
       that.loadClubInfo();
       return;
     }
-    wx.request({
+    request({
       url: `${BASE_URL}/users/${uid}`,
       success(res) {
         that.setData({ isSysAdmin: !!res.data.sys_admin });
@@ -74,7 +75,7 @@ Page({
   loadUser() {
     if (!this.data.memberId) return;
     const that = this;
-    wx.request({
+    request({
       url: `${BASE_URL}/players/${this.data.memberId}`,
       success(res) {
         const raw = res.data || {};
@@ -111,7 +112,7 @@ Page({
     const uid = wx.getStorageSync('user_id');
     if (!cid) return;
     const that = this;
-    wx.request({
+    request({
       url: `${BASE_URL}/clubs/${cid}`,
       success(res) {
         const info = res.data || {};
@@ -143,7 +144,7 @@ Page({
       content: `确认将${name}${action}？`,
       success(res) {
         if (res.confirm) {
-          wx.request({
+          request({
             url: `${BASE_URL}/clubs/${cid}/role`,
             method: 'POST',
             data: { user_id: that.data.memberId, token, action: 'toggle_admin' },
@@ -163,7 +164,7 @@ Page({
       content: `确认将负责人转移给${name}？`,
       success(res) {
         if (res.confirm) {
-          wx.request({
+          request({
             url: `${BASE_URL}/clubs/${cid}/role`,
             method: 'POST',
           data: { user_id: that.data.memberId, token, action: 'transfer_leader' },
@@ -185,7 +186,7 @@ Page({
       content: `确定要将 ${name} 设为 ${that.data.clubName} 的负责人吗？此操作不可逆`,
       success(res) {
         if (res.confirm) {
-          wx.request({
+          request({
             url: `${BASE_URL}/sys/clubs/${cid}/leader`,
             method: 'POST',
             data: { user_id: uid, token },
@@ -209,7 +210,7 @@ Page({
       content: `确认将${name}从俱乐部移除？`,
       success(res) {
         if (res.confirm) {
-          wx.request({
+          request({
             url: `${BASE_URL}/clubs/${cid}/members/${that.data.memberId}`,
             method: 'DELETE',
             data: { remover_id: remover, token, ban: false },

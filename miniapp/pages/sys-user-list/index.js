@@ -1,4 +1,5 @@
 const BASE_URL = getApp().globalData.BASE_URL;
+const request = require('../../services/api');
 const { formatRating, formatGames } = require('../../utils/format');
 
 Page({
@@ -26,7 +27,7 @@ Page({
     params.push('limit=' + limit);
     if (offset) params.push('offset=' + offset);
     if (params.length) url += '?' + params.join('&');
-    wx.request({
+    request({
       url,
       success(res) {
         const raw = res.data || [];

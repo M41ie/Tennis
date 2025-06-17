@@ -1,4 +1,5 @@
 const BASE_URL = getApp().globalData.BASE_URL;
+const request = require('../../services/api');
 
 Page({
   data: {
@@ -25,7 +26,7 @@ Page({
     params.push('limit=' + limit);
     if (offset) params.push('offset=' + offset);
     if (params.length) url += '?' + params.join('&');
-    wx.request({
+    request({
       url,
       success(res) {
         const list = res.data || [];
@@ -37,7 +38,7 @@ Page({
         const result = [];
         let count = 0;
         list.forEach(c => {
-          wx.request({
+          request({
             url: `${BASE_URL}/clubs/${c.club_id}`,
             success(r) {
               const info = r.data || {};

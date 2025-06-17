@@ -1,4 +1,5 @@
 const BASE_URL = getApp().globalData.BASE_URL;
+const request = require('../../services/api');
 const { hideKeyboard } = require('../../utils/hideKeyboard');
 
 Page({
@@ -14,7 +15,7 @@ Page({
     const cid = wx.getStorageSync('club_id');
     const that = this;
     if (!cid) return;
-    wx.request({
+    request({
       url: `${BASE_URL}/clubs/${cid}/appointments`,
       success(res) {
         that.setData({ appointments: res.data });
@@ -30,7 +31,7 @@ Page({
     const token = wx.getStorageSync('token');
     const that = this;
     if (!cid || !userId || !token) return;
-    wx.request({
+    request({
       url: `${BASE_URL}/clubs/${cid}/appointments`,
       method: 'POST',
       data: { user_id: userId, date: this.data.date, location: this.data.location, token },
@@ -43,7 +44,7 @@ Page({
     const userId = wx.getStorageSync('user_id');
     const token = wx.getStorageSync('token');
     const that = this;
-    wx.request({
+    request({
       url: `${BASE_URL}/clubs/${cid}/appointments/${idx}/signup`,
       method: 'POST',
       data: { user_id: userId, token },
@@ -56,7 +57,7 @@ Page({
     const userId = wx.getStorageSync('user_id');
     const token = wx.getStorageSync('token');
     const that = this;
-    wx.request({
+    request({
       url: `${BASE_URL}/clubs/${cid}/appointments/${idx}/cancel`,
       method: 'POST',
       data: { user_id: userId, token },

@@ -1,4 +1,5 @@
 const BASE_URL = getApp().globalData.BASE_URL;
+const request = require('../../services/api');
 const { hideKeyboard } = require('../../utils/hideKeyboard');
 
 Page({
@@ -34,7 +35,7 @@ Page({
       that.fetchPlayers();
       return;
     }
-    wx.request({
+    request({
       url: `${BASE_URL}/users/${uid}`,
       success(res) {
         that.setData({ isSysAdmin: !!res.data.sys_admin });
@@ -52,7 +53,7 @@ Page({
       return;
     }
     const that = this;
-    wx.request({
+    request({
       url: `${BASE_URL}/clubs/${cid}/pending_members`,
       success(res) {
         const list = res.data || [];
@@ -91,7 +92,7 @@ Page({
     const cid = wx.getStorageSync('club_id');
     if (!cid) return;
     const that = this;
-    wx.request({
+    request({
       url: `${BASE_URL}/clubs/${cid}`,
       success(res) {
         const info = res.data;
@@ -144,11 +145,11 @@ Page({
     const cid = wx.getStorageSync('club_id');
     if (!cid) return;
     const that = this;
-    wx.request({
+    request({
       url: `${BASE_URL}/clubs/${cid}/players`,
       success(res1) {
         const singles = res1.data || [];
-        wx.request({
+        request({
           url: `${BASE_URL}/clubs/${cid}/players?doubles=true`,
           success(res2) {
             const doubles = res2.data || [];
@@ -233,7 +234,7 @@ Page({
     const cid = wx.getStorageSync('club_id');
     const token = wx.getStorageSync('token');
     const that = this;
-    wx.request({
+    request({
       url: `${BASE_URL}/clubs/${cid}/approve`,
       method: 'POST',
       data: { approver_id: this.data.userId, user_id: uid, rating, token },
@@ -283,7 +284,7 @@ Page({
     const cid = wx.getStorageSync('club_id');
     const token = wx.getStorageSync('token');
     const that = this;
-    wx.request({
+    request({
       url: `${BASE_URL}/clubs/${cid}/reject`,
       method: 'POST',
       data: { approver_id: this.data.userId, user_id: uid, reason, token },
@@ -330,7 +331,7 @@ Page({
     const cid = wx.getStorageSync('club_id');
     const token = wx.getStorageSync('token');
     const that = this;
-    wx.request({
+    request({
       url: `${BASE_URL}/clubs/${cid}/members/${uid}`,
       method: 'DELETE',
       data: { remover_id: this.data.userId, token, ban: false },
@@ -342,7 +343,7 @@ Page({
     const cid = wx.getStorageSync('club_id');
     const token = wx.getStorageSync('token');
     const that = this;
-    wx.request({
+    request({
       url: `${BASE_URL}/clubs/${cid}/members/${uid}`,
       method: 'DELETE',
       data: { remover_id: this.data.userId, token, ban: true },
@@ -364,7 +365,7 @@ Page({
       confirmColor: '#e03a3a',
       success(res) {
         if (res.confirm) {
-          wx.request({
+          request({
             url: `${BASE_URL}/clubs/${cid}/role`,
             method: 'POST',
             data: { user_id: uid, token, action: 'quit' },
@@ -385,7 +386,7 @@ Page({
       confirmColor: '#e03a3a',
       success(res) {
         if (res.confirm) {
-          wx.request({
+          request({
             url: `${BASE_URL}/clubs/${cid}/role`,
             method: 'POST',
             data: { user_id: uid, token, action: 'resign_admin' },
@@ -400,7 +401,7 @@ Page({
     const token = wx.getStorageSync('token');
     const uid = this.data.userId;
     const that = this;
-    wx.request({
+    request({
       url: `${BASE_URL}/clubs/${cid}/role`,
       method: 'POST',
       data: { user_id: uid, token, action: 'transfer_leader' },
@@ -418,7 +419,7 @@ Page({
       confirmColor: '#e03a3a',
       success(res) {
         if (res.confirm) {
-          wx.request({
+          request({
             url: `${BASE_URL}/clubs/${cid}`,
             method: 'DELETE',
             data: { user_id: uid, token },

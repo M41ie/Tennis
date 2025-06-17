@@ -1,4 +1,5 @@
 const BASE_URL = getApp().globalData.BASE_URL;
+const request = require('../../services/api');
 const { hideKeyboard } = require('../../utils/hideKeyboard');
 
 Page({
@@ -39,7 +40,7 @@ Page({
     const userId = wx.getStorageSync('user_id');
     const token = wx.getStorageSync('token');
     const that = this;
-    wx.request({
+    request({
       url: `${BASE_URL}/clubs`,
       method: 'POST',
       data: {
@@ -54,7 +55,7 @@ Page({
         if (res.statusCode === 200) {
           const cid = res.data.club_id;
           if (initialRating != null) {
-            wx.request({
+            request({
               url: `${BASE_URL}/clubs/${cid}/prerate`,
               method: 'POST',
               data: {
@@ -101,7 +102,7 @@ Page({
       return;
     }
     const that = this;
-    wx.request({
+    request({
       url: `${BASE_URL}/players/${userId}`,
       success(res) {
         const info = res.data || {};
