@@ -46,7 +46,7 @@ from .rating import (
     weighted_singles_matches,
     weighted_doubles_matches,
 )
-from .models import Player, Club, Match, DoublesMatch, Appointment, User, players
+from .models import Player, Club, Match, DoublesMatch, Appointment, User
 import threading
 from collections.abc import MutableMapping
 
@@ -91,12 +91,14 @@ class _StateProxy(MutableMapping):
 
 clubs = _StateProxy("clubs")
 users = _StateProxy("users")
+players = _StateProxy("players")
 
 
 def _refresh_state() -> None:
-    """Reload clubs and users from persistent storage for each request."""
+    """Reload clubs, users, and players from persistent storage for each request."""
     clubs.set(load_data())
     users.set(load_users())
+    players.set(storage.players)
     if "A" in users:
         users["A"].is_sys_admin = True
 
