@@ -21,14 +21,12 @@ from .cli import (
     approve_member,
     reject_application,
     clear_rejection,
-    add_player as cli_add_player,
     remove_member as cli_remove_member,
     toggle_admin as cli_toggle_admin,
     transfer_leader as cli_transfer_leader,
     resign_admin as cli_resign_admin,
     quit_club as cli_quit_club,
     dissolve_club as cli_dissolve_club,
-    create_club as cli_create_club,
     set_user_limits,
     hash_password,
     check_password,
@@ -606,27 +604,6 @@ def list_clubs():
     return [{"club_id": c.club_id, "name": c.name} for c in clubs.values()]
 
 
-@app.post("/clubs")
-def create_club(data: ClubCreate):
-    user = require_auth(data.token)
-    assert_token_matches(user, data.user_id)
-    club_id = data.club_id or _generate_club_id()
-    try:
-        cli_create_club(
-            users,
-            clubs,
-            data.user_id,
-            club_id,
-            data.name,
-            data.logo,
-            data.region,
-            data.slogan,
-        )
-    except ValueError as e:
-        raise HTTPException(400, str(e))
-    save_data(clubs)
-    save_users(users)
-    return {"status": "ok", "club_id": club_id}
 
 
 @app.get("/clubs/{club_id}")
@@ -904,27 +881,6 @@ def leaderboard_full(
     return result
 
 
-@app.post("/clubs/{club_id}/players")
-def add_player(club_id: str, data: PlayerCreate):
-    require_auth(data.token)
-    try:
-        cli_add_player(
-            clubs,
-            club_id,
-            data.user_id,
-            data.name,
-            age=data.age,
-            gender=data.gender,
-            avatar=data.avatar,
-            birth=data.birth,
-            handedness=data.handedness,
-            backhand=data.backhand,
-            region=data.region,
-        )
-    except ValueError as e:
-        raise HTTPException(400, str(e))
-    save_data(clubs)
-    return {"status": "ok"}
 
 
 @app.patch("/players/{user_id}")
