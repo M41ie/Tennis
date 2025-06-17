@@ -3,6 +3,8 @@ from __future__ import annotations
 import datetime
 from dataclasses import dataclass, field
 from typing import List, Dict, Optional, Set
+import threading
+from collections.abc import MutableMapping
 
 # Limits on how many clubs a user may create or join
 # By default users cannot create any clubs until a limit is set
@@ -54,8 +56,48 @@ class Player:
     joined: datetime.date = field(default_factory=datetime.date.today)
 
 
+# thread-local storage for runtime state
+_thread_state = threading.local()
+
+
+class _StateProxy(MutableMapping):
+    """Dictionary-like proxy backed by ``threading.local`` storage."""
+
+    def __init__(self, name: str):
+        self._name = name
+
+    def _data(self) -> dict:
+        return getattr(_thread_state, self._name)
+
+    def set(self, value: dict) -> None:
+        setattr(_thread_state, self._name, value)
+
+    # MutableMapping interface
+    def __getitem__(self, key):
+        return self._data()[key]
+
+    def __setitem__(self, key, value):
+        self._data()[key] = value
+
+    def __delitem__(self, key):
+        del self._data()[key]
+
+    def __iter__(self):
+        return iter(self._data())
+
+    def __len__(self):
+        return len(self._data())
+
+    # Delegate attribute access to underlying dict
+    def __getattr__(self, name):
+        return getattr(self._data(), name)
+
+    def __repr__(self) -> str:  # pragma: no cover - debug helper
+        return repr(self._data())
+
+
 # Global player registry keyed by user_id
-players: Dict[str, Player] = {}
+players = _StateProxy("players")
 
 @dataclass
 class JoinApplication:

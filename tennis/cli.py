@@ -1406,7 +1406,8 @@ def main():
     hist.add_argument('--doubles', action='store_true')
 
     args = parser.parse_args()
-    clubs = load_data()
+    clubs, players_data = load_data()
+    players.set(players_data)
     users = load_users()
 
     if args.cmd == 'create_club':

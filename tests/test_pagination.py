@@ -2,6 +2,7 @@ import importlib
 from fastapi.testclient import TestClient
 import tennis.storage as storage
 import tennis.services.state as state
+import tennis.models
 
 
 def setup(tmp_path, monkeypatch):
@@ -49,7 +50,8 @@ def test_leaderboard_pagination(tmp_path, monkeypatch):
         client.post("/users", json={"user_id": uid, "name": uid.upper(), "password": "pw"})
         t = client.post("/login", json={"user_id": uid, "password": "pw"}).json()["token"]
         client.post(f"/clubs/c1/players", json={"user_id": uid, "name": uid.upper(), "token": t})
-        clubs = storage.load_data()
+        clubs, players = storage.load_data()
+        tennis.models.players.set(players)
         clubs["c1"].members[uid].singles_rating = r
         storage.save_data(clubs)
     resp = client.get("/leaderboard_full?club=c1&limit=1&offset=1")

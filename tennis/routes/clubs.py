@@ -45,7 +45,9 @@ def create_club(data: ClubCreate):
         slogan=data.slogan,
     )
     # refresh API state after DB write
-    api.clubs.set(load_data())
+    clubs, players = load_data()
+    api.clubs.set(clubs)
+    api.players.set(players)
     api.users.set(load_users())
     return {"status": "ok", "club_id": cid}
 
@@ -69,5 +71,7 @@ def add_player(club_id: str, data: PlayerCreate):
     except HTTPException as e:
         if e.status_code != 400 or str(e.detail) != "Player already in club":
             raise
-    api.clubs.set(load_data())
+    clubs, players = load_data()
+    api.clubs.set(clubs)
+    api.players.set(players)
     return {"status": "ok"}

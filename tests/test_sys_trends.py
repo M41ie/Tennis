@@ -3,6 +3,7 @@ import importlib
 from fastapi.testclient import TestClient
 import tennis.storage as storage
 import tennis.services.state as state
+import tennis.models
 
 
 def setup(tmp_path, monkeypatch):
@@ -39,7 +40,8 @@ def test_trend_endpoints(tmp_path, monkeypatch):
     )
 
     today = datetime.date.today()
-    clubs = storage.load_data()
+    clubs, players = storage.load_data()
+    tennis.models.players.set(players)
     clubs["c1"].members["u1"].joined = today - datetime.timedelta(days=5)
     clubs["c1"].members["u2"].joined = today - datetime.timedelta(days=2)
     storage.save_data(clubs)
