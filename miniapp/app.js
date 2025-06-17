@@ -1,4 +1,5 @@
 const BASE_URL = 'http://localhost:8000';
+const store = require('./store/store');
 
 App({
   globalData: {
@@ -14,21 +15,20 @@ App({
       options.header['Accept-Language'] = 'zh-CN'
       return origRequest(options)
     }
-    const token = wx.getStorageSync('token');
-    const uid = wx.getStorageSync('user_id');
-    if (token && uid) {
+    store.setAuth(wx.getStorageSync('token'), wx.getStorageSync('user_id'));
+    store.setClubId(wx.getStorageSync('club_id'));
+    if (store.token && store.userId) {
       const that = this;
       wx.request({
         url: `${BASE_URL}/check_token`,
         method: 'POST',
-        data: { token },
+        data: { token: store.token },
         timeout: 5000,
         success(res) {
           if (res.statusCode === 200) {
-            that.globalData.userId = uid;
+            that.globalData.userId = store.userId;
           } else {
-            wx.removeStorageSync('token');
-            wx.removeStorageSync('user_id');
+            store.clearAuth();
           }
         },
         fail() {

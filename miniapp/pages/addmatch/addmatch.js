@@ -2,6 +2,7 @@ const BASE_URL = getApp().globalData.BASE_URL;
 const request = require('../../services/api');
 const { hideKeyboard } = require('../../utils/hideKeyboard');
 const { zh_CN } = require('../../utils/locales.js');
+const store = require('../../store/store');
 
 Page({
   data: {
@@ -40,7 +41,7 @@ Page({
       url: `${BASE_URL}/clubs`,
       success(res) {
         const allClubs = res.data || [];
-        const uid = wx.getStorageSync('user_id');
+        const uid = store.userId;
         if (!uid) {
           const ids = [''];
           const names = [that.data.t.chooseClub];
@@ -72,7 +73,7 @@ Page({
     request({
       url: `${BASE_URL}/clubs/${cid}/players`,
       success(res) {
-        const uid = wx.getStorageSync('user_id');
+        const uid = store.userId;
         const filtered = res.data.filter(p => p.user_id !== uid);
         const names = filtered.map(p => p.name);
         const players = [null, ...filtered];
@@ -146,8 +147,8 @@ Page({
     }
 
     const cid = this.data.clubIds[this.data.clubIndex];
-    const userId = wx.getStorageSync('user_id');
-    const token = wx.getStorageSync('token');
+    const userId = store.userId;
+    const token = store.token;
     if (!cid || !userId || !token) return;
 
     if (doubles) {

@@ -1,5 +1,6 @@
 const BASE_URL = getApp().globalData.BASE_URL;
 const request = require('../../services/api');
+const store = require('../../store/store');
 
 Page({
   data: {
@@ -28,7 +29,7 @@ Page({
     this.fetchInitial();
   },
   fetchInitial() {
-    const uid = wx.getStorageSync('user_id');
+    const uid = store.userId;
     const that = this;
     const params = [];
     params.push('include_clubs=true');

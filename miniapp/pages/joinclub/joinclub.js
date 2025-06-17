@@ -1,6 +1,7 @@
 const BASE_URL = getApp().globalData.BASE_URL;
 const request = require('../../services/api');
 const { hideKeyboard } = require('../../utils/hideKeyboard');
+const store = require('../../store/store');
 
 Page({
   data: {
@@ -20,7 +21,7 @@ Page({
     this.fetchJoined();
   },
   fetchJoined() {
-    const uid = wx.getStorageSync('user_id');
+    const uid = store.userId;
     const that = this;
     if (!uid) {
       this.setData({ joined: [] });
@@ -39,7 +40,7 @@ Page({
   },
   fetchClubs() {
     const that = this;
-    const uid = wx.getStorageSync('user_id');
+    const uid = store.userId;
     request({
       url: `${BASE_URL}/clubs`,
       success(res) {
@@ -113,8 +114,8 @@ Page({
   },
   join(e) {
     const cid = e.currentTarget.dataset.id;
-    const userId = wx.getStorageSync('user_id');
-    const token = wx.getStorageSync('token');
+    const userId = store.userId;
+    const token = store.token;
     const that = this;
     if (!userId || !token) return;
     request({
@@ -158,8 +159,8 @@ Page({
   viewReject(e) {
     const reason = e.currentTarget.dataset.reason;
     const cid = e.currentTarget.dataset.id;
-    const uid = wx.getStorageSync('user_id');
-    const token = wx.getStorageSync('token');
+    const uid = store.userId;
+    const token = store.token;
     const that = this;
     wx.showModal({
       title: '未通过原因',
@@ -179,8 +180,8 @@ Page({
     });
   },
   submitJoin() {
-    const userId = wx.getStorageSync('user_id');
-    const token = wx.getStorageSync('token');
+    const userId = store.userId;
+    const token = store.token;
     const cid = this.data.joinClubId;
     const rating = parseFloat(this.data.rating);
     if (
@@ -203,7 +204,7 @@ Page({
         },
       success(r) {
         if (r.statusCode === 200) {
-          wx.setStorageSync('club_id', cid);
+          store.setClubId(cid);
           wx.showToast({ title: '已申请', icon: 'success' });
           const clubs = that.data.clubs.map(c =>
             c.club_id === cid ? { ...c, pending: true, rejected_reason: '' } : c

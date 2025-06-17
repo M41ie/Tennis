@@ -1,5 +1,6 @@
 const BASE_URL = getApp().globalData.BASE_URL;
 const request = require('../../services/api');
+const store = require('../../store/store');
 const FORMAT_DISPLAY = {
   '6_game': '六局',
   '4_game': '四局',
@@ -22,7 +23,7 @@ Page({
     this.fetchPendings();
   },
   fetchPendings() {
-    const token = wx.getStorageSync('token');
+    const token = store.token;
     if (!token) return;
     const that = this;
     const placeholder = require('../../assets/base64.js').DEFAULT_AVATAR;
@@ -87,19 +88,19 @@ Page({
   approveSingle(e) {
     const idx = e.currentTarget.dataset.index;
     const cid = e.currentTarget.dataset.club;
-    const token = wx.getStorageSync('token');
+    const token = store.token;
     const that = this;
     request({
       url: `${BASE_URL}/clubs/${cid}/pending_matches/${idx}/approve`,
       method: 'POST',
-      data: { approver: wx.getStorageSync('user_id'), token },
+      data: { approver: store.userId, token },
       complete() { that.fetchPendings(); }
     });
   },
   vetoSingle(e) {
     const idx = e.currentTarget.dataset.index;
     const cid = e.currentTarget.dataset.club;
-    const token = wx.getStorageSync('token');
+    const token = store.token;
     const that = this;
     // Optimistically remove the item so the UI updates immediately
     const arr = this.data.singles.slice();
@@ -111,26 +112,26 @@ Page({
     request({
       url: `${BASE_URL}/clubs/${cid}/pending_matches/${idx}/veto`,
       method: 'POST',
-      data: { approver: wx.getStorageSync('user_id'), token },
+      data: { approver: store.userId, token },
       complete() { that.fetchPendings(); }
     });
   },
   approveDouble(e) {
     const idx = e.currentTarget.dataset.index;
     const cid = e.currentTarget.dataset.club;
-    const token = wx.getStorageSync('token');
+    const token = store.token;
     const that = this;
     request({
       url: `${BASE_URL}/clubs/${cid}/pending_doubles/${idx}/approve`,
       method: 'POST',
-      data: { approver: wx.getStorageSync('user_id'), token },
+      data: { approver: store.userId, token },
       complete() { that.fetchPendings(); }
     });
   },
   vetoDouble(e) {
     const idx = e.currentTarget.dataset.index;
     const cid = e.currentTarget.dataset.club;
-    const token = wx.getStorageSync('token');
+    const token = store.token;
     const that = this;
     // Optimistically remove the item so the UI updates immediately
     const arr = this.data.doublesList.slice();
@@ -142,7 +143,7 @@ Page({
     request({
       url: `${BASE_URL}/clubs/${cid}/pending_doubles/${idx}/veto`,
       method: 'POST',
-      data: { approver: wx.getStorageSync('user_id'), token },
+      data: { approver: store.userId, token },
       complete() { that.fetchPendings(); }
     });
   }

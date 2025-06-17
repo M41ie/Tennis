@@ -2,6 +2,7 @@ const BASE_URL = getApp().globalData.BASE_URL;
 const request = require('../../services/api');
 const IMAGES = require('../../assets/base64.js');
 const { formatRating } = require('../../utils/format');
+const store = require('../../store/store');
 
 function calcAge(birth) {
   const d = new Date(birth);
@@ -47,7 +48,7 @@ Page({
   },
   onLoad(options) {
     const memberId = options && options.uid ? options.uid : '';
-    const selfId = wx.getStorageSync('user_id');
+    const selfId = store.userId;
     this.setData({ memberId, isSelf: memberId === selfId });
   },
   onShow() {
@@ -55,7 +56,7 @@ Page({
     this.checkSysAdmin();
   },
   checkSysAdmin() {
-    const uid = wx.getStorageSync('user_id');
+    const uid = store.userId;
     const that = this;
     if (!uid) {
       that.setData({ isSysAdmin: false });
@@ -108,8 +109,8 @@ Page({
     });
   },
   loadClubInfo() {
-    const cid = wx.getStorageSync('club_id');
-    const uid = wx.getStorageSync('user_id');
+    const cid = store.clubId;
+    const uid = store.userId;
     if (!cid) return;
     const that = this;
     request({
@@ -134,8 +135,8 @@ Page({
     });
   },
   toggleAdmin() {
-    const cid = wx.getStorageSync('club_id');
-    const token = wx.getStorageSync('token');
+    const cid = store.clubId;
+    const token = store.token;
     const action = this.data.isTargetAdmin ? '取消管理员' : '设为管理员';
     const name = this.data.user ? this.data.user.name : '';
     const that = this;
@@ -155,8 +156,8 @@ Page({
     });
   },
   transferLeader() {
-    const cid = wx.getStorageSync('club_id');
-    const token = wx.getStorageSync('token');
+    const cid = store.clubId;
+    const token = store.token;
     const name = this.data.user ? this.data.user.name : '';
     const that = this;
     wx.showModal({
@@ -176,8 +177,8 @@ Page({
   },
   setLeader() {
     if (!this.data.isSysAdmin) return;
-    const cid = wx.getStorageSync('club_id');
-    const token = wx.getStorageSync('token');
+    const cid = store.clubId;
+    const token = store.token;
     const uid = this.data.memberId;
     const name = this.data.user ? this.data.user.name : '';
     const that = this;
@@ -200,9 +201,9 @@ Page({
     });
   },
   removeMember() {
-    const cid = wx.getStorageSync('club_id');
-    const token = wx.getStorageSync('token');
-    const remover = wx.getStorageSync('user_id');
+    const cid = store.clubId;
+    const token = store.token;
+    const remover = store.userId;
     const name = this.data.user ? this.data.user.name : '';
     const that = this;
     wx.showModal({

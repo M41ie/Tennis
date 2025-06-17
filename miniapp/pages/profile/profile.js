@@ -1,6 +1,7 @@
 const IMAGES = require('../../assets/base64.js');
 const { formatRating } = require('../../utils/format');
 const userService = require('../../services/user');
+const store = require('../../store/store');
 
 Page({
   data: {
@@ -24,8 +25,8 @@ Page({
     myClubBtnText: '我的俱乐部'
   },
   onShow() {
-    const uid = wx.getStorageSync('user_id');
-    const cid = wx.getStorageSync('club_id');
+    const uid = store.userId;
+    const cid = store.clubId;
     if (uid) {
       this.setData({ loggedIn: true });
       this.loadJoinedClubs(uid, cid);
@@ -40,7 +41,7 @@ Page({
       let current = cid;
       if (!current && list.length) {
         current = list[0];
-        wx.setStorageSync('club_id', current);
+        store.setClubId(current);
       }
       this.setData({
         joinedClubs: list,
@@ -85,15 +86,14 @@ Page({
             .wechatLogin(res.code)
             .then(resp => {
               if (resp.token) {
-                wx.setStorageSync('token', resp.token);
-                wx.setStorageSync('user_id', resp.user_id);
+                store.setAuth(resp.token, resp.user_id);
                 this.setData({ loggedIn: true });
                 if (resp.just_created) {
                   wx.navigateTo({ url: '/pages/editprofile/editprofile' });
                 } else {
                   this.loadJoinedClubs(
                     resp.user_id,
-                    wx.getStorageSync('club_id')
+                    store.clubId
                   );
                 }
               } else {
@@ -120,9 +120,7 @@ Page({
   },
   logout() {
     const complete = () => {
-      wx.removeStorageSync('token');
-      wx.removeStorageSync('user_id');
-      wx.removeStorageSync('club_id');
+      store.clearAuth();
       this.setData({ loggedIn: false, user: this.data.guestUser });
     };
     userService.logout().finally(complete);

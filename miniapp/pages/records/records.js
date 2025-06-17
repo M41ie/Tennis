@@ -1,5 +1,6 @@
 const BASE_URL = getApp().globalData.BASE_URL;
 const request = require('../../services/api');
+const store = require('../../store/store');
 
 // Map backend format identifiers to display names
 const FORMAT_DISPLAY = {
@@ -32,7 +33,7 @@ Page({
     isAdmin: false
   },
   onLoad() {
-    this.setData({ userId: wx.getStorageSync('user_id'), page: 1, finished: false, records: [] });
+    this.setData({ userId: store.userId, page: 1, finished: false, records: [] });
     this.fetchRecords();
     this.fetchPendings();
   },
@@ -56,7 +57,7 @@ Page({
     this.setData({ pendingTabIndex: idx });
   },
   fetchRecords() {
-    const userId = wx.getStorageSync('user_id');
+    const userId = store.userId;
     if (!userId) return;
     const placeholder = require('../../assets/base64.js').DEFAULT_AVATAR;
     const that = this;
@@ -158,8 +159,8 @@ Page({
     this.fetchPendings();
   },
   fetchPendings() {
-    const userId = wx.getStorageSync('user_id');
-    const token = wx.getStorageSync('token');
+    const userId = store.userId;
+    const token = store.token;
     if (!userId || !token) return;
     const that = this;
     const placeholder = require('../../assets/base64.js').DEFAULT_AVATAR;
@@ -245,7 +246,7 @@ Page({
   confirmSingle(e) {
     const idx = e.currentTarget.dataset.index;
     const cid = e.currentTarget.dataset.club;
-    const token = wx.getStorageSync('token');
+    const token = store.token;
     const that = this;
     request({
       url: `${BASE_URL}/clubs/${cid}/pending_matches/${idx}/confirm`,
@@ -267,7 +268,7 @@ Page({
   approveSingle(e) {
     const idx = e.currentTarget.dataset.index;
     const cid = e.currentTarget.dataset.club;
-    const token = wx.getStorageSync('token');
+    const token = store.token;
     const that = this;
     request({
       url: `${BASE_URL}/clubs/${cid}/pending_matches/${idx}/approve`,
@@ -289,7 +290,7 @@ Page({
   vetoSingle(e) {
     const idx = e.currentTarget.dataset.index;
     const cid = e.currentTarget.dataset.club;
-    const token = wx.getStorageSync('token');
+    const token = store.token;
     const that = this;
     // Optimistically remove the item for immediate feedback
     const arr = this.data.pendingSingles.slice();
@@ -310,7 +311,7 @@ Page({
   rejectSingle(e) {
     const idx = e.currentTarget.dataset.index;
     const cid = e.currentTarget.dataset.club;
-    const token = wx.getStorageSync('token');
+    const token = store.token;
     const that = this;
     request({
       url: `${BASE_URL}/clubs/${cid}/pending_matches/${idx}/reject`,
@@ -332,7 +333,7 @@ Page({
   confirmDouble(e) {
     const idx = e.currentTarget.dataset.index;
     const cid = e.currentTarget.dataset.club;
-    const token = wx.getStorageSync('token');
+    const token = store.token;
     const that = this;
     request({
       url: `${BASE_URL}/clubs/${cid}/pending_doubles/${idx}/confirm`,
@@ -354,7 +355,7 @@ Page({
   approveDouble(e) {
     const idx = e.currentTarget.dataset.index;
     const cid = e.currentTarget.dataset.club;
-    const token = wx.getStorageSync('token');
+    const token = store.token;
     const that = this;
     request({
       url: `${BASE_URL}/clubs/${cid}/pending_doubles/${idx}/approve`,
@@ -376,7 +377,7 @@ Page({
   vetoDouble(e) {
     const idx = e.currentTarget.dataset.index;
     const cid = e.currentTarget.dataset.club;
-    const token = wx.getStorageSync('token');
+    const token = store.token;
     const that = this;
     // Optimistically remove the item for immediate feedback
     const arr = this.data.pendingDoubles.slice();
@@ -397,7 +398,7 @@ Page({
   rejectDouble(e) {
     const idx = e.currentTarget.dataset.index;
     const cid = e.currentTarget.dataset.club;
-    const token = wx.getStorageSync('token');
+    const token = store.token;
     const that = this;
     request({
       url: `${BASE_URL}/clubs/${cid}/pending_doubles/${idx}/reject`,

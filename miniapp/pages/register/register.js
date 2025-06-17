@@ -1,6 +1,7 @@
 const BASE_URL = getApp().globalData.BASE_URL;
 const request = require('../../services/api');
 const { hideKeyboard } = require('../../utils/hideKeyboard');
+const store = require('../../store/store');
 
 Page({
   data: {},
@@ -16,8 +17,7 @@ Page({
           timeout: 5000,
           success(resp) {
             if (resp.statusCode === 200 && resp.data.token) {
-              wx.setStorageSync('token', resp.data.token);
-              wx.setStorageSync('user_id', resp.data.user_id);
+              store.setAuth(resp.data.token, resp.data.user_id);
               wx.navigateTo({ url: '/pages/editprofile/editprofile' });
             } else {
               wx.showToast({ title: '失败', icon: 'none' });

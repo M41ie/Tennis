@@ -1,6 +1,7 @@
 const BASE_URL = getApp().globalData.BASE_URL;
 const request = require('../../services/api');
 const { hideKeyboard } = require('../../utils/hideKeyboard');
+const store = require('../../store/store');
 
 Page({
   data: {
@@ -11,7 +12,7 @@ Page({
     regionString: ''
   },
   onLoad() {
-    const cid = wx.getStorageSync('club_id');
+    const cid = store.clubId;
     if (!cid) return;
     const that = this;
     request({
@@ -48,9 +49,9 @@ Page({
     });
   },
   submit() {
-    const cid = wx.getStorageSync('club_id');
-    const userId = wx.getStorageSync('user_id');
-    const token = wx.getStorageSync('token');
+    const cid = store.clubId;
+    const userId = store.userId;
+    const token = store.token;
     if (!cid || !userId || !token) return;
     if (!this.data.name || !this.data.slogan || this.data.region.length === 0) {
       wx.showToast({ title: '信息不完整，请完善后保存。', icon: 'none' });

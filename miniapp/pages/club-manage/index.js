@@ -1,6 +1,7 @@
 const BASE_URL = getApp().globalData.BASE_URL;
 const request = require('../../services/api');
 const { hideKeyboard } = require('../../utils/hideKeyboard');
+const store = require('../../store/store');
 
 Page({
   data: {
@@ -23,8 +24,8 @@ Page({
   hideKeyboard,
   joinClub(e) {
     const cid = e.currentTarget.dataset.id;
-    const uid = wx.getStorageSync('user_id');
-    const token = wx.getStorageSync('token');
+    const uid = store.userId;
+    const token = store.token;
     const that = this;
     if (!uid || !token) return;
     request({
@@ -38,7 +39,7 @@ Page({
     });
   },
   getMyClubs() {
-    const uid = wx.getStorageSync('user_id');
+    const uid = store.userId;
     if (!uid) return;
     const that = this;
     request({
@@ -103,14 +104,14 @@ Page({
   openClub(e) {
     const cid = e.currentTarget.dataset.id;
     if (cid) {
-      wx.setStorageSync('club_id', cid);
+      store.setClubId(cid);
       wx.navigateTo({ url: `/pages/manage/manage?cid=${cid}` });
     }
   },
   quitClub(e) {
     const cid = e.currentTarget.dataset.id;
-    const uid = wx.getStorageSync('user_id');
-    const token = wx.getStorageSync('token');
+    const uid = store.userId;
+    const token = store.token;
     const that = this;
     request({
       url: `${BASE_URL}/clubs/${cid}/role`,
@@ -121,8 +122,8 @@ Page({
   },
   resignAdmin(e) {
     const cid = e.currentTarget.dataset.id;
-    const uid = wx.getStorageSync('user_id');
-    const token = wx.getStorageSync('token');
+    const uid = store.userId;
+    const token = store.token;
     const that = this;
     wx.showModal({
       title: '确认卸任',
@@ -142,8 +143,8 @@ Page({
   },
   toggleAdmin(e) {
     const cid = e.currentTarget.dataset.id;
-    const uid = wx.getStorageSync('user_id');
-    const token = wx.getStorageSync('token');
+    const uid = store.userId;
+    const token = store.token;
     const that = this;
     request({
       url: `${BASE_URL}/clubs/${cid}/role`,
@@ -154,8 +155,8 @@ Page({
   },
   transferLeader(e) {
     const cid = e.currentTarget.dataset.id;
-    const uid = wx.getStorageSync('user_id');
-    const token = wx.getStorageSync('token');
+    const uid = store.userId;
+    const token = store.token;
     const that = this;
     request({
       url: `${BASE_URL}/clubs/${cid}/role`,
@@ -165,7 +166,7 @@ Page({
     });
   },
   checkPermission() {
-    const uid = wx.getStorageSync('user_id');
+    const uid = store.userId;
     if (!uid) return;
     const that = this;
     request({

@@ -2,6 +2,7 @@ const BASE_URL = getApp().globalData.BASE_URL;
 const request = require('../../services/api');
 const { hideKeyboard } = require('../../utils/hideKeyboard');
 const { formatRating, formatGames } = require('../../utils/format');
+const store = require('../../store/store');
 
 Page({
   data: {
@@ -119,7 +120,7 @@ Page({
     const uid = this.data.userId;
     const join = Number(this.data.inputJoin);
     const create = Number(this.data.inputCreate);
-    const token = wx.getStorageSync('token');
+    const token = store.token;
     const that = this;
     wx.showModal({
       title: '确认修改',
