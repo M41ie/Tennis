@@ -1,4 +1,4 @@
-<view class="page-container" bindtap="hideKeyboard">
+<view class="page-container" catchtap="hideKeyboard">
   <view class="section-title-row">
     <view class="section-title">{{t.searchClubResults}}</view>
   </view>

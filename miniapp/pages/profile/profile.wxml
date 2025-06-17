@@ -1,3 +1,4 @@
+<view catchtap="hideKeyboard">
 <profile-card
   user="{{user}}"
   placeholder="{{placeholderAvatar}}"
@@ -26,3 +27,4 @@
 </view>
 
 <button wx:if="{{loggedIn}}" class="logout-btn" bindtap="logout">退出登录</button>
+</view>

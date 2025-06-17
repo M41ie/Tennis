@@ -1,6 +1,7 @@
 const BASE_URL = getApp().globalData.BASE_URL;
 const request = require('../../services/api');
 const store = require('../../store/store');
+const { hideKeyboard } = require('../../utils/hideKeyboard');
 
 // Map backend format identifiers to display names
 const FORMAT_DISPLAY = {
@@ -32,6 +33,7 @@ Page({
     userId: '',
     isAdmin: false
   },
+  hideKeyboard,
   onLoad() {
     this.setData({ userId: store.userId, page: 1, finished: false, records: [] });
     this.fetchRecords();

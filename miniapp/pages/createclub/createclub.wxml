@@ -1,5 +1,5 @@
-<view class="page-container">
-  <view class="weui-cells weui-cells_form" bindtap="hideKeyboard">
+<view class="page-container" catchtap="hideKeyboard">
+  <view class="weui-cells weui-cells_form" catchtap="hideKeyboard">
   <view class="weui-cell">
     <view class="weui-label">Name</view>
     <input class="weui-input" placeholder="Name" bindinput="onName" />

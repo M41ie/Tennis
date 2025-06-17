@@ -1,4 +1,4 @@
-<view class="weui-cells weui-cells_form" bindtap="hideKeyboard">
+<view class="weui-cells weui-cells_form" catchtap="hideKeyboard">
   <view class="weui-cell">
     <view class="weui-label">俱乐部名</view>
     <input class="weui-input" value="{{name}}" placeholder="俱乐部名" bindinput="onName" />

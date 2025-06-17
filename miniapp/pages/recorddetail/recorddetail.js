@@ -8,6 +8,7 @@ const FORMAT_DISPLAY = {
   '抢10': '抢十',
   '抢7': '抢七'
 };
+const { hideKeyboard } = require('../../utils/hideKeyboard');
 
 function displayFormat(fmt) {
   return FORMAT_DISPLAY[fmt] || fmt;
@@ -17,6 +18,7 @@ Page({
   data: {
     record: null
   },
+  hideKeyboard,
   onLoad(options) {
     if (options.data) {
       try {

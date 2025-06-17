@@ -1,4 +1,4 @@
-<view bindtap="hideKeyboard">
+<view catchtap="hideKeyboard">
   <input placeholder="Target ID" bindinput="onTarget" />
   <input placeholder="Rating" bindinput="onRating" />
   <button bindtap="submit">Submit</button>

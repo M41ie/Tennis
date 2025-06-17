@@ -1,6 +1,7 @@
 const BASE_URL = getApp().globalData.BASE_URL;
 const request = require('../../services/api');
 const store = require('../../store/store');
+const { hideKeyboard } = require('../../utils/hideKeyboard');
 
 Page({
   data: {
@@ -25,6 +26,7 @@ Page({
     page: 1,
     finished: false
   },
+  hideKeyboard,
   onLoad() {
     this.fetchInitial();
   },

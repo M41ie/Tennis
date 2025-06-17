@@ -1,5 +1,6 @@
 const BASE_URL = getApp().globalData.BASE_URL;
 const request = require('../../services/api');
+const { hideKeyboard } = require('../../utils/hideKeyboard');
 const FORMAT_DISPLAY = {
   '6_game': '六局',
   '4_game': '四局',
@@ -15,6 +16,7 @@ function displayFormat(fmt) {
 }
 Page({
   data: { records: [], doubles: false, modeIndex: 0, page: 1, finished: false },
+  hideKeyboard,
   onLoad() {
     this.fetchRecords();
   },
