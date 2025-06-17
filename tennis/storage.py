@@ -1280,3 +1280,100 @@ def mark_user_message_read(user_id: str, index: int) -> None:
     conn.commit()
     conn.close()
 
+
+def save_user(user: User, conn: sqlite3.Connection | None = None) -> None:
+    """Persist a single user's data and messages."""
+    close = conn is None
+    if conn is None:
+        conn = _connect()
+    cur = conn.cursor()
+    cur.execute("DELETE FROM users WHERE user_id = ?", (user.user_id,))
+    cur.execute("DELETE FROM messages WHERE user_id = ?", (user.user_id,))
+    cur.execute(
+        """
+        INSERT INTO users(
+            user_id, name, password_hash, wechat_openid, can_create_club,
+            is_sys_admin, created_clubs, joined_clubs, max_creatable_clubs,
+            max_joinable_clubs
+        ) VALUES (?,?,?,?,?,?,?,?,?,?)
+        """,
+        (
+            user.user_id,
+            user.name,
+            user.password_hash,
+            user.wechat_openid,
+            int(user.can_create_club),
+            int(getattr(user, "is_sys_admin", False)),
+            user.created_clubs,
+            user.joined_clubs,
+            getattr(user, "max_creatable_clubs", 0),
+            getattr(user, "max_joinable_clubs", 5),
+        ),
+    )
+    for msg in user.messages:
+        cur.execute(
+            "INSERT INTO messages(user_id, date, text, read) VALUES (?,?,?,?)",
+            (user.user_id, msg.date.isoformat(), msg.text, int(msg.read)),
+        )
+    if close:
+        conn.commit()
+        conn.close()
+
+
+def save_club(club: Club, conn: sqlite3.Connection | None = None) -> None:
+    """Persist a single club's records."""
+    close = conn is None
+    if conn is None:
+        conn = _connect()
+    cur = conn.cursor()
+    cur.execute("DELETE FROM clubs WHERE club_id = ?", (club.club_id,))
+    cur.execute("DELETE FROM club_meta WHERE club_id = ?", (club.club_id,))
+    cur.execute("DELETE FROM club_members WHERE club_id = ?", (club.club_id,))
+    cur.execute("DELETE FROM matches WHERE club_id = ?", (club.club_id,))
+    cur.execute("DELETE FROM pending_matches WHERE club_id = ?", (club.club_id,))
+    cur.execute("DELETE FROM appointments WHERE club_id = ?", (club.club_id,))
+    cur.execute(
+        "INSERT INTO clubs(club_id, name, logo, region, slogan) VALUES (?,?,?,?,?)",
+        (club.club_id, club.name, club.logo, club.region, club.slogan),
+    )
+    cur.execute(
+        "INSERT INTO club_meta(club_id, banned_ids, leader_id, admin_ids, pending_members, rejected_members) VALUES (?,?,?,?,?,?)",
+        (
+            club.club_id,
+            json.dumps(list(club.banned_ids)),
+            club.leader_id,
+            json.dumps(list(club.admin_ids)),
+            json.dumps({uid: vars(pm) for uid, pm in club.pending_members.items()}),
+            json.dumps(club.rejected_members),
+        ),
+    )
+    for player in club.members.values():
+        create_player(club.club_id, player, conn=conn)
+        update_player_record(player, conn=conn)
+    for m in club.matches:
+        create_match(club.club_id, m, pending=False, conn=conn)
+    for m in club.pending_matches:
+        create_match(club.club_id, m, pending=True, conn=conn)
+    for a in club.appointments:
+        create_appointment_record(club.club_id, a, conn=conn)
+    if close:
+        conn.commit()
+        conn.close()
+
+
+def delete_club(club_id: str, conn: sqlite3.Connection | None = None) -> None:
+    """Remove all records associated with a club."""
+    close = conn is None
+    if conn is None:
+        conn = _connect()
+    cur = conn.cursor()
+    cur.execute("DELETE FROM clubs WHERE club_id = ?", (club_id,))
+    cur.execute("DELETE FROM club_meta WHERE club_id = ?", (club_id,))
+    cur.execute("DELETE FROM club_members WHERE club_id = ?", (club_id,))
+    cur.execute("DELETE FROM matches WHERE club_id = ?", (club_id,))
+    cur.execute("DELETE FROM pending_matches WHERE club_id = ?", (club_id,))
+    cur.execute("DELETE FROM appointments WHERE club_id = ?", (club_id,))
+    if close:
+        conn.commit()
+        conn.close()
+

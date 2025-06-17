@@ -1710,6 +1710,17 @@ def test_dissolve_club(tmp_path, monkeypatch):
         "/clubs",
         json={"club_id": "c1", "name": "C1", "user_id": "leader", "token": token_leader},
     )
+    # second club should remain after dissolving c1
+    # another leader creates second club
+    client.post(
+        "/users",
+        json={"user_id": "leader2", "name": "L2", "password": "pw", "allow_create": True},
+    )
+    token_leader2 = client.post("/login", json={"user_id": "leader2", "password": "pw"}).json()["token"]
+    client.post(
+        "/clubs",
+        json={"club_id": "c2", "name": "C2", "user_id": "leader2", "token": token_leader2},
+    )
     client.post(
         "/clubs/c1/join",
         json={"user_id": "m1", "token": token_m1},
@@ -1728,9 +1739,15 @@ def test_dissolve_club(tmp_path, monkeypatch):
     assert resp.json()["status"] == "ok"
 
     with sqlite3.connect(storage.DB_FILE) as conn:
-        assert conn.execute(
-            "SELECT COUNT(*) FROM clubs WHERE club_id = 'c1'"
-        ).fetchone()[0] == 0
+        assert (
+            conn.execute("SELECT COUNT(*) FROM clubs WHERE club_id = 'c1'").fetchone()[0]
+            == 0
+        )
+        # club c2 should still exist
+        assert (
+            conn.execute("SELECT COUNT(*) FROM clubs WHERE club_id = 'c2'").fetchone()[0]
+            == 1
+        )
         leader = conn.execute(
             "SELECT created_clubs, joined_clubs FROM users WHERE user_id = 'leader'"
         ).fetchone()
