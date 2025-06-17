@@ -1,6 +1,7 @@
 import json
 import datetime
 import os
+import pickle
 import sqlite3
 from pathlib import Path
 from typing import Dict, Generator
@@ -15,6 +16,17 @@ import psycopg2.extras
 DB_FILE = Path(__file__).resolve().parent.parent / "tennis.db"
 DATABASE_URL = os.environ.get("DATABASE_URL", f"sqlite:///{DB_FILE}")
 IS_PG = DATABASE_URL.startswith("postgres")
+
+# Optional Redis cache
+REDIS_URL = os.environ.get("REDIS_URL")
+CACHE_TTL = int(os.environ.get("CACHE_TTL", "300"))
+_redis = None
+if REDIS_URL:
+    try:
+        import redis  # type: ignore
+        _redis = redis.from_url(REDIS_URL)
+    except Exception:
+        _redis = None
 
 
 class _PgCursor:
@@ -85,6 +97,41 @@ _clubs_cache: Dict[str, Club] | None = None
 _users_cache: Dict[str, User] | None = None
 
 
+def _load_cache(key: str):
+    if not _redis:
+        return None
+    try:
+        data = _redis.get(key)
+        if data is not None:
+            return pickle.loads(data)
+    except Exception:
+        return None
+    return None
+
+
+def _save_cache(key: str, value: object) -> None:
+    if not _redis:
+        return
+    try:
+        _redis.setex(key, CACHE_TTL, pickle.dumps(value))
+    except Exception:
+        pass
+
+
+def _refresh_after_write() -> None:
+    if _redis:
+        try:
+            _redis.delete("tennis:data", "tennis:users")
+        except Exception:
+            pass
+    invalidate_cache()
+    try:
+        load_data()
+        load_users()
+    except Exception:
+        pass
+
+
 def invalidate_cache() -> None:
     """Clear cached club, user and player data."""
     global _clubs_cache, _users_cache, _db_file
@@ -117,6 +164,7 @@ def transaction() -> Generator[object, None, None]:
     try:
         yield conn
         conn.commit()
+        _refresh_after_write()
     except Exception:
         conn.rollback()
         raise
@@ -329,6 +377,12 @@ def load_data() -> tuple[Dict[str, Club], Dict[str, Player]]:
     global _clubs_cache, _db_file
     if _clubs_cache is not None and _db_file == DATABASE_URL:
         return _clubs_cache, _players_cache
+    if _redis:
+        cached = _load_cache("tennis:data")
+        if cached:
+            _clubs_cache, _players_cache = cached
+            _db_file = DATABASE_URL
+            return _clubs_cache, _players_cache
     _db_file = DATABASE_URL
 
     conn = _connect()
@@ -528,6 +582,7 @@ def load_data() -> tuple[Dict[str, Club], Dict[str, Player]]:
         club.appointments.append(appt)
     conn.close()
     _clubs_cache = clubs
+    _save_cache("tennis:data", (clubs, players))
     return clubs, players
 
 
@@ -720,6 +775,7 @@ def save_data(clubs: Dict[str, Club]) -> None:
             )
     conn.commit()
     conn.close()
+    _refresh_after_write()
 
 
 def load_users() -> Dict[str, User]:
@@ -727,6 +783,12 @@ def load_users() -> Dict[str, User]:
     global _users_cache, _db_file
     if _users_cache is not None and _db_file == DATABASE_URL:
         return _users_cache
+    if _redis:
+        cached = _load_cache("tennis:users")
+        if cached:
+            _users_cache = cached
+            _db_file = DATABASE_URL
+            return _users_cache
     _db_file = DATABASE_URL
 
     conn = _connect()
@@ -760,6 +822,7 @@ def load_users() -> Dict[str, User]:
             user.messages.append(msg)
     conn.close()
     _users_cache = users
+    _save_cache("tennis:users", users)
     return users
 
 
@@ -825,6 +888,7 @@ def create_club(club: Club, conn: sqlite3.Connection | None = None) -> None:
     if close:
         conn.commit()
         conn.close()
+        _refresh_after_write()
 
 
 def create_user(user: User, conn: sqlite3.Connection | None = None) -> None:
@@ -1250,6 +1314,7 @@ def create_appointment_record(club_id: str, appt: Appointment, conn: sqlite3.Con
     if close:
         conn.commit()
         conn.close()
+        _refresh_after_write()
     else:
         conn.commit()
     return row_id
@@ -1292,6 +1357,7 @@ def update_appointment_record(app_id: int, conn: sqlite3.Connection | None = Non
     if close:
         conn.commit()
         conn.close()
+        _refresh_after_write()
     else:
         conn.commit()
 
@@ -1306,6 +1372,7 @@ def delete_appointment_record(app_id: int, conn: sqlite3.Connection | None = Non
     if close:
         conn.commit()
         conn.close()
+        _refresh_after_write()
     else:
         conn.commit()
 
@@ -1329,6 +1396,7 @@ def create_message_record(
     conn.commit()
     row_id = cur.lastrowid
     conn.close()
+    _refresh_after_write()
     return row_id
 
 
@@ -1365,6 +1433,7 @@ def update_message_record(msg_id: int, *, text: str | None = None, read: bool | 
     )
     conn.commit()
     conn.close()
+    _refresh_after_write()
 
 
 def delete_message_record(msg_id: int) -> None:
@@ -1374,6 +1443,7 @@ def delete_message_record(msg_id: int) -> None:
     cur.execute("DELETE FROM messages WHERE id = ?", (msg_id,))
     conn.commit()
     conn.close()
+    _refresh_after_write()
 
 
 def insert_token(token: str, user_id: str) -> None:
@@ -1395,6 +1465,7 @@ def insert_token(token: str, user_id: str) -> None:
         )
     conn.commit()
     conn.close()
+    _refresh_after_write()
 
 
 def delete_token(token: str) -> None:
@@ -1403,6 +1474,7 @@ def delete_token(token: str) -> None:
     conn.execute("DELETE FROM auth_tokens WHERE token = ?", (token,))
     conn.commit()
     conn.close()
+    _refresh_after_write()
 
 
 def get_token(token: str) -> tuple[str, datetime.datetime] | None:
@@ -1438,6 +1510,7 @@ def insert_refresh_token(user_id: str, token: str, expires: datetime.datetime) -
         )
     conn.commit()
     conn.close()
+    _refresh_after_write()
 
 
 def get_refresh_token(token: str) -> tuple[str, datetime.datetime] | None:
@@ -1460,6 +1533,7 @@ def delete_refresh_token(user_id: str) -> None:
     conn.execute("DELETE FROM refresh_tokens WHERE user_id = ?", (user_id,))
     conn.commit()
     conn.close()
+    _refresh_after_write()
 
 
 def get_user(user_id: str) -> User | None:
@@ -1547,6 +1621,7 @@ def mark_user_message_read(user_id: str, index: int) -> None:
     )
     conn.commit()
     conn.close()
+    _refresh_after_write()
 
 
 def save_user(user: User, conn: sqlite3.Connection | None = None) -> None:

@@ -28,6 +28,9 @@ The default SQLite database contains these tables: `users`, `players`, `clubs`,
 `club_members`, `matches`, `pending_matches`, `appointments`, `club_meta`,
 `messages` and `auth_tokens`.
 
+To enable caching export a `REDIS_URL` pointing to a running Redis server. For
+example install Redis locally and set `export REDIS_URL=redis://localhost:6379/0`.
+
 ## 3. Start the API server
 
 Launch the FastAPI application. A local `tennis.db` SQLite database will be created automatically if it does not exist. Set `DATABASE_URL` to a PostgreSQL DSN if you prefer using a server.

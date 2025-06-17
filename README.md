@@ -31,6 +31,11 @@ a server instead. The schema contains tables for `users`, `clubs`, `players`,
 `messages` and `auth_tokens`. Each API call writes directly to these tables so
 the service can operate in a stateless manner.
 
+If the `REDIS_URL` environment variable is set the application caches loaded
+club and user data in Redis for faster access. A running Redis server is
+required for this feature, for example `export REDIS_URL=redis://localhost:6379/0`.
+Cached entries expire automatically after a few minutes.
+
 Available format names:
 
 - `6_game` – standard six game set (`weight=1.0`)
