@@ -13,6 +13,7 @@ from ..storage import (
     get_user as get_user_record,
     list_user_messages,
     mark_user_message_read,
+    transaction,
 )
 from ..models import players, User
 
@@ -36,8 +37,9 @@ def create_user(data) -> str:
         region=data.region,
     )
     # persist new records individually
-    create_user_record(users[uid])
-    create_player("", players[uid])
+    with transaction() as conn:
+        create_user_record(users[uid], conn=conn)
+        create_player("", players[uid], conn=conn)
     return uid
 
 
@@ -80,8 +82,9 @@ def wechat_login(code: str, exchange_func) -> tuple[str, str, bool]:
         user.password_hash = ""
         user.wechat_openid = openid
         users[uid] = user
-        create_user_record(user)
-        create_player("", players[uid])
+        with transaction() as conn:
+            create_user_record(user, conn=conn)
+            create_player("", players[uid], conn=conn)
         created = True
 
     token = secrets.token_hex(16)

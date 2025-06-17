@@ -8,6 +8,7 @@ from ..storage import (
     create_player,
     update_user_record,
     update_player_record,
+    transaction,
 )
 
 
@@ -35,9 +36,10 @@ def create_club(
     except ValueError as e:
         raise HTTPException(400, str(e))
 
-    create_club_record(clubs[club_id])
-    create_player(club_id, clubs[club_id].members[user_id])
-    update_user_record(users[user_id])
+    with transaction() as conn:
+        create_club_record(clubs[club_id], conn=conn)
+        create_player(club_id, clubs[club_id].members[user_id], conn=conn)
+        update_user_record(users[user_id], conn=conn)
     return club_id
 
 
@@ -50,7 +52,8 @@ def add_player(club_id: str, user_id: str, name: str, **kwargs):
         raise HTTPException(400, str(e))
 
     player = clubs[club_id].members[user_id]
-    create_player(club_id, player)
-    update_player_record(player)
+    with transaction() as conn:
+        create_player(club_id, player, conn=conn)
+        update_player_record(player, conn=conn)
 
 
