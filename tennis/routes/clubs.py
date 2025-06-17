@@ -1,8 +1,8 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from ..services.auth import require_auth, assert_token_matches
-from ..cli import create_club as cli_create_club, add_player as cli_add_player
-from ..storage import save_data, save_users
+from ..services.clubs import create_club as svc_create_club, add_player as svc_add_player
+from ..storage import load_data, load_users
 from .. import api
 
 router = APIRouter()
@@ -36,18 +36,17 @@ def create_club(data: ClubCreate):
     uid = require_auth(data.token)
     assert_token_matches(uid, data.user_id)
     cid = data.club_id or api._generate_club_id()
-    cli_create_club(
-        api.users,
-        api.clubs,
+    svc_create_club(
         data.user_id,
-        cid,
         data.name,
-        data.logo,
-        data.region,
-        data.slogan,
+        cid,
+        logo=data.logo,
+        region=data.region,
+        slogan=data.slogan,
     )
-    save_data(api.clubs)
-    save_users(api.users)
+    # refresh API state after DB write
+    api.clubs.set(load_data())
+    api.users.set(load_users())
     return {"status": "ok", "club_id": cid}
 
 
@@ -55,8 +54,7 @@ def create_club(data: ClubCreate):
 def add_player(club_id: str, data: PlayerCreate):
     require_auth(data.token)
     try:
-        cli_add_player(
-            api.clubs,
+        svc_add_player(
             club_id,
             data.user_id,
             data.name,
@@ -68,8 +66,8 @@ def add_player(club_id: str, data: PlayerCreate):
             backhand=data.backhand,
             region=data.region,
         )
-    except ValueError as e:
-        if str(e) != "Player already in club":
+    except HTTPException as e:
+        if e.status_code != 400 or str(e.detail) != "Player already in club":
             raise
-    save_data(api.clubs)
+    api.clubs.set(load_data())
     return {"status": "ok"}

@@ -4,7 +4,6 @@ from ..services import users as user_service
 from ..services.auth import require_auth, assert_token_matches
 from ..services.helpers import get_user_or_404
 from ..storage import (
-    save_users,
     create_user as create_user_record,
     create_player,
     load_users,
@@ -63,7 +62,6 @@ def register_user_api(data: UserCreate):
     )
     create_user_record(api.users[uid])
     create_player("", api.players[uid])
-    save_users(api.users)
     return {"status": "ok", "user_id": uid}
 
 
@@ -82,8 +80,8 @@ def wechat_login_api(data: WeChatLoginRequest):
         data.code, api._exchange_wechat_code
     )
     # new users may have been created during login; refresh api state
-    api.users = load_users()
-    api.clubs = load_data()
+    api.users.set(load_users())
+    api.clubs.set(load_data())
     return {"token": token, "user_id": uid, "just_created": created}
 
 
