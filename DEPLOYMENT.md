@@ -37,5 +37,8 @@ balancer.
 1. Open WeChat Developer Tools and choose **Import**.
 2. Select the `miniapp` directory from this repository.
 3. Configure the request domain to point to the API server URL.
-4. For production deployments edit `miniapp/app.js` and change the `BASE_URL` constant from `http://localhost:8000` to your production domain.
+4. Adjust the API endpoints in `miniapp/config.js`. The file contains
+   `BASE_URL` values for the WeChat `develop`, `trial` and `release` modes.
+   When building the mini program the appropriate entry is chosen based on the
+   compilation environment.
 5. Build and upload the mini program through the developer tools.

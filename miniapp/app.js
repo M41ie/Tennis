@@ -1,4 +1,4 @@
-const BASE_URL = 'http://localhost:8000';
+const { BASE_URL } = require('./config');
 const store = require('./store/store');
 
 App({
