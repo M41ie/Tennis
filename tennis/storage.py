@@ -1,6 +1,5 @@
 import json
 import datetime
-import os
 import pickle
 import sqlite3
 from pathlib import Path
@@ -11,15 +10,24 @@ from urllib.parse import urlparse
 import psycopg2
 import psycopg2.extras
 
+
+from .config import (
+    DB_FILE,
+    get_database_url,
+    get_redis_url,
+    get_cache_ttl,
+)
+
+
 # Absolute path to the repository root database file. Using a fixed location
 # ensures scripts behave the same regardless of the working directory.
-DB_FILE = Path(__file__).resolve().parent.parent / "tennis.db"
-DATABASE_URL = os.environ.get("DATABASE_URL", f"sqlite:///{DB_FILE}")
+# ``DB_FILE`` is imported from ``tennis.config`` so tests can monkeypatch it.
+DATABASE_URL = get_database_url()
 IS_PG = DATABASE_URL.startswith("postgres")
 
 # Optional Redis cache
-REDIS_URL = os.environ.get("REDIS_URL")
-CACHE_TTL = int(os.environ.get("CACHE_TTL", "300"))
+REDIS_URL = get_redis_url()
+CACHE_TTL = get_cache_ttl()
 _redis = None
 if REDIS_URL:
     try:

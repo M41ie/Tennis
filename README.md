@@ -36,6 +36,22 @@ club and user data in Redis for faster access. A running Redis server is
 required for this feature, for example `export REDIS_URL=redis://localhost:6379/0`.
 Cached entries expire automatically after a few minutes.
 
+### Environment configuration
+
+Configuration values are loaded from environment variables. When
+`python-dotenv` is installed a `.env` file in the repository root will be
+read automatically. Example contents:
+
+```ini
+DATABASE_URL=postgresql:///tennis
+REDIS_URL=redis://localhost:6379/0
+WECHAT_APPID=your-app-id
+WECHAT_SECRET=your-secret
+```
+
+Install `python-dotenv` with `pip install python-dotenv` if you want to use a
+`.env` file during development.
+
 Available format names:
 
 - `6_game` – standard six game set (`weight=1.0`)
