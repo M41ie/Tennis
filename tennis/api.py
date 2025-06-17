@@ -17,8 +17,6 @@ from .storage import save_data, save_users, load_data, load_users
 from .cli import (
     register_user,
     resolve_user,
-    request_join,
-    approve_member,
     reject_application,
     clear_rejection,
     remove_member as cli_remove_member,
@@ -26,13 +24,18 @@ from .cli import (
     transfer_leader as cli_transfer_leader,
     resign_admin as cli_resign_admin,
     quit_club as cli_quit_club,
-    dissolve_club as cli_dissolve_club,
     set_user_limits,
     hash_password,
     check_password,
     validate_scores,
     update_player as cli_update_player,
     normalize_gender,
+)
+from .services.clubs import (
+    request_join_club,
+    approve_member_request,
+    dissolve_existing_club,
+    approve_pending_match,
 )
 from .rating import (
     update_ratings,
@@ -495,20 +498,13 @@ class DissolveRequest(BaseModel):
 def join_club(club_id: str, data: JoinRequest):
     user = require_auth(data.token)
     assert_token_matches(user, data.user_id)
-    try:
-        request_join(
-            clubs,
-            users,
-            club_id,
-            data.user_id,
-            singles_rating=data.singles_rating,
-            doubles_rating=data.doubles_rating,
-            reason=data.reason,
-        )
-    except ValueError as e:
-        raise HTTPException(400, str(e))
-    save_data(clubs)
-    save_users(users)
+    request_join_club(
+        club_id,
+        data.user_id,
+        singles_rating=data.singles_rating,
+        doubles_rating=data.doubles_rating,
+        reason=data.reason,
+    )
     return {"status": "ok"}
 
 
@@ -517,12 +513,7 @@ def dissolve_club_api(club_id: str, data: DissolveRequest):
     """Delete a club (leader only)."""
     user = require_auth(data.token)
     assert_token_matches(user, data.user_id)
-    try:
-        cli_dissolve_club(clubs, users, club_id, user)
-    except ValueError as e:
-        raise HTTPException(400, str(e))
-    save_data(clubs)
-    save_users(users)
+    dissolve_existing_club(club_id, user)
     return {"status": "ok"}
 
 
@@ -582,20 +573,13 @@ def update_club_info(club_id: str, data: ClubUpdate):
 def approve_club_member(club_id: str, data: ApproveRequest):
     user = require_auth(data.token)
     assert_token_matches(user, data.approver_id)
-    try:
-        approve_member(
-            clubs,
-            users,
-            club_id,
-            data.approver_id,
-            data.user_id,
-            data.rating,
-            make_admin=data.admin,
-        )
-    except ValueError as e:
-        raise HTTPException(400, str(e))
-    save_data(clubs)
-    save_users(users)
+    approve_member_request(
+        club_id,
+        data.approver_id,
+        data.user_id,
+        data.rating,
+        make_admin=data.admin,
+    )
     return {"status": "ok"}
 
 
@@ -1602,18 +1586,11 @@ def reject_match_api(club_id: str, index: int, data: ConfirmRequest):
 
 @app.post("/clubs/{club_id}/pending_matches/{index}/approve")
 def approve_match_api(club_id: str, index: int, data: ApproveMatchRequest):
-    from .cli import approve_match
-
     user = require_auth(data.token)
     if user != data.approver:
         raise HTTPException(401, "Token mismatch")
 
-    try:
-        approve_match(clubs, club_id, index, data.approver, users)
-    except ValueError as e:
-        raise HTTPException(400, str(e))
-    save_data(clubs)
-    save_users(users)
+    approve_pending_match(club_id, index, data.approver)
     return {"status": "ok"}
 
 
@@ -1708,18 +1685,11 @@ def reject_doubles_api(club_id: str, index: int, data: ConfirmRequest):
 
 @app.post("/clubs/{club_id}/pending_doubles/{index}/approve")
 def approve_doubles_api(club_id: str, index: int, data: ApproveMatchRequest):
-    from .cli import approve_doubles
-
     user = require_auth(data.token)
     if user != data.approver:
         raise HTTPException(401, "Token mismatch")
 
-    try:
-        approve_doubles(clubs, club_id, index, data.approver, users)
-    except ValueError as e:
-        raise HTTPException(400, str(e))
-    save_data(clubs)
-    save_users(users)
+    approve_pending_match(club_id, index, data.approver)
     return {"status": "ok"}
 
 
