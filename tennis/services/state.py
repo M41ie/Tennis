@@ -10,3 +10,4 @@ storage.invalidate_cache()
 # directly by callers from the storage layer.
 
 TOKEN_TTL = datetime.timedelta(hours=24)
+REFRESH_TOKEN_TTL = datetime.timedelta(days=30)

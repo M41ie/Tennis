@@ -87,8 +87,8 @@ Page({
           userService
             .wechatLogin(res.code)
             .then(resp => {
-              if (resp.token) {
-                store.setAuth(resp.token, resp.user_id);
+              if (resp.access_token) {
+                store.setAuth(resp.access_token, resp.user_id, resp.refresh_token);
                 this.setData({ loggedIn: true });
                 if (resp.just_created) {
                   wx.navigateTo({ url: '/pages/editprofile/editprofile' });

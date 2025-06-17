@@ -16,7 +16,11 @@ App({
       options.header['Accept-Language'] = 'zh-CN'
       return origRequest(options)
     }
-    store.setAuth(wx.getStorageSync('token'), wx.getStorageSync('user_id'));
+    store.setAuth(
+      wx.getStorageSync('token'),
+      wx.getStorageSync('user_id'),
+      wx.getStorageSync('refresh_token')
+    );
     store.setClubId(wx.getStorageSync('club_id'));
     if (store.token && store.userId) {
       const that = this;
