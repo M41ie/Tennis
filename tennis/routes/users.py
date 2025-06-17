@@ -80,8 +80,8 @@ def wechat_login_api(data: WeChatLoginRequest):
         data.code, api._exchange_wechat_code
     )
     # new users may have been created during login; refresh api state
-    api.users = load_users()
-    api.clubs = load_data()
+    api.users.set(load_users())
+    api.clubs.set(load_data())
     return {"token": token, "user_id": uid, "just_created": created}
 
 

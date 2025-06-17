@@ -46,17 +46,56 @@ from .rating import (
     weighted_doubles_matches,
 )
 from .models import Player, Club, Match, DoublesMatch, Appointment, User, players
+import threading
+from collections.abc import MutableMapping
+
+_thread_state = threading.local()
 
 
-# runtime state loaded fresh for each request
-clubs: dict[str, Club] | None = None
-users: dict[str, User] | None = None
+class _StateProxy(MutableMapping):
+    """Dictionary-like proxy backed by ``threading.local`` storage."""
+
+    def __init__(self, name: str):
+        self._name = name
+
+    def _data(self) -> dict:
+        return getattr(_thread_state, self._name)
+
+    def set(self, value: dict) -> None:
+        setattr(_thread_state, self._name, value)
+
+    # MutableMapping interface
+    def __getitem__(self, key):
+        return self._data()[key]
+
+    def __setitem__(self, key, value):
+        self._data()[key] = value
+
+    def __delitem__(self, key):
+        del self._data()[key]
+
+    def __iter__(self):
+        return iter(self._data())
+
+    def __len__(self):
+        return len(self._data())
+
+    # Delegate attribute access to underlying dict
+    def __getattr__(self, name):
+        return getattr(self._data(), name)
+
+    def __repr__(self) -> str:  # pragma: no cover - debug helper
+        return repr(self._data())
+
+
+clubs = _StateProxy("clubs")
+users = _StateProxy("users")
+
 
 def _refresh_state() -> None:
-    """Reload clubs and users from persistent storage."""
-    global clubs, users
-    clubs = load_data()
-    users = load_users()
+    """Reload clubs and users from persistent storage for each request."""
+    clubs.set(load_data())
+    users.set(load_users())
     if "A" in users:
         users["A"].is_sys_admin = True
 
