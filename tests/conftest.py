@@ -3,9 +3,9 @@ from tennis.models import players
 
 @pytest.fixture(autouse=True)
 def clear_players():
-    players.clear()
+    players.set({})
     yield
-    players.clear()
+    players.set({})
 
 
 def fetch(conn, query, *args):

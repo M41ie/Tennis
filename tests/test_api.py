@@ -6,6 +6,7 @@ from fastapi.testclient import TestClient
 import pytest
 import tennis.storage as storage
 import tennis.services.state as state
+import tennis.models
 
 
 def test_api_match_flow(tmp_path, monkeypatch):
@@ -1103,7 +1104,8 @@ def test_doubles_leaderboard_api(tmp_path, monkeypatch):
         )
 
     # adjust doubles ratings for predictable ordering
-    clubs = storage.load_data()
+    clubs, players = storage.load_data()
+    tennis.models.players.set(players)
     clubs["c1"].members["p1"].doubles_rating = 1200
     clubs["c1"].members["p2"].doubles_rating = 1100
     clubs["c1"].members["p3"].doubles_rating = 1300
@@ -1190,7 +1192,8 @@ def test_list_players_filters(tmp_path, monkeypatch):
         json={"user_id": "p3", "name": "P3", "age": 22, "gender": "M", "token": tokens["p3"]},
     )
 
-    clubs = storage.load_data()
+    clubs, players = storage.load_data()
+    tennis.models.players.set(players)
     clubs["c1"].members["p1"].singles_rating = 1200
     clubs["c1"].members["p2"].singles_rating = 1100
     clubs["c1"].members["p3"].singles_rating = 1300
@@ -1252,7 +1255,8 @@ def test_list_all_players_multi_club(tmp_path, monkeypatch):
         json={"user_id": "p4", "name": "P4", "token": tokens["p4"]},
     )
 
-    clubs = storage.load_data()
+    clubs, players = storage.load_data()
+    tennis.models.players.set(players)
     clubs["c1"].members["p1"].singles_rating = 1200
     clubs["c2"].members["p2"].singles_rating = 1100
     clubs["c1"].members["p3"].singles_rating = 1300

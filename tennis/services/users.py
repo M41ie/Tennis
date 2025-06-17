@@ -20,7 +20,8 @@ from ..models import players, User
 
 def create_user(data) -> str:
     users = load_users()
-    clubs = load_data()
+    clubs, players_data = load_data()
+    players.set(players_data)
     if data.user_id and data.user_id in users:
         raise HTTPException(400, "User exists")
     uid = register_user(
@@ -109,7 +110,7 @@ def user_info(user_id: str):
     user = get_user_record(user_id)
     if not user:
         raise HTTPException(404, "User not found")
-    clubs = load_data()
+    clubs, _ = load_data()
     joined = [cid for cid, c in clubs.items() if user_id in c.members]
     created = getattr(user, "created_clubs", 0)
     max_created = getattr(user, "max_creatable_clubs", 0)

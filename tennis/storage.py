@@ -21,6 +21,9 @@ from .models import (
     players,
 )
 
+# in-memory store used when loading player data
+_players_cache: Dict[str, Player] = {}
+
 
 def _connect():
     conn = sqlite3.connect(DB_FILE)
@@ -166,11 +169,13 @@ def _init_schema(conn: sqlite3.Connection) -> None:
     conn.commit()
 
 
-def load_data() -> Dict[str, Club]:
+def load_data() -> tuple[Dict[str, Club], Dict[str, Player]]:
     conn = _connect()
     cur = conn.cursor()
     from .cli import normalize_gender
     clubs: Dict[str, Club] = {}
+    players = _players_cache
+    players.clear()
     for row in cur.execute("SELECT * FROM clubs"):
         clubs[row["club_id"]] = Club(
             club_id=row["club_id"],
@@ -197,7 +202,6 @@ def load_data() -> Dict[str, Club]:
         rejected = json.loads(row["rejected_members"] or "{}")
         club.rejected_members.update(rejected)
 
-    players.clear()
     for row in cur.execute("SELECT * FROM players"):
         p = Player(
             user_id=row["user_id"],
@@ -362,7 +366,7 @@ def load_data() -> Dict[str, Club]:
         appt.signups.update(json.loads(row["signups"] or "[]"))
         club.appointments.append(appt)
     conn.close()
-    return clubs
+    return clubs, players
 
 
 def save_data(clubs: Dict[str, Club]) -> None:
@@ -1234,7 +1238,7 @@ def get_user(user_id: str) -> User | None:
 
 def get_club(club_id: str) -> Club | None:
     """Return a single :class:`Club` by id or ``None`` if not found."""
-    clubs = load_data()
+    clubs, _ = load_data()
     return clubs.get(club_id)
 
 

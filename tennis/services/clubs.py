@@ -20,10 +20,11 @@ from ..storage import (
     delete_club,
     transaction,
 )
+from ..models import players
 
 
 def generate_club_id() -> str:
-    clubs = load_data()
+    clubs, _ = load_data()
     i = 1
     while f"c{i}" in clubs:
         i += 1
@@ -40,7 +41,8 @@ def create_club(
 ):
     """Create a new club and persist it to the database."""
     users = load_users()
-    clubs = load_data()
+    clubs, players_data = load_data()
+    players.set(players_data)
     try:
         cli_create_club(users, clubs, user_id, club_id, name, logo, region, slogan)
     except ValueError as e:
@@ -55,7 +57,8 @@ def create_club(
 
 def add_player(club_id: str, user_id: str, name: str, **kwargs):
     """Add a player to a club and persist the change."""
-    clubs = load_data()
+    clubs, players_data = load_data()
+    players.set(players_data)
     try:
         cli_add_player(clubs, club_id, user_id, name, **kwargs)
     except ValueError as e:
@@ -69,7 +72,8 @@ def add_player(club_id: str, user_id: str, name: str, **kwargs):
 
 def request_join_club(club_id: str, user_id: str, **kwargs) -> None:
     """Handle a join request and persist affected records."""
-    clubs = load_data()
+    clubs, players_data = load_data()
+    players.set(players_data)
     users = load_users()
     try:
         cli_request_join(clubs, users, club_id, user_id, **kwargs)
@@ -86,7 +90,8 @@ def request_join_club(club_id: str, user_id: str, **kwargs) -> None:
 
 def approve_member_request(club_id: str, approver_id: str, user_id: str, rating: float, make_admin: bool = False) -> None:
     """Approve membership and persist changes."""
-    clubs = load_data()
+    clubs, players_data = load_data()
+    players.set(players_data)
     users = load_users()
     try:
         cli_approve_member(clubs, users, club_id, approver_id, user_id, rating, make_admin=make_admin)
@@ -105,7 +110,8 @@ def approve_member_request(club_id: str, approver_id: str, user_id: str, rating:
 
 def dissolve_existing_club(club_id: str, user_id: str) -> None:
     """Dissolve a club and update affected users."""
-    clubs = load_data()
+    clubs, players_data = load_data()
+    players.set(players_data)
     users = load_users()
     club = clubs.get(club_id)
     if not club:
@@ -125,7 +131,8 @@ def dissolve_existing_club(club_id: str, user_id: str) -> None:
 
 def approve_pending_match(club_id: str, index: int, approver: str) -> None:
     """Approve a pending singles match and persist the club and users."""
-    clubs = load_data()
+    clubs, players_data = load_data()
+    players.set(players_data)
     users = load_users()
     club = clubs.get(club_id)
     if not club:

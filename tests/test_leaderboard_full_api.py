@@ -2,6 +2,7 @@ import importlib
 import tennis.storage as storage
 from fastapi.testclient import TestClient
 import tennis.services.state as state
+import tennis.models
 
 
 def setup_db(tmp_path, monkeypatch):
@@ -34,7 +35,8 @@ def test_leaderboard_full(tmp_path, monkeypatch):
         json={"user_id": "p1", "name": "P1", "token": token_p1},
     )
 
-    clubs = storage.load_data()
+    clubs, players = storage.load_data()
+    tennis.models.players.set(players)
     clubs["c1"].members["p1"].singles_rating = 1200
     storage.save_data(clubs)
 
