@@ -1,6 +1,5 @@
 import importlib
 import datetime
-import sqlite3
 import json
 from fastapi.testclient import TestClient
 import pytest
@@ -96,7 +95,7 @@ def test_api_match_flow(tmp_path, monkeypatch):
     assert resp.json()["unread"] == 1
 
     # verify persisted ratings
-    with sqlite3.connect(storage.DB_FILE) as conn:
+    with storage._connect() as conn:
         count = conn.execute(
             "SELECT COUNT(*) FROM matches WHERE club_id = 'c1'"
         ).fetchone()[0]
@@ -188,7 +187,7 @@ def test_prerate_api(tmp_path, monkeypatch):
     )
     assert resp.status_code == 200
 
-    with sqlite3.connect(storage.DB_FILE) as conn:
+    with storage._connect() as conn:
         row = conn.execute(
             "SELECT pre_ratings FROM players WHERE user_id = 'r2'"
         ).fetchone()
@@ -289,7 +288,7 @@ def test_doubles_match_flow(tmp_path, monkeypatch):
     )
     assert resp.status_code == 200
 
-    with sqlite3.connect(storage.DB_FILE) as conn:
+    with storage._connect() as conn:
         count = conn.execute(
             "SELECT COUNT(*) FROM matches WHERE club_id = 'c1'"
         ).fetchone()[0]
@@ -867,7 +866,7 @@ def test_veto_pending_match(tmp_path, monkeypatch):
     assert resp.status_code == 200
     assert resp.json()["status"] == "vetoed"
 
-    with sqlite3.connect(storage.DB_FILE) as conn:
+    with storage._connect() as conn:
         row = conn.execute("SELECT data FROM pending_matches").fetchone()
         assert row is not None
         assert json.loads(row[0])["status"] == "vetoed"
@@ -924,7 +923,7 @@ def test_veto_pending_doubles(tmp_path, monkeypatch):
     assert resp.status_code == 200
     assert resp.json()["status"] == "vetoed"
 
-    with sqlite3.connect(storage.DB_FILE) as conn:
+    with storage._connect() as conn:
         row = conn.execute("SELECT data FROM pending_matches").fetchone()
         assert json.loads(row[0])["status"] == "vetoed"
         msgs = conn.execute(
@@ -1044,7 +1043,7 @@ def test_token_logout_and_expiry(tmp_path, monkeypatch):
     assert resp.status_code == 401
 
     token2 = client.post("/login", json={"user_id": "u", "password": "pw"}).json()["token"]
-    with sqlite3.connect(storage.DB_FILE) as conn:
+    with storage._connect() as conn:
         conn.execute(
             "UPDATE auth_tokens SET ts = ? WHERE token = ?",
             ((datetime.datetime.utcnow() - datetime.timedelta(days=2)).isoformat(), token2),
@@ -1320,7 +1319,7 @@ def test_update_player_api(tmp_path, monkeypatch):
     assert resp.status_code == 200
     assert resp.json()["status"] == "ok"
 
-    with sqlite3.connect(storage.DB_FILE) as conn:
+    with storage._connect() as conn:
         row = conn.execute(
             "SELECT name, age, gender, avatar, birth, handedness, backhand FROM players WHERE user_id = 'p1'"
         ).fetchone()
@@ -1364,7 +1363,7 @@ def test_update_global_player_api(tmp_path, monkeypatch):
     assert resp.status_code == 200
     assert resp.json()["status"] == "ok"
 
-    with sqlite3.connect(storage.DB_FILE) as conn:
+    with storage._connect() as conn:
         row = conn.execute(
             "SELECT name, gender, region FROM players WHERE user_id = 'p1'"
         ).fetchone()
@@ -1442,7 +1441,7 @@ def test_remove_member_api(tmp_path, monkeypatch):
         },
     )
 
-    with sqlite3.connect(storage.DB_FILE) as conn:
+    with storage._connect() as conn:
         rating = conn.execute(
             "SELECT singles_rating FROM players WHERE user_id = 'member'"
         ).fetchone()[0]
@@ -1460,7 +1459,7 @@ def test_remove_member_api(tmp_path, monkeypatch):
     assert resp.status_code == 200
     assert resp.json()["status"] == "ok"
 
-    with sqlite3.connect(storage.DB_FILE) as conn:
+    with storage._connect() as conn:
         rows = conn.execute(
             "SELECT user_id FROM club_members WHERE club_id = 'c1'"
         ).fetchall()
@@ -1527,7 +1526,7 @@ def test_appointment_flow(tmp_path, monkeypatch):
     )
     assert resp.status_code == 200
 
-    with sqlite3.connect(storage.DB_FILE) as conn:
+    with storage._connect() as conn:
         rows = conn.execute(
             "SELECT id, signups FROM appointments WHERE club_id = 'c1'"
         ).fetchall()
@@ -1622,7 +1621,7 @@ def test_get_user_info_api(tmp_path, monkeypatch):
             "token": token_leader,
         },
     )
-    with sqlite3.connect(storage.DB_FILE) as conn:
+    with storage._connect() as conn:
         rating = conn.execute(
             "SELECT singles_rating FROM players WHERE user_id = 'u1'"
         ).fetchone()[0]
@@ -1742,7 +1741,7 @@ def test_dissolve_club(tmp_path, monkeypatch):
     assert resp.status_code == 200
     assert resp.json()["status"] == "ok"
 
-    with sqlite3.connect(storage.DB_FILE) as conn:
+    with storage._connect() as conn:
         assert (
             conn.execute("SELECT COUNT(*) FROM clubs WHERE club_id = 'c1'").fetchone()[0]
             == 0

@@ -14,13 +14,23 @@ python3 -m pip install -r requirements.txt
 pytest
 ```
 
-The SQLite database contains these tables: `users`, `players`, `clubs`,
+To run the application with PostgreSQL create a database and export a connection
+string, for example:
+
+```bash
+createdb tennis
+export DATABASE_URL=postgresql:///tennis
+```
+
+The schema will be created automatically on first start.
+
+The default SQLite database contains these tables: `users`, `players`, `clubs`,
 `club_members`, `matches`, `pending_matches`, `appointments`, `club_meta`,
 `messages` and `auth_tokens`.
 
 ## 3. Start the API server
 
-Launch the FastAPI application. A local `tennis.db` SQLite database will be created automatically if it does not exist.
+Launch the FastAPI application. A local `tennis.db` SQLite database will be created automatically if it does not exist. Set `DATABASE_URL` to a PostgreSQL DSN if you prefer using a server.
 
 ```bash
 python3 -m tennis.api
@@ -28,9 +38,9 @@ python3 -m tennis.api
 
 The server listens on `http://localhost:8000` by default. Set the `WECHAT_APPID` and `WECHAT_SECRET` environment variables if you need WeChat login support.
 
-All runtime data is persisted in SQLite. Because the API accesses the database
-for every request you can run multiple stateless instances behind a load
-balancer.
+All runtime data is persisted in SQLite or PostgreSQL depending on
+`DATABASE_URL`. Because the API accesses the database for every request you can
+run multiple stateless instances behind a load balancer.
 
 ## 4. Import the mini program
 

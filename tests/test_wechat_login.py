@@ -1,5 +1,4 @@
 import importlib
-import sqlite3
 from fastapi.testclient import TestClient
 import tennis.storage as storage
 import tennis.services.state as state
@@ -26,7 +25,7 @@ def test_wechat_login_creates_user(tmp_path, monkeypatch):
     uid = data["user_id"]
     assert data["just_created"] is True
 
-    with sqlite3.connect(storage.DB_FILE) as conn:
+    with storage._connect() as conn:
         row = conn.execute(
             "SELECT wechat_openid FROM users WHERE user_id = ?",
             (uid,),
