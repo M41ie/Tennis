@@ -7,7 +7,6 @@ from pydantic import BaseModel, StrictInt
 import statistics
 import datetime
 import json
-import os
 import urllib.request
 import urllib.parse
 from pathlib import Path
@@ -151,8 +150,10 @@ app.include_router(matches_router)
 
 
 # WeChat mini program credentials from environment (optional)
-WECHAT_APPID = os.getenv("WECHAT_APPID", "")
-WECHAT_SECRET = os.getenv("WECHAT_SECRET", "")
+from .config import get_wechat_appid, get_wechat_secret
+
+WECHAT_APPID = get_wechat_appid()
+WECHAT_SECRET = get_wechat_secret()
 
 
 def _generate_club_id() -> str:

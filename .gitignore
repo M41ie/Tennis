@@ -11,6 +11,7 @@ data.json
 Thumbs.db
 
 tennis.db
+.env
 
 # Miniapp
 miniapp/node_modules/
