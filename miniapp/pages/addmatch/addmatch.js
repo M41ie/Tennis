@@ -142,7 +142,7 @@ Page({
           this.data.opp2Index === 0
         : this.data.opponentIndex === 0);
     if (incomplete) {
-      wx.showToast({ title: '信息不完整，请完善后提交', icon: 'none' });
+      wx.showToast({ title: this.data.t.incompleteInfo, icon: 'none' });
       return;
     }
 
@@ -172,7 +172,7 @@ Page({
           token
         },
         success() {
-          wx.showToast({ title: '提交成功', icon: 'success', duration: 1000 });
+          wx.showToast({ title: that.data.t.submitSuccess, icon: 'success', duration: 1000 });
           setTimeout(() => {
             wx.navigateBack();
           }, 1000);
@@ -194,7 +194,7 @@ Page({
           token
         },
         success() {
-          wx.showToast({ title: '提交成功', icon: 'success', duration: 1000 });
+          wx.showToast({ title: that.data.t.submitSuccess, icon: 'success', duration: 1000 });
           setTimeout(() => {
             wx.navigateBack();
           }, 1000);

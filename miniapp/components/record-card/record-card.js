@@ -1,3 +1,4 @@
+const { zh_CN: t } = require('../../utils/locales');
 Component({
   properties: {
     record: Object,
@@ -20,6 +21,7 @@ Component({
       value: true
     }
   },
+  data: { t },
   methods: {
     onConfirm() {
       this.triggerEvent('confirm', { record: this.data.record, index: this.data.index });

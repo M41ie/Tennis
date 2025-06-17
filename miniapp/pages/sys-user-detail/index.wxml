@@ -2,22 +2,12 @@
   <profile-card user="{{user}}" placeholder="" editable="{{false}}" />
   <view class="section-title">所属俱乐部</view>
   <view class="club-list">
-    <block wx:for="{{user.clubs}}" wx:key="club_id">
-      <view class="club-card">
-        <view class="card-left">
-          <view class="club-name">{{item.name}}</view>
-          <view class="club-slogan">{{item.slogan}}</view>
-          <view class="club-stats">
-            <text>{{item.region}} · 成员 {{item.member_count}} 人</text>
-            <text>单打：{{item.singles_range}}，平均 {{item.singles_avg}}，共计 {{item.total_singles}} 场</text>
-            <text>双打：{{item.doubles_range}}，平均 {{item.doubles_avg}}，共计 {{item.total_doubles}} 场</text>
-          </view>
-        </view>
-        <view class="card-right">
-          <text class="club-role role-tag {{item.role}}">{{item.roleText}}</text>
-        </view>
-      </view>
-    </block>
+    <club-card
+      wx:for="{{user.clubs}}"
+      wx:key="club_id"
+      club="{{item}}"
+      show-role-tag="{{true}}"
+    />
   </view>
   <view class="section-title">权限管理</view>
   <button class="primary-btn" bindtap="openEdit">编辑权限</button>

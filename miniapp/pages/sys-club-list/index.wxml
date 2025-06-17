@@ -1,22 +1,11 @@
 <view class="page-container">
   <view class="club-list">
-    <view
+    <club-card
       wx:for="{{clubs}}"
       wx:key="club_id"
-      class="club-card"
-      bindtap="openClub"
-      data-id="{{item.club_id}}"
-    >
-      <view class="card-left">
-        <view class="club-name">{{item.name}}</view>
-        <view class="club-slogan" wx:if="{{item.slogan}}">{{item.slogan}}</view>
-        <view class="club-stats" wx:if="{{item.member_count}}">
-          <text>{{item.region}} · 成员 {{item.member_count}} 人</text>
-          <text>单打：{{item.singles_range}}，平均 {{item.singles_avg}}，共计 {{item.total_singles}} 场</text>
-          <text>双打：{{item.doubles_range}}，平均 {{item.doubles_avg}}，共计 {{item.total_doubles}} 场</text>
-        </view>
-      </view>
-    </view>
+      club="{{item}}"
+      bind:tap="openClub"
+    />
   </view>
   <view wx:if="{{!clubs.length}}" class="empty">暂无数据</view>
 </view>

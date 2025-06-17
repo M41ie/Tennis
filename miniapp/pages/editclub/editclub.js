@@ -1,10 +1,12 @@
 const BASE_URL = getApp().globalData.BASE_URL;
 const request = require('../../services/api');
 const { hideKeyboard } = require('../../utils/hideKeyboard');
+const { zh_CN } = require('../../utils/locales.js');
 const store = require('../../store/store');
 
 Page({
   data: {
+    t: zh_CN,
     name: '',
     slogan: '',
     logo: '',
@@ -54,12 +56,12 @@ Page({
     const token = store.token;
     if (!cid || !userId || !token) return;
     if (!this.data.name || !this.data.slogan || this.data.region.length === 0) {
-      wx.showToast({ title: '信息不完整，请完善后保存。', icon: 'none' });
+      wx.showToast({ title: that.data.t.incompleteInfo, icon: 'none' });
       return;
     }
     const nameOk = /^[A-Za-z\u4e00-\u9fa5]{1,20}$/.test(this.data.name);
     if (!nameOk) {
-      wx.showToast({ title: '俱乐部名仅支持中英文，且不能超过20字符', icon: 'none' });
+      wx.showToast({ title: that.data.t.clubNameRule, icon: 'none' });
       return;
     }
     const that = this;
@@ -76,10 +78,10 @@ Page({
       },
       success(res) {
         if (res.statusCode === 200) {
-          wx.showToast({ title: '已更新', icon: 'success' });
+          wx.showToast({ title: that.data.t.updated, icon: 'success' });
           wx.navigateBack();
         } else {
-          const msg = (res.data && res.data.detail) || '失败';
+          const msg = (res.data && res.data.detail) || that.data.t.failed;
           wx.showToast({ title: msg, icon: 'none' });
         }
       }

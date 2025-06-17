@@ -1,0 +1,69 @@
+.club-card {
+  width: 100%;
+  background-color: #ffffff;
+  border-radius: 16rpx;
+  margin-bottom: 25rpx;
+  padding: 30rpx;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.05);
+}
+.card-left {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  padding-right: 20rpx;
+}
+.club-name {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #333;
+}
+.club-slogan {
+  font-size: 26rpx;
+  color: #888;
+  margin-bottom: 20rpx;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.club-stats {
+  font-size: 24rpx;
+  color: #666;
+  display: flex;
+  flex-direction: column;
+}
+.club-stats text {
+  margin-bottom: 6rpx;
+}
+.join-btn {
+  background: #07C160;
+  color: #fff;
+  border-radius: 8rpx;
+  padding: 0 20rpx;
+  font-size: 26rpx;
+  height: 36rpx;
+  line-height: 36rpx;
+}
+.join-btn.disabled,
+.join-btn[disabled] {
+  background: #ccc;
+  color: #fff;
+}
+.join-btn.pending {
+  background: #ffa500;
+  color: #fff;
+}
+.card-right {
+  flex-shrink: 0;
+  display: flex;
+  align-items: flex-start;
+}
+.club-role {
+  font-size: 26rpx;
+}
+.role-tag.leader {color:#007aff;}
+.role-tag.admin {color:#1aad19;}
+.role-tag.member {color:#999;}

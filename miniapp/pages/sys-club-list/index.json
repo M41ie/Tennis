@@ -1,3 +1,6 @@
 {
-  "navigationBarTitleText": "俱乐部搜索结果"
+  "navigationBarTitleText": "俱乐部搜索结果",
+  "usingComponents": {
+    "club-card": "/components/club-card/club-card"
+  }
 }
