@@ -1,0 +1,29 @@
+from fastapi import APIRouter
+from ..services.matches import (
+    list_global_pending_doubles_service,
+    list_global_pending_matches_service,
+    list_pending_doubles_service,
+    list_pending_matches_service,
+)
+
+router = APIRouter()
+
+
+@router.get("/players/{user_id}/pending_doubles")
+def list_global_pending_doubles(user_id: str, token: str):
+    return list_global_pending_doubles_service(user_id, token)
+
+
+@router.get("/players/{user_id}/pending_matches")
+def list_global_pending_matches(user_id: str, token: str):
+    return list_global_pending_matches_service(user_id, token)
+
+
+@router.get("/clubs/{club_id}/pending_doubles")
+def list_pending_doubles(club_id: str, token: str):
+    return list_pending_doubles_service(club_id, token)
+
+
+@router.get("/clubs/{club_id}/pending_matches")
+def list_pending_matches(club_id: str, token: str):
+    return list_pending_matches_service(club_id, token)
