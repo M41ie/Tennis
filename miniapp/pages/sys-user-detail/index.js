@@ -1,4 +1,5 @@
 const BASE_URL = getApp().globalData.BASE_URL;
+const request = require('../../services/api');
 const { hideKeyboard } = require('../../utils/hideKeyboard');
 const { formatRating, formatGames } = require('../../utils/format');
 
@@ -25,7 +26,7 @@ Page({
     const uid = this.data.userId;
     if (!uid) return;
     const that = this;
-    wx.request({
+    request({
       url: `${BASE_URL}/players/${uid}`,
       success(res) {
         const d = res.data || {};
@@ -42,7 +43,7 @@ Page({
         that.setData({ user });
       }
     });
-    wx.request({
+    request({
       url: `${BASE_URL}/users/${uid}`,
       success(res) {
         const info = res.data || {};
@@ -56,7 +57,7 @@ Page({
         const list = [];
         let count = 0;
         ids.forEach(cid => {
-          wx.request({
+          request({
             url: `${BASE_URL}/clubs/${cid}`,
             success(r) {
               const info = r.data || {};
@@ -125,7 +126,7 @@ Page({
       content: '确认要修改该用户的权限吗？',
       success(res) {
         if (res.confirm) {
-          wx.request({
+          request({
             url: `${BASE_URL}/sys/users/${uid}/limits`,
             method: 'POST',
             data: { max_joinable_clubs: join, max_creatable_clubs: create, token },

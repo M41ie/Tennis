@@ -1,4 +1,5 @@
 const BASE_URL = getApp().globalData.BASE_URL;
+const request = require('../../services/api');
 const { hideKeyboard } = require('../../utils/hideKeyboard');
 
 Page({
@@ -21,7 +22,7 @@ Page({
     if (!uid) return;
     this.setData({ userId: uid });
     const that = this;
-    wx.request({
+    request({
       url: `${BASE_URL}/players/${uid}`,
       success(res) {
         const p = res.data || {};
@@ -88,7 +89,7 @@ Page({
       return;
     }
     const that = this;
-    wx.request({
+    request({
       url: `${BASE_URL}/players/${this.data.userId}`,
       method: 'PATCH',
       data: {

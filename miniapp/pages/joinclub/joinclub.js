@@ -1,4 +1,5 @@
 const BASE_URL = getApp().globalData.BASE_URL;
+const request = require('../../services/api');
 const { hideKeyboard } = require('../../utils/hideKeyboard');
 
 Page({
@@ -26,7 +27,7 @@ Page({
       this.fetchClubs();
       return;
     }
-    wx.request({
+    request({
       url: `${BASE_URL}/users/${uid}`,
       success(res) {
         that.setData({ joined: res.data.joined_clubs || [] });
@@ -39,7 +40,7 @@ Page({
   fetchClubs() {
     const that = this;
     const uid = wx.getStorageSync('user_id');
-    wx.request({
+    request({
       url: `${BASE_URL}/clubs`,
       success(res) {
         let list = res.data;
@@ -54,7 +55,7 @@ Page({
         const result = [];
         let count = 0;
         list.forEach(c => {
-          wx.request({
+          request({
             url: `${BASE_URL}/clubs/${c.club_id}`,
             success(r) {
               const info = r.data || {};
@@ -116,7 +117,7 @@ Page({
     const token = wx.getStorageSync('token');
     const that = this;
     if (!userId || !token) return;
-    wx.request({
+    request({
       url: `${BASE_URL}/users/${userId}`,
       success(res) {
         const limit =
@@ -125,7 +126,7 @@ Page({
           wx.showToast({ title: '加入俱乐部的数量已达上限', icon: 'none' });
           return;
         }
-        wx.request({
+        request({
           url: `${BASE_URL}/players/${userId}`,
           success(pres) {
             const info = pres.data || {};
@@ -166,7 +167,7 @@ Page({
       showCancel: false,
       confirmText: '了解',
       success() {
-        wx.request({
+        request({
           url: `${BASE_URL}/clubs/${cid}/clear_rejection`,
           method: 'POST',
           data: { user_id: uid, token },
@@ -190,7 +191,7 @@ Page({
       return;
     }
     const that = this;
-    wx.request({
+    request({
       url: `${BASE_URL}/clubs/${cid}/join`,
       method: 'POST',
         data: {

@@ -1,4 +1,5 @@
 const BASE_URL = getApp().globalData.BASE_URL;
+const request = require('../../services/api');
 const { hideKeyboard } = require('../../utils/hideKeyboard');
 const { zh_CN } = require('../../utils/locales.js');
 
@@ -35,7 +36,7 @@ Page({
   },
   fetchClubs() {
     const that = this;
-    wx.request({
+    request({
       url: `${BASE_URL}/clubs`,
       success(res) {
         const allClubs = res.data || [];
@@ -46,7 +47,7 @@ Page({
           that.setData({ clubIds: ids, clubOptions: names, clubIndex: 0 });
           return;
         }
-        wx.request({
+        request({
           url: `${BASE_URL}/users/${uid}`,
           success(uRes) {
             const joined = uRes.data.joined_clubs || [];
@@ -68,7 +69,7 @@ Page({
   },
   fetchPlayers(cid) {
     const that = this;
-    wx.request({
+    request({
       url: `${BASE_URL}/clubs/${cid}/players`,
       success(res) {
         const uid = wx.getStorageSync('user_id');
@@ -154,7 +155,7 @@ Page({
       const partner = players[this.data.partnerIndex];
       const b1 = players[this.data.opp1Index];
       const b2 = players[this.data.opp2Index];
-      wx.request({
+      request({
         url: `${BASE_URL}/clubs/${cid}/pending_doubles`,
         method: 'POST',
         data: {
@@ -178,7 +179,7 @@ Page({
       });
     } else {
       const opponent = this.data.players[this.data.opponentIndex];
-      wx.request({
+      request({
         url: `${BASE_URL}/clubs/${cid}/pending_matches`,
         method: 'POST',
         data: {

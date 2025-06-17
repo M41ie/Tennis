@@ -1,4 +1,5 @@
 const BASE_URL = getApp().globalData.BASE_URL;
+const request = require('../../services/api');
 const { hideKeyboard } = require('../../utils/hideKeyboard');
 
 Page({
@@ -8,7 +9,7 @@ Page({
     wx.login({
       success(res) {
         if (!res.code) return;
-        wx.request({
+        request({
           url: `${BASE_URL}/wechat_login`,
           method: 'POST',
           data: { code: res.code },

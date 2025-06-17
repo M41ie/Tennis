@@ -1,4 +1,5 @@
 const BASE_URL = getApp().globalData.BASE_URL;
+const request = require('../../services/api');
 const { hideKeyboard } = require('../../utils/hideKeyboard');
 
 Page({
@@ -13,7 +14,7 @@ Page({
     const cid = wx.getStorageSync('club_id');
     if (!cid) return;
     const that = this;
-    wx.request({
+    request({
       url: `${BASE_URL}/clubs/${cid}`,
       success(res) {
         const info = res.data || {};
@@ -61,7 +62,7 @@ Page({
       return;
     }
     const that = this;
-    wx.request({
+    request({
       url: `${BASE_URL}/clubs/${cid}`,
       method: 'PATCH',
       data: {

@@ -1,4 +1,5 @@
 const BASE_URL = getApp().globalData.BASE_URL;
+const request = require('../../services/api');
 const FORMAT_DISPLAY = {
   '6_game': '六局',
   '4_game': '四局',
@@ -26,7 +27,7 @@ Page({
     const that = this;
     const placeholder = require('../../assets/base64.js').DEFAULT_AVATAR;
     if (this.data.modeIndex === 0) {
-      wx.request({
+      request({
         url: `${BASE_URL}/sys/pending_matches`,
         data: { token },
         success(res) {
@@ -51,7 +52,7 @@ Page({
         }
       });
     } else {
-      wx.request({
+      request({
         url: `${BASE_URL}/sys/pending_doubles`,
         data: { token },
         success(res) {
@@ -88,7 +89,7 @@ Page({
     const cid = e.currentTarget.dataset.club;
     const token = wx.getStorageSync('token');
     const that = this;
-    wx.request({
+    request({
       url: `${BASE_URL}/clubs/${cid}/pending_matches/${idx}/approve`,
       method: 'POST',
       data: { approver: wx.getStorageSync('user_id'), token },
@@ -107,7 +108,7 @@ Page({
       arr.splice(pos, 1);
       this.setData({ singles: arr });
     }
-    wx.request({
+    request({
       url: `${BASE_URL}/clubs/${cid}/pending_matches/${idx}/veto`,
       method: 'POST',
       data: { approver: wx.getStorageSync('user_id'), token },
@@ -119,7 +120,7 @@ Page({
     const cid = e.currentTarget.dataset.club;
     const token = wx.getStorageSync('token');
     const that = this;
-    wx.request({
+    request({
       url: `${BASE_URL}/clubs/${cid}/pending_doubles/${idx}/approve`,
       method: 'POST',
       data: { approver: wx.getStorageSync('user_id'), token },
@@ -138,7 +139,7 @@ Page({
       arr.splice(pos, 1);
       this.setData({ doublesList: arr });
     }
-    wx.request({
+    request({
       url: `${BASE_URL}/clubs/${cid}/pending_doubles/${idx}/veto`,
       method: 'POST',
       data: { approver: wx.getStorageSync('user_id'), token },

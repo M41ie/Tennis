@@ -1,4 +1,5 @@
 const BASE_URL = getApp().globalData.BASE_URL;
+const request = require('../../services/api');
 const FORMAT_DISPLAY = {
   '6_game': '六局',
   '4_game': '四局',
@@ -28,7 +29,7 @@ Page({
     const limit = 10;
     const offset = (this.data.page - 1) * limit;
     const url = this.data.doubles ? `${BASE_URL}/sys/doubles` : `${BASE_URL}/sys/matches`;
-    wx.request({
+    request({
       url: `${url}?limit=${limit}&offset=${offset}`,
       success(res) {
         const list = res.data || [];
