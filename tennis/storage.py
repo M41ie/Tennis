@@ -934,7 +934,6 @@ def update_player_record(player: Player, conn: sqlite3.Connection | None = None)
         conn.commit()
         conn.close()
 
-
 def update_user_record(user: User, conn: sqlite3.Connection | None = None) -> None:
     """Update fields of a :class:`User` record."""
     close = conn is None
