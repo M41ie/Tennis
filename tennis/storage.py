@@ -887,6 +887,41 @@ def update_player_record(player: Player) -> None:
     conn.close()
 
 
+def update_user_record(user: User) -> None:
+    """Update fields of a :class:`User` record."""
+    conn = _connect()
+    cur = conn.cursor()
+    cur.execute(
+        """
+        UPDATE users SET
+            name = ?,
+            password_hash = ?,
+            wechat_openid = ?,
+            can_create_club = ?,
+            is_sys_admin = ?,
+            created_clubs = ?,
+            joined_clubs = ?,
+            max_creatable_clubs = ?,
+            max_joinable_clubs = ?
+        WHERE user_id = ?
+        """,
+        (
+            user.name,
+            user.password_hash,
+            user.wechat_openid,
+            int(user.can_create_club),
+            int(getattr(user, "is_sys_admin", False)),
+            user.created_clubs,
+            user.joined_clubs,
+            getattr(user, "max_creatable_clubs", 0),
+            getattr(user, "max_joinable_clubs", 5),
+            user.user_id,
+        ),
+    )
+    conn.commit()
+    conn.close()
+
+
 def delete_player(user_id: str) -> None:
     """Remove a player from the ``players`` table."""
     conn = _connect()
