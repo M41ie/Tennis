@@ -16,8 +16,12 @@ Page({
           data: { code: res.code },
           timeout: 5000,
           success(resp) {
-            if (resp.statusCode === 200 && resp.data.token) {
-              store.setAuth(resp.data.token, resp.data.user_id);
+            if (resp.statusCode === 200 && resp.data.access_token) {
+              store.setAuth(
+                resp.data.access_token,
+                resp.data.user_id,
+                resp.data.refresh_token
+              );
               wx.navigateTo({ url: '/pages/editprofile/editprofile' });
             } else {
               wx.showToast({ title: '失败', icon: 'none' });

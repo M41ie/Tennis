@@ -35,6 +35,10 @@ class TokenOnly(BaseModel):
     token: str
 
 
+class RefreshRequest(BaseModel):
+    refresh_token: str
+
+
 class WeChatLoginRequest(BaseModel):
     code: str
 
@@ -47,16 +51,22 @@ def register_user_api(data: UserCreate):
 
 @router.post("/login")
 def login_api(data: LoginRequest):
-    success, token, user_id = user_service.login(data.user_id, data.password)
+    success, access, refresh, user_id = user_service.login(data.user_id, data.password)
     if success:
-        return {"success": True, "token": token, "user_id": user_id}
+        return {
+            "success": True,
+            "access_token": access,
+            "refresh_token": refresh,
+            "token": access,
+            "user_id": user_id,
+        }
     return {"success": False}
 
 
 @router.post("/wechat_login")
 def wechat_login_api(data: WeChatLoginRequest):
     from .. import api  # local import to avoid circular dependency
-    token, uid, created = user_service.wechat_login(
+    access, refresh, uid, created = user_service.wechat_login(
         data.code, api._exchange_wechat_code
     )
     # new users may have been created during login; refresh api state
@@ -64,7 +74,13 @@ def wechat_login_api(data: WeChatLoginRequest):
     clubs, players = load_data()
     api.clubs.set(clubs)
     api.players.set(players)
-    return {"token": token, "user_id": uid, "just_created": created}
+    return {
+        "access_token": access,
+        "refresh_token": refresh,
+        "token": access,
+        "user_id": uid,
+        "just_created": created,
+    }
 
 
 @router.post("/logout")
@@ -77,6 +93,12 @@ def logout_api(data: LogoutRequest):
 def check_token_api(data: TokenOnly):
     uid = user_service.refresh_token(data.token)
     return {"status": "ok", "user_id": uid}
+
+
+@router.post("/refresh_token")
+def refresh_access_token_api(data: RefreshRequest):
+    token, uid = user_service.refresh_access_token(data.refresh_token)
+    return {"access_token": token, "token": token, "user_id": uid}
 
 
 @router.get("/users/{user_id}")

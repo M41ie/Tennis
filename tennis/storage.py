@@ -314,6 +314,13 @@ def _init_schema(conn) -> None:
         ts TEXT
     )"""
     )
+    cur.execute(
+        """CREATE TABLE IF NOT EXISTS refresh_tokens (
+        user_id TEXT PRIMARY KEY,
+        token TEXT,
+        expires TEXT
+    )"""
+    )
     conn.commit()
 
 
@@ -1410,6 +1417,49 @@ def get_token(token: str) -> tuple[str, datetime.datetime] | None:
     if not row:
         return None
     return row["user_id"], datetime.datetime.fromisoformat(row["ts"])
+
+
+def insert_refresh_token(user_id: str, token: str, expires: datetime.datetime) -> None:
+    """Persist or update a refresh token."""
+    conn = _connect()
+    cur = conn.cursor()
+    if IS_PG:
+        cur.execute(
+            """
+            INSERT INTO refresh_tokens(user_id, token, expires) VALUES (?,?,?)
+            ON CONFLICT (user_id) DO UPDATE SET token = EXCLUDED.token, expires = EXCLUDED.expires
+            """,
+            (user_id, token, expires.isoformat()),
+        )
+    else:
+        cur.execute(
+            "INSERT OR REPLACE INTO refresh_tokens(user_id, token, expires) VALUES (?,?,?)",
+            (user_id, token, expires.isoformat()),
+        )
+    conn.commit()
+    conn.close()
+
+
+def get_refresh_token(token: str) -> tuple[str, datetime.datetime] | None:
+    """Return ``(user_id, expires)`` for the refresh token."""
+    conn = _connect()
+    cur = conn.cursor()
+    row = cur.execute(
+        "SELECT user_id, expires FROM refresh_tokens WHERE token = ?",
+        (token,),
+    ).fetchone()
+    conn.close()
+    if not row:
+        return None
+    return row["user_id"], datetime.datetime.fromisoformat(row["expires"])
+
+
+def delete_refresh_token(user_id: str) -> None:
+    """Remove refresh token for a user."""
+    conn = _connect()
+    conn.execute("DELETE FROM refresh_tokens WHERE user_id = ?", (user_id,))
+    conn.commit()
+    conn.close()
 
 
 def get_user(user_id: str) -> User | None:

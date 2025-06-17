@@ -1,5 +1,6 @@
 from __future__ import annotations
 import secrets
+import datetime
 from fastapi import HTTPException
 from ..cli import register_user, resolve_user, check_password, hash_password, set_user_limits
 from ..storage import (
@@ -8,6 +9,9 @@ from ..storage import (
     insert_token,
     delete_token,
     get_token,
+    insert_refresh_token,
+    get_refresh_token,
+    delete_refresh_token,
     create_user as create_user_record,
     create_player,
     get_user as get_user_record,
@@ -16,6 +20,7 @@ from ..storage import (
     transaction,
     save_user,
 )
+from . import state
 from ..models import players, User
 
 
@@ -69,12 +74,14 @@ def login(user_id: str, password: str):
         if not check_password(user, password):
             return False, None, None
 
-    token = secrets.token_hex(16)
-    insert_token(token, user.user_id)
-    return True, token, user.user_id
+    access_token = secrets.token_hex(16)
+    refresh_token = secrets.token_hex(16)
+    insert_token(access_token, user.user_id)
+    insert_refresh_token(user.user_id, refresh_token, datetime.datetime.utcnow() + state.REFRESH_TOKEN_TTL)
+    return True, access_token, refresh_token, user.user_id
 
 
-def wechat_login(code: str, exchange_func) -> tuple[str, str, bool]:
+def wechat_login(code: str, exchange_func) -> tuple[str, str, str, bool]:
     """Login or register using a WeChat mini program code.
 
     Returns a tuple ``(token, user_id, just_created)`` where ``just_created``
@@ -106,12 +113,18 @@ def wechat_login(code: str, exchange_func) -> tuple[str, str, bool]:
             create_player("", players[uid], conn=conn)
         created = True
 
-    token = secrets.token_hex(16)
-    insert_token(token, user.user_id)
-    return token, user.user_id, created
+    access_token = secrets.token_hex(16)
+    refresh_token = secrets.token_hex(16)
+    insert_token(access_token, user.user_id)
+    insert_refresh_token(user.user_id, refresh_token, datetime.datetime.utcnow() + state.REFRESH_TOKEN_TTL)
+    return access_token, refresh_token, user.user_id, created
 
 
 def logout(token: str):
+    info = get_token(token)
+    if info:
+        uid, _ = info
+        delete_refresh_token(uid)
     delete_token(token)
 
 
@@ -122,6 +135,19 @@ def refresh_token(token: str):
     uid, _ = info
     insert_token(token, uid)
     return uid
+
+
+def refresh_access_token(refresh_token: str) -> tuple[str, str]:
+    info = get_refresh_token(refresh_token)
+    if not info:
+        raise HTTPException(401, "Invalid token")
+    uid, expires = info
+    if datetime.datetime.utcnow() > expires:
+        delete_refresh_token(uid)
+        raise HTTPException(401, "Token expired")
+    access_token = secrets.token_hex(16)
+    insert_token(access_token, uid)
+    return access_token, uid
 
 
 def user_info(user_id: str):

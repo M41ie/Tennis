@@ -2,8 +2,9 @@ const BASE_URL = getApp().globalData.BASE_URL;
 const store = require('../store/store');
 const { zh_CN: t } = require('./locales');
 
-function request(options = {}) {
+function request(options = {}, _retry = true) {
   const token = store.token;
+  const refreshToken = store.refreshToken;
   const opts = { ...options };
   const url = opts.url || '';
   opts.url = url.startsWith('http') ? url : `${BASE_URL}${url}`;
@@ -18,6 +19,34 @@ function request(options = {}) {
     wx.request({
       ...opts,
       success(res) {
+        if (res.statusCode === 401 && refreshToken && _retry) {
+          wx.request({
+            url: `${BASE_URL}/refresh_token`,
+            method: 'POST',
+            data: { refresh_token: refreshToken },
+            success(r) {
+              if (r.statusCode === 200 && r.data.access_token) {
+                store.setAuth(r.data.access_token, store.userId, refreshToken);
+                opts.header['Authorization'] = `Bearer ${r.data.access_token}`;
+                request(options, false).then(resolve, reject);
+              } else {
+                store.clearAuth();
+                wx.navigateTo({ url: '/pages/login/index' });
+                wx.showToast({ title: t.pleaseRelogin, icon: 'none' });
+                opts.fail && opts.fail(res);
+                reject(res);
+              }
+            },
+            fail(err) {
+              store.clearAuth();
+              wx.navigateTo({ url: '/pages/login/index' });
+              wx.showToast({ title: t.pleaseRelogin, icon: 'none' });
+              opts.fail && opts.fail(err);
+              reject(err);
+            }
+          });
+          return;
+        }
         if (res.statusCode === 401) {
           store.clearAuth();
           wx.navigateTo({ url: '/pages/login/index' });
