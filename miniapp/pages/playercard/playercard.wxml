@@ -1,3 +1,4 @@
+<view catchtap="hideKeyboard">
 <profile-card
   user="{{user}}"
   placeholder="{{placeholderAvatar}}"
@@ -8,4 +9,5 @@
 <view class="actions">
   <button class="action-btn" bindtap="editProfile">编辑资料</button>
   <button class="action-btn" open-type="share">分享</button>
+</view>
 </view>

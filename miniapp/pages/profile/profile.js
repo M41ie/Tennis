@@ -2,6 +2,7 @@ const IMAGES = require('../../assets/base64.js');
 const { formatRating } = require('../../utils/format');
 const userService = require('../../services/user');
 const store = require('../../store/store');
+const { hideKeyboard } = require('../../utils/hideKeyboard');
 
 Page({
   data: {
@@ -24,6 +25,7 @@ Page({
     iconComing: IMAGES.ICON_COMING,
     myClubBtnText: '我的俱乐部'
   },
+  hideKeyboard,
   onShow() {
     const uid = store.userId;
     const cid = store.clubId;

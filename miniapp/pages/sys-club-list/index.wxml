@@ -1,4 +1,4 @@
-<view class="page-container">
+<view class="page-container" catchtap="hideKeyboard">
   <view class="club-list">
     <club-card
       wx:for="{{clubs}}"

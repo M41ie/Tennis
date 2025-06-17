@@ -1,6 +1,7 @@
 const BASE_URL = getApp().globalData.BASE_URL;
 const request = require('../../services/api');
 const store = require('../../store/store');
+const { hideKeyboard } = require('../../utils/hideKeyboard');
 const FORMAT_DISPLAY = {
   '6_game': '六局',
   '4_game': '四局',
@@ -16,6 +17,7 @@ function displayFormat(fmt) {
 }
 Page({
   data: { modeIndex: 0, singles: [], doublesList: [] },
+  hideKeyboard,
   onLoad() { this.fetchPendings(); },
   switchMode(e) {
     const idx = e.currentTarget.dataset.index;

@@ -1,11 +1,13 @@
 const BASE_URL = getApp().globalData.BASE_URL;
 const request = require('../../services/api');
 const store = require('../../store/store');
+const { hideKeyboard } = require('../../utils/hideKeyboard');
 
 Page({
   data: {
     list: []
   },
+  hideKeyboard,
   onShow() {
     const uid = store.userId;
     const token = store.token;

@@ -3,6 +3,7 @@ const request = require('../../services/api');
 const IMAGES = require('../../assets/base64.js');
 const { formatRating } = require('../../utils/format');
 const store = require('../../store/store');
+const { hideKeyboard } = require('../../utils/hideKeyboard');
 
 function calcAge(birth) {
   const d = new Date(birth);
@@ -40,6 +41,7 @@ Page({
     infoLine2: '',
     viewId: ''
   },
+  hideKeyboard,
   onLoad(options) {
     this.setData({ viewId: options && options.uid ? options.uid : store.userId });
   },

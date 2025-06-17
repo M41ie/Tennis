@@ -1,4 +1,4 @@
-<view bindtap="hideKeyboard">
+<view catchtap="hideKeyboard">
 <view class="club-header">
   <view class="top">
     <view class="club-name">{{clubName}}</view>

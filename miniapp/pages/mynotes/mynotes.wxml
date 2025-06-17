@@ -1,1 +1,1 @@
-<view class="coming-soon">Coming Soon</view>
+<view class="coming-soon" catchtap="hideKeyboard">Coming Soon</view>

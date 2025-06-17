@@ -1,5 +1,5 @@
-<view class="page-container">
-  <scroll-view scroll-y="true" bindtap="hideKeyboard" class="weui-cells weui-cells_form">
+<view class="page-container" catchtap="hideKeyboard">
+  <scroll-view scroll-y="true" catchtap="hideKeyboard" class="weui-cells weui-cells_form">
   <picker mode="selector" range="{{clubOptions}}" value="{{clubIndex}}" bindchange="onClubChange">
     <view class="weui-cell {{clubIndex == 0 ? 'placeholder' : ''}}">{{t.club}}: {{clubOptions[clubIndex]}}</view>
   </picker>

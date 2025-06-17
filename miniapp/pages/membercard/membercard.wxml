@@ -1,3 +1,4 @@
+<view catchtap="hideKeyboard">
 <profile-card
   user="{{user}}"
   placeholder="{{placeholderAvatar}}"
@@ -18,4 +19,5 @@
   <block wx:elif="{{myRole === 'admin' && !isSelf && !isTargetAdmin && !isTargetLeader}}">
     <button class="action-btn remove" bindtap="removeMember">移除成员</button>
   </block>
+</view>
 </view>

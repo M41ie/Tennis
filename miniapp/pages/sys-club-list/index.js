@@ -1,5 +1,6 @@
 const BASE_URL = getApp().globalData.BASE_URL;
 const request = require('../../services/api');
+const { hideKeyboard } = require('../../utils/hideKeyboard');
 
 Page({
   data: {
@@ -8,6 +9,7 @@ Page({
     page: 1,
     finished: false
   },
+  hideKeyboard,
   onLoad(options) {
     if (options && options.query) {
       this.setData({ query: options.query });
