@@ -4,10 +4,11 @@ from ..cli import create_club as cli_create_club, add_player as cli_add_player
 from ..storage import (
     load_data,
     load_users,
-    save_data,
-    save_users,
     create_club as create_club_record,
     create_player,
+    update_user_record,
+    update_player_record,
+    transaction,
 )
 
 
@@ -35,10 +36,10 @@ def create_club(
     except ValueError as e:
         raise HTTPException(400, str(e))
 
-    create_club_record(clubs[club_id])
-    create_player(club_id, clubs[club_id].members[user_id])
-    save_data(clubs)
-    save_users(users)
+    with transaction() as conn:
+        create_club_record(clubs[club_id], conn=conn)
+        create_player(club_id, clubs[club_id].members[user_id], conn=conn)
+        update_user_record(users[user_id], conn=conn)
     return club_id
 
 
@@ -50,6 +51,9 @@ def add_player(club_id: str, user_id: str, name: str, **kwargs):
     except ValueError as e:
         raise HTTPException(400, str(e))
 
-    create_player(club_id, clubs[club_id].members[user_id])
-    save_data(clubs)
+    player = clubs[club_id].members[user_id]
+    with transaction() as conn:
+        create_player(club_id, player, conn=conn)
+        update_player_record(player, conn=conn)
+
 
