@@ -70,5 +70,8 @@ export const zh_CN = {
   viewRejectReason: '查看未通过原因',
   inputJoinReason: '请输入申请理由',
   inputSelfRating: '请输入自我评分，参考格式：3.250',
-  cancel: '取消'
+  cancel: '取消',
+  confirmQuit: '确认退出',
+  confirmResign: '确认卸任',
+  confirmDissolve: '确认解散'
 };

@@ -123,7 +123,7 @@ Page({
     const token = store.token;
     const that = this;
     wx.showModal({
-      title: '确认卸任',
+      title: this.data.t.confirmResign,
       content: '确认要卸任该俱乐部的管理员吗？',
       confirmColor: '#e03a3a',
       success(res) {
