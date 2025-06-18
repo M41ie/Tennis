@@ -88,6 +88,7 @@ Page({
     const that = this;
     wx.chooseImage({
       count: 1,
+      sizeType: ['compressed'],
       success(res) {
         that.setData({ logo: res.tempFilePaths[0] });
       }
