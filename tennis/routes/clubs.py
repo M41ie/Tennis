@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, Header
 from pydantic import BaseModel
 from ..services.auth import require_auth, assert_token_matches
 from ..services.clubs import create_club as svc_create_club, add_player as svc_add_player
-from ..storage import load_data, load_users, get_club, get_player, get_user
+from ..storage import get_club, get_player, get_user
 from ..rating import (
     weighted_rating,
     weighted_doubles_rating,
@@ -50,13 +50,16 @@ def create_club(data: ClubCreate, authorization: str | None = Header(None)):
         slogan=data.slogan,
     )
     # refresh API state after DB write
-    clubs, players = load_data()
-    api.clubs.clear()
-    api.clubs.update(clubs)
-    api.players.clear()
-    api.players.update(players)
-    api.users.clear()
-    api.users.update(load_users())
+    # refresh caches for the newly created objects
+    club = get_club(cid)
+    if club:
+        api.clubs[cid] = club
+    player = get_player(data.user_id)
+    if player:
+        api.players[player.user_id] = player
+    user = get_user(data.user_id)
+    if user:
+        api.users[user.user_id] = user
     return {"status": "ok", "club_id": cid}
 
 
@@ -79,11 +82,13 @@ def add_player(club_id: str, data: PlayerCreate, authorization: str | None = Hea
     except HTTPException as e:
         if e.status_code != 400 or str(e.detail) != "Player already in club":
             raise
-    clubs, players = load_data()
-    api.clubs.clear()
-    api.clubs.update(clubs)
-    api.players.clear()
-    api.players.update(players)
+    # refresh caches for the updated club and new player
+    club = get_club(club_id)
+    if club:
+        api.clubs[club_id] = club
+    player = get_player(data.user_id)
+    if player:
+        api.players[player.user_id] = player
     return {"status": "ok"}
 
 
