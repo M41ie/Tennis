@@ -52,13 +52,13 @@ Page({
           that.setData({ myClubs: [] });
           return;
         }
-        const list = [];
-        let count = 0;
-        ids.forEach(cid => {
-          request({
-            url: `${BASE_URL}/clubs/${cid}`,
-            success(r) {
-              const info = r.data;
+        const idsParam = ids.join(',');
+        request({
+          url: `${BASE_URL}/clubs/batch?club_ids=${idsParam}`,
+          success(r) {
+            const infos = r.data || [];
+            const list = [];
+            infos.forEach(info => {
               const stats = info.stats || {};
               const sr = stats.singles_rating_range || [];
               const dr = stats.doubles_rating_range || [];
@@ -75,7 +75,7 @@ Page({
               if (info.leader_id === uid) role = 'leader';
               else if (info.admin_ids && info.admin_ids.includes(uid)) role = 'admin';
               list.push({
-                club_id: cid,
+                club_id: info.club_id,
                 name: info.name,
                 slogan: info.slogan || '',
                 region: info.region || '',
@@ -91,14 +91,9 @@ Page({
                 singles_avg: singlesAvg,
                 doubles_avg: doublesAvg
               });
-            },
-            complete() {
-              count++;
-              if (count === ids.length) {
-                that.setData({ myClubs: list });
-              }
-            }
-          });
+            });
+            that.setData({ myClubs: list });
+          }
         });
       }
     });
