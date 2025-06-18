@@ -1,7 +1,7 @@
 from __future__ import annotations
 import secrets
 import datetime
-from fastapi import HTTPException
+from .exceptions import ServiceError
 from ..cli import register_user, resolve_user, check_password, hash_password, set_user_limits
 from ..storage import (
     load_users,
@@ -34,7 +34,7 @@ def create_user(data) -> str:
         if existing:
             players[data.user_id] = existing
     if data.user_id and data.user_id in users:
-        raise HTTPException(400, "User exists")
+        raise ServiceError("User exists", 400)
     uid = register_user(
         users,
         data.user_id,
@@ -95,7 +95,7 @@ def wechat_login(code: str, exchange_func) -> tuple[str, str, str, bool]:
     info = exchange_func(code)
     openid = info.get("openid")
     if not openid:
-        raise HTTPException(400, "Invalid code")
+        raise ServiceError("Invalid code", 400)
 
     users = load_users()
     user = None
@@ -136,7 +136,7 @@ def logout(token: str):
 def refresh_token(token: str):
     info = get_token(token)
     if not info:
-        raise HTTPException(401, "Invalid token")
+        raise ServiceError("Invalid token", 401)
     uid, _ = info
     insert_token(token, uid)
     return uid
@@ -145,11 +145,11 @@ def refresh_token(token: str):
 def refresh_access_token(refresh_token: str) -> tuple[str, str]:
     info = get_refresh_token(refresh_token)
     if not info:
-        raise HTTPException(401, "Invalid token")
+        raise ServiceError("Invalid token", 401)
     uid, expires = info
     if datetime.datetime.utcnow() > expires:
         delete_refresh_token(uid)
-        raise HTTPException(401, "Token expired")
+        raise ServiceError("Token expired", 401)
     access_token = secrets.token_hex(16)
     insert_token(access_token, uid)
     return access_token, uid
@@ -158,7 +158,7 @@ def refresh_access_token(refresh_token: str) -> tuple[str, str]:
 def user_info(user_id: str):
     user = get_user_record(user_id)
     if not user:
-        raise HTTPException(404, "User not found")
+        raise ServiceError("User not found", 404)
     joined = [c.club_id for c in list_clubs() if user_id in c.members]
     created = getattr(user, "created_clubs", 0)
     max_created = getattr(user, "max_creatable_clubs", 0)
@@ -188,7 +188,7 @@ def mark_read(user: User, index: int):
     try:
         mark_user_message_read(user.user_id, index)
     except IndexError:
-        raise HTTPException(404, "Message not found")
+        raise ServiceError("Message not found", 404)
 
 
 def update_user_limits(user_id: str, max_joinable: int, max_creatable: int) -> None:
@@ -197,7 +197,7 @@ def update_user_limits(user_id: str, max_joinable: int, max_creatable: int) -> N
     try:
         set_user_limits(users, user_id, max_joinable=max_joinable, max_creatable=max_creatable)
     except ValueError as e:
-        raise HTTPException(400, str(e))
+        raise ServiceError(str(e), 400)
     with transaction() as conn:
         save_user(users[user_id], conn=conn)
 

@@ -1,7 +1,7 @@
 from __future__ import annotations
 import datetime
 import json
-from fastapi import HTTPException
+from .exceptions import ServiceError
 from ..cli import (
     create_club as cli_create_club,
     add_player as cli_add_player,
@@ -86,7 +86,7 @@ def create_club(
     try:
         cli_create_club(users, clubs, user_id, club_id, name, logo, region, slogan)
     except ValueError as e:
-        raise HTTPException(400, str(e))
+        raise ServiceError(str(e), 400)
 
     club = clubs[club_id]
     with transaction() as conn:
@@ -104,7 +104,7 @@ def add_player(club_id: str, user_id: str, name: str, **kwargs):
     try:
         cli_add_player(clubs, club_id, user_id, name, **kwargs)
     except ValueError as e:
-        raise HTTPException(400, str(e))
+        raise ServiceError(str(e), 400)
 
     player = clubs[club_id].members[user_id]
     with transaction() as conn:
@@ -121,7 +121,7 @@ def request_join_club(club_id: str, user_id: str, **kwargs) -> None:
     try:
         cli_request_join(clubs, users, club_id, user_id, **kwargs)
     except ValueError as e:
-        raise HTTPException(400, str(e))
+        raise ServiceError(str(e), 400)
     club = clubs[club_id]
     with transaction() as conn:
         save_club(club, conn=conn)
@@ -140,7 +140,7 @@ def approve_member_request(club_id: str, approver_id: str, user_id: str, rating:
     try:
         cli_approve_member(clubs, users, club_id, approver_id, user_id, rating, make_admin=make_admin)
     except ValueError as e:
-        raise HTTPException(400, str(e))
+        raise ServiceError(str(e), 400)
     club = clubs[club_id]
     player = club.members[user_id]
     with transaction() as conn:
@@ -162,7 +162,7 @@ def dissolve_existing_club(club_id: str, user_id: str) -> None:
     try:
         cli_dissolve_club(clubs, users, club_id, user_id)
     except ValueError as e:
-        raise HTTPException(400, str(e))
+        raise ServiceError(str(e), 400)
     with transaction() as conn:
         delete_club(club_id, conn=conn)
         for uid in set(members + [user_id]):
@@ -178,12 +178,12 @@ def approve_pending_match(club_id: str, index: int, approver: str) -> None:
     clubs = {club_id: club}
     _prepare_players(club)
     if index >= len(club.pending_matches):
-        raise HTTPException(404, "Match not found")
+        raise ServiceError("Match not found", 404)
     match = club.pending_matches[index]
     try:
         cli_approve_match(clubs, club_id, index, approver, users)
     except ValueError as e:
-        raise HTTPException(400, str(e))
+        raise ServiceError(str(e), 400)
     participants = (
         [match.player_a.user_id, match.player_b.user_id]
         if not hasattr(match, "player_a1")
@@ -212,7 +212,7 @@ def reject_join_request(club_id: str, approver_id: str, user_id: str, reason: st
     try:
         cli_reject_application(clubs, users, club_id, approver_id, user_id, reason)
     except ValueError as e:
-        raise HTTPException(400, str(e))
+        raise ServiceError(str(e), 400)
     club = clubs[club_id]
     with transaction() as conn:
         save_club(club, conn=conn)
@@ -229,7 +229,7 @@ def clear_member_rejection(club_id: str, user_id: str) -> None:
     try:
         cli_clear_rejection(clubs, club_id, user_id)
     except ValueError as e:
-        raise HTTPException(400, str(e))
+        raise ServiceError(str(e), 400)
     club = clubs[club_id]
     with transaction() as conn:
         save_club(club, conn=conn)
@@ -255,16 +255,16 @@ def update_global_player(user_id: str, **fields) -> None:
     users = load_users()
     player = get_player(user_id)
     if not player:
-        raise HTTPException(404, "Player not found")
+        raise ServiceError("Player not found", 404)
     _prepare_players(None, extra=[user_id])
     if fields.get("name") is not None:
         new_name = fields["name"]
         for u in users.values():
             if u.user_id != user_id and u.name == new_name:
-                raise HTTPException(400, "用户名已存在")
+                raise ServiceError("用户名已存在", 400)
         for p in players.values():
             if p.user_id != user_id and p.name == new_name:
-                raise HTTPException(400, "用户名已存在")
+                raise ServiceError("用户名已存在", 400)
         player.name = new_name
         if user_id in users:
             users[user_id].name = new_name
@@ -298,14 +298,14 @@ def update_player_profile(club_id: str, user_id: str, **fields) -> None:
         new_name = fields["name"]
         for u in users.values():
             if u.user_id != user_id and u.name == new_name:
-                raise HTTPException(400, "用户名已存在")
+                raise ServiceError("用户名已存在", 400)
         for p in players.values():
             if p.user_id != user_id and p.name == new_name:
-                raise HTTPException(400, "用户名已存在")
+                raise ServiceError("用户名已存在", 400)
     try:
         cli_update_player(clubs, club_id, user_id, **fields)
     except ValueError as e:
-        raise HTTPException(400, str(e))
+        raise ServiceError(str(e), 400)
     player = clubs[club_id].members[user_id]
     if fields.get("name") is not None and user_id in users:
         users[user_id].name = fields["name"]
@@ -324,7 +324,7 @@ def remove_club_member(club_id: str, remover_id: str, user_id: str, ban: bool = 
     try:
         cli_remove_member(clubs, users, club_id, remover_id, user_id, ban=ban)
     except ValueError as e:
-        raise HTTPException(400, str(e))
+        raise ServiceError(str(e), 400)
     club = clubs[club_id]
     with transaction() as conn:
         save_club(club, conn=conn)
@@ -351,7 +351,7 @@ def update_member_role(club_id: str, action: str, actor_id: str, target_id: str)
         else:
             raise ValueError("Invalid action")
     except ValueError as e:
-        raise HTTPException(400, str(e))
+        raise ServiceError(str(e), 400)
     club = clubs[club_id]
     with transaction() as conn:
         save_club(club, conn=conn)
@@ -393,7 +393,7 @@ def submit_pending_match(
             users=users,
         )
     except ValueError as e:
-        raise HTTPException(400, str(e))
+        raise ServiceError(str(e), 400)
     club = clubs[club_id]
     with transaction() as conn:
         save_club(club, conn=conn)
@@ -412,7 +412,7 @@ def confirm_pending_match(club_id: str, index: int, user_id: str) -> None:
     try:
         cli_confirm_match(clubs, club_id, index, user_id, users)
     except ValueError as e:
-        raise HTTPException(400, str(e))
+        raise ServiceError(str(e), 400)
     club = clubs[club_id]
     with transaction() as conn:
         save_club(club, conn=conn)
@@ -431,7 +431,7 @@ def reject_pending_match(club_id: str, index: int, user_id: str) -> None:
     try:
         cli_reject_match(clubs, club_id, index, user_id, users)
     except ValueError as e:
-        raise HTTPException(400, str(e))
+        raise ServiceError(str(e), 400)
     club = clubs[club_id]
     match = club.pending_matches[index]
     with transaction() as conn:
@@ -451,7 +451,7 @@ def veto_pending_match(club_id: str, index: int, approver: str) -> None:
     try:
         cli_veto_match(clubs, club_id, index, approver, users)
     except ValueError as e:
-        raise HTTPException(400, str(e))
+        raise ServiceError(str(e), 400)
     club = clubs[club_id]
     match = club.pending_matches[index]
     with transaction() as conn:
@@ -498,7 +498,7 @@ def submit_pending_doubles(
             users=users,
         )
     except ValueError as e:
-        raise HTTPException(400, str(e))
+        raise ServiceError(str(e), 400)
     club = clubs[club_id]
     with transaction() as conn:
         save_club(club, conn=conn)
@@ -517,7 +517,7 @@ def confirm_pending_doubles(club_id: str, index: int, user_id: str) -> None:
     try:
         cli_confirm_doubles(clubs, club_id, index, user_id, users)
     except ValueError as e:
-        raise HTTPException(400, str(e))
+        raise ServiceError(str(e), 400)
     club = clubs[club_id]
     with transaction() as conn:
         save_club(club, conn=conn)
@@ -536,7 +536,7 @@ def reject_pending_doubles(club_id: str, index: int, user_id: str) -> None:
     try:
         cli_reject_doubles(clubs, club_id, index, user_id, users)
     except ValueError as e:
-        raise HTTPException(400, str(e))
+        raise ServiceError(str(e), 400)
     club = clubs[club_id]
     match = club.pending_matches[index]
     with transaction() as conn:
@@ -556,7 +556,7 @@ def veto_pending_doubles(club_id: str, index: int, approver: str) -> None:
     try:
         cli_veto_doubles(clubs, club_id, index, approver, users)
     except ValueError as e:
-        raise HTTPException(400, str(e))
+        raise ServiceError(str(e), 400)
     club = clubs[club_id]
     match = club.pending_matches[index]
     with transaction() as conn:
@@ -579,7 +579,7 @@ def update_appointment_signups(club_id: str, index: int, *, add: str | None = No
     """Add or remove a signup for an appointment."""
     club = get_club_or_404(club_id)
     if index >= len(club.appointments):
-        raise HTTPException(404, "Appointment not found")
+        raise ServiceError("Appointment not found", 404)
     appt = club.appointments[index]
     with transaction() as conn:
         row = conn.execute(
@@ -587,7 +587,7 @@ def update_appointment_signups(club_id: str, index: int, *, add: str | None = No
             (club_id, index),
         ).fetchone()
         if not row:
-            raise HTTPException(404, "Appointment not found")
+            raise ServiceError("Appointment not found", 404)
         signups = set(json.loads(row["signups"] or "[]"))
         if add:
             signups.add(add)
@@ -606,7 +606,7 @@ def pre_rate_member(club_id: str, rater_id: str, target_id: str, rating: float) 
     try:
         cli_pre_rate(clubs, club_id, rater_id, target_id, rating)
     except ValueError as e:
-        raise HTTPException(400, str(e))
+        raise ServiceError(str(e), 400)
     player = clubs[club_id].members[target_id]
     with transaction() as conn:
         update_player_record(player, conn=conn)
@@ -642,7 +642,7 @@ def record_match_result(
             format_name=format_name,
         )
     except ValueError as e:
-        raise HTTPException(400, str(e))
+        raise ServiceError(str(e), 400)
     club = clubs[club_id]
     pa = club.members[user_a]
     pb = club.members[user_b]
@@ -661,7 +661,7 @@ def sys_set_leader(club_id: str, user_id: str) -> None:
     try:
         cli_sys_set_leader(clubs, club_id, user_id)
     except ValueError as e:
-        raise HTTPException(400, str(e))
+        raise ServiceError(str(e), 400)
     club = clubs[club_id]
     with transaction() as conn:
         save_club(club, conn=conn)
