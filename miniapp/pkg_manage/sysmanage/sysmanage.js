@@ -92,11 +92,16 @@ Page({
             pending_members: info.pending_members
           };
         });
-        const clubStatsRaw =
-          that.data.rankPage === 1
-            ? result
-            : that.data.clubStatsRaw.concat(result);
-        that.setData({ clubStatsRaw, rankFinished: list.length < limit });
+        if (that.data.rankPage === 1) {
+          that.setData({ clubStatsRaw: result, rankFinished: list.length < limit });
+        } else {
+          const start = that.data.clubStatsRaw.length;
+          const obj = { rankFinished: list.length < limit };
+          result.forEach((item, i) => {
+            obj[`clubStatsRaw[${start + i}]`] = item;
+          });
+          that.setData(obj);
+        }
         that.sortClubs();
       }
     });

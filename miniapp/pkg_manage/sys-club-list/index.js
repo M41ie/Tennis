@@ -33,8 +33,11 @@ Page({
       success(res) {
         const list = res.data || [];
         if (!list.length) {
-          const clubs = that.data.page === 1 ? [] : that.data.clubs;
-          that.setData({ clubs, finished: true });
+          if (that.data.page === 1) {
+            that.setData({ clubs: [], finished: true });
+          } else {
+            that.setData({ finished: true });
+          }
           return;
         }
         const result = list.map(info => {
@@ -70,9 +73,16 @@ Page({
             doubles_avg: doublesAvg
           };
         });
-        const clubs =
-          that.data.page === 1 ? result : that.data.clubs.concat(result);
-        that.setData({ clubs, finished: list.length < limit });
+        if (that.data.page === 1) {
+          that.setData({ clubs: result, finished: list.length < limit });
+        } else {
+          const start = that.data.clubs.length;
+          const obj = { finished: list.length < limit };
+          result.forEach((item, i) => {
+            obj[`clubs[${start + i}]`] = item;
+          });
+          that.setData(obj);
+        }
       }
     });
   },

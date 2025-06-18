@@ -146,12 +146,16 @@ Page({
 
               rec.displayFormat = displayFormat(rec.format);
             });
-            const records =
-              that.data.page === 1 ? list : that.data.records.concat(list);
-            that.setData({
-              records,
-              finished: list.length < limit,
-            });
+            if (that.data.page === 1) {
+              that.setData({ records: list, finished: list.length < limit });
+            } else {
+              const start = that.data.records.length;
+              const obj = { finished: list.length < limit };
+              list.forEach((item, i) => {
+                obj[`records[${start + i}]`] = item;
+              });
+              that.setData(obj);
+            }
           }
         });
       }

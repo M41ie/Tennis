@@ -40,8 +40,16 @@ Page({
           weighted_games_singles: formatGames(u.weighted_games_singles),
           weighted_games_doubles: formatGames(u.weighted_games_doubles)
         }));
-        const users = that.data.page === 1 ? list : that.data.users.concat(list);
-        that.setData({ users, finished: list.length < limit });
+        if (that.data.page === 1) {
+          that.setData({ users: list, finished: list.length < limit });
+        } else {
+          const start = that.data.users.length;
+          const obj = { finished: list.length < limit };
+          list.forEach((item, i) => {
+            obj[`users[${start + i}]`] = item;
+          });
+          that.setData(obj);
+        }
       }
     });
   },
