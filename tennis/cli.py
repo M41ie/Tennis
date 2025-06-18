@@ -26,6 +26,7 @@ from .rating import (
     expected_score,
 )
 from .storage import load_data, save_data, load_users, save_users
+from .services.stats import get_leaderboard
 
 
 pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
@@ -999,50 +1000,6 @@ def record_doubles(
         f"{pb1.name} {rating_b1:.1f}, {pb2.name} {rating_b2:.1f}"
     )
 
-
-def get_leaderboard(
-    clubs,
-    club_id: str | None,
-    doubles: bool,
-    min_rating: float | None = None,
-    max_rating: float | None = None,
-    min_age: int | None = None,
-    max_age: int | None = None,
-    gender: str | None = None,
-):
-    """Collect leaderboard data with optional filters."""
-
-    today = datetime.date.today()
-    if club_id is not None:
-        club = clubs.get(club_id)
-        if not club:
-            raise ValueError("Club not found")
-        clubs_to_iter = [club]
-    else:
-        clubs_to_iter = list(clubs.values())
-
-    players = []
-    for club in clubs_to_iter:
-        for p in club.members.values():
-            rating = (
-                weighted_doubles_rating(p, today)
-                if doubles
-                else weighted_rating(p, today)
-            )
-            if min_rating is not None and rating < min_rating:
-                continue
-            if max_rating is not None and rating > max_rating:
-                continue
-            if min_age is not None and (p.age is None or p.age < min_age):
-                continue
-            if max_age is not None and (p.age is None or p.age > max_age):
-                continue
-            if gender is not None and p.gender != gender:
-                continue
-            players.append((p, rating))
-
-    players.sort(key=lambda x: x[1], reverse=True)
-    return players
 
 
 def leaderboard(
