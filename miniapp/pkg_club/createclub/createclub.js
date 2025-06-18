@@ -3,11 +3,17 @@ const request = require('../../services/api');
 const { hideKeyboard } = require('../../utils/hideKeyboard');
 const { zh_CN } = require('../../utils/locales.js');
 const store = require('../../store/store');
+const {
+  showError,
+  validateClubName,
+  validateRating
+} = require('../../utils/validator');
 
 Page({
   data: {
     t: zh_CN,
     name: '',
+    nameError: '',
     slogan: '',
     logo: '',
     region: [],
@@ -15,7 +21,11 @@ Page({
     showDialog: false,
     rating: ''
   },
-  onName(e) { this.setData({ name: e.detail.value }); },
+  onName(e) {
+    const name = e.detail.value;
+    const ok = /^[A-Za-z\u4e00-\u9fa5]{0,20}$/.test(name);
+    this.setData({ name, nameError: ok ? '' : this.data.t.clubNameRule });
+  },
   onSlogan(e) { this.setData({ slogan: e.detail.value }); },
   onRegionChange(e) {
     this.setData({
@@ -31,12 +41,8 @@ Page({
   },
   hideKeyboard,
   confirmRating() {
-    const that = this;
-    const rating = parseFloat(this.data.rating);
-    if (isNaN(rating) || rating < 0 || rating > 7) {
-      wx.showToast({ title: that.data.t.ratingFormatError, icon: 'none' });
-      return;
-    }
+    const rating = validateRating(this.data.rating);
+    if (rating == null) return;
     this.setData({ showDialog: false });
     this.createClub(rating);
   },
@@ -99,14 +105,10 @@ Page({
     const userId = store.userId;
     const token = store.token;
     if (!userId || !token || !this.data.name || !this.data.slogan || this.data.region.length === 0) {
-      wx.showToast({ title: that.data.t.incompleteInfo, icon: 'none' });
+      showError(that.data.t.incompleteInfo);
       return;
     }
-    const nameOk = /^[A-Za-z\u4e00-\u9fa5]{1,20}$/.test(this.data.name);
-    if (!nameOk) {
-      wx.showToast({ title: that.data.t.clubNameRule, icon: 'none' });
-      return;
-    }
+    if (!validateClubName(this.data.name)) return;
     request({
       url: `${BASE_URL}/players/${userId}`,
       success(res) {

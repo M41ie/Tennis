@@ -3,11 +3,16 @@ const request = require('../../services/api');
 const { hideKeyboard } = require('../../utils/hideKeyboard');
 const { zh_CN } = require('../../utils/locales.js');
 const store = require('../../store/store');
+const {
+  showError,
+  validateUserName
+} = require('../../utils/validator');
 
 Page({
   data: {
     t: zh_CN,
     name: '',
+    nameError: '',
     genderIndex: 0,
     avatar: '',
     birth: '',
@@ -46,7 +51,11 @@ Page({
       }
     });
   },
-  onName(e) { this.setData({ name: e.detail.value }); },
+  onName(e) {
+    const name = e.detail.value;
+    const ok = /^[A-Za-z\u4e00-\u9fa5]{0,12}$/.test(name);
+    this.setData({ name, nameError: ok ? '' : this.data.t.nameRule });
+  },
   onGender(e) { this.setData({ genderIndex: Number(e.detail.value) }); },
   onBirthChange(e) { this.setData({ birth: e.detail.value }); },
   onHand(e) { this.setData({ handIndex: Number(e.detail.value) }); },
@@ -85,14 +94,10 @@ Page({
       this.data.backhandIndex === 0 ||
       !this.data.regionString;
     if (incomplete) {
-      wx.showToast({ title: that.data.t.incompleteInfo, icon: 'none' });
+      showError(that.data.t.incompleteInfo);
       return;
     }
-    const nameOk = /^[A-Za-z\u4e00-\u9fa5]{1,12}$/.test(this.data.name);
-    if (!nameOk) {
-      wx.showToast({ title: that.data.t.nameRule, icon: 'none' });
-      return;
-    }
+    if (!validateUserName(this.data.name)) return;
     request({
       url: `${BASE_URL}/players/${this.data.userId}`,
       method: 'PATCH',
