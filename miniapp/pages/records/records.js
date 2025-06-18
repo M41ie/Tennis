@@ -2,6 +2,7 @@ const BASE_URL = getApp().globalData.BASE_URL;
 const request = require('../../services/api');
 const store = require('../../store/store');
 const { hideKeyboard } = require('../../utils/hideKeyboard');
+const optimisticUpdate = require('../../utils/optimistic');
 
 // Map backend format identifiers to display names
 const FORMAT_DISPLAY = {
@@ -253,22 +254,14 @@ Page({
     const idx = e.currentTarget.dataset.index;
     const cid = e.currentTarget.dataset.club;
     const token = store.token;
-    const that = this;
-    request({
-      url: `${BASE_URL}/clubs/${cid}/pending_matches/${idx}/confirm`,
-      method: 'POST',
-      data: { user_id: this.data.userId, token },
-      success(res) {
-        if (res.statusCode >= 300) {
-          wx.showToast({ title: '错误', icon: 'none' });
-        }
-      },
-      fail() {
-        wx.showToast({ title: '网络错误', icon: 'none' });
-      },
-      complete() {
-        that.fetchPendings();
-      }
+    optimisticUpdate(this, 'pendingSingles', idx, () =>
+      request({
+        url: `${BASE_URL}/clubs/${cid}/pending_matches/${idx}/confirm`,
+        method: 'POST',
+        data: { user_id: this.data.userId, token }
+      })
+    ).finally(() => {
+      this.fetchPendings();
     });
   },
   approveSingle(e) {
@@ -297,65 +290,42 @@ Page({
     const idx = e.currentTarget.dataset.index;
     const cid = e.currentTarget.dataset.club;
     const token = store.token;
-    const that = this;
-    // Optimistically remove the item for immediate feedback
-    const arr = this.data.pendingSingles.slice();
-    const pos = arr.findIndex(it => it.index === idx);
-    if (pos !== -1) {
-      arr.splice(pos, 1);
-      this.setData({ pendingSingles: arr });
-    }
-    request({
-      url: `${BASE_URL}/clubs/${cid}/pending_matches/${idx}/veto`,
-      method: 'POST',
-      data: { approver: this.data.userId, token },
-      complete() {
-        that.fetchPendings();
-      }
+    optimisticUpdate(this, 'pendingSingles', idx, () =>
+      request({
+        url: `${BASE_URL}/clubs/${cid}/pending_matches/${idx}/veto`,
+        method: 'POST',
+        data: { approver: this.data.userId, token }
+      })
+    ).finally(() => {
+      this.fetchPendings();
     });
   },
   rejectSingle(e) {
     const idx = e.currentTarget.dataset.index;
     const cid = e.currentTarget.dataset.club;
     const token = store.token;
-    const that = this;
-    request({
-      url: `${BASE_URL}/clubs/${cid}/pending_matches/${idx}/reject`,
-      method: 'POST',
-      data: { user_id: this.data.userId, token },
-      success(res) {
-        if (res.statusCode >= 300) {
-          wx.showToast({ title: '错误', icon: 'none' });
-        }
-      },
-      fail() {
-        wx.showToast({ title: '网络错误', icon: 'none' });
-      },
-      complete() {
-        that.fetchPendings();
-      }
+    optimisticUpdate(this, 'pendingSingles', idx, () =>
+      request({
+        url: `${BASE_URL}/clubs/${cid}/pending_matches/${idx}/reject`,
+        method: 'POST',
+        data: { user_id: this.data.userId, token }
+      })
+    ).finally(() => {
+      this.fetchPendings();
     });
   },
   confirmDouble(e) {
     const idx = e.currentTarget.dataset.index;
     const cid = e.currentTarget.dataset.club;
     const token = store.token;
-    const that = this;
-    request({
-      url: `${BASE_URL}/clubs/${cid}/pending_doubles/${idx}/confirm`,
-      method: 'POST',
-      data: { user_id: this.data.userId, token },
-      success(res) {
-        if (res.statusCode >= 300) {
-          wx.showToast({ title: '错误', icon: 'none' });
-        }
-      },
-      fail() {
-        wx.showToast({ title: '网络错误', icon: 'none' });
-      },
-      complete() {
-        that.fetchPendings();
-      }
+    optimisticUpdate(this, 'pendingDoubles', idx, () =>
+      request({
+        url: `${BASE_URL}/clubs/${cid}/pending_doubles/${idx}/confirm`,
+        method: 'POST',
+        data: { user_id: this.data.userId, token }
+      })
+    ).finally(() => {
+      this.fetchPendings();
     });
   },
   approveDouble(e) {
@@ -384,43 +354,28 @@ Page({
     const idx = e.currentTarget.dataset.index;
     const cid = e.currentTarget.dataset.club;
     const token = store.token;
-    const that = this;
-    // Optimistically remove the item for immediate feedback
-    const arr = this.data.pendingDoubles.slice();
-    const pos = arr.findIndex(it => it.index === idx);
-    if (pos !== -1) {
-      arr.splice(pos, 1);
-      this.setData({ pendingDoubles: arr });
-    }
-    request({
-      url: `${BASE_URL}/clubs/${cid}/pending_doubles/${idx}/veto`,
-      method: 'POST',
-      data: { approver: this.data.userId, token },
-      complete() {
-        that.fetchPendings();
-      }
+    optimisticUpdate(this, 'pendingDoubles', idx, () =>
+      request({
+        url: `${BASE_URL}/clubs/${cid}/pending_doubles/${idx}/veto`,
+        method: 'POST',
+        data: { approver: this.data.userId, token }
+      })
+    ).finally(() => {
+      this.fetchPendings();
     });
   },
   rejectDouble(e) {
     const idx = e.currentTarget.dataset.index;
     const cid = e.currentTarget.dataset.club;
     const token = store.token;
-    const that = this;
-    request({
-      url: `${BASE_URL}/clubs/${cid}/pending_doubles/${idx}/reject`,
-      method: 'POST',
-      data: { user_id: this.data.userId, token },
-      success(res) {
-        if (res.statusCode >= 300) {
-          wx.showToast({ title: '错误', icon: 'none' });
-        }
-      },
-      fail() {
-        wx.showToast({ title: '网络错误', icon: 'none' });
-      },
-      complete() {
-        that.fetchPendings();
-      }
+    optimisticUpdate(this, 'pendingDoubles', idx, () =>
+      request({
+        url: `${BASE_URL}/clubs/${cid}/pending_doubles/${idx}/reject`,
+        method: 'POST',
+        data: { user_id: this.data.userId, token }
+      })
+    ).finally(() => {
+      this.fetchPendings();
     });
   },
   viewRecord(e) {
