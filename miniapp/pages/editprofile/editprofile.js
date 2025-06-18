@@ -73,6 +73,7 @@ Page({
     });
   },
   submit() {
+    const that = this;
     const token = store.token;
     if (!token || !this.data.userId) return;
     const incomplete =
@@ -91,7 +92,6 @@ Page({
       wx.showToast({ title: that.data.t.nameRule, icon: 'none' });
       return;
     }
-    const that = this;
     request({
       url: `${BASE_URL}/players/${this.data.userId}`,
       method: 'PATCH',

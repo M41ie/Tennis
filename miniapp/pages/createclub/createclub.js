@@ -31,6 +31,7 @@ Page({
   },
   hideKeyboard,
   confirmRating() {
+    const that = this;
     const rating = parseFloat(this.data.rating);
     if (isNaN(rating) || rating < 0 || rating > 7) {
       wx.showToast({ title: that.data.t.ratingFormatError, icon: 'none' });
@@ -93,6 +94,7 @@ Page({
     });
   },
   submit() {
+    const that = this;
     const userId = store.userId;
     const token = store.token;
     if (!userId || !token || !this.data.name || !this.data.slogan || this.data.region.length === 0) {
@@ -104,7 +106,6 @@ Page({
       wx.showToast({ title: that.data.t.clubNameRule, icon: 'none' });
       return;
     }
-    const that = this;
     request({
       url: `${BASE_URL}/players/${userId}`,
       success(res) {
