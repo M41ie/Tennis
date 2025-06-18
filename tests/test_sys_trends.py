@@ -40,12 +40,10 @@ def test_trend_endpoints(tmp_path, monkeypatch):
     )
 
     today = datetime.date.today()
-    clubs, players = storage.load_data()
-    tennis.models.players.clear()
-    tennis.models.players.update(players)
-    clubs["c1"].members["u1"].joined = today - datetime.timedelta(days=5)
-    clubs["c1"].members["u2"].joined = today - datetime.timedelta(days=2)
-    storage.save_data(clubs)
+    club = storage.get_club("c1")
+    club.members["u1"].joined = today - datetime.timedelta(days=5)
+    club.members["u2"].joined = today - datetime.timedelta(days=2)
+    storage.save_club(club)
 
     client.post(
         "/clubs/c1/matches",

@@ -1103,14 +1103,12 @@ def test_doubles_leaderboard_api(tmp_path, monkeypatch):
         )
 
     # adjust doubles ratings for predictable ordering
-    clubs, players = storage.load_data()
-    tennis.models.players.clear()
-    tennis.models.players.update(players)
-    clubs["c1"].members["p1"].doubles_rating = 1200
-    clubs["c1"].members["p2"].doubles_rating = 1100
-    clubs["c1"].members["p3"].doubles_rating = 1300
-    clubs["c1"].members["p4"].doubles_rating = 1000
-    storage.save_data(clubs)
+    club = storage.get_club("c1")
+    club.members["p1"].doubles_rating = 1200
+    club.members["p2"].doubles_rating = 1100
+    club.members["p3"].doubles_rating = 1300
+    club.members["p4"].doubles_rating = 1000
+    storage.save_club(club)
 
     resp = client.get("/clubs/c1/players?doubles=true")
     assert resp.status_code == 200
@@ -1192,13 +1190,11 @@ def test_list_players_filters(tmp_path, monkeypatch):
         json={"user_id": "p3", "name": "P3", "age": 22, "gender": "M", "token": tokens["p3"]},
     )
 
-    clubs, players = storage.load_data()
-    tennis.models.players.clear()
-    tennis.models.players.update(players)
-    clubs["c1"].members["p1"].singles_rating = 1200
-    clubs["c1"].members["p2"].singles_rating = 1100
-    clubs["c1"].members["p3"].singles_rating = 1300
-    storage.save_data(clubs)
+    club = storage.get_club("c1")
+    club.members["p1"].singles_rating = 1200
+    club.members["p2"].singles_rating = 1100
+    club.members["p3"].singles_rating = 1300
+    storage.save_club(club)
 
     resp = client.get("/clubs/c1/players?min_rating=1100&max_age=25&gender=M")
     assert resp.status_code == 200
@@ -1256,14 +1252,14 @@ def test_list_all_players_multi_club(tmp_path, monkeypatch):
         json={"user_id": "p4", "name": "P4", "token": tokens["p4"]},
     )
 
-    clubs, players = storage.load_data()
-    tennis.models.players.clear()
-    tennis.models.players.update(players)
-    clubs["c1"].members["p1"].singles_rating = 1200
-    clubs["c2"].members["p2"].singles_rating = 1100
-    clubs["c1"].members["p3"].singles_rating = 1300
-    clubs["c2"].members["p4"].singles_rating = 1250
-    storage.save_data(clubs)
+    club1 = storage.get_club("c1")
+    club2 = storage.get_club("c2")
+    club1.members["p1"].singles_rating = 1200
+    club2.members["p2"].singles_rating = 1100
+    club1.members["p3"].singles_rating = 1300
+    club2.members["p4"].singles_rating = 1250
+    storage.save_club(club1)
+    storage.save_club(club2)
 
     resp = client.get("/players?club=c1,c2&min_rating=1200")
     assert resp.status_code == 200
