@@ -4,7 +4,7 @@ from fastapi import HTTPException
 from .. import storage
 from ..models import DoublesMatch
 from .auth import require_auth
-from ..storage import get_club, load_data
+from ..storage import get_club, list_clubs
 
 
 def list_pending_doubles_service(club_id: str, authorization: str | None = None):
@@ -322,8 +322,8 @@ def list_global_pending_doubles_service(user_id: str, authorization: str | None 
         raise HTTPException(401, "Token mismatch")
 
     combined = []
-    clubs, _ = load_data()
-    for cid, club in clubs.items():
+    for club in list_clubs():
+        cid = club.club_id
         try:
             entries = list_pending_doubles_service(cid, authorization)
         except HTTPException:
@@ -346,8 +346,8 @@ def list_global_pending_matches_service(user_id: str, authorization: str | None 
         raise HTTPException(401, "Token mismatch")
 
     combined = []
-    clubs, _ = load_data()
-    for cid, club in clubs.items():
+    for club in list_clubs():
+        cid = club.club_id
         try:
             entries = list_pending_matches_service(cid, authorization)
         except HTTPException:

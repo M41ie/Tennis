@@ -31,8 +31,10 @@ from ..cli import (
     normalize_gender,
 )
 from ..storage import (
-    load_data,
     load_users,
+    get_club,
+    get_user,
+    get_player,
     create_club as create_club_record,
     create_player,
     update_user_record,
@@ -47,10 +49,22 @@ from ..storage import (
 from ..models import players
 
 
+def _prepare_players(club: "Club" | None = None, extra: list[str] | None = None) -> None:
+    """Populate the global ``players`` dict from a club and extra ids."""
+    players.clear()
+    if club:
+        players.update({p.user_id: p for p in club.members.values()})
+    if extra:
+        for uid in extra:
+            if uid not in players:
+                p = get_player(uid)
+                if p:
+                    players[uid] = p
+
+
 def generate_club_id() -> str:
-    clubs, _ = load_data()
     i = 1
-    while f"c{i}" in clubs:
+    while get_club(f"c{i}") is not None:
         i += 1
     return f"c{i}"
 
@@ -65,26 +79,27 @@ def create_club(
 ):
     """Create a new club and persist it to the database."""
     users = load_users()
-    clubs, players_data = load_data()
-    players.clear();
-    players.update(players_data)
+    club = get_club(club_id)
+    clubs = {club_id: club} if club else {}
+    _prepare_players(club, extra=[user_id])
     try:
         cli_create_club(users, clubs, user_id, club_id, name, logo, region, slogan)
     except ValueError as e:
         raise HTTPException(400, str(e))
 
+    club = clubs[club_id]
     with transaction() as conn:
-        create_club_record(clubs[club_id], conn=conn)
-        create_player(club_id, clubs[club_id].members[user_id], conn=conn)
+        create_club_record(club, conn=conn)
+        create_player(club_id, club.members[user_id], conn=conn)
         update_user_record(users[user_id], conn=conn)
     return club_id
 
 
 def add_player(club_id: str, user_id: str, name: str, **kwargs):
     """Add a player to a club and persist the change."""
-    clubs, players_data = load_data()
-    players.clear();
-    players.update(players_data)
+    club = get_club_or_404(club_id)
+    clubs = {club_id: club}
+    _prepare_players(club, extra=[user_id])
     try:
         cli_add_player(clubs, club_id, user_id, name, **kwargs)
     except ValueError as e:
@@ -98,10 +113,10 @@ def add_player(club_id: str, user_id: str, name: str, **kwargs):
 
 def request_join_club(club_id: str, user_id: str, **kwargs) -> None:
     """Handle a join request and persist affected records."""
-    clubs, players_data = load_data()
-    players.clear();
-    players.update(players_data)
+    club = get_club_or_404(club_id)
     users = load_users()
+    clubs = {club_id: club}
+    _prepare_players(club, extra=[user_id])
     try:
         cli_request_join(clubs, users, club_id, user_id, **kwargs)
     except ValueError as e:
@@ -117,10 +132,10 @@ def request_join_club(club_id: str, user_id: str, **kwargs) -> None:
 
 def approve_member_request(club_id: str, approver_id: str, user_id: str, rating: float, make_admin: bool = False) -> None:
     """Approve membership and persist changes."""
-    clubs, players_data = load_data()
-    players.clear();
-    players.update(players_data)
+    club = get_club_or_404(club_id)
     users = load_users()
+    clubs = {club_id: club}
+    _prepare_players(club)
     try:
         cli_approve_member(clubs, users, club_id, approver_id, user_id, rating, make_admin=make_admin)
     except ValueError as e:
@@ -138,13 +153,10 @@ def approve_member_request(club_id: str, approver_id: str, user_id: str, rating:
 
 def dissolve_existing_club(club_id: str, user_id: str) -> None:
     """Dissolve a club and update affected users."""
-    clubs, players_data = load_data()
-    players.clear();
-    players.update(players_data)
+    club = get_club_or_404(club_id)
     users = load_users()
-    club = clubs.get(club_id)
-    if not club:
-        raise HTTPException(404, "Club not found")
+    clubs = {club_id: club}
+    _prepare_players(club)
     members = list(club.members)
     try:
         cli_dissolve_club(clubs, users, club_id, user_id)
@@ -160,13 +172,10 @@ def dissolve_existing_club(club_id: str, user_id: str) -> None:
 
 def approve_pending_match(club_id: str, index: int, approver: str) -> None:
     """Approve a pending singles match and persist the club and users."""
-    clubs, players_data = load_data()
-    players.clear();
-    players.update(players_data)
+    club = get_club_or_404(club_id)
     users = load_users()
-    club = clubs.get(club_id)
-    if not club:
-        raise HTTPException(404, "Club not found")
+    clubs = {club_id: club}
+    _prepare_players(club)
     if index >= len(club.pending_matches):
         raise HTTPException(404, "Match not found")
     match = club.pending_matches[index]
@@ -195,10 +204,10 @@ def approve_pending_match(club_id: str, index: int, approver: str) -> None:
 
 def reject_join_request(club_id: str, approver_id: str, user_id: str, reason: str) -> None:
     """Reject a join request and persist club and user records."""
-    clubs, players_data = load_data()
-    players.clear();
-    players.update(players_data)
+    club = get_club_or_404(club_id)
     users = load_users()
+    clubs = {club_id: club}
+    _prepare_players(club)
     try:
         cli_reject_application(clubs, users, club_id, approver_id, user_id, reason)
     except ValueError as e:
@@ -213,9 +222,9 @@ def reject_join_request(club_id: str, approver_id: str, user_id: str, reason: st
 
 def clear_member_rejection(club_id: str, user_id: str) -> None:
     """Clear a stored rejection reason."""
-    clubs, players_data = load_data()
-    players.clear();
-    players.update(players_data)
+    club = get_club_or_404(club_id)
+    clubs = {club_id: club}
+    _prepare_players(club)
     try:
         cli_clear_rejection(clubs, club_id, user_id)
     except ValueError as e:
@@ -227,10 +236,7 @@ def clear_member_rejection(club_id: str, user_id: str) -> None:
 
 def update_club_info(club_id: str, **fields) -> None:
     """Update basic club fields."""
-    clubs, _ = load_data()
-    club = clubs.get(club_id)
-    if not club:
-        raise HTTPException(404, "Club not found")
+    club = get_club_or_404(club_id)
     if "name" in fields and fields["name"] is not None:
         club.name = fields["name"]
     if "logo" in fields and fields["logo"] is not None:
@@ -245,13 +251,11 @@ def update_club_info(club_id: str, **fields) -> None:
 
 def update_global_player(user_id: str, **fields) -> None:
     """Update player information without club context."""
-    clubs, players_data = load_data()
-    players.clear();
-    players.update(players_data)
     users = load_users()
-    player = players.get(user_id)
+    player = get_player(user_id)
     if not player:
         raise HTTPException(404, "Player not found")
+    _prepare_players(None, extra=[user_id])
     if fields.get("name") is not None:
         new_name = fields["name"]
         for u in users.values():
@@ -285,10 +289,10 @@ def update_global_player(user_id: str, **fields) -> None:
 
 def update_player_profile(club_id: str, user_id: str, **fields) -> None:
     """Update a club member's profile."""
-    clubs, players_data = load_data()
-    players.clear();
-    players.update(players_data)
+    club = get_club_or_404(club_id)
     users = load_users()
+    clubs = {club_id: club}
+    _prepare_players(club)
     if fields.get("name") is not None:
         new_name = fields["name"]
         for u in users.values():
@@ -312,10 +316,10 @@ def update_player_profile(club_id: str, user_id: str, **fields) -> None:
 
 def remove_club_member(club_id: str, remover_id: str, user_id: str, ban: bool = False) -> None:
     """Remove a member from a club and update records."""
-    clubs, players_data = load_data()
-    players.clear();
-    players.update(players_data)
+    club = get_club_or_404(club_id)
     users = load_users()
+    clubs = {club_id: club}
+    _prepare_players(club)
     try:
         cli_remove_member(clubs, users, club_id, remover_id, user_id, ban=ban)
     except ValueError as e:
@@ -330,10 +334,10 @@ def remove_club_member(club_id: str, remover_id: str, user_id: str, ban: bool = 
 
 def update_member_role(club_id: str, action: str, actor_id: str, target_id: str) -> None:
     """Perform a role-related action and persist changes."""
-    clubs, players_data = load_data()
-    players.clear();
-    players.update(players_data)
+    club = get_club_or_404(club_id)
     users = load_users()
+    clubs = {club_id: club}
+    _prepare_players(club)
     try:
         if action == "toggle_admin":
             cli_toggle_admin(clubs, club_id, actor_id, target_id)
@@ -369,10 +373,10 @@ def submit_pending_match(
     format_name: str | None = None,
 ) -> None:
     """Create a pending singles match."""
-    clubs, players_data = load_data()
-    players.clear();
-    players.update(players_data)
+    club = get_club_or_404(club_id)
     users = load_users()
+    clubs = {club_id: club}
+    _prepare_players(club, extra=[initiator, opponent])
     try:
         cli_submit_match(
             clubs,
@@ -400,10 +404,10 @@ def submit_pending_match(
 
 def confirm_pending_match(club_id: str, index: int, user_id: str) -> None:
     """Confirm a pending singles match."""
-    clubs, players_data = load_data()
-    players.clear();
-    players.update(players_data)
+    club = get_club_or_404(club_id)
     users = load_users()
+    clubs = {club_id: club}
+    _prepare_players(club)
     try:
         cli_confirm_match(clubs, club_id, index, user_id, users)
     except ValueError as e:
@@ -419,10 +423,10 @@ def confirm_pending_match(club_id: str, index: int, user_id: str) -> None:
 
 def reject_pending_match(club_id: str, index: int, user_id: str) -> None:
     """Reject a pending singles match."""
-    clubs, players_data = load_data()
-    players.clear();
-    players.update(players_data)
+    club = get_club_or_404(club_id)
     users = load_users()
+    clubs = {club_id: club}
+    _prepare_players(club)
     try:
         cli_reject_match(clubs, club_id, index, user_id, users)
     except ValueError as e:
@@ -439,10 +443,10 @@ def reject_pending_match(club_id: str, index: int, user_id: str) -> None:
 
 def veto_pending_match(club_id: str, index: int, approver: str) -> None:
     """Veto a pending singles match."""
-    clubs, players_data = load_data()
-    players.clear();
-    players.update(players_data)
+    club = get_club_or_404(club_id)
     users = load_users()
+    clubs = {club_id: club}
+    _prepare_players(club)
     try:
         cli_veto_match(clubs, club_id, index, approver, users)
     except ValueError as e:
@@ -472,10 +476,10 @@ def submit_pending_doubles(
     format_name: str | None = None,
 ) -> None:
     """Create a pending doubles match."""
-    clubs, players_data = load_data()
-    players.clear();
-    players.update(players_data)
+    club = get_club_or_404(club_id)
     users = load_users()
+    clubs = {club_id: club}
+    _prepare_players(club, extra=[initiator, partner, opponent1, opponent2])
     try:
         cli_submit_doubles(
             clubs,
@@ -505,10 +509,10 @@ def submit_pending_doubles(
 
 def confirm_pending_doubles(club_id: str, index: int, user_id: str) -> None:
     """Confirm a pending doubles match."""
-    clubs, players_data = load_data()
-    players.clear();
-    players.update(players_data)
+    club = get_club_or_404(club_id)
     users = load_users()
+    clubs = {club_id: club}
+    _prepare_players(club)
     try:
         cli_confirm_doubles(clubs, club_id, index, user_id, users)
     except ValueError as e:
@@ -524,10 +528,10 @@ def confirm_pending_doubles(club_id: str, index: int, user_id: str) -> None:
 
 def reject_pending_doubles(club_id: str, index: int, user_id: str) -> None:
     """Reject a pending doubles match."""
-    clubs, players_data = load_data()
-    players.clear();
-    players.update(players_data)
+    club = get_club_or_404(club_id)
     users = load_users()
+    clubs = {club_id: club}
+    _prepare_players(club)
     try:
         cli_reject_doubles(clubs, club_id, index, user_id, users)
     except ValueError as e:
@@ -544,10 +548,10 @@ def reject_pending_doubles(club_id: str, index: int, user_id: str) -> None:
 
 def veto_pending_doubles(club_id: str, index: int, approver: str) -> None:
     """Veto a pending doubles match."""
-    clubs, players_data = load_data()
-    players.clear();
-    players.update(players_data)
+    club = get_club_or_404(club_id)
     users = load_users()
+    clubs = {club_id: club}
+    _prepare_players(club)
     try:
         cli_veto_doubles(clubs, club_id, index, approver, users)
     except ValueError as e:
@@ -564,10 +568,7 @@ def veto_pending_doubles(club_id: str, index: int, approver: str) -> None:
 
 def create_appointment_entry(club_id: str, appt: Appointment) -> None:
     """Create an appointment and persist it."""
-    clubs, _ = load_data()
-    club = clubs.get(club_id)
-    if not club:
-        raise HTTPException(404, "Club not found")
+    club = get_club_or_404(club_id)
     club.appointments.append(appt)
     with transaction() as conn:
         create_appointment_record(club_id, appt, conn=conn)
@@ -575,9 +576,8 @@ def create_appointment_entry(club_id: str, appt: Appointment) -> None:
 
 def update_appointment_signups(club_id: str, index: int, *, add: str | None = None, remove: str | None = None) -> None:
     """Add or remove a signup for an appointment."""
-    clubs, _ = load_data()
-    club = clubs.get(club_id)
-    if not club or index >= len(club.appointments):
+    club = get_club_or_404(club_id)
+    if index >= len(club.appointments):
         raise HTTPException(404, "Appointment not found")
     appt = club.appointments[index]
     with transaction() as conn:
@@ -599,9 +599,9 @@ def update_appointment_signups(club_id: str, index: int, *, add: str | None = No
 
 def pre_rate_member(club_id: str, rater_id: str, target_id: str, rating: float) -> None:
     """Record a pre-rating and persist the player."""
-    clubs, players_data = load_data()
-    players.clear();
-    players.update(players_data)
+    club = get_club_or_404(club_id)
+    clubs = {club_id: club}
+    _prepare_players(club)
     try:
         cli_pre_rate(clubs, club_id, rater_id, target_id, rating)
     except ValueError as e:
@@ -624,9 +624,9 @@ def record_match_result(
     format_name: str | None = None,
 ) -> None:
     """Record a finished singles match and persist affected players."""
-    clubs, players_data = load_data()
-    players.clear();
-    players.update(players_data)
+    club = get_club_or_404(club_id)
+    clubs = {club_id: club}
+    _prepare_players(club)
     try:
         cli_record_match(
             clubs,
@@ -653,10 +653,10 @@ def record_match_result(
 
 def sys_set_leader(club_id: str, user_id: str) -> None:
     """System admin sets club leader and persist changes."""
-    clubs, players_data = load_data()
-    players.clear();
-    players.update(players_data)
+    club = get_club_or_404(club_id)
     users = load_users()
+    clubs = {club_id: club}
+    _prepare_players(club)
     try:
         cli_sys_set_leader(clubs, club_id, user_id)
     except ValueError as e:
