@@ -107,24 +107,24 @@ def get_user_info(user_id: str):
 
 
 @router.get("/users/{user_id}/messages")
-def get_user_messages(user_id: str, token: str, authorization: str | None = Header(None)):
-    uid = require_auth(token, authorization)
+def get_user_messages(user_id: str, authorization: str | None = Header(None)):
+    uid = require_auth(authorization)
     assert_token_matches(uid, user_id)
     user = get_user_or_404(user_id)
     return user_service.list_messages(user)
 
 
 @router.get("/users/{user_id}/messages/unread_count")
-def get_unread_count(user_id: str, token: str, authorization: str | None = Header(None)):
-    uid = require_auth(token, authorization)
+def get_unread_count(user_id: str, authorization: str | None = Header(None)):
+    uid = require_auth(authorization)
     assert_token_matches(uid, user_id)
     user = get_user_or_404(user_id)
     return {"unread": user_service.unread_count(user)}
 
 
 @router.post("/users/{user_id}/messages/{index}/read")
-def mark_message_read(user_id: str, index: int, data: TokenOnly, authorization: str | None = Header(None)):
-    uid = require_auth(data.token, authorization)
+def mark_message_read(user_id: str, index: int, authorization: str | None = Header(None)):
+    uid = require_auth(authorization)
     assert_token_matches(uid, user_id)
     user = get_user_or_404(user_id)
     user_service.mark_read(user, index)
