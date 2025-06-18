@@ -32,7 +32,10 @@ Page({
     pendingSingles: [],
     pendingDoubles: [],
     userId: '',
-    isAdmin: false
+    isAdmin: false,
+    isLoading: true,
+    isError: false,
+    isEmpty: false
   },
   hideKeyboard,
   onLoad() {
@@ -44,7 +47,7 @@ Page({
     const idx = e.currentTarget.dataset.index;
     this.setData({ tabIndex: idx });
     if (idx == 0) {
-      this.setData({ page: 1, records: [], finished: false });
+      this.setData({ page: 1, records: [], finished: false, isLoading: true, isError: false, isEmpty: false });
       this.fetchRecords();
     } else {
       this.fetchPendings();
@@ -52,7 +55,7 @@ Page({
   },
   switchMode(e) {
     const idx = e.currentTarget.dataset.index;
-    this.setData({ modeIndex: idx, doubles: idx == 1, page: 1, records: [], finished: false });
+    this.setData({ modeIndex: idx, doubles: idx == 1, page: 1, records: [], finished: false, isLoading: true, isError: false, isEmpty: false });
     this.fetchRecords();
   },
   switchPendingMode(e) {
@@ -66,13 +69,16 @@ Page({
     const that = this;
     const limit = 10;
     const offset = (this.data.page - 1) * limit;
+    this.setData({ isLoading: this.data.page === 1, isError: false, isEmpty: false });
     request({
       url: `${BASE_URL}/players/${userId}`,
+      loading: false,
       success(res) {
         const player = res.data || {};
         const path = that.data.doubles ? 'doubles_records' : 'records';
         request({
           url: `${BASE_URL}/players/${userId}/${path}?limit=${limit}&offset=${offset}`,
+          loading: false,
           success(r) {
             const list = r.data || [];
             list.forEach(rec => {
@@ -148,10 +154,15 @@ Page({
               rec.displayFormat = displayFormat(rec.format);
             });
             if (that.data.page === 1) {
-              that.setData({ records: list, finished: list.length < limit });
+              that.setData({
+                records: list,
+                finished: list.length < limit,
+                isLoading: false,
+                isEmpty: list.length === 0
+              });
             } else {
               const start = that.data.records.length;
-              const obj = { finished: list.length < limit };
+              const obj = { finished: list.length < limit, isLoading: false };
               list.forEach((item, i) => {
                 obj[`records[${start + i}]`] = item;
               });
@@ -159,6 +170,9 @@ Page({
             }
           }
         });
+      },
+      fail() {
+        that.setData({ isLoading: false, isError: true });
       }
     });
   },
@@ -174,6 +188,7 @@ Page({
 
     request({
       url: `${BASE_URL}/players/${userId}/pending_matches`,
+      loading: false,
       data: { token },
       success(r) {
         if (r.statusCode >= 300) {
@@ -210,6 +225,7 @@ Page({
 
     request({
       url: `${BASE_URL}/players/${userId}/pending_doubles`,
+      loading: false,
       data: { token },
       success(r) {
         if (r.statusCode >= 300) {
@@ -390,7 +406,7 @@ Page({
     wx.navigateTo({ url: '/pages/addmatch/addmatch' });
   },
   onPullDownRefresh() {
-    this.setData({ page: 1, records: [], finished: false });
+    this.setData({ page: 1, records: [], finished: false, isLoading: true, isError: false, isEmpty: false });
     this.fetchRecords();
     wx.stopPullDownRefresh();
   },

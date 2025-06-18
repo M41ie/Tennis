@@ -8,7 +8,10 @@ Page({
     query: '',
     users: [],
     page: 1,
-    finished: false
+    finished: false,
+    isLoading: true,
+    isError: false,
+    isEmpty: false
   },
   hideKeyboard,
   onLoad(options) {
@@ -21,6 +24,7 @@ Page({
   fetchUsers() {
     const q = this.data.query.trim();
     const that = this;
+    this.setData({ isLoading: this.data.page === 1, isError: false, isEmpty: false });
     let url = `${BASE_URL}/sys/users`;
     const params = [];
     const limit = 50;
@@ -31,6 +35,7 @@ Page({
     if (params.length) url += '?' + params.join('&');
     request({
       url,
+      loading: false,
       success(res) {
         const raw = res.data || [];
         const list = raw.map(u => ({
@@ -41,20 +46,28 @@ Page({
           weighted_games_doubles: formatGames(u.weighted_games_doubles)
         }));
         if (that.data.page === 1) {
-          that.setData({ users: list, finished: list.length < limit });
+          that.setData({
+            users: list,
+            finished: list.length < limit,
+            isLoading: false,
+            isEmpty: list.length === 0
+          });
         } else {
           const start = that.data.users.length;
-          const obj = { finished: list.length < limit };
+          const obj = { finished: list.length < limit, isLoading: false };
           list.forEach((item, i) => {
             obj[`users[${start + i}]`] = item;
           });
           that.setData(obj);
         }
+      },
+      fail() {
+        that.setData({ isLoading: false, isError: true });
       }
     });
   },
   onPullDownRefresh() {
-    this.setData({ page: 1, users: [], finished: false });
+    this.setData({ page: 1, users: [], finished: false, isLoading: true, isError: false, isEmpty: false });
     this.fetchUsers();
     wx.stopPullDownRefresh();
   },

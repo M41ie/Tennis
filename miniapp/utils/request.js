@@ -12,7 +12,8 @@ function request(options = {}, _retry = true) {
   opts.data = opts.data || {};
   opts.header = opts.header || {};
   opts.header['Authorization'] = token ? `Bearer ${token}` : '';
-  wx.showLoading({ title: t.loading, mask: true });
+  const showLoading = opts.loading !== false;
+  if (showLoading) wx.showLoading({ title: t.loading, mask: true });
   return new Promise((resolve, reject) => {
     wx.request({
       ...opts,
@@ -68,7 +69,7 @@ function request(options = {}, _retry = true) {
         reject(err);
       },
       complete(res) {
-        wx.hideLoading();
+        if (showLoading) wx.hideLoading();
         opts.complete && opts.complete(res);
       }
     });
