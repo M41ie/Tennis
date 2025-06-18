@@ -433,6 +433,6 @@ Page({
     });
   },
   editClub() {
-    wx.navigateTo({ url: '/pages/editclub/editclub' });
+    wx.navigateTo({ url: '/pkg_club/editclub/editclub' });
   }
 });
