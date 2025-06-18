@@ -4,7 +4,6 @@ from fastapi import FastAPI, HTTPException, Depends, Header
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, StrictInt
-import statistics
 import datetime
 import json
 import urllib.request
@@ -61,6 +60,7 @@ from .rating import (
     weighted_singles_matches,
     weighted_doubles_matches,
 )
+from .services.stats import _pending_status_for_user, _club_stats
 from .models import Player, Club, Match, DoublesMatch, Appointment, User, players
 
 # runtime state stored in simple module-level dictionaries
@@ -124,116 +124,6 @@ def _exchange_wechat_code(code: str) -> dict:
 # authentication helpers now provided by services.auth
 
 
-def _pending_status_for_user(
-    user_id: str, match: Match | DoublesMatch, club: Club
-) -> dict[str, object]:
-    """Return status information for the given user viewing a pending match."""
-
-    admins = {club.leader_id, *club.admin_ids}
-    is_admin = user_id in admins
-
-    if user_id == match.initiator:
-        role = "submitter"
-    else:
-        if isinstance(match, DoublesMatch):
-            team_a = {match.player_a1.user_id, match.player_a2.user_id}
-            team_b = {match.player_b1.user_id, match.player_b2.user_id}
-
-            if user_id in team_a:
-                role = "teammate"
-            elif user_id in team_b:
-                role = "opponent"
-            elif user_id in admins:
-                role = "admin"
-            else:
-                role = "viewer"
-        else:
-            participants = {match.player_a.user_id, match.player_b.user_id}
-
-            if user_id in participants:
-                role = "opponent"
-            elif user_id in admins:
-                role = "admin"
-            else:
-                role = "viewer"
-
-    confirmed_self = None
-    confirmed_opp = None
-    if isinstance(match, DoublesMatch):
-        if user_id in {match.player_a1.user_id, match.player_a2.user_id}:
-            confirmed_self = match.confirmed_a
-            confirmed_opp = match.confirmed_b
-        elif user_id in {match.player_b1.user_id, match.player_b2.user_id}:
-            confirmed_self = match.confirmed_b
-            confirmed_opp = match.confirmed_a
-    else:
-        if user_id == match.player_a.user_id:
-            confirmed_self = match.confirmed_a
-            confirmed_opp = match.confirmed_b
-        elif user_id == match.player_b.user_id:
-            confirmed_self = match.confirmed_b
-            confirmed_opp = match.confirmed_a
-
-    can_confirm = False
-    can_decline = False
-    status_text = ""
-
-    if role == "submitter":
-        if not (match.confirmed_a and match.confirmed_b):
-            status_text = "您已提交，等待对手确认"
-        else:
-            status_text = "对手已确认，等待管理员审核"
-    elif role == "teammate":
-        if not match.confirmed_b:
-            status_text = "您的队友已确认，等待对手确认"
-        else:
-            status_text = "对手和队友已确认，等待管理员审核"
-    elif role == "opponent":
-        if confirmed_self is False:
-            can_confirm = True
-            can_decline = True
-            status_text = "对手提交了比赛战绩，请确认"
-        else:
-            status_text = "您已确认，等待管理员审核"
-    elif role == "admin":
-        status_text = "双方已确认，请审核"
-    else:
-        if match.confirmed_a and match.confirmed_b:
-            status_text = "等待管理员审核"
-        else:
-            status_text = "待确认"
-
-    if is_admin and match.confirmed_a and match.confirmed_b:
-        role = "admin"
-        status_text = "双方已确认，请审核"
-        can_confirm = False
-        can_decline = False
-
-    return {
-        "display_status_text": status_text,
-        "can_confirm": can_confirm,
-        "can_decline": can_decline,
-        "current_user_role_in_match": role,
-    }
-
-
-def _club_stats(club: Club) -> dict[str, object]:
-    """Aggregate statistics for a club."""
-    singles = [p.singles_rating for p in club.members.values() if p.singles_rating is not None]
-    doubles = [p.doubles_rating for p in club.members.values() if p.doubles_rating is not None]
-    total_singles = sum(len(p.singles_matches) for p in club.members.values()) // 2
-    total_doubles = sum(len(p.doubles_matches) for p in club.members.values()) // 4
-    singles_avg = statistics.mean(singles) if singles else 0
-    doubles_avg = statistics.mean(doubles) if doubles else 0
-    return {
-        "member_count": len(club.members),
-        "singles_rating_range": [min(singles) if singles else 0, max(singles) if singles else 0],
-        "doubles_rating_range": [min(doubles) if doubles else 0, max(doubles) if doubles else 0],
-        "singles_avg_rating": singles_avg,
-        "doubles_avg_rating": doubles_avg,
-        "total_singles_matches": total_singles,
-        "total_doubles_matches": total_doubles,
-    }
 
 
 def _region_match(player_region: str | None, filter_region: str | None) -> bool:

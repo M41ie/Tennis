@@ -1,6 +1,6 @@
 import datetime
 
-from tennis.cli import get_leaderboard
+from tennis.services.stats import get_leaderboard
 from tennis.models import Club, Player
 
 
