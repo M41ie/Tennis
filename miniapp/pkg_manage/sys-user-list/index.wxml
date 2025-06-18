@@ -1,12 +1,22 @@
 <view class="page-container" catchtap="hideKeyboard">
-  <block wx:for="{{users}}" wx:key="id">
-    <profile-card
-      user="{{item}}"
-      placeholder=""
-      editable="{{false}}"
-      bind:cardtap="openUser"
-      data-id="{{item.id}}"
-    />
+  <block wx:if="{{isLoading}}">
+    <block wx:for="{{[1,2,3,4,5]}}" wx:key="index">
+      <view class="profile-skeleton"></view>
+    </block>
   </block>
-  <view wx:if="{{!users.length}}" class="empty">暂无数据</view>
+  <view wx:elif="{{isError}}" class="empty">加载失败</view>
+  <block wx:elif="{{isEmpty}}">
+    <view class="empty">暂无数据</view>
+  </block>
+  <block wx:else>
+    <block wx:for="{{users}}" wx:key="id">
+      <profile-card
+        user="{{item}}"
+        placeholder=""
+        editable="{{false}}"
+        bind:cardtap="openUser"
+        data-id="{{item.id}}"
+      />
+    </block>
+  </block>
 </view>

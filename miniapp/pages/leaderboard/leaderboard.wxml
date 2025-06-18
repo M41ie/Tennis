@@ -18,7 +18,22 @@
 
 
 <!-- Dialogs for level and age filters removed -->
-<view>
+<view wx:if="{{isLoading}}" class="skeleton-list">
+  <block wx:for="{{[1,2,3,4,5]}}" wx:key="index">
+    <view class="player-card skeleton-card">
+      <view class="rank skeleton-box"></view>
+      <view class="avatar skeleton-circle"></view>
+      <view class="info">
+        <view class="name skeleton-box"></view>
+        <view class="meta skeleton-box"></view>
+      </view>
+      <view class="score skeleton-box"></view>
+    </view>
+  </block>
+</view>
+<view wx:elif="{{isError}}" class="empty">加载失败</view>
+<view wx:elif="{{isEmpty}}" class="empty">暂无数据</view>
+<view wx:else>
   <block wx:for="{{players}}" wx:key="user_id">
     <view class="player-card" bindtap="viewPlayer" data-id="{{item.user_id}}" data-cid="{{item.club_id}}">
       <view class="rank">{{index + 1}}</view>

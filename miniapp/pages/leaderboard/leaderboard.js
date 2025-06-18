@@ -24,7 +24,10 @@ Page({
     region: ['-', '-', '-'],
     regionText: '全国',
     page: 1,
-    finished: false
+    finished: false,
+    isLoading: true,
+    isError: false,
+    isEmpty: false
   },
   hideKeyboard,
   onLoad() {
@@ -34,6 +37,7 @@ Page({
     const uid = store.userId;
     const that = this;
     const params = [];
+    this.setData({ isLoading: true, isError: false, isEmpty: false });
     params.push('include_clubs=true');
     if (uid) {
       params.push('user_id=' + uid);
@@ -42,6 +46,7 @@ Page({
     const url = `${BASE_URL}/leaderboard_full?` + params.join('&');
     request({
       url,
+      loading: false,
       success(res) {
         const data = res.data || {};
         const list = data.clubs || [];
@@ -78,7 +83,7 @@ Page({
         });
       },
       fail() {
-        that.setData({ allClubIds: [], joinedClubIds: [] });
+        that.setData({ allClubIds: [], joinedClubIds: [], isLoading: false, isError: true });
       }
     });
   },
@@ -143,6 +148,7 @@ Page({
   fetchList(filter) {
     const clubs = filter.clubs && filter.clubs.length ? filter.clubs : [];
     const that = this;
+    this.setData({ isLoading: this.data.page === 1, isError: false });
     const params = [];
     const limit = 50;
     const offset = (this.data.page - 1) * limit;
@@ -158,6 +164,7 @@ Page({
 
     request({
       url,
+      loading: false,
       success(res) {
         const list = (res.data && res.data.players) || [];
         list.forEach(p => {
@@ -168,15 +175,23 @@ Page({
           if (p.weighted_doubles_matches != null) p.weighted_doubles_matches = p.weighted_doubles_matches.toFixed(2);
         });
         if (that.data.page === 1) {
-          that.setData({ players: list, finished: list.length < limit });
+          that.setData({
+            players: list,
+            finished: list.length < limit,
+            isLoading: false,
+            isEmpty: list.length === 0
+          });
         } else {
           const start = that.data.players.length;
-          const obj = { finished: list.length < limit };
+          const obj = { finished: list.length < limit, isLoading: false };
           list.forEach((item, i) => {
             obj[`players[${start + i}]`] = item;
           });
           that.setData(obj);
         }
+      },
+      fail() {
+        that.setData({ isLoading: false, isError: true });
       }
     });
   },

@@ -13,7 +13,14 @@
     <view class="mode-item {{modeIndex==0?'active':''}}" data-index="0" bindtap="switchMode">单打</view>
     <view class="mode-item {{modeIndex==1?'active':''}}" data-index="1" bindtap="switchMode">双打</view>
   </view>
-  <view>
+  <view wx:if="{{isLoading}}" class="skeleton-list">
+    <block wx:for="{{[1,2,3,4,5]}}" wx:key="index">
+      <view class="record-skeleton"></view>
+    </block>
+  </view>
+  <view wx:elif="{{isError}}" class="empty">加载失败</view>
+  <view wx:elif="{{isEmpty}}" class="empty">暂无数据</view>
+  <view wx:else>
     <block wx:for="{{records}}" wx:key="index">
       <view data-index="{{index}}" bindtap="viewRecord">
         <record-card record="{{item}}" doubles="{{doubles}}" />

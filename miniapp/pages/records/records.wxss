@@ -21,6 +21,9 @@
 .pos{color:green;font-size:24rpx;}
 .neg{color:red;font-size:24rpx;}
 .neutral{color:gray;font-size:24rpx;}
+.record-skeleton{height:140rpx;margin:20rpx;background:#fff;border-radius:12rpx;box-shadow:0 6rpx 12rpx rgba(0,0,0,.05);}
+.skeleton-list{padding-top:10rpx;}
+.empty{text-align:center;color:#999;padding:40rpx 0;}
 .fab{
   position:fixed;
   bottom:80rpx;
