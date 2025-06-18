@@ -4,7 +4,7 @@ from ..services import users as user_service
 from ..services.auth import require_auth, assert_token_matches
 from ..services.helpers import get_user_or_404
 
-from ..storage import load_data, load_users
+from ..storage import get_user, get_player
 from .. import api
 
 router = APIRouter()
@@ -70,13 +70,13 @@ def wechat_login_api(data: WeChatLoginRequest):
     access, refresh, uid, created = user_service.wechat_login(
         data.code, api._exchange_wechat_code
     )
-    api.users.clear()
-    api.users.update(load_users())
-    clubs, players = load_data()
-    api.clubs.clear()
-    api.clubs.update(clubs)
-    api.players.clear()
-    api.players.update(players)
+    # refresh caches for the logged in user
+    user = get_user(uid)
+    if user:
+        api.users[user.user_id] = user
+    player = get_player(uid)
+    if player:
+        api.players[player.user_id] = player
     return {
         "access_token": access,
         "refresh_token": refresh,
