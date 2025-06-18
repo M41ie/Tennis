@@ -167,8 +167,16 @@ Page({
           if (p.weighted_singles_matches != null) p.weighted_singles_matches = p.weighted_singles_matches.toFixed(2);
           if (p.weighted_doubles_matches != null) p.weighted_doubles_matches = p.weighted_doubles_matches.toFixed(2);
         });
-        const players = that.data.page === 1 ? list : that.data.players.concat(list);
-        that.setData({ players, finished: list.length < limit });
+        if (that.data.page === 1) {
+          that.setData({ players: list, finished: list.length < limit });
+        } else {
+          const start = that.data.players.length;
+          const obj = { finished: list.length < limit };
+          list.forEach((item, i) => {
+            obj[`players[${start + i}]`] = item;
+          });
+          that.setData(obj);
+        }
       }
     });
   },
