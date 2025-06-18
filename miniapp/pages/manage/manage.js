@@ -1,5 +1,5 @@
 const BASE_URL = getApp().globalData.BASE_URL;
-const request = require('../../services/api');
+const request = require('../../utils/request');
 const { hideKeyboard } = require('../../utils/hideKeyboard');
 const { zh_CN } = require('../../utils/locales.js');
 const store = require('../../store/store');

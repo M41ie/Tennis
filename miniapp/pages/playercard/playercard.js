@@ -1,5 +1,4 @@
-const BASE_URL = getApp().globalData.BASE_URL;
-const request = require('../../services/api');
+const userService = require('../../services/user');
 const IMAGES = require('../../assets/base64.js');
 const { formatRating } = require('../../utils/format');
 const store = require('../../store/store');
@@ -25,10 +24,7 @@ Page({
     const uid = this.data.viewId || store.userId;
     if (!uid) return;
     const that = this;
-    request({
-      url: `${BASE_URL}/players/${uid}`,
-      success(res) {
-        const raw = res.data || {};
+    userService.getPlayerInfo(uid).then(raw => {
         const singlesCount = raw.weighted_games_singles ?? raw.weighted_singles_matches;
         const doublesCount = raw.weighted_games_doubles ?? raw.weighted_doubles_matches;
         const user = {
@@ -52,9 +48,8 @@ Page({
         that.setData({
           user,
           infoLine1: extra.line1,
-          infoLine2: extra.line2
+          infoLine2: extra.line2,
         });
-      }
     });
   },
   editProfile() {

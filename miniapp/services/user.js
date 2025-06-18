@@ -1,19 +1,19 @@
 const request = require('../utils/request');
 
 function wechatLogin(code) {
-  return request('/wechat_login', { method: 'POST', data: { code } });
+  return request({ url: '/wechat_login', method: 'POST', data: { code } });
 }
 
 function logout() {
-  return request('/logout', { method: 'POST' });
+  return request({ url: '/logout', method: 'POST' });
 }
 
 function getUserInfo(userId) {
-  return request(`/users/${userId}`);
+  return request({ url: `/users/${userId}` });
 }
 
 function getPlayerInfo(userId) {
-  return request(`/players/${userId}`);
+  return request({ url: `/players/${userId}` });
 }
 
 module.exports = {
