@@ -29,3 +29,39 @@ def fetch(conn, query, *args):
     row = cur.execute(query, args).fetchone()
     return row
 
+
+@pytest.fixture(autouse=True)
+def inject_auth_header(monkeypatch):
+    from fastapi.testclient import TestClient
+
+    orig_request = TestClient.request
+
+    def wrapped(self, method, url, *args, **kwargs):
+        headers = kwargs.setdefault("headers", {})
+
+        if "json" in kwargs and isinstance(kwargs["json"], dict):
+            token = kwargs["json"].pop("token", None)
+            if token:
+                headers["Authorization"] = f"Bearer {token}"
+
+        if "params" in kwargs and isinstance(kwargs["params"], dict):
+            token = kwargs["params"].pop("token", None)
+            if token:
+                headers["Authorization"] = f"Bearer {token}"
+
+        if "token=" in url:
+            from urllib.parse import urlsplit, parse_qsl, urlencode, urlunsplit
+
+            parts = urlsplit(url)
+            query = dict(parse_qsl(parts.query))
+            token = query.pop("token", None)
+            if token:
+                headers["Authorization"] = f"Bearer {token}"
+                url = urlunsplit((parts.scheme, parts.netloc, parts.path, urlencode(query), parts.fragment))
+
+        return orig_request(self, method, url, *args, **kwargs)
+
+    monkeypatch.setattr(TestClient, "request", wrapped)
+    yield
+    monkeypatch.setattr(TestClient, "request", orig_request)
+

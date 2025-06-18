@@ -11,9 +11,7 @@ function request(options = {}, _retry = true) {
   opts.method = opts.method || 'GET';
   opts.data = opts.data || {};
   opts.header = opts.header || {};
-  if (token) {
-    opts.header['Authorization'] = `Bearer ${token}`;
-  }
+  opts.header['Authorization'] = token ? `Bearer ${token}` : '';
   wx.showLoading({ title: t.loading, mask: true });
   return new Promise((resolve, reject) => {
     wx.request({

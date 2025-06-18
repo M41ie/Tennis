@@ -89,8 +89,7 @@ protected endpoints:
 Authorization: Bearer TOKEN
 ```
 
-Older clients can still pass a `token` field or query parameter. Creating a club
-or adding a player requires authentication, e.g.:
+Creating a club or adding a player requires authentication, e.g.:
 
 ```bash
 curl -X POST http://localhost:8000/clubs \

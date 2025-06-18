@@ -5,19 +5,17 @@ from . import state
 from .. import storage
 
 
-def require_auth(token: str, authorization: str | None = None, request: Request | None = None) -> str:
-    """Validate token and return associated user id.
+def require_auth(authorization: str | None = None, request: Request | None = None) -> str:
+    """Validate token from the ``Authorization`` header and return the user id."""
 
-    The function first attempts to read a ``Bearer`` token from the
-    ``Authorization`` header. If not provided, it falls back to the passed
-    ``token`` argument for backwards compatibility.
-    """
     header = authorization
     if request is not None and not header:
         header = request.headers.get("Authorization")
 
-    if header and header.startswith("Bearer "):
-        token = header[7:]
+    if not header or not header.startswith("Bearer "):
+        raise HTTPException(401, "Invalid token")
+
+    token = header[7:]
 
     info = storage.get_token(token)
     if not info:

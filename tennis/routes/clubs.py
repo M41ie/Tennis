@@ -19,7 +19,6 @@ class ClubCreate(BaseModel):
     club_id: str | None = None
     name: str
     user_id: str
-    token: str
     logo: str | None = None
     region: str | None = None
     slogan: str | None = None
@@ -28,7 +27,6 @@ class ClubCreate(BaseModel):
 class PlayerCreate(BaseModel):
     user_id: str
     name: str
-    token: str
     age: int | None = None
     gender: str | None = None
     avatar: str | None = None
@@ -40,7 +38,7 @@ class PlayerCreate(BaseModel):
 
 @router.post("/clubs")
 def create_club(data: ClubCreate, authorization: str | None = Header(None)):
-    uid = require_auth(data.token, authorization)
+    uid = require_auth(authorization)
     assert_token_matches(uid, data.user_id)
     cid = data.club_id or api._generate_club_id()
     svc_create_club(
@@ -61,7 +59,7 @@ def create_club(data: ClubCreate, authorization: str | None = Header(None)):
 
 @router.post("/clubs/{club_id}/players")
 def add_player(club_id: str, data: PlayerCreate, authorization: str | None = Header(None)):
-    require_auth(data.token, authorization)
+    require_auth(authorization)
     try:
         svc_add_player(
             club_id,
