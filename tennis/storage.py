@@ -104,6 +104,11 @@ _players_cache: Dict[str, Player] = {}
 _clubs_cache: Dict[str, Club] | None = None
 _users_cache: Dict[str, User] | None = None
 
+# pending objects to refresh after a transactional commit
+_pending_clubs: Dict[str, Club | None] = {}
+_pending_users: Dict[str, User | None] = {}
+_pending_players: Dict[str, Player | None] = {}
+
 
 def _load_cache(key: str):
     if not _redis:
@@ -127,22 +132,42 @@ def _save_cache(key: str, value: object) -> None:
 
 
 def _refresh_after_write() -> None:
-    if _redis:
-        try:
-            keys = ["tennis:data", "tennis:users"]
-            keys += list(_redis.scan_iter("tennis:club:*"))
-            keys += list(_redis.scan_iter("tennis:user:*"))
-            keys += list(_redis.scan_iter("tennis:player:*"))
-            if keys:
-                _redis.delete(*keys)
-        except Exception:
-            pass
-    invalidate_cache()
-    try:
-        load_data()
-        load_users()
-    except Exception:
-        pass
+    """Flush pending objects to the in-memory and Redis caches."""
+    for club_id, club in list(_pending_clubs.items()):
+        if club is None:
+            _clubs_cache.pop(club_id, None)
+            if _redis:
+                try:
+                    _redis.delete(f"tennis:club:{club_id}")
+                except Exception:
+                    pass
+        else:
+            set_club(club)
+    for user_id, user in list(_pending_users.items()):
+        if user is None:
+            if _users_cache is not None:
+                _users_cache.pop(user_id, None)
+            if _redis:
+                try:
+                    _redis.delete(f"tennis:user:{user_id}")
+                except Exception:
+                    pass
+        else:
+            set_user(user)
+    for pid, player in list(_pending_players.items()):
+        if player is None:
+            _players_cache.pop(pid, None)
+            if _redis:
+                try:
+                    _redis.delete(f"tennis:player:{pid}")
+                except Exception:
+                    pass
+        else:
+            set_player(player)
+
+    _pending_clubs.clear()
+    _pending_users.clear()
+    _pending_players.clear()
 
 
 def invalidate_cache() -> None:
@@ -174,12 +199,16 @@ def _connect():
 def transaction() -> Generator[object, None, None]:
     """Context manager yielding a connection with an active transaction."""
     conn = _connect()
+    assert not (_pending_clubs or _pending_users or _pending_players)
     try:
         yield conn
         conn.commit()
         _refresh_after_write()
     except Exception:
         conn.rollback()
+        _pending_clubs.clear()
+        _pending_users.clear()
+        _pending_players.clear()
         raise
     finally:
         conn.close()
@@ -788,6 +817,10 @@ def save_data(clubs: Dict[str, Club]) -> None:
             )
     conn.commit()
     conn.close()
+    for cid, club in clubs.items():
+        _pending_clubs[cid] = club
+        for p in club.members.values():
+            _pending_players[p.user_id] = p
     _refresh_after_write()
 
 
@@ -901,7 +934,10 @@ def create_club(club: Club, conn: sqlite3.Connection | None = None) -> None:
     if close:
         conn.commit()
         conn.close()
-        _refresh_after_write()
+        set_club(club)
+        _pending_clubs.pop(club.club_id, None)
+    else:
+        _pending_clubs[club.club_id] = club
 
 
 def create_user(user: User, conn: sqlite3.Connection | None = None) -> None:
@@ -934,6 +970,10 @@ def create_user(user: User, conn: sqlite3.Connection | None = None) -> None:
     if close:
         conn.commit()
         conn.close()
+        set_user(user)
+        _pending_users.pop(user.user_id, None)
+    else:
+        _pending_users[user.user_id] = user
 
 
 def create_player(club_id: str, player: Player, conn: sqlite3.Connection | None = None) -> None:
@@ -1006,7 +1046,10 @@ def create_player(club_id: str, player: Player, conn: sqlite3.Connection | None 
     if close:
         conn.commit()
         conn.close()
-
+        set_player(player)
+        _pending_players.pop(player.user_id, None)
+    else:
+        _pending_players[player.user_id] = player
 
 def create_match(
     club_id: str,
@@ -1238,14 +1281,17 @@ def update_player_record(player: Player, conn: sqlite3.Connection | None = None)
                 player.handedness,
                 player.backhand,
                 player.region,
-                player.joined.isoformat(),
-                player.user_id,
-            ),
+            player.joined.isoformat(),
+            player.user_id,
+        ),
     )
     if close:
         conn.commit()
         conn.close()
-
+        set_player(player)
+        _pending_players.pop(player.user_id, None)
+    else:
+        _pending_players[player.user_id] = player
 
 def set_player(player: Player) -> None:
     """Cache a single :class:`Player` object."""
@@ -1310,6 +1356,10 @@ def update_user_record(user: User, conn: sqlite3.Connection | None = None) -> No
     if close:
         conn.commit()
         conn.close()
+        set_user(user)
+        _pending_users.pop(user.user_id, None)
+    else:
+        _pending_users[user.user_id] = user
 
 
 def delete_player(user_id: str, conn: sqlite3.Connection | None = None) -> None:
@@ -1323,6 +1373,14 @@ def delete_player(user_id: str, conn: sqlite3.Connection | None = None) -> None:
     if close:
         conn.commit()
         conn.close()
+        _players_cache.pop(user_id, None)
+        if _redis:
+            try:
+                _redis.delete(f"tennis:player:{user_id}")
+            except Exception:
+                pass
+    else:
+        _pending_players[user_id] = None
 
 
 def get_match_record(table: str, match_id: int) -> sqlite3.Row | None:
@@ -1754,7 +1812,9 @@ def save_user(user: User, conn: sqlite3.Connection | None = None) -> None:
     if close:
         conn.commit()
         conn.close()
-
+        set_user(user)
+    else:
+        _pending_users[user.user_id] = user
 
 def save_club(club: Club, conn: sqlite3.Connection | None = None) -> None:
     """Persist a single club's records."""
@@ -1795,7 +1855,13 @@ def save_club(club: Club, conn: sqlite3.Connection | None = None) -> None:
     if close:
         conn.commit()
         conn.close()
-
+        set_club(club)
+        _pending_clubs.pop(club.club_id, None)
+        for player in club.members.values():
+            set_player(player)
+            _pending_players.pop(player.user_id, None)
+    else:
+        _pending_clubs[club.club_id] = club
 
 def delete_club(club_id: str, conn: sqlite3.Connection | None = None) -> None:
     """Remove all records associated with a club."""
@@ -1812,4 +1878,13 @@ def delete_club(club_id: str, conn: sqlite3.Connection | None = None) -> None:
     if close:
         conn.commit()
         conn.close()
+        if _clubs_cache is not None:
+            _clubs_cache.pop(club_id, None)
+        if _redis:
+            try:
+                _redis.delete(f"tennis:club:{club_id}")
+            except Exception:
+                pass
+    else:
+        _pending_clubs[club_id] = None
 
