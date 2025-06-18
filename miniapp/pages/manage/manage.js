@@ -1,10 +1,12 @@
 const BASE_URL = getApp().globalData.BASE_URL;
 const request = require('../../services/api');
 const { hideKeyboard } = require('../../utils/hideKeyboard');
+const { zh_CN } = require('../../utils/locales.js');
 const store = require('../../store/store');
 
 Page({
   data: {
+    t: zh_CN,
     pending: [],
     members: [],
     isAdmin: false,
@@ -361,7 +363,7 @@ Page({
     const uid = this.data.userId;
     const that = this;
     wx.showModal({
-      title: '确认退出',
+      title: this.data.t.confirmQuit,
       content: `确认要退出${that.data.clubName}吗？`,
       confirmColor: '#e03a3a',
       success(res) {
@@ -382,7 +384,7 @@ Page({
     const uid = this.data.userId;
     const that = this;
     wx.showModal({
-      title: '确认卸任',
+      title: this.data.t.confirmResign,
       content: `确认要卸任${that.data.clubName}的管理员吗？`,
       confirmColor: '#e03a3a',
       success(res) {
@@ -415,7 +417,7 @@ Page({
     const uid = this.data.userId;
     const that = this;
     wx.showModal({
-      title: '确认解散',
+      title: this.data.t.confirmDissolve,
       content: `确认解散${that.data.clubName}吗？`,
       confirmColor: '#e03a3a',
       success(res) {
