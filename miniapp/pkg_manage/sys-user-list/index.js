@@ -58,6 +58,6 @@ Page({
   openUser(e) {
     const uid = e.currentTarget.dataset.id;
     if (!uid) return;
-    wx.navigateTo({ url: `/pages/sys-user-detail/index?user_id=${uid}` });
+    wx.navigateTo({ url: `/pkg_manage/sys-user-detail/index?user_id=${uid}` });
   }
 });

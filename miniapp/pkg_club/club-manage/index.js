@@ -20,7 +20,7 @@ Page({
   },
   onSearch() {
     const q = this.data.query.trim();
-    const url = q ? `/pages/joinclub/joinclub?query=${q}` : '/pages/joinclub/joinclub';
+    const url = q ? `/pkg_club/joinclub/joinclub?query=${q}` : '/pkg_club/joinclub/joinclub';
     wx.navigateTo({ url });
   },
   hideKeyboard,
@@ -177,7 +177,7 @@ Page({
   },
   createClub() {
     if (this.data.allowCreate) {
-      wx.navigateTo({ url: '/pages/createclub/createclub' });
+      wx.navigateTo({ url: '/pkg_club/createclub/createclub' });
     } else {
       wx.showToast({ title: '创建俱乐部的数量已达上限', icon: 'none' });
     }

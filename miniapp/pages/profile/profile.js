@@ -111,14 +111,14 @@ Page({
   },
   goMyClub() {
     if (!this.data.loggedIn) return;
-    wx.navigateTo({ url: '/pages/club-manage/index' });
+    wx.navigateTo({ url: '/pkg_club/club-manage/index' });
   },
   goMyNotes() {
     wx.navigateTo({ url: '/pages/mynotes/mynotes' });
   },
   goSysManage() {
     if (!this.data.isSysAdmin) return;
-    wx.navigateTo({ url: '/pages/sysmanage/sysmanage' });
+    wx.navigateTo({ url: '/pkg_manage/sysmanage/sysmanage' });
   },
   logout() {
     const complete = () => {

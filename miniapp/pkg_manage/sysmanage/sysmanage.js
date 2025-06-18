@@ -118,12 +118,12 @@ Page({
   hideKeyboard,
   searchUsers() {
     const q = this.data.userQuery.trim();
-    const url = q ? `/pages/sys-user-list/index?query=${q}` : '/pages/sys-user-list/index';
+    const url = q ? `/pkg_manage/sys-user-list/index?query=${q}` : '/pkg_manage/sys-user-list/index';
     wx.navigateTo({ url });
   },
   searchClubs() {
     const q = this.data.clubQuery.trim();
-    const url = q ? `/pages/sys-club-list/index?query=${q}` : '/pages/sys-club-list/index';
+    const url = q ? `/pkg_manage/sys-club-list/index?query=${q}` : '/pkg_manage/sys-club-list/index';
     wx.navigateTo({ url });
   },
   switchUserDays(e) {
@@ -198,16 +198,16 @@ Page({
     ctx.draw();
   },
   openAllUsers() {
-    wx.navigateTo({ url: '/pages/sys-user-list/index' });
+    wx.navigateTo({ url: '/pkg_manage/sys-user-list/index' });
   },
   openAllClubs() {
-    wx.navigateTo({ url: '/pages/sys-club-list/index' });
+    wx.navigateTo({ url: '/pkg_manage/sys-club-list/index' });
   },
   openPending() {
-    wx.navigateTo({ url: '/pages/sys-pending/index' });
+    wx.navigateTo({ url: '/pkg_manage/sys-pending/index' });
   },
   openAllMatches() {
-    wx.navigateTo({ url: '/pages/sys-match-list/index' });
+    wx.navigateTo({ url: '/pkg_manage/sys-match-list/index' });
   },
   openClub(e) {
     const cid = e.currentTarget.dataset.id;

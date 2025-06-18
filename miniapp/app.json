@@ -3,11 +3,7 @@
     "pages/leaderboard/leaderboard",
     "pages/register/register",
     "pages/editprofile/editprofile",
-    "pages/joinclub/joinclub",
-    "pages/createclub/createclub",
-    "pages/editclub/editclub",
     "pages/login/index",
-    "pages/club-manage/index",
     "pages/records/records",
     "pages/profile/profile",
     "pages/playercard/playercard",
@@ -18,13 +14,29 @@
     "pages/messages/messages",
     "pages/mynotes/mynotes",
     "pages/recorddetail/recorddetail",
-    "pages/appointment/appointment",
-    "pages/sysmanage/sysmanage",
-    "pages/sys-user-list/index",
-    "pages/sys-user-detail/index",
-    "pages/sys-match-list/index",
-    "pages/sys-club-list/index",
-    "pages/sys-pending/index"
+    "pages/appointment/appointment"
+  ],
+  "subPackages": [
+    {
+      "root": "pkg_manage",
+      "pages": [
+        "sysmanage/sysmanage",
+        "sys-user-list/index",
+        "sys-user-detail/index",
+        "sys-match-list/index",
+        "sys-club-list/index",
+        "sys-pending/index"
+      ]
+    },
+    {
+      "root": "pkg_club",
+      "pages": [
+        "createclub/createclub",
+        "editclub/editclub",
+        "joinclub/joinclub",
+        "club-manage/index"
+      ]
+    }
   ],
   "tabBar": {
     "list": [
