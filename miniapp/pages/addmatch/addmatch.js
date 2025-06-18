@@ -128,6 +128,7 @@ Page({
   onScoreB(e) { this.setData({ scoreB: e.detail.value }); },
   hideKeyboard,
   submit() {
+    const that = this;
     const doubles = this.data.modeIndex === 2;
     const incomplete =
       this.data.clubIndex === 0 ||

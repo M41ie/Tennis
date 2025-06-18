@@ -51,6 +51,7 @@ Page({
     });
   },
   submit() {
+    const that = this;
     const cid = store.clubId;
     const userId = store.userId;
     const token = store.token;
@@ -64,7 +65,6 @@ Page({
       wx.showToast({ title: that.data.t.clubNameRule, icon: 'none' });
       return;
     }
-    const that = this;
     request({
       url: `${BASE_URL}/clubs/${cid}`,
       method: 'PATCH',
