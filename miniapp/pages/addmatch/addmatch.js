@@ -23,7 +23,13 @@ Page({
     today: '',
     location: '',
     // Display names for match formats
-    formatOptions: [zh_CN.chooseFormat, '六局', '四局', '抢十', '抢七'],
+    formatOptions: [
+      zh_CN.chooseFormat,
+      zh_CN.format6Game,
+      zh_CN.format4Game,
+      zh_CN.formatTb10,
+      zh_CN.formatTb7
+    ],
     // Codes sent to the backend when submitting a result
     formatCodes: ['', '6_game', '4_game', 'tb10', 'tb7'],
     formatIndex: 0,

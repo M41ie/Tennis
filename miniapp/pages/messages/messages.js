@@ -2,9 +2,11 @@ const BASE_URL = getApp().globalData.BASE_URL;
 const request = require('../../utils/request');
 const store = require('../../store/store');
 const { hideKeyboard } = require('../../utils/hideKeyboard');
+const { t } = require('../../utils/locales');
 
 Page({
   data: {
+    t,
     list: []
   },
   hideKeyboard,

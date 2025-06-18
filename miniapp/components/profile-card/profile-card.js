@@ -1,3 +1,5 @@
+const { t } = require('../../utils/locales');
+
 Component({
   properties: {
     user: {
@@ -20,6 +22,7 @@ Component({
       value: false
     }
   },
+  data: { t },
   methods: {
     edit() {
       this.triggerEvent('edit');

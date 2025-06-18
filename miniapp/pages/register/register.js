@@ -2,9 +2,10 @@ const BASE_URL = getApp().globalData.BASE_URL;
 const request = require('../../utils/request');
 const { hideKeyboard } = require('../../utils/hideKeyboard');
 const store = require('../../store/store');
+const { t } = require('../../utils/locales');
 
 Page({
-  data: {},
+  data: { t },
   hideKeyboard,
   wechatLogin() {
     wx.login({
@@ -24,11 +25,11 @@ Page({
               );
               wx.navigateTo({ url: '/pages/editprofile/editprofile' });
             } else {
-              wx.showToast({ title: '失败', icon: 'none' });
+              wx.showToast({ title: t.failed, icon: 'none' });
             }
           },
           fail() {
-            wx.showToast({ title: '网络错误', icon: 'none' });
+            wx.showToast({ title: t.networkError, icon: 'none' });
           }
         });
       }

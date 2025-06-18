@@ -3,9 +3,9 @@
     <view class="club-name">{{club.name}}</view>
     <view class="club-slogan" wx:if="{{club.slogan}}">{{club.slogan}}</view>
     <view class="club-stats" wx:if="{{club.member_count}}">
-      <text>{{club.region}} · {{t.club}} {{club.member_count}} 人</text>
-      <text>{{t.singles}}：{{club.singles_range}}，平均 {{club.singles_avg}}，共计 {{club.total_singles}} 场</text>
-      <text>{{t.doubles}}：{{club.doubles_range}}，平均 {{club.doubles_avg}}，共计 {{club.total_doubles}} 场</text>
+      <text>{{club.region}} · {{t.club}} {{club.member_count}} {{t.people}}</text>
+      <text>{{t.singles}}：{{club.singles_range}}，{{t.average}} {{club.singles_avg}}，{{t.total}} {{club.total_singles}} {{t.matches}}</text>
+      <text>{{t.doubles}}：{{club.doubles_range}}，{{t.average}} {{club.doubles_avg}}，{{t.total}} {{club.total_doubles}} {{t.matches}}</text>
     </view>
   </view>
   <view class="card-right">

@@ -3,14 +3,16 @@ const { formatRating } = require('../../utils/format');
 const userService = require('../../services/user');
 const store = require('../../store/store');
 const { hideKeyboard } = require('../../utils/hideKeyboard');
+const { t } = require('../../utils/locales');
 
 Page({
   data: {
+    t,
     loggedIn: false,
     user: null,
     guestUser: {
       id: '-',
-      name: '点击登陆/注册',
+      name: `${t.login}/${t.register}`,
       singles_rating: '-',
       doubles_rating: '-',
       weighted_games_singles: '-',
@@ -23,7 +25,7 @@ Page({
     placeholderAvatar: IMAGES.DEFAULT_AVATAR,
     iconClub: IMAGES.ICON_CLUB,
     iconComing: IMAGES.ICON_COMING,
-    myClubBtnText: '我的俱乐部'
+    myClubBtnText: t.manageClub
   },
   hideKeyboard,
   onShow() {
