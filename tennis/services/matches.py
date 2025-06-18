@@ -1,6 +1,6 @@
 # new service functions extracted from api
 import datetime
-from fastapi import HTTPException
+from .exceptions import ServiceError
 from .. import storage
 from ..models import DoublesMatch
 from .auth import require_auth
@@ -11,7 +11,7 @@ def list_pending_doubles_service(club_id: str, authorization: str | None = None)
     uid = require_auth(authorization)
     club = get_club(club_id)
     if not club:
-        raise HTTPException(404, "Club not found")
+        raise ServiceError("Club not found", 404)
     from ..cli import cleanup_pending_matches
 
     cleanup_pending_matches(club)
@@ -180,7 +180,7 @@ def list_pending_matches_service(club_id: str, authorization: str | None = None)
     uid = require_auth(authorization)
     club = get_club(club_id)
     if not club:
-        raise HTTPException(404, "Club not found")
+        raise ServiceError("Club not found", 404)
     from ..cli import cleanup_pending_matches
 
     cleanup_pending_matches(club)
@@ -319,14 +319,14 @@ def list_pending_matches_service(club_id: str, authorization: str | None = None)
 def list_global_pending_doubles_service(user_id: str, authorization: str | None = None):
     uid = require_auth(authorization)
     if uid != user_id:
-        raise HTTPException(401, "Token mismatch")
+        raise ServiceError("Token mismatch", 401)
 
     combined = []
     for club in list_clubs():
         cid = club.club_id
         try:
             entries = list_pending_doubles_service(cid, authorization)
-        except HTTPException:
+        except ServiceError:
             continue
         is_admin = uid == club.leader_id or uid in club.admin_ids
         for e in entries:
@@ -343,14 +343,14 @@ def list_global_pending_doubles_service(user_id: str, authorization: str | None 
 def list_global_pending_matches_service(user_id: str, authorization: str | None = None):
     uid = require_auth(authorization)
     if uid != user_id:
-        raise HTTPException(401, "Token mismatch")
+        raise ServiceError("Token mismatch", 401)
 
     combined = []
     for club in list_clubs():
         cid = club.club_id
         try:
             entries = list_pending_matches_service(cid, authorization)
-        except HTTPException:
+        except ServiceError:
             continue
         is_admin = uid == club.leader_id or uid in club.admin_ids
         for e in entries:

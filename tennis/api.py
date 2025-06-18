@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from fastapi import FastAPI, HTTPException, Depends, Header
+from .services.exceptions import ServiceError
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, StrictInt
@@ -74,6 +75,11 @@ app = FastAPI()
 @app.exception_handler(RequestValidationError)
 def validation_exception_handler(request, exc):
     return JSONResponse(status_code=400, content={"detail": exc.errors()})
+
+
+@app.exception_handler(ServiceError)
+def service_error_handler(request, exc: ServiceError):
+    return JSONResponse(status_code=exc.status_code, content={"detail": exc.message})
 
 # runtime state previously lived in ``services.state``
 from .services.state import TOKEN_TTL

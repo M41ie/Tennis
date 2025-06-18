@@ -1,4 +1,5 @@
 from fastapi import APIRouter, HTTPException, Header
+from ..services.exceptions import ServiceError
 from pydantic import BaseModel
 from ..services.auth import require_auth, assert_token_matches
 from ..services.clubs import create_club as svc_create_club, add_player as svc_add_player
@@ -79,7 +80,7 @@ def add_player(club_id: str, data: PlayerCreate, authorization: str | None = Hea
             backhand=data.backhand,
             region=data.region,
         )
-    except HTTPException as e:
+    except ServiceError as e:
         if e.status_code != 400 or str(e.detail) != "Player already in club":
             raise
     # refresh caches for the updated club and new player
