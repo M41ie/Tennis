@@ -2,6 +2,7 @@ const BASE_URL = getApp().globalData.BASE_URL;
 const request = require('../../utils/request');
 const { hideKeyboard } = require('../../utils/hideKeyboard');
 const { zh_CN } = require('../../utils/locales.js');
+const { formatJoinClubCardData } = require('../../utils/clubFormat');
 const store = require('../../store/store');
 
 Page({
@@ -60,55 +61,9 @@ Page({
           url: `${BASE_URL}/clubs/batch?club_ids=${ids}`,
           success(r) {
             const infos = r.data || [];
-            const result = [];
-            infos.forEach(info => {
-              const stats = info.stats || {};
-              const sr = stats.singles_rating_range || [];
-              const dr = stats.doubles_rating_range || [];
-              const fmt = n => (typeof n === 'number' ? n.toFixed(1) : '--');
-              const singlesAvg =
-                typeof stats.singles_avg_rating === 'number'
-                  ? fmt(stats.singles_avg_rating)
-                  : '--';
-              const doublesAvg =
-                typeof stats.doubles_avg_rating === 'number'
-                  ? fmt(stats.doubles_avg_rating)
-                  : '--';
-              const pending = (info.pending_members || []).some(
-                m => m.user_id === uid
-              );
-              const rejected = info.rejected_members
-                ? info.rejected_members[uid]
-                : '';
-              const join_status = that.data.joined.includes(info.club_id)
-                ? 'joined'
-                : pending
-                ? 'pending'
-                : rejected
-                ? 'rejected'
-                : 'apply';
-              result.push({
-                club_id: info.club_id,
-                name: info.name,
-                slogan: info.slogan || '',
-                region: info.region || '',
-                member_count: stats.member_count,
-                singles_range: sr.length ? `${fmt(sr[0])}-${fmt(sr[1])}` : '--',
-                doubles_range: dr.length ? `${fmt(dr[0])}-${fmt(dr[1])}` : '--',
-                total_singles:
-                  stats.total_singles_matches != null
-                    ? stats.total_singles_matches.toFixed(0)
-                    : '--',
-                total_doubles:
-                  stats.total_doubles_matches != null
-                    ? stats.total_doubles_matches.toFixed(0)
-                    : '--',
-                singles_avg: singlesAvg,
-                doubles_avg: doublesAvg,
-                join_status,
-                rejected_reason: rejected
-              });
-            });
+            const result = infos.map(info =>
+              formatJoinClubCardData(info, uid, that.data.joined)
+            );
             that.setData({ clubs: result });
           }
         });

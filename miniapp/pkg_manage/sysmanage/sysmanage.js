@@ -1,6 +1,7 @@
 const BASE_URL = getApp().globalData.BASE_URL;
 const request = require('../../utils/request');
 const { hideKeyboard } = require('../../utils/hideKeyboard');
+const { formatClubCardData } = require('../../utils/clubFormat');
 
 Page({
   data: {
@@ -58,36 +59,8 @@ Page({
           return;
         }
         const result = list.map(info => {
-          const stats = info.stats || {};
-          const sr = stats.singles_rating_range || [];
-          const dr = stats.doubles_rating_range || [];
-          const fmt = n => (typeof n === 'number' ? n.toFixed(1) : '--');
-          const singlesAvg =
-            typeof stats.singles_avg_rating === 'number'
-              ? fmt(stats.singles_avg_rating)
-              : '--';
-          const doublesAvg =
-            typeof stats.doubles_avg_rating === 'number'
-              ? fmt(stats.doubles_avg_rating)
-              : '--';
           return {
-            club_id: info.club_id,
-            name: info.name,
-            slogan: info.slogan || '',
-            region: info.region || '',
-            member_count: stats.member_count,
-            singles_range: sr.length ? `${fmt(sr[0])}-${fmt(sr[1])}` : '--',
-            doubles_range: dr.length ? `${fmt(dr[0])}-${fmt(dr[1])}` : '--',
-            total_singles:
-              stats.total_singles_matches != null
-                ? stats.total_singles_matches.toFixed(0)
-                : '--',
-            total_doubles:
-              stats.total_doubles_matches != null
-                ? stats.total_doubles_matches.toFixed(0)
-                : '--',
-            singles_avg: singlesAvg,
-            doubles_avg: doublesAvg,
+            ...formatClubCardData(info),
             total_matches: info.total_matches,
             pending_members: info.pending_members
           };
