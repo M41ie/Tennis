@@ -1,5 +1,4 @@
-const BASE_URL = getApp().globalData.BASE_URL;
-const request = require('../../services/api');
+const clubService = require('../../services/club');
 const store = require('../../store/store');
 const { hideKeyboard } = require('../../utils/hideKeyboard');
 
@@ -36,19 +35,13 @@ Page({
   fetchInitial() {
     const uid = store.userId;
     const that = this;
-    const params = [];
+    const params = { include_clubs: true };
     this.setData({ isLoading: true, isError: false, isEmpty: false });
-    params.push('include_clubs=true');
     if (uid) {
-      params.push('user_id=' + uid);
-      params.push('include_joined=true');
+      params.user_id = uid;
+      params.include_joined = true;
     }
-    const url = `${BASE_URL}/leaderboard_full?` + params.join('&');
-    request({
-      url,
-      loading: false,
-      success(res) {
-        const data = res.data || {};
+    clubService.getLeaderboard(params).then(data => {
         const list = data.clubs || [];
         const ids = list.map(c => c.club_id || c.name);
         const map = {};
@@ -81,10 +74,8 @@ Page({
         }, () => {
           that.fetchList(filter);
         });
-      },
-      fail() {
-        that.setData({ allClubIds: [], joinedClubIds: [], isLoading: false, isError: true });
-      }
+    }).catch(() => {
+      that.setData({ allClubIds: [], joinedClubIds: [], isLoading: false, isError: true });
     });
   },
   buildClubOptions(joined) {
@@ -149,24 +140,18 @@ Page({
     const clubs = filter.clubs && filter.clubs.length ? filter.clubs : [];
     const that = this;
     this.setData({ isLoading: this.data.page === 1, isError: false });
-    const params = [];
+    const params = { include_clubs: false, include_joined: false };
     const limit = 50;
     const offset = (this.data.page - 1) * limit;
-    if (filter.gender && filter.gender !== 'All') params.push('gender=' + filter.gender);
-    if (filter.mode === 'Doubles') params.push('doubles=true');
-    if (filter.region) params.push('region=' + encodeURIComponent(filter.region));
-    params.push('include_clubs=false');
-    params.push('include_joined=false');
-    params.push('limit=' + limit);
-    if (offset) params.push('offset=' + offset);
-    if (clubs.length) params.push('club=' + clubs.join(','));
-    const url = `${BASE_URL}/leaderboard_full` + (params.length ? '?' + params.join('&') : '');
+    if (filter.gender && filter.gender !== 'All') params.gender = filter.gender;
+    if (filter.mode === 'Doubles') params.doubles = true;
+    if (filter.region) params.region = filter.region;
+    params.limit = limit;
+    if (offset) params.offset = offset;
+    if (clubs.length) params.club = clubs.join(',');
 
-    request({
-      url,
-      loading: false,
-      success(res) {
-        const list = (res.data && res.data.players) || [];
+    clubService.getLeaderboard(params).then(res => {
+        const list = (res.players) || [];
         list.forEach(p => {
           const key = that.data.filter.mode === 'Doubles' ? 'doubles_rating' : 'singles_rating';
           const rating = p[key];
@@ -189,10 +174,8 @@ Page({
           });
           that.setData(obj);
         }
-      },
-      fail() {
+    }).catch(() => {
         that.setData({ isLoading: false, isError: true });
-      }
     });
   },
   viewPlayer(e) {

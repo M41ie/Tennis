@@ -1,5 +1,5 @@
 const BASE_URL = getApp().globalData.BASE_URL;
-const request = require('../../services/api');
+const request = require('../../utils/request');
 const IMAGES = require('../../assets/base64.js');
 const { formatRating } = require('../../utils/format');
 const store = require('../../store/store');

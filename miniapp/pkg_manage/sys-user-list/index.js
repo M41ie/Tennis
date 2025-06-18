@@ -1,5 +1,5 @@
 const BASE_URL = getApp().globalData.BASE_URL;
-const request = require('../../services/api');
+const request = require('../../utils/request');
 const { formatRating, formatGames } = require('../../utils/format');
 const { hideKeyboard } = require('../../utils/hideKeyboard');
 
