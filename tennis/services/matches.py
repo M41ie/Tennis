@@ -4,14 +4,12 @@ from fastapi import HTTPException
 from .. import storage
 from ..models import DoublesMatch
 from .auth import require_auth
-
-# state proxies will be provided by api during runtime
-from .. import api
+from ..storage import get_club, load_data
 
 
 def list_pending_doubles_service(club_id: str, authorization: str | None = None):
     uid = require_auth(authorization)
-    club = api.clubs.get(club_id)
+    club = get_club(club_id)
     if not club:
         raise HTTPException(404, "Club not found")
     from ..cli import cleanup_pending_matches
@@ -180,7 +178,7 @@ def list_pending_doubles_service(club_id: str, authorization: str | None = None)
 
 def list_pending_matches_service(club_id: str, authorization: str | None = None):
     uid = require_auth(authorization)
-    club = api.clubs.get(club_id)
+    club = get_club(club_id)
     if not club:
         raise HTTPException(404, "Club not found")
     from ..cli import cleanup_pending_matches
@@ -324,7 +322,8 @@ def list_global_pending_doubles_service(user_id: str, authorization: str | None 
         raise HTTPException(401, "Token mismatch")
 
     combined = []
-    for cid, club in api.clubs.items():
+    clubs, _ = load_data()
+    for cid, club in clubs.items():
         try:
             entries = list_pending_doubles_service(cid, authorization)
         except HTTPException:
@@ -347,7 +346,8 @@ def list_global_pending_matches_service(user_id: str, authorization: str | None 
         raise HTTPException(401, "Token mismatch")
 
     combined = []
-    for cid, club in api.clubs.items():
+    clubs, _ = load_data()
+    for cid, club in clubs.items():
         try:
             entries = list_pending_matches_service(cid, authorization)
         except HTTPException:

@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, Header
 from pydantic import BaseModel
 from ..services.auth import require_auth, assert_token_matches
 from ..services.clubs import create_club as svc_create_club, add_player as svc_add_player
-from ..storage import load_data, load_users
+from ..storage import load_data, load_users, get_club, get_player, get_user
 from ..rating import (
     weighted_rating,
     weighted_doubles_rating,
@@ -51,9 +51,12 @@ def create_club(data: ClubCreate, authorization: str | None = Header(None)):
     )
     # refresh API state after DB write
     clubs, players = load_data()
-    api.clubs.set(clubs)
-    api.players.set(players)
-    api.users.set(load_users())
+    api.clubs.clear()
+    api.clubs.update(clubs)
+    api.players.clear()
+    api.players.update(players)
+    api.users.clear()
+    api.users.update(load_users())
     return {"status": "ok", "club_id": cid}
 
 
@@ -77,15 +80,17 @@ def add_player(club_id: str, data: PlayerCreate, authorization: str | None = Hea
         if e.status_code != 400 or str(e.detail) != "Player already in club":
             raise
     clubs, players = load_data()
-    api.clubs.set(clubs)
-    api.players.set(players)
+    api.clubs.clear()
+    api.clubs.update(clubs)
+    api.players.clear()
+    api.players.update(players)
     return {"status": "ok"}
 
 
 @router.get("/clubs/{club_id}/pending_members")
 def list_pending_members(club_id: str):
     """Return pending member applications with player details."""
-    club = api.clubs.get(club_id)
+    club = get_club(club_id)
     if not club:
         raise HTTPException(404, "Club not found")
 
@@ -100,7 +105,7 @@ def list_pending_members(club_id: str):
             "doubles_rating": info.doubles_rating,
         }
 
-        player = api.players.get(uid)
+        player = get_player(uid)
         if player:
             singles = weighted_rating(player, today)
             doubles = weighted_doubles_rating(player, today)
@@ -125,7 +130,7 @@ def list_pending_members(club_id: str):
                 }
             )
         else:
-            user = api.users.get(uid)
+            user = get_user(uid)
             entry.update(
                 {
                     "name": user.name if user else uid,

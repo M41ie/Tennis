@@ -27,7 +27,8 @@ from ..models import players, User
 def create_user(data) -> str:
     users = load_users()
     clubs, players_data = load_data()
-    players.set(players_data)
+    players.clear()
+    players.update(players_data)
     if data.user_id and data.user_id in users:
         raise HTTPException(400, "User exists")
     uid = register_user(

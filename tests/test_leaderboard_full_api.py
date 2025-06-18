@@ -36,7 +36,8 @@ def test_leaderboard_full(tmp_path, monkeypatch):
     )
 
     clubs, players = storage.load_data()
-    tennis.models.players.set(players)
+    tennis.models.players.clear()
+    tennis.models.players.update(players)
     clubs["c1"].members["p1"].singles_rating = 1200
     storage.save_data(clubs)
 

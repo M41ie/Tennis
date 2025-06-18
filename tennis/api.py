@@ -62,71 +62,13 @@ from .rating import (
     weighted_doubles_matches,
 )
 from .models import Player, Club, Match, DoublesMatch, Appointment, User, players
-from collections.abc import MutableMapping
 
-_global_state: dict[str, dict] = {}
-
-
-class _StateProxy(MutableMapping):
-    """Dictionary-like proxy backed by module-level storage."""
-
-    def __init__(self, name: str):
-        self._name = name
-        _global_state.setdefault(name, {})
-
-    def _data(self) -> dict:
-        return _global_state[self._name]
-
-    def set(self, value: dict) -> None:
-        _global_state[self._name] = value
-
-    # MutableMapping interface
-    def __getitem__(self, key):
-        return self._data()[key]
-
-    def __setitem__(self, key, value):
-        self._data()[key] = value
-
-    def __delitem__(self, key):
-        del self._data()[key]
-
-    def __iter__(self):
-        return iter(self._data())
-
-    def __len__(self):
-        return len(self._data())
-
-    # Delegate attribute access to underlying dict
-    def __getattr__(self, name):
-        return getattr(self._data(), name)
-
-    def __repr__(self) -> str:  # pragma: no cover - debug helper
-        return repr(self._data())
-
-
-clubs = _StateProxy("clubs")
-users = _StateProxy("users")
-
-
-def _refresh_state() -> None:
-    """Reload clubs, users, and players from persistent storage for each request."""
-    clubs_data, players_data = load_data()
-    clubs.set(clubs_data)
-    players.set(players_data)
-    users.set(load_users())
-    if "A" in users:
-        users["A"].is_sys_admin = True
+# runtime state stored in simple module-level dictionaries
+clubs: dict[str, Club] = {}
+users: dict[str, User] = {}
 
 
 app = FastAPI()
-
-
-@app.on_event("startup")
-def _load_state() -> None:
-    _refresh_state()
-
-# load initial state so CLI utilities and tests have immediate access
-_refresh_state()
 
 
 @app.exception_handler(RequestValidationError)

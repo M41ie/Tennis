@@ -7,9 +7,9 @@ import tennis.storage as storage
 
 @pytest.fixture(autouse=True)
 def clear_players():
-    players.set({})
+    players.clear()
     yield
-    players.set({})
+    players.clear()
 
 
 @pytest.fixture(autouse=True)
