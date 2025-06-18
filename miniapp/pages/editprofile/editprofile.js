@@ -3,6 +3,7 @@ const request = require('../../utils/request');
 const { hideKeyboard } = require('../../utils/hideKeyboard');
 const { zh_CN } = require('../../utils/locales.js');
 const store = require('../../store/store');
+const { genderText } = require('../../utils/userFormat');
 const {
   showError,
   validateUserName
@@ -35,8 +36,9 @@ Page({
       success(res) {
         const p = res.data || {};
         let gIndex = 0;
-        if (p.gender === 'M' || p.gender === '男' || p.gender === 'Male') gIndex = 1;
-        if (p.gender === 'F' || p.gender === '女' || p.gender === 'Female') gIndex = 2;
+        const gText = genderText(p.gender);
+        if (gText === '男') gIndex = 1;
+        if (gText === '女') gIndex = 2;
         const regionArr = p.region ? p.region.split(/[\s-]+/) : [];
         that.setData({
           name: p.name || '',

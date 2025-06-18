@@ -2,6 +2,7 @@ const BASE_URL = getApp().globalData.BASE_URL;
 const request = require('../../utils/request');
 const { hideKeyboard } = require('../../utils/hideKeyboard');
 const { zh_CN } = require('../../utils/locales.js');
+const { genderText } = require('../../utils/userFormat');
 const store = require('../../store/store');
 
 Page({
@@ -62,12 +63,7 @@ Page({
         const list = res.data || [];
         const result = list.map(p => {
           const gender = p.gender || '';
-          const genderText =
-            gender === 'M' || gender === 'Male' || gender === '男'
-              ? '男'
-              : gender === 'F' || gender === 'Female' || gender === '女'
-              ? '女'
-              : '-';
+          const gText = genderText(gender) || '-';
           return {
             ...p,
             singles_rating:
@@ -83,7 +79,7 @@ Page({
                 ? Number(p.weighted_games_doubles).toFixed(2)
                 : '--',
             gender,
-            genderText,
+            genderText: gText,
             id: p.user_id
           };
         });
@@ -197,13 +193,8 @@ Page({
             const list = Object.values(map).map(p => {
               const joined = p.joined ? new Date(p.joined).getTime() : now;
               const days = Math.floor((now - joined) / (1000 * 60 * 60 * 24));
-              const genderText =
-                p.gender === 'M'
-                  ? '男'
-                  : p.gender === 'F'
-                  ? '女'
-                  : '-';
-              p.genderText = genderText;
+              const gText = genderText(p.gender) || '-';
+              p.genderText = gText;
               p.daysText = `已加入${days}天`;
               p.days = days;
               const role =
@@ -215,7 +206,7 @@ Page({
               p.role = role;
               p.roleText =
                 role === 'leader' ? '负责人' : role === 'admin' ? '管理员' : '成员';
-              p.genderRoleText = `${genderText} · ${p.roleText}`;
+              p.genderRoleText = `${gText} · ${p.roleText}`;
               const rs =
                 typeof p.ratingSinglesNum === 'number' ? p.ratingSinglesNum : 0;
               const rd =

@@ -2,6 +2,7 @@ const BASE_URL = getApp().globalData.BASE_URL;
 const request = require('../../utils/request');
 const { hideKeyboard } = require('../../utils/hideKeyboard');
 const { zh_CN } = require('../../utils/locales.js');
+const { formatClubCardData } = require('../../utils/clubFormat');
 const store = require('../../store/store');
 
 Page({
@@ -57,41 +58,7 @@ Page({
           url: `${BASE_URL}/clubs/batch?club_ids=${idsParam}`,
           success(r) {
             const infos = r.data || [];
-            const list = [];
-            infos.forEach(info => {
-              const stats = info.stats || {};
-              const sr = stats.singles_rating_range || [];
-              const dr = stats.doubles_rating_range || [];
-              const fmt = n => (typeof n === 'number' ? n.toFixed(1) : '--');
-              const singlesAvg =
-                typeof stats.singles_avg_rating === 'number'
-                  ? fmt(stats.singles_avg_rating)
-                  : '--';
-              const doublesAvg =
-                typeof stats.doubles_avg_rating === 'number'
-                  ? fmt(stats.doubles_avg_rating)
-                  : '--';
-              let role = 'member';
-              if (info.leader_id === uid) role = 'leader';
-              else if (info.admin_ids && info.admin_ids.includes(uid)) role = 'admin';
-              list.push({
-                club_id: info.club_id,
-                name: info.name,
-                slogan: info.slogan || '',
-                region: info.region || '',
-                role,
-                roleText: role === 'leader' ? '负责人' : role === 'admin' ? '管理员' : '成员',
-                member_count: stats.member_count,
-                singles_range: sr.length ? `${fmt(sr[0])}-${fmt(sr[1])}` : '--',
-                doubles_range: dr.length ? `${fmt(dr[0])}-${fmt(dr[1])}` : '--',
-                total_singles: stats.total_singles_matches != null ?
-                  stats.total_singles_matches.toFixed(0) : '--',
-                total_doubles: stats.total_doubles_matches != null ?
-                  stats.total_doubles_matches.toFixed(0) : '--',
-                singles_avg: singlesAvg,
-                doubles_avg: doublesAvg
-              });
-            });
+            const list = infos.map(info => formatClubCardData(info, uid));
             that.setData({ myClubs: list });
           }
         });
