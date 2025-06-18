@@ -129,7 +129,12 @@ def _save_cache(key: str, value: object) -> None:
 def _refresh_after_write() -> None:
     if _redis:
         try:
-            _redis.delete("tennis:data", "tennis:users")
+            keys = ["tennis:data", "tennis:users"]
+            keys += list(_redis.scan_iter("tennis:club:*"))
+            keys += list(_redis.scan_iter("tennis:user:*"))
+            keys += list(_redis.scan_iter("tennis:player:*"))
+            if keys:
+                _redis.delete(*keys)
         except Exception:
             pass
     invalidate_cache()
@@ -1177,6 +1182,25 @@ def get_player_record(user_id: str) -> Player | None:
     return p
 
 
+def get_player(user_id: str) -> Player | None:
+    """Return a single :class:`Player` by id using caches when possible."""
+    global _players_cache, _db_file
+    if _players_cache and _db_file == DATABASE_URL:
+        player = _players_cache.get(user_id)
+        if player:
+            return player
+    if _redis:
+        cached = _load_cache(f"tennis:player:{user_id}")
+        if cached:
+            _players_cache[user_id] = cached
+            _db_file = DATABASE_URL
+            return cached
+    player = get_player_record(user_id)
+    if player:
+        set_player(player)
+    return player
+
+
 def update_player_record(player: Player, conn: sqlite3.Connection | None = None) -> None:
     """Update a player's information."""
     close = conn is None
@@ -1221,6 +1245,34 @@ def update_player_record(player: Player, conn: sqlite3.Connection | None = None)
     if close:
         conn.commit()
         conn.close()
+
+
+def set_player(player: Player) -> None:
+    """Cache a single :class:`Player` object."""
+    global _db_file
+    _players_cache[player.user_id] = player
+    _db_file = DATABASE_URL
+    _save_cache(f"tennis:player:{player.user_id}", player)
+
+
+def set_user(user: User) -> None:
+    """Cache a single :class:`User` object."""
+    global _users_cache, _db_file
+    if _users_cache is None:
+        _users_cache = {}
+    _users_cache[user.user_id] = user
+    _db_file = DATABASE_URL
+    _save_cache(f"tennis:user:{user.user_id}", user)
+
+
+def set_club(club: Club) -> None:
+    """Cache a single :class:`Club` object."""
+    global _clubs_cache, _db_file
+    if _clubs_cache is None:
+        _clubs_cache = {}
+    _clubs_cache[club.club_id] = club
+    _db_file = DATABASE_URL
+    _save_cache(f"tennis:club:{club.club_id}", club)
 
 def update_user_record(user: User, conn: sqlite3.Connection | None = None) -> None:
     """Update fields of a :class:`User` record."""
@@ -1546,6 +1598,20 @@ def delete_refresh_token(user_id: str) -> None:
 
 def get_user(user_id: str) -> User | None:
     """Return a single :class:`User` by id or ``None`` if not found."""
+    global _users_cache, _db_file
+    if _users_cache is not None and _db_file == DATABASE_URL:
+        user = _users_cache.get(user_id)
+        if user:
+            return user
+    if _redis:
+        cached = _load_cache(f"tennis:user:{user_id}")
+        if cached:
+            if _users_cache is None:
+                _users_cache = {}
+            _users_cache[user_id] = cached
+            _db_file = DATABASE_URL
+            return cached
+
     conn = _connect()
     cur = conn.cursor()
     row = cur.execute(
@@ -1579,13 +1645,32 @@ def get_user(user_id: str) -> User | None:
             )
         )
     conn.close()
+
+    set_user(u)
     return u
 
 
 def get_club(club_id: str) -> Club | None:
     """Return a single :class:`Club` by id or ``None`` if not found."""
+    global _clubs_cache, _db_file
+    if _clubs_cache is not None and _db_file == DATABASE_URL:
+        club = _clubs_cache.get(club_id)
+        if club:
+            return club
+    if _redis:
+        cached = _load_cache(f"tennis:club:{club_id}")
+        if cached:
+            if _clubs_cache is None:
+                _clubs_cache = {}
+            _clubs_cache[club_id] = cached
+            _db_file = DATABASE_URL
+            return cached
+
     clubs, _ = load_data()
-    return clubs.get(club_id)
+    club = clubs.get(club_id)
+    if club:
+        set_club(club)
+    return club
 
 
 def list_user_messages(user_id: str) -> list[tuple[int, Message]]:
