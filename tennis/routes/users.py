@@ -3,7 +3,8 @@ from pydantic import BaseModel
 from ..services import users as user_service
 from ..services.auth import require_auth, assert_token_matches
 from ..services.helpers import get_user_or_404
-from ..storage import load_users, load_data
+
+from ..storage import load_data, load_users
 from .. import api
 
 router = APIRouter()
@@ -69,11 +70,13 @@ def wechat_login_api(data: WeChatLoginRequest):
     access, refresh, uid, created = user_service.wechat_login(
         data.code, api._exchange_wechat_code
     )
-    # new users may have been created during login; refresh api state
-    api.users.set(load_users())
+    api.users.clear()
+    api.users.update(load_users())
     clubs, players = load_data()
-    api.clubs.set(clubs)
-    api.players.set(players)
+    api.clubs.clear()
+    api.clubs.update(clubs)
+    api.players.clear()
+    api.players.update(players)
     return {
         "access_token": access,
         "refresh_token": refresh,

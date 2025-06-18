@@ -66,7 +66,8 @@ def create_club(
     """Create a new club and persist it to the database."""
     users = load_users()
     clubs, players_data = load_data()
-    players.set(players_data)
+    players.clear();
+    players.update(players_data)
     try:
         cli_create_club(users, clubs, user_id, club_id, name, logo, region, slogan)
     except ValueError as e:
@@ -82,7 +83,8 @@ def create_club(
 def add_player(club_id: str, user_id: str, name: str, **kwargs):
     """Add a player to a club and persist the change."""
     clubs, players_data = load_data()
-    players.set(players_data)
+    players.clear();
+    players.update(players_data)
     try:
         cli_add_player(clubs, club_id, user_id, name, **kwargs)
     except ValueError as e:
@@ -97,7 +99,8 @@ def add_player(club_id: str, user_id: str, name: str, **kwargs):
 def request_join_club(club_id: str, user_id: str, **kwargs) -> None:
     """Handle a join request and persist affected records."""
     clubs, players_data = load_data()
-    players.set(players_data)
+    players.clear();
+    players.update(players_data)
     users = load_users()
     try:
         cli_request_join(clubs, users, club_id, user_id, **kwargs)
@@ -115,7 +118,8 @@ def request_join_club(club_id: str, user_id: str, **kwargs) -> None:
 def approve_member_request(club_id: str, approver_id: str, user_id: str, rating: float, make_admin: bool = False) -> None:
     """Approve membership and persist changes."""
     clubs, players_data = load_data()
-    players.set(players_data)
+    players.clear();
+    players.update(players_data)
     users = load_users()
     try:
         cli_approve_member(clubs, users, club_id, approver_id, user_id, rating, make_admin=make_admin)
@@ -135,7 +139,8 @@ def approve_member_request(club_id: str, approver_id: str, user_id: str, rating:
 def dissolve_existing_club(club_id: str, user_id: str) -> None:
     """Dissolve a club and update affected users."""
     clubs, players_data = load_data()
-    players.set(players_data)
+    players.clear();
+    players.update(players_data)
     users = load_users()
     club = clubs.get(club_id)
     if not club:
@@ -156,7 +161,8 @@ def dissolve_existing_club(club_id: str, user_id: str) -> None:
 def approve_pending_match(club_id: str, index: int, approver: str) -> None:
     """Approve a pending singles match and persist the club and users."""
     clubs, players_data = load_data()
-    players.set(players_data)
+    players.clear();
+    players.update(players_data)
     users = load_users()
     club = clubs.get(club_id)
     if not club:
@@ -190,7 +196,8 @@ def approve_pending_match(club_id: str, index: int, approver: str) -> None:
 def reject_join_request(club_id: str, approver_id: str, user_id: str, reason: str) -> None:
     """Reject a join request and persist club and user records."""
     clubs, players_data = load_data()
-    players.set(players_data)
+    players.clear();
+    players.update(players_data)
     users = load_users()
     try:
         cli_reject_application(clubs, users, club_id, approver_id, user_id, reason)
@@ -207,7 +214,8 @@ def reject_join_request(club_id: str, approver_id: str, user_id: str, reason: st
 def clear_member_rejection(club_id: str, user_id: str) -> None:
     """Clear a stored rejection reason."""
     clubs, players_data = load_data()
-    players.set(players_data)
+    players.clear();
+    players.update(players_data)
     try:
         cli_clear_rejection(clubs, club_id, user_id)
     except ValueError as e:
@@ -238,7 +246,8 @@ def update_club_info(club_id: str, **fields) -> None:
 def update_global_player(user_id: str, **fields) -> None:
     """Update player information without club context."""
     clubs, players_data = load_data()
-    players.set(players_data)
+    players.clear();
+    players.update(players_data)
     users = load_users()
     player = players.get(user_id)
     if not player:
@@ -277,7 +286,8 @@ def update_global_player(user_id: str, **fields) -> None:
 def update_player_profile(club_id: str, user_id: str, **fields) -> None:
     """Update a club member's profile."""
     clubs, players_data = load_data()
-    players.set(players_data)
+    players.clear();
+    players.update(players_data)
     users = load_users()
     if fields.get("name") is not None:
         new_name = fields["name"]
@@ -303,7 +313,8 @@ def update_player_profile(club_id: str, user_id: str, **fields) -> None:
 def remove_club_member(club_id: str, remover_id: str, user_id: str, ban: bool = False) -> None:
     """Remove a member from a club and update records."""
     clubs, players_data = load_data()
-    players.set(players_data)
+    players.clear();
+    players.update(players_data)
     users = load_users()
     try:
         cli_remove_member(clubs, users, club_id, remover_id, user_id, ban=ban)
@@ -320,7 +331,8 @@ def remove_club_member(club_id: str, remover_id: str, user_id: str, ban: bool = 
 def update_member_role(club_id: str, action: str, actor_id: str, target_id: str) -> None:
     """Perform a role-related action and persist changes."""
     clubs, players_data = load_data()
-    players.set(players_data)
+    players.clear();
+    players.update(players_data)
     users = load_users()
     try:
         if action == "toggle_admin":
@@ -358,7 +370,8 @@ def submit_pending_match(
 ) -> None:
     """Create a pending singles match."""
     clubs, players_data = load_data()
-    players.set(players_data)
+    players.clear();
+    players.update(players_data)
     users = load_users()
     try:
         cli_submit_match(
@@ -388,7 +401,8 @@ def submit_pending_match(
 def confirm_pending_match(club_id: str, index: int, user_id: str) -> None:
     """Confirm a pending singles match."""
     clubs, players_data = load_data()
-    players.set(players_data)
+    players.clear();
+    players.update(players_data)
     users = load_users()
     try:
         cli_confirm_match(clubs, club_id, index, user_id, users)
@@ -406,7 +420,8 @@ def confirm_pending_match(club_id: str, index: int, user_id: str) -> None:
 def reject_pending_match(club_id: str, index: int, user_id: str) -> None:
     """Reject a pending singles match."""
     clubs, players_data = load_data()
-    players.set(players_data)
+    players.clear();
+    players.update(players_data)
     users = load_users()
     try:
         cli_reject_match(clubs, club_id, index, user_id, users)
@@ -425,7 +440,8 @@ def reject_pending_match(club_id: str, index: int, user_id: str) -> None:
 def veto_pending_match(club_id: str, index: int, approver: str) -> None:
     """Veto a pending singles match."""
     clubs, players_data = load_data()
-    players.set(players_data)
+    players.clear();
+    players.update(players_data)
     users = load_users()
     try:
         cli_veto_match(clubs, club_id, index, approver, users)
@@ -457,7 +473,8 @@ def submit_pending_doubles(
 ) -> None:
     """Create a pending doubles match."""
     clubs, players_data = load_data()
-    players.set(players_data)
+    players.clear();
+    players.update(players_data)
     users = load_users()
     try:
         cli_submit_doubles(
@@ -489,7 +506,8 @@ def submit_pending_doubles(
 def confirm_pending_doubles(club_id: str, index: int, user_id: str) -> None:
     """Confirm a pending doubles match."""
     clubs, players_data = load_data()
-    players.set(players_data)
+    players.clear();
+    players.update(players_data)
     users = load_users()
     try:
         cli_confirm_doubles(clubs, club_id, index, user_id, users)
@@ -507,7 +525,8 @@ def confirm_pending_doubles(club_id: str, index: int, user_id: str) -> None:
 def reject_pending_doubles(club_id: str, index: int, user_id: str) -> None:
     """Reject a pending doubles match."""
     clubs, players_data = load_data()
-    players.set(players_data)
+    players.clear();
+    players.update(players_data)
     users = load_users()
     try:
         cli_reject_doubles(clubs, club_id, index, user_id, users)
@@ -526,7 +545,8 @@ def reject_pending_doubles(club_id: str, index: int, user_id: str) -> None:
 def veto_pending_doubles(club_id: str, index: int, approver: str) -> None:
     """Veto a pending doubles match."""
     clubs, players_data = load_data()
-    players.set(players_data)
+    players.clear();
+    players.update(players_data)
     users = load_users()
     try:
         cli_veto_doubles(clubs, club_id, index, approver, users)
@@ -580,7 +600,8 @@ def update_appointment_signups(club_id: str, index: int, *, add: str | None = No
 def pre_rate_member(club_id: str, rater_id: str, target_id: str, rating: float) -> None:
     """Record a pre-rating and persist the player."""
     clubs, players_data = load_data()
-    players.set(players_data)
+    players.clear();
+    players.update(players_data)
     try:
         cli_pre_rate(clubs, club_id, rater_id, target_id, rating)
     except ValueError as e:
@@ -604,7 +625,8 @@ def record_match_result(
 ) -> None:
     """Record a finished singles match and persist affected players."""
     clubs, players_data = load_data()
-    players.set(players_data)
+    players.clear();
+    players.update(players_data)
     try:
         cli_record_match(
             clubs,
@@ -632,7 +654,8 @@ def record_match_result(
 def sys_set_leader(club_id: str, user_id: str) -> None:
     """System admin sets club leader and persist changes."""
     clubs, players_data = load_data()
-    players.set(players_data)
+    players.clear();
+    players.update(players_data)
     users = load_users()
     try:
         cli_sys_set_leader(clubs, club_id, user_id)

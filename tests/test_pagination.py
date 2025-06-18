@@ -51,7 +51,8 @@ def test_leaderboard_pagination(tmp_path, monkeypatch):
         t = client.post("/login", json={"user_id": uid, "password": "pw"}).json()["token"]
         client.post(f"/clubs/c1/players", json={"user_id": uid, "name": uid.upper(), "token": t})
         clubs, players = storage.load_data()
-        tennis.models.players.set(players)
+        tennis.models.players.clear()
+        tennis.models.players.update(players)
         clubs["c1"].members[uid].singles_rating = r
         storage.save_data(clubs)
     resp = client.get("/leaderboard_full?club=c1&limit=1&offset=1")

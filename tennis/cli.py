@@ -1413,7 +1413,8 @@ def main():
 
     args = parser.parse_args()
     clubs, players_data = load_data()
-    players.set(players_data)
+    players.clear()
+    players.update(players_data)
     users = load_users()
 
     if args.cmd == 'create_club':

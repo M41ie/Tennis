@@ -1104,7 +1104,8 @@ def test_doubles_leaderboard_api(tmp_path, monkeypatch):
 
     # adjust doubles ratings for predictable ordering
     clubs, players = storage.load_data()
-    tennis.models.players.set(players)
+    tennis.models.players.clear()
+    tennis.models.players.update(players)
     clubs["c1"].members["p1"].doubles_rating = 1200
     clubs["c1"].members["p2"].doubles_rating = 1100
     clubs["c1"].members["p3"].doubles_rating = 1300
@@ -1192,7 +1193,8 @@ def test_list_players_filters(tmp_path, monkeypatch):
     )
 
     clubs, players = storage.load_data()
-    tennis.models.players.set(players)
+    tennis.models.players.clear()
+    tennis.models.players.update(players)
     clubs["c1"].members["p1"].singles_rating = 1200
     clubs["c1"].members["p2"].singles_rating = 1100
     clubs["c1"].members["p3"].singles_rating = 1300
@@ -1255,7 +1257,8 @@ def test_list_all_players_multi_club(tmp_path, monkeypatch):
     )
 
     clubs, players = storage.load_data()
-    tennis.models.players.set(players)
+    tennis.models.players.clear()
+    tennis.models.players.update(players)
     clubs["c1"].members["p1"].singles_rating = 1200
     clubs["c2"].members["p2"].singles_rating = 1100
     clubs["c1"].members["p3"].singles_rating = 1300
@@ -1769,19 +1772,22 @@ def test_sys_matches_and_doubles(tmp_path, monkeypatch):
     api = importlib.reload(importlib.import_module("tennis.api"))
     cli = importlib.import_module("tennis.cli")
 
-    cli.register_user(api.users, "admin", "A", "pw", allow_create=True)
-    for uid in ("p1", "p2", "p3", "p4"):
-        cli.register_user(api.users, uid, uid.upper(), "pw")
+    users: dict[str, tennis.models.User] = {}
+    clubs: dict[str, tennis.models.Club] = {}
 
-    cli.create_club(api.users, api.clubs, "admin", "c1", "C1", None, None)
+    cli.register_user(users, "admin", "A", "pw", allow_create=True)
     for uid in ("p1", "p2", "p3", "p4"):
-        cli.add_player(api.clubs, "c1", uid, uid.upper())
+        cli.register_user(users, uid, uid.upper(), "pw")
 
-    storage.save_users(api.users)
-    storage.save_data(api.clubs)
+    cli.create_club(users, clubs, "admin", "c1", "C1", None, None)
+    for uid in ("p1", "p2", "p3", "p4"):
+        cli.add_player(clubs, "c1", uid, uid.upper())
+
+    storage.save_users(users)
+    storage.save_data(clubs)
 
     cli.record_match(
-        api.clubs,
+        clubs,
         "c1",
         "p1",
         "p2",
@@ -1791,7 +1797,7 @@ def test_sys_matches_and_doubles(tmp_path, monkeypatch):
         1.0,
     )
     cli.record_doubles(
-        api.clubs,
+        clubs,
         "c1",
         "p1",
         "p2",
@@ -1802,7 +1808,7 @@ def test_sys_matches_and_doubles(tmp_path, monkeypatch):
         datetime.date(2023, 1, 2),
         1.0,
     )
-    storage.save_data(api.clubs)
+    storage.save_data(clubs)
 
     client = TestClient(api.app)
     resp = client.get("/sys/matches")
