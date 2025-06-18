@@ -19,14 +19,14 @@
   </view>
   <view class="stats">
     <view class="col">
-      <view class="title">单打</view>
-      <view class="rating">评分: {{user.singles_rating}}</view>
-      <view class="games">场次: {{user.weighted_games_singles}}</view>
+      <view class="title">{{t.singles}}</view>
+      <view class="rating">{{t.rating}}: {{user.singles_rating}}</view>
+      <view class="games">{{t.games}}: {{user.weighted_games_singles}}</view>
     </view>
     <view class="col">
-      <view class="title">双打</view>
-      <view class="rating">评分: {{user.doubles_rating}}</view>
-      <view class="games">场次: {{user.weighted_games_doubles}}</view>
+      <view class="title">{{t.doubles}}</view>
+      <view class="rating">{{t.rating}}: {{user.doubles_rating}}</view>
+      <view class="games">{{t.games}}: {{user.weighted_games_doubles}}</view>
     </view>
   </view>
   <view wx:if="{{editable}}" class="edit" bindtap="edit">✏️</view>

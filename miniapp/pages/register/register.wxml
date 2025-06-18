@@ -1,3 +1,3 @@
 <view class="weui-cells weui-cells_form" catchtap="hideKeyboard">
 </view>
-<button class="weui-btn weui-btn_primary" bindtap="wechatLogin">微信登录</button>
+<button class="weui-btn weui-btn_primary" bindtap="wechatLogin">{{t.wechatLogin}}</button>

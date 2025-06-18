@@ -1,9 +1,10 @@
 const { hideKeyboard } = require('../../utils/hideKeyboard');
 const userService = require('../../services/user');
 const store = require('../../store/store');
+const { t } = require('../../utils/locales');
 
 Page({
-  data: {},
+  data: { t },
   hideKeyboard,
   wechatLogin() {
     wx.login({
@@ -16,7 +17,7 @@ Page({
               store.setAuth(resp.access_token, resp.user_id, resp.refresh_token);
               wx.navigateBack();
             } else {
-              wx.showToast({ title: '登录失败', icon: 'none' });
+              wx.showToast({ title: t.loginFailed, icon: 'none' });
             }
           })
           .catch(() => {});

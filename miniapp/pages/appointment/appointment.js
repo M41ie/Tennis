@@ -1,9 +1,11 @@
 const clubService = require('../../services/club');
 const { hideKeyboard } = require('../../utils/hideKeyboard');
 const store = require('../../store/store');
+const { t } = require('../../utils/locales');
 
 Page({
   data: {
+    t,
     appointments: [],
     date: '',
     location: ''

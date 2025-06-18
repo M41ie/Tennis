@@ -1,3 +1,3 @@
 <view class="detail" catchtap="hideKeyboard">
-  <button class="weui-btn weui-btn_disabled" bindtap="noAccess" disabled>记录对战笔记（Coming Soon）</button>
+  <button class="weui-btn weui-btn_disabled" bindtap="noAccess" disabled>{{t.comingSoon}}</button>
 </view>

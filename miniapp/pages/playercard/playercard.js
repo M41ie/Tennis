@@ -4,9 +4,11 @@ const { formatRating } = require('../../utils/format');
 const store = require('../../store/store');
 const { hideKeyboard } = require('../../utils/hideKeyboard');
 const { formatExtraLines } = require('../../utils/userFormat');
+const { t } = require('../../utils/locales');
 
 Page({
   data: {
+    t,
     user: null,
     placeholderAvatar: IMAGES.DEFAULT_AVATAR,
     infoLine1: '',
@@ -57,7 +59,7 @@ Page({
   },
   onShareAppMessage() {
     return {
-      title: `${this.data.user.name} 球员卡`,
+      title: `${this.data.user.name} ${t.playerCard}`,
       path: '/pages/playercard/playercard'
     };
   }

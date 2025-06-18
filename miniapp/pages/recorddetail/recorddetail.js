@@ -9,6 +9,7 @@ const FORMAT_DISPLAY = {
   '抢7': '抢七'
 };
 const { hideKeyboard } = require('../../utils/hideKeyboard');
+const { t } = require('../../utils/locales');
 
 function displayFormat(fmt) {
   return FORMAT_DISPLAY[fmt] || fmt;
@@ -16,6 +17,7 @@ function displayFormat(fmt) {
 
 Page({
   data: {
+    t,
     record: null
   },
   hideKeyboard,
@@ -46,6 +48,6 @@ Page({
     }
   },
   noAccess() {
-    wx.showToast({ title: '暂无权限', icon: 'none' });
+    wx.showToast({ title: t.noAccess, icon: 'none' });
   }
 });
