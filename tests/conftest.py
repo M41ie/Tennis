@@ -1,15 +1,17 @@
 import importlib
 import pytest
+import importlib
 import testing.postgresql
 import fakeredis
-from tennis.models import players
 import tennis.storage as storage
 
 @pytest.fixture(autouse=True)
-def clear_players():
-    players.clear()
+def reset_cache():
+    importlib.reload(importlib.import_module("tennis.models"))
+    importlib.reload(storage)
+    storage.invalidate_cache()
     yield
-    players.clear()
+    storage.invalidate_cache()
 
 
 @pytest.fixture(autouse=True)

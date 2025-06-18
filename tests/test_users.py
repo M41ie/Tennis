@@ -6,7 +6,7 @@ from tennis.cli import (
     request_join,
     approve_member,
 )
-from tennis.models import MAX_CREATED_CLUBS, MAX_JOINED_CLUBS, Player, players
+from tennis.models import MAX_CREATED_CLUBS, MAX_JOINED_CLUBS
 
 
 def test_auto_generated_user_ids_basic():
@@ -122,8 +122,8 @@ def test_register_user_name_duplicate():
 
 def test_register_user_conflict_with_player():
     users = {}
-    players.clear()
-    players["p1"] = Player("p1", "Player")
+    register_user(users, "p1", "Player", "pw")
+    users.pop("p1")
     with pytest.raises(ValueError):
         register_user(users, "u1", "Player", "pw")
 
