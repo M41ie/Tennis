@@ -7,7 +7,7 @@ from ..services.clubs import (
     add_player as svc_add_player,
     get_clubs_batch as svc_get_clubs_batch,
 )
-from ..storage import get_club, get_player, get_user
+from ..storage import get_club, get_player, get_user, list_clubs
 from ..rating import (
     weighted_rating,
     weighted_doubles_rating,
@@ -231,4 +231,35 @@ def get_clubs_batch(club_ids: str):
             }
         )
 
+    return result
+
+
+@router.get("/clubs/search")
+def search_clubs(query: str | None = None, limit: int | None = None, offset: int = 0):
+    """Return detailed club information filtered by an optional query."""
+    q = query.lower() if query else None
+    clubs = list_clubs()
+    today = datetime.date.today()
+    result = []
+    for club in clubs:
+        if q and q not in club.club_id.lower() and q not in club.name.lower():
+            continue
+        entry = {
+            "club_id": club.club_id,
+            "name": club.name,
+            "logo": club.logo,
+            "region": club.region,
+            "slogan": club.slogan,
+            "pending_members": len(club.pending_members),
+            "pending_matches": len(club.pending_matches),
+            "total_matches": len(club.matches),
+            "stats": _club_stats(club),
+        }
+        result.append(entry)
+
+    result.sort(key=lambda x: x["club_id"])
+    if offset:
+        result = result[offset:]
+    if limit is not None:
+        result = result[:limit]
     return result
