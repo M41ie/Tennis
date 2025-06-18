@@ -1731,6 +1731,12 @@ def get_club(club_id: str) -> Club | None:
     return club
 
 
+def list_clubs() -> list[Club]:
+    """Return all clubs from storage."""
+    clubs, _ = load_data()
+    return list(clubs.values())
+
+
 def list_user_messages(user_id: str) -> list[tuple[int, Message]]:
     """Return all messages for a user as ``(id, Message)`` tuples."""
     conn = _connect()

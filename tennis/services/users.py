@@ -5,7 +5,9 @@ from fastapi import HTTPException
 from ..cli import register_user, resolve_user, check_password, hash_password, set_user_limits
 from ..storage import (
     load_users,
-    load_data,
+    get_player,
+    get_club,
+    list_clubs,
     insert_token,
     delete_token,
     get_token,
@@ -26,9 +28,11 @@ from ..models import players, User
 
 def create_user(data) -> str:
     users = load_users()
-    clubs, players_data = load_data()
     players.clear()
-    players.update(players_data)
+    if data.user_id:
+        existing = get_player(data.user_id)
+        if existing:
+            players[data.user_id] = existing
     if data.user_id and data.user_id in users:
         raise HTTPException(400, "User exists")
     uid = register_user(
@@ -155,8 +159,7 @@ def user_info(user_id: str):
     user = get_user_record(user_id)
     if not user:
         raise HTTPException(404, "User not found")
-    clubs, _ = load_data()
-    joined = [cid for cid, c in clubs.items() if user_id in c.members]
+    joined = [c.club_id for c in list_clubs() if user_id in c.members]
     created = getattr(user, "created_clubs", 0)
     max_created = getattr(user, "max_creatable_clubs", 0)
     return {
