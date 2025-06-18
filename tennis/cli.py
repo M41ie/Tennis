@@ -1,5 +1,6 @@
 import argparse
 import datetime
+import uuid
 from passlib.context import CryptContext
 from typing import Optional
 
@@ -82,12 +83,22 @@ def cleanup_pending_matches(club: Club) -> None:
     club.pending_matches = remaining
 
 
-def _next_user_id(users) -> str:
-    """Return the next available alphabetic ID (A, B, ..., Z, AA, AB, ...).
+def _next_user_id(users, *, use_uuid: bool = False) -> str:
+    """Return a new user id.
 
-    Existing IDs that fit the pattern are skipped, so gaps are filled and
-    custom user IDs do not affect the sequence.
+    When ``use_uuid`` is True a random UUID string is returned. The very first
+    generated id in this mode is ``"M"`` so the initial account can match the
+    default system administrator.
+
+    Otherwise the next available alphabetic ID (A, B, ..., Z, AA, ...) is
+    chosen. Existing IDs that fit the pattern are skipped, so gaps are filled
+    and custom user IDs do not affect the sequence.
     """
+
+    if use_uuid:
+        if not users:
+            return "M"
+        return uuid.uuid4().hex
 
     def encode(n: int) -> str:
         s = ""
@@ -114,6 +125,7 @@ def register_user(
     password: str,
     allow_create: bool = False,
     *,
+    use_uuid: bool = False,
     avatar: str | None = None,
     gender: str | None = None,
     birth: str | None = None,
@@ -123,7 +135,7 @@ def register_user(
 ):
     """Add a new user account."""
     if not user_id:
-        user_id = _next_user_id(users)
+        user_id = _next_user_id(users, use_uuid=use_uuid)
     if user_id in users:
         raise ValueError("User already exists")
     for u in users.values():
@@ -137,7 +149,7 @@ def register_user(
         name=name,
         password_hash=hash_password(password),
         can_create_club=True,
-        is_sys_admin=user_id == "A",
+        is_sys_admin=user_id == "M",
         max_creatable_clubs=1 if allow_create else MAX_CREATED_CLUBS,
     )
     gender = normalize_gender(gender)

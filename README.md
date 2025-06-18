@@ -15,9 +15,11 @@ python3 -m tennis.cli confirm_match CLUB_ID INDEX USER_ID
 python3 -m tennis.cli approve_match CLUB_ID INDEX APPROVER
 ```
 
-When calling `register_user` you can omit the `USER_ID` argument. The server will
-assign the next available alphabetic ID automatically (A, B, ..., Z, AA, AB,
-...).
+When calling `register_user` you can omit the `USER_ID` argument. The server
+assigns the next available alphabetic ID automatically (A, B, ..., Z, AA, AB,
+...).  Passing `use_uuid=True` will instead generate a UUID based identifier –
+the very first generated ID in this mode is `M` so the initial account becomes
+the system administrator.
 
 Creating a club automatically makes the creator a member. This also counts
 toward their joined club limit (default 5).
@@ -97,7 +99,8 @@ curl -X POST http://localhost:8000/clubs \
      -H "Authorization: Bearer TOKEN" \
      -d '{"name": "Club", "user_id": "USER"}'
 ```
-The API automatically assigns a `club_id` and returns it in the response.
+The API automatically assigns a `club_id` (a `uuid4` hex string) and returns it
+in the response.
 
 To invalidate a token call `/logout` with the token value.
 

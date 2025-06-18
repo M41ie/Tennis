@@ -30,6 +30,14 @@ def test_auto_generated_user_ids_ignore_custom():
     assert uid3 == "C"
 
 
+def test_uuid_user_ids():
+    users = {}
+    uid1 = register_user(users, None, "User1", "pw", use_uuid=True)
+    assert uid1 == "M"
+    uid2 = register_user(users, None, "User2", "pw", use_uuid=True)
+    assert len(uid2) == 32 and uid2 != uid1
+
+
 def test_create_club_permission():
     users = {}
     clubs = {}

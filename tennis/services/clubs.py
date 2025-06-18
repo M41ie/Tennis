@@ -62,11 +62,12 @@ def _prepare_players(club: "Club" | None = None, extra: list[str] | None = None)
                     players[uid] = p
 
 
+import uuid
+
+
 def generate_club_id() -> str:
-    i = 1
-    while get_club(f"c{i}") is not None:
-        i += 1
-    return f"c{i}"
+    """Return a random UUID based identifier for new clubs."""
+    return uuid.uuid4().hex
 
 
 def create_club(
