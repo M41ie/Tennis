@@ -9,6 +9,7 @@
     <view class="weui-label">用户名</view>
     <input class="weui-input" value="{{name}}" placeholder="请使用球友熟知的名字" bindinput="onName" />
   </view>
+  <view wx:if="{{nameError}}" class="error-text">{{nameError}}</view>
   <picker mode="selector" range="{{genderOptions}}" value="{{genderIndex}}" bindchange="onGender">
     <view class="weui-cell">
       <view class="weui-label">性别</view>

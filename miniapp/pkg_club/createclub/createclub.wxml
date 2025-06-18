@@ -4,6 +4,7 @@
     <view class="weui-label">Name</view>
     <input class="weui-input" placeholder="Name" bindinput="onName" />
   </view>
+  <view wx:if="{{nameError}}" class="error-text">{{nameError}}</view>
   <view class="weui-cell">
     <view class="weui-label">Slogan</view>
     <input class="weui-input" placeholder="Slogan" bindinput="onSlogan" />
@@ -27,7 +28,7 @@
       <input
         class="dialog-input"
         placeholder="请输入自我评分，参考格式：3.250"
-        type="digit"
+        type="number"
         bindinput="onRating"
       />
       <view class="dialog-actions">

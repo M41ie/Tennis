@@ -5,3 +5,9 @@
 .weui-cell { align-items: center; }
 .image-preview { width: 100px; height: 100px; }
 .picker { padding: 10rpx 0; color: #888; }
+
+.error-text {
+  color: #e54d42;
+  font-size: 26rpx;
+  padding-left: 20rpx;
+}
