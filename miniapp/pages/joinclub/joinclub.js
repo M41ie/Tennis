@@ -55,13 +55,13 @@ Page({
           that.setData({ clubs: [] });
           return;
         }
-        const result = [];
-        let count = 0;
-        list.forEach(c => {
-          request({
-            url: `${BASE_URL}/clubs/${c.club_id}`,
-            success(r) {
-              const info = r.data || {};
+        const ids = list.map(c => c.club_id).join(',');
+        request({
+          url: `${BASE_URL}/clubs/batch?club_ids=${ids}`,
+          success(r) {
+            const infos = r.data || [];
+            const result = [];
+            infos.forEach(info => {
               const stats = info.stats || {};
               const sr = stats.singles_rating_range || [];
               const dr = stats.doubles_rating_range || [];
@@ -80,7 +80,7 @@ Page({
               const rejected = info.rejected_members
                 ? info.rejected_members[uid]
                 : '';
-              const join_status = that.data.joined.includes(c.club_id)
+              const join_status = that.data.joined.includes(info.club_id)
                 ? 'joined'
                 : pending
                 ? 'pending'
@@ -88,8 +88,8 @@ Page({
                 ? 'rejected'
                 : 'apply';
               result.push({
-                club_id: c.club_id,
-                name: c.name,
+                club_id: info.club_id,
+                name: info.name,
                 slogan: info.slogan || '',
                 region: info.region || '',
                 member_count: stats.member_count,
@@ -108,14 +108,9 @@ Page({
                 join_status,
                 rejected_reason: rejected
               });
-            },
-            complete() {
-              count++;
-              if (count === list.length) {
-                that.setData({ clubs: result });
-              }
-            }
-          });
+            });
+            that.setData({ clubs: result });
+          }
         });
       }
     });

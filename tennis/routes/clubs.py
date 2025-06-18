@@ -2,7 +2,11 @@ from fastapi import APIRouter, HTTPException, Header
 from ..services.exceptions import ServiceError
 from pydantic import BaseModel
 from ..services.auth import require_auth, assert_token_matches
-from ..services.clubs import create_club as svc_create_club, add_player as svc_add_player
+from ..services.clubs import (
+    create_club as svc_create_club,
+    add_player as svc_add_player,
+    get_clubs_batch as svc_get_clubs_batch,
+)
 from ..storage import get_club, get_player, get_user
 from ..rating import (
     weighted_rating,
@@ -10,6 +14,7 @@ from ..rating import (
     weighted_singles_matches,
     weighted_doubles_matches,
 )
+from ..services.stats import _club_stats
 from .. import api
 import datetime
 
@@ -148,5 +153,82 @@ def list_pending_members(club_id: str):
                 }
             )
         result.append(entry)
+
+    return result
+
+
+@router.get("/clubs/batch")
+def get_clubs_batch(club_ids: str):
+    """Return basic club information for multiple clubs."""
+    ids = [c for c in club_ids.split(",") if c]
+    clubs = svc_get_clubs_batch(ids)
+    today = datetime.date.today()
+    result = []
+    for club in clubs:
+        pending = []
+        for uid, info in club.pending_members.items():
+            entry = {
+                "user_id": uid,
+                "reason": info.reason,
+                "singles_rating": info.singles_rating,
+                "doubles_rating": info.doubles_rating,
+            }
+            player = get_player(uid)
+            if player:
+                singles = weighted_rating(player, today)
+                doubles = weighted_doubles_rating(player, today)
+                entry.update(
+                    {
+                        "name": player.name,
+                        "avatar": player.avatar,
+                        "avatar_url": player.avatar,
+                        "gender": player.gender,
+                        "weighted_games_singles": round(weighted_singles_matches(player), 2),
+                        "weighted_games_doubles": round(
+                            weighted_doubles_matches(player), 2
+                        ),
+                        "singles_rating": singles if singles is not None else info.singles_rating,
+                        "doubles_rating": doubles if doubles is not None else info.doubles_rating,
+                    }
+                )
+            else:
+                user = get_user(uid)
+                entry.update(
+                    {
+                        "name": user.name if user else uid,
+                        "avatar": getattr(user, "avatar", "") if user else "",
+                        "avatar_url": getattr(user, "avatar", "") if user else "",
+                        "gender": getattr(user, "gender", "") if user else "",
+                        "weighted_games_singles": None,
+                        "weighted_games_doubles": None,
+                    }
+                )
+            pending.append(entry)
+
+        members = [
+            {
+                "user_id": p.user_id,
+                "name": p.name,
+                "avatar": p.avatar,
+                "gender": p.gender,
+            }
+            for p in club.members.values()
+        ]
+
+        result.append(
+            {
+                "club_id": club.club_id,
+                "name": club.name,
+                "logo": club.logo,
+                "region": club.region,
+                "slogan": club.slogan,
+                "leader_id": club.leader_id,
+                "admin_ids": list(club.admin_ids),
+                "pending_members": pending,
+                "members": members,
+                "rejected_members": club.rejected_members,
+                "stats": _club_stats(club),
+            }
+        )
 
     return result

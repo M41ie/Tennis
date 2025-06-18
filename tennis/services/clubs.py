@@ -70,6 +70,14 @@ def generate_club_id() -> str:
     return uuid.uuid4().hex
 
 
+def get_clubs_batch(ids: list[str]) -> list[Club]:
+    """Return multiple ``Club`` objects, raising if any is not found."""
+    clubs = []
+    for cid in ids:
+        clubs.append(get_club_or_404(cid))
+    return clubs
+
+
 def create_club(
     user_id: str,
     name: str,
