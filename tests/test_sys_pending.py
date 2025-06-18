@@ -27,8 +27,8 @@ def _login_tokens(client, ids):
 
 def test_sys_pending_singles_filtered(tmp_path, monkeypatch):
     client = setup_client(tmp_path, monkeypatch)
-    _register_users(client, ["A", "leader", "p1", "p2"])
-    tokens = _login_tokens(client, ["A", "leader", "p1", "p2"])
+    _register_users(client, ["M", "leader", "p1", "p2"])
+    tokens = _login_tokens(client, ["M", "leader", "p1", "p2"])
 
     client.post(
         "/clubs",
@@ -49,7 +49,7 @@ def test_sys_pending_singles_filtered(tmp_path, monkeypatch):
         json={"user_id": "p2", "token": tokens["p2"]},
     )
 
-    resp = client.get(f"/sys/pending_matches?token={tokens['A']}")
+    resp = client.get(f"/sys/pending_matches?token={tokens['M']}")
     assert resp.status_code == 200
     assert resp.json() == []
 
@@ -66,15 +66,15 @@ def test_sys_pending_singles_filtered(tmp_path, monkeypatch):
         json={"approver": "leader", "token": tokens["leader"]},
     )
 
-    resp = client.get(f"/sys/pending_matches?token={tokens['A']}")
+    resp = client.get(f"/sys/pending_matches?token={tokens['M']}")
     assert resp.status_code == 200
     assert resp.json() == []
 
 
 def test_sys_pending_doubles_filtered(tmp_path, monkeypatch):
     client = setup_client(tmp_path, monkeypatch)
-    _register_users(client, ["A", "leader", "p1", "p2", "p3", "p4"])
-    tokens = _login_tokens(client, ["A", "leader", "p1", "p2", "p3", "p4"])
+    _register_users(client, ["M", "leader", "p1", "p2", "p3", "p4"])
+    tokens = _login_tokens(client, ["M", "leader", "p1", "p2", "p3", "p4"])
 
     client.post(
         "/clubs",
@@ -103,7 +103,7 @@ def test_sys_pending_doubles_filtered(tmp_path, monkeypatch):
         json={"user_id": "p3", "token": tokens["p3"]},
     )
 
-    resp = client.get(f"/sys/pending_doubles?token={tokens['A']}")
+    resp = client.get(f"/sys/pending_doubles?token={tokens['M']}")
     assert resp.status_code == 200
     assert resp.json() == []
 
@@ -128,6 +128,6 @@ def test_sys_pending_doubles_filtered(tmp_path, monkeypatch):
         json={"approver": "leader", "token": tokens["leader"]},
     )
 
-    resp = client.get(f"/sys/pending_doubles?token={tokens['A']}")
+    resp = client.get(f"/sys/pending_doubles?token={tokens['M']}")
     assert resp.status_code == 200
     assert resp.json() == []
