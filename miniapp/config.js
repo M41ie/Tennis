@@ -10,7 +10,7 @@ if (typeof wx !== 'undefined' && wx.getAccountInfoSync) {
 
 const CONFIG = {
   develop: { BASE_URL: 'http://localhost:8000' },
-  trial:   { BASE_URL: 'https://api.example.com' },
+  trial:   { BASE_URL: 'http://119.45.169.39' },
   release: { BASE_URL: 'https://api.example.com' }
 };
 
