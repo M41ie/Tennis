@@ -23,7 +23,7 @@ from .config import (
 # ensures scripts behave the same regardless of the working directory.
 # ``DB_FILE`` is imported from ``tennis.config`` so tests can monkeypatch it.
 DATABASE_URL = get_database_url()
-IS_PG = DATABASE_URL.startswith("postgres")
+IS_PG = DATABASE_URL.lower().startswith("postgres")
 
 # Optional Redis cache
 REDIS_URL = get_redis_url()
@@ -330,14 +330,14 @@ def _init_schema(conn) -> None:
         )"""
         )
         cur.execute(
-            "CREATE TABLE IF NOT EXISTS matches (id SERIAL PRIMARY KEY, club_id TEXT, type TEXT, date TEXT, data TEXT)"
+            "CREATE TABLE IF NOT EXISTS matches (id INTEGER PRIMARY KEY AUTOINCREMENT, club_id TEXT, type TEXT, date TEXT, data TEXT)"
         )
         cur.execute(
-            "CREATE TABLE IF NOT EXISTS pending_matches (id SERIAL PRIMARY KEY, club_id TEXT, type TEXT, date TEXT, data TEXT)"
+            "CREATE TABLE IF NOT EXISTS pending_matches (id INTEGER PRIMARY KEY AUTOINCREMENT, club_id TEXT, type TEXT, date TEXT, data TEXT)"
         )
         cur.execute(
             """CREATE TABLE IF NOT EXISTS appointments (
-            id SERIAL PRIMARY KEY,
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
             club_id TEXT,
             date TEXT,
             creator TEXT,
@@ -388,15 +388,26 @@ def _init_schema(conn) -> None:
             cur.execute("ALTER TABLE players ADD COLUMN region TEXT")
         if 'joined' not in cols:
             cur.execute("ALTER TABLE players ADD COLUMN joined TEXT")
-    cur.execute(
-        """CREATE TABLE IF NOT EXISTS messages (
-        id SERIAL PRIMARY KEY,
-        user_id TEXT,
-        date TEXT,
-        text TEXT,
-        read INTEGER
-    )"""
-    )
+    if IS_PG:
+        cur.execute(
+            """CREATE TABLE IF NOT EXISTS messages (
+            id SERIAL PRIMARY KEY,
+            user_id TEXT,
+            date TEXT,
+            text TEXT,
+            read INTEGER
+        )"""
+        )
+    else:
+        cur.execute(
+            """CREATE TABLE IF NOT EXISTS messages (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id TEXT,
+            date TEXT,
+            text TEXT,
+            read INTEGER
+        )"""
+        )
     cur.execute(
         """CREATE TABLE IF NOT EXISTS auth_tokens (
         token TEXT PRIMARY KEY,
