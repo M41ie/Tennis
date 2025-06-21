@@ -330,14 +330,14 @@ def _init_schema(conn) -> None:
         )"""
         )
         cur.execute(
-            "CREATE TABLE IF NOT EXISTS matches (id INTEGER PRIMARY KEY AUTOINCREMENT, club_id TEXT, type TEXT, date TEXT, data TEXT)"
+            "CREATE TABLE IF NOT EXISTS matches (id SERIAL PRIMARY KEY, club_id TEXT, type TEXT, date TEXT, data TEXT)"
         )
         cur.execute(
-            "CREATE TABLE IF NOT EXISTS pending_matches (id INTEGER PRIMARY KEY AUTOINCREMENT, club_id TEXT, type TEXT, date TEXT, data TEXT)"
+            "CREATE TABLE IF NOT EXISTS pending_matches (id SERIAL PRIMARY KEY, club_id TEXT, type TEXT, date TEXT, data TEXT)"
         )
         cur.execute(
             """CREATE TABLE IF NOT EXISTS appointments (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id SERIAL PRIMARY KEY,
             club_id TEXT,
             date TEXT,
             creator TEXT,
@@ -390,7 +390,7 @@ def _init_schema(conn) -> None:
             cur.execute("ALTER TABLE players ADD COLUMN joined TEXT")
     cur.execute(
         """CREATE TABLE IF NOT EXISTS messages (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id SERIAL PRIMARY KEY,
         user_id TEXT,
         date TEXT,
         text TEXT,
@@ -1413,22 +1413,25 @@ def create_appointment_record(club_id: str, appt: Appointment, conn: sqlite3.Con
     if conn is None:
         conn = _connect()
     cur = conn.cursor()
-    cur.execute(
-            """
-            INSERT INTO appointments(
-                club_id, date, creator, location, info, signups
-            ) VALUES (?,?,?,?,?,?)
-            """,
-            (
-                club_id,
-                appt.date.isoformat(),
-                appt.creator,
-                appt.location,
-                appt.info,
-                json.dumps(list(appt.signups)),
-            ),
+    query = (
+        """
+        INSERT INTO appointments(
+            club_id, date, creator, location, info, signups
+        ) VALUES (?,?,?,?,?,?)"""
+        + (" RETURNING id" if IS_PG else "")
     )
-    row_id = cur.lastrowid
+    cur.execute(
+        query,
+        (
+            club_id,
+            appt.date.isoformat(),
+            appt.creator,
+            appt.location,
+            appt.info,
+            json.dumps(list(appt.signups)),
+        ),
+    )
+    row_id = cur.fetchone()[0] if IS_PG else cur.lastrowid
     if close:
         conn.commit()
         conn.close()
@@ -1507,12 +1510,12 @@ def create_message_record(
     cur = conn.cursor()
     if date is None:
         date = datetime.date.today()
-    cur.execute(
-        "INSERT INTO messages(user_id, date, text, read) VALUES (?,?,?,?)",
-        (user_id, date.isoformat(), text, int(read)),
+    query = "INSERT INTO messages(user_id, date, text, read) VALUES (?,?,?,?)" + (
+        " RETURNING id" if IS_PG else ""
     )
+    cur.execute(query, (user_id, date.isoformat(), text, int(read)))
     conn.commit()
-    row_id = cur.lastrowid
+    row_id = cur.fetchone()[0] if IS_PG else cur.lastrowid
     conn.close()
     _refresh_after_write()
     return row_id
