@@ -13,5 +13,7 @@ Thumbs.db
 tennis.db
 .env
 
+echo ".env" >> .gitignore
+
 # Miniapp
 miniapp/node_modules/
