@@ -33,9 +33,9 @@ def test_auto_generated_user_ids_ignore_custom():
 def test_uuid_user_ids():
     users = {}
     uid1 = register_user(users, None, "User1", "pw", use_uuid=True)
-    assert uid1 == "M"
+    assert len(uid1) == 7
     uid2 = register_user(users, None, "User2", "pw", use_uuid=True)
-    assert len(uid2) == 32 and uid2 != uid1
+    assert len(uid2) == 7 and uid2 != uid1
 
 
 def test_create_club_permission():

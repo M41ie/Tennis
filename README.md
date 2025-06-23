@@ -17,9 +17,10 @@ python3 -m tennis.cli approve_match CLUB_ID INDEX APPROVER
 
 When calling `register_user` you can omit the `USER_ID` argument. The server
 assigns the next available alphabetic ID automatically (A, B, ..., Z, AA, AB,
-...).  Passing `use_uuid=True` will instead generate a UUID based identifier –
-the very first generated ID in this mode is `M` so the initial account becomes
-the system administrator.
+...). The very first account registered in this manner receives ID `A` and is
+marked as the system administrator. Passing `use_uuid=True` will instead
+generate a random seven character identifier. No administrator account is
+created automatically in this mode.
 
 Creating a club automatically makes the creator a member. This also counts
 toward their joined club limit (default 5).
