@@ -1,6 +1,7 @@
 import argparse
 import datetime
-import uuid
+import random
+import string
 from passlib.context import CryptContext
 from typing import Optional
 
@@ -86,19 +87,21 @@ def cleanup_pending_matches(club: Club) -> None:
 def _next_user_id(users, *, use_uuid: bool = False) -> str:
     """Return a new user id.
 
-    When ``use_uuid`` is True a random UUID string is returned. The very first
-    generated id in this mode is ``"M"`` so the initial account can match the
-    default system administrator.
+    When ``use_uuid`` is ``True`` a 7 character alphanumeric identifier is
+    generated. Duplicate values are avoided by regenerating until an unused
+    string is found.
 
     Otherwise the next available alphabetic ID (A, B, ..., Z, AA, ...) is
-    chosen. Existing IDs that fit the pattern are skipped, so gaps are filled
+    chosen. Existing IDs that fit the pattern are skipped so gaps are filled
     and custom user IDs do not affect the sequence.
     """
 
     if use_uuid:
-        if not users:
-            return "M"
-        return uuid.uuid4().hex
+        alphabet = string.ascii_letters + string.digits
+        while True:
+            uid = "".join(random.choice(alphabet) for _ in range(7))
+            if uid not in users:
+                return uid
 
     def encode(n: int) -> str:
         s = ""
@@ -149,7 +152,7 @@ def register_user(
         name=name,
         password_hash=hash_password(password),
         can_create_club=True,
-        is_sys_admin=user_id == "M",
+        is_sys_admin=(not users) and not use_uuid,
         max_creatable_clubs=1 if allow_create else MAX_CREATED_CLUBS,
     )
     gender = normalize_gender(gender)

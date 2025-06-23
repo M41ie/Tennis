@@ -18,7 +18,7 @@ def test_sys_set_leader(tmp_path, monkeypatch):
     # create users
     client.post(
         "/users",
-        json={"user_id": "M", "name": "Admin", "password": "pw", "allow_create": True},
+        json={"user_id": "A", "name": "Admin", "password": "pw", "allow_create": True},
     )
     client.post(
         "/users",
@@ -26,7 +26,7 @@ def test_sys_set_leader(tmp_path, monkeypatch):
     )
     client.post("/users", json={"user_id": "u1", "name": "U1", "password": "pw"})
 
-    token_admin = client.post("/login", json={"user_id": "M", "password": "pw"}).json()["token"]
+    token_admin = client.post("/login", json={"user_id": "A", "password": "pw"}).json()["token"]
     token_leader = client.post("/login", json={"user_id": "leader", "password": "pw"}).json()["token"]
 
     client.post(
