@@ -427,7 +427,7 @@ def _init_schema(conn) -> None:
 
 def load_data() -> tuple[Dict[str, Club], Dict[str, Player]]:
     """Load all clubs and players, using cached data when available."""
-    global _clubs_cache, _db_file
+    global _clubs_cache, _players_cache, _db_file
     if _clubs_cache is not None and _db_file == DATABASE_URL:
         return _clubs_cache, _players_cache
     if _redis:
