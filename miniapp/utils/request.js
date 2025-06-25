@@ -31,7 +31,7 @@ function request(options = {}, _retry = true) {
               } else {
                 store.clearAuth();
                 wx.navigateTo({ url: '/pages/login/index' });
-                wx.showToast({ title: t.pleaseRelogin, icon: 'none' });
+                wx.showToast({ duration: 4000,  title: t.pleaseRelogin, icon: 'none' });
                 opts.fail && opts.fail(res);
                 reject(res);
               }
@@ -39,7 +39,7 @@ function request(options = {}, _retry = true) {
             fail(err) {
               store.clearAuth();
               wx.navigateTo({ url: '/pages/login/index' });
-              wx.showToast({ title: t.pleaseRelogin, icon: 'none' });
+              wx.showToast({ duration: 4000,  title: t.pleaseRelogin, icon: 'none' });
               opts.fail && opts.fail(err);
               reject(err);
             }
@@ -49,7 +49,7 @@ function request(options = {}, _retry = true) {
         if (res.statusCode === 401) {
           store.clearAuth();
           wx.navigateTo({ url: '/pages/login/index' });
-          wx.showToast({ title: t.pleaseRelogin, icon: 'none' });
+          wx.showToast({ duration: 4000,  title: t.pleaseRelogin, icon: 'none' });
           opts.fail && opts.fail(res);
           reject(res);
           return;
@@ -58,13 +58,13 @@ function request(options = {}, _retry = true) {
           opts.success && opts.success(res);
           resolve(res.data);
         } else {
-          wx.showToast({ title: res.data.detail || t.requestFailed, icon: 'none' });
+          wx.showToast({ duration: 4000,  title: res.data.detail || t.requestFailed, icon: 'none' });
           opts.fail && opts.fail(res);
           reject(res);
         }
       },
       fail(err) {
-        wx.showToast({ title: t.networkError, icon: 'none' });
+        wx.showToast({ duration: 4000,  title: t.networkError, icon: 'none' });
         opts.fail && opts.fail(err);
         reject(err);
       },

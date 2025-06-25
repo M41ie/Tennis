@@ -58,12 +58,12 @@ Page({
     const token = store.token;
     if (!cid || !userId || !token) return;
     if (!this.data.name || !this.data.slogan || this.data.region.length === 0) {
-      wx.showToast({ title: that.data.t.incompleteInfo, icon: 'none' });
+      wx.showToast({ duration: 4000,  title: that.data.t.incompleteInfo, icon: 'none' });
       return;
     }
     const nameOk = /^[A-Za-z\u4e00-\u9fa5]{1,20}$/.test(this.data.name);
     if (!nameOk) {
-      wx.showToast({ title: that.data.t.clubNameRule, icon: 'none' });
+      wx.showToast({ duration: 4000,  title: that.data.t.clubNameRule, icon: 'none' });
       return;
     }
     request({
@@ -79,11 +79,11 @@ Page({
       },
       success(res) {
         if (res.statusCode === 200) {
-          wx.showToast({ title: that.data.t.updated, icon: 'success' });
+          wx.showToast({ duration: 4000,  title: that.data.t.updated, icon: 'success' });
           wx.navigateBack();
         } else {
           const msg = (res.data && res.data.detail) || that.data.t.failed;
-          wx.showToast({ title: msg, icon: 'none' });
+          wx.showToast({ duration: 4000,  title: msg, icon: 'none' });
         }
       }
     });

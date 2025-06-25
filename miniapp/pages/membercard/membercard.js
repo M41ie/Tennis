@@ -167,7 +167,7 @@ Page({
             method: 'POST',
             data: { user_id: uid, token },
             success() {
-              wx.showToast({ title: '操作成功', icon: 'none' });
+              wx.showToast({ duration: 4000,  title: '操作成功', icon: 'none' });
             },
             complete() { that.loadClubInfo(); }
           });

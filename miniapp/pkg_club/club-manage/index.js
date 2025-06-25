@@ -146,7 +146,7 @@ Page({
     if (this.data.allowCreate) {
       wx.navigateTo({ url: '/pkg_club/createclub/createclub' });
     } else {
-      wx.showToast({ title: '创建俱乐部的数量已达上限', icon: 'none' });
+      wx.showToast({ duration: 4000,  title: '创建俱乐部的数量已达上限', icon: 'none' });
     }
   }
 });

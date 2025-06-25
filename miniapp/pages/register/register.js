@@ -25,11 +25,11 @@ Page({
               );
               wx.navigateTo({ url: '/pages/editprofile/editprofile' });
             } else {
-              wx.showToast({ title: t.failed, icon: 'none' });
+              wx.showToast({ duration: 4000,  title: t.failed, icon: 'none' });
             }
           },
           fail() {
-            wx.showToast({ title: t.networkError, icon: 'none' });
+            wx.showToast({ duration: 4000,  title: t.networkError, icon: 'none' });
           }
         });
       }

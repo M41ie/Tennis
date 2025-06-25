@@ -192,7 +192,7 @@ Page({
       data: { token },
       success(r) {
         if (r.statusCode >= 300) {
-          wx.showToast({ title: '加载失败', icon: 'none' });
+          wx.showToast({ duration: 4000,  title: '加载失败', icon: 'none' });
           return;
         }
         const list = r.data.map(it => {
@@ -219,7 +219,7 @@ Page({
         that.setData({ pendingSingles: list });
       },
       fail() {
-        wx.showToast({ title: '网络错误', icon: 'none' });
+        wx.showToast({ duration: 4000,  title: '网络错误', icon: 'none' });
       }
     });
 
@@ -229,7 +229,7 @@ Page({
       data: { token },
       success(r) {
         if (r.statusCode >= 300) {
-          wx.showToast({ title: '加载失败', icon: 'none' });
+          wx.showToast({ duration: 4000,  title: '加载失败', icon: 'none' });
           return;
         }
         const list = r.data.map(it => {
@@ -262,7 +262,7 @@ Page({
         that.setData({ pendingDoubles: list });
       },
       fail() {
-        wx.showToast({ title: '网络错误', icon: 'none' });
+        wx.showToast({ duration: 4000,  title: '网络错误', icon: 'none' });
       }
     });
   },
@@ -291,11 +291,11 @@ Page({
       data: { approver: this.data.userId, token },
       success(res) {
         if (res.statusCode >= 300) {
-          wx.showToast({ title: '错误', icon: 'none' });
+          wx.showToast({ duration: 4000,  title: '错误', icon: 'none' });
         }
       },
       fail() {
-        wx.showToast({ title: '网络错误', icon: 'none' });
+        wx.showToast({ duration: 4000,  title: '网络错误', icon: 'none' });
       },
       complete() {
         that.fetchPendings();
@@ -355,11 +355,11 @@ Page({
       data: { approver: this.data.userId, token },
       success(res) {
         if (res.statusCode >= 300) {
-          wx.showToast({ title: '错误', icon: 'none' });
+          wx.showToast({ duration: 4000,  title: '错误', icon: 'none' });
         }
       },
       fail() {
-        wx.showToast({ title: '网络错误', icon: 'none' });
+        wx.showToast({ duration: 4000,  title: '网络错误', icon: 'none' });
       },
       complete() {
         that.fetchPendings();

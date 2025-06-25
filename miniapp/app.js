@@ -37,7 +37,7 @@ App({
           }
         },
         fail() {
-          wx.showToast({ title: t.networkError, icon: 'none' });
+          wx.showToast({ duration: 4000,  title: t.networkError, icon: 'none' });
         }
       });
     }
