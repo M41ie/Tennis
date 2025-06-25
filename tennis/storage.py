@@ -165,6 +165,13 @@ def _refresh_after_write() -> None:
         else:
             set_player(player)
 
+    if _clubs_cache is not None:
+        _save_cache("tennis:data", (_clubs_cache, _players_cache))
+    if _users_cache is not None:
+        _save_cache("tennis:users", _users_cache)
+    global _db_file
+    _db_file = DATABASE_URL
+
     _pending_clubs.clear()
     _pending_users.clear()
     _pending_players.clear()

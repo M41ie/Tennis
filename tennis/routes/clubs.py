@@ -55,17 +55,6 @@ def create_club(data: ClubCreate, authorization: str | None = Header(None)):
         region=data.region,
         slogan=data.slogan,
     )
-    # refresh API state after DB write
-    # refresh caches for the newly created objects
-    club = get_club(cid)
-    if club:
-        api.clubs[cid] = club
-    player = get_player(data.user_id)
-    if player:
-        api.players[player.user_id] = player
-    user = get_user(data.user_id)
-    if user:
-        api.users[user.user_id] = user
     return {"status": "ok", "club_id": cid}
 
 
@@ -88,13 +77,6 @@ def add_player(club_id: str, data: PlayerCreate, authorization: str | None = Hea
     except ServiceError as e:
         if e.status_code != 400 or str(e.detail) != "Player already in club":
             raise
-    # refresh caches for the updated club and new player
-    club = get_club(club_id)
-    if club:
-        api.clubs[club_id] = club
-    player = get_player(data.user_id)
-    if player:
-        api.players[player.user_id] = player
     return {"status": "ok"}
 
 
