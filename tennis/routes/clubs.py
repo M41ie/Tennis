@@ -6,6 +6,7 @@ from ..services.clubs import (
     create_club as svc_create_club,
     add_player as svc_add_player,
     get_clubs_batch as svc_get_clubs_batch,
+    generate_club_id,
 )
 from ..storage import get_club, get_player, get_user, list_clubs
 from ..rating import (
@@ -46,7 +47,7 @@ class PlayerCreate(BaseModel):
 def create_club(data: ClubCreate, authorization: str | None = Header(None)):
     uid = require_auth(authorization)
     assert_token_matches(uid, data.user_id)
-    cid = data.club_id or api._generate_club_id()
+    cid = data.club_id or generate_club_id()
     svc_create_club(
         data.user_id,
         data.name,
