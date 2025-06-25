@@ -1814,3 +1814,32 @@ def test_sys_matches_and_doubles(tmp_path, monkeypatch):
     resp = client.get("/sys/doubles")
     assert resp.status_code == 200
     assert len(resp.json()) == 1
+
+
+def test_club_persistence_after_reload(tmp_path, monkeypatch):
+    db = tmp_path / "tennis.db"
+    monkeypatch.setattr(storage, "DB_FILE", db)
+    importlib.reload(state)
+
+    api = importlib.reload(importlib.import_module("tennis.api"))
+    client = TestClient(api.app)
+
+    client.post(
+        "/users",
+        json={"user_id": "leader", "name": "Leader", "password": "pw", "allow_create": True},
+    )
+    token = client.post("/login", json={"user_id": "leader", "password": "pw"}).json()["token"]
+    resp = client.post(
+        "/clubs",
+        json={"club_id": "c1", "name": "C1", "user_id": "leader", "token": token},
+    )
+    assert resp.status_code == 200
+
+    resp = client.get("/clubs")
+    assert any(c["club_id"] == "c1" for c in resp.json())
+
+    api = importlib.reload(importlib.import_module("tennis.api"))
+    client = TestClient(api.app)
+
+    resp = client.get("/clubs")
+    assert any(c["club_id"] == "c1" for c in resp.json())

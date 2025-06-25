@@ -364,7 +364,8 @@ def approve_club_member(club_id: str, data: ApproveRequest, authorization: str |
 
 @app.get("/clubs")
 def list_clubs():
-    return [{"club_id": c.club_id, "name": c.name} for c in clubs.values()]
+    clubs = storage.list_clubs()
+    return [{"club_id": c.club_id, "name": c.name} for c in clubs]
 
 
 
