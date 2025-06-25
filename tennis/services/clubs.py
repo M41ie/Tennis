@@ -46,6 +46,7 @@ from ..storage import (
     update_appointment_record,
     transaction,
 )
+from .helpers import get_club_or_404
 from ..models import players
 
 
