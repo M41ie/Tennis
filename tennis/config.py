@@ -16,9 +16,47 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 DB_FILE = REPO_ROOT / "tennis.db"
 
 
+class BaseConfig:
+    """Base settings shared across environments."""
+
+    DB_USER = os.getenv("DB_USER", "tennis_user")
+    DB_PASSWORD = os.getenv("DB_PASSWORD", "3112565tennis")
+    DB_HOST = os.getenv("DB_HOST", "localhost")
+
+
+class ProductionConfig(BaseConfig):
+    DB_NAME = "tennis_prod"
+
+
+class TrialConfig(BaseConfig):
+    DB_NAME = "tennis_trial"
+
+
+class DevelopmentConfig(BaseConfig):
+    DB_NAME = "tennis_dev"
+
+
+_CONFIGS = {
+    "production": ProductionConfig,
+    "trial": TrialConfig,
+    "development": DevelopmentConfig,
+}
+
+# Current active configuration determined by the ``APP_ENV`` environment
+# variable. Defaults to development.
+APP_ENV = os.getenv("APP_ENV", "development")
+ActiveConfig = _CONFIGS.get(APP_ENV, DevelopmentConfig)
+
+
 def get_database_url() -> str:
     """Return the configured database connection string."""
-    return os.getenv("DATABASE_URL", f"sqlite:///{DB_FILE}")
+    url = os.getenv("DATABASE_URL")
+    if url:
+        return url
+    return (
+        f"postgresql://{ActiveConfig.DB_USER}:{ActiveConfig.DB_PASSWORD}"
+        f"@{ActiveConfig.DB_HOST}/{ActiveConfig.DB_NAME}"
+    )
 
 
 def get_redis_url() -> str | None:
