@@ -28,7 +28,7 @@
       <input
         class="dialog-input"
         placeholder="请输入自我评分，参考格式：3.250"
-        type="number"
+        type="digit"
         bindinput="onRating"
       />
       <view class="dialog-actions">

@@ -82,7 +82,7 @@ Page({
         const limit =
           res.data.max_joinable_clubs != null ? res.data.max_joinable_clubs : 5;
         if (res.data.joined_clubs && res.data.joined_clubs.length >= limit) {
-          wx.showToast({ title: that.data.t.joinLimitReached, icon: 'none' });
+          wx.showToast({ duration: 4000,  title: that.data.t.joinLimitReached, icon: 'none' });
           return;
         }
         request({
@@ -146,7 +146,7 @@ Page({
       (this.data.needRating && (isNaN(rating) || rating < 0 || rating > 7)) ||
       !this.data.reason
     ) {
-      wx.showToast({ title: that.data.t.incompleteInfo, icon: 'none' });
+      wx.showToast({ duration: 4000,  title: that.data.t.incompleteInfo, icon: 'none' });
       return;
     }
     const that = this;
@@ -163,13 +163,13 @@ Page({
       success(r) {
         if (r.statusCode === 200) {
           store.setClubId(cid);
-          wx.showToast({ title: that.data.t.applied, icon: 'success' });
+          wx.showToast({ duration: 4000,  title: that.data.t.applied, icon: 'success' });
           const clubs = that.data.clubs.map(c =>
             c.club_id === cid ? { ...c, pending: true, rejected_reason: '' } : c
           );
           that.setData({ clubs, showDialog: false });
         } else {
-          wx.showToast({ title: that.data.t.failed, icon: 'none' });
+          wx.showToast({ duration: 4000,  title: that.data.t.failed, icon: 'none' });
         }
       }
     });

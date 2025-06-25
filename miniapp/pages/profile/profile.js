@@ -101,7 +101,7 @@ Page({
                   );
                 }
               } else {
-                wx.showToast({ title: '登录失败', icon: 'none' });
+                wx.showToast({ duration: 4000,  title: '登录失败', icon: 'none' });
               }
             })
             .catch(() => {});

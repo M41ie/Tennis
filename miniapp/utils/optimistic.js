@@ -11,7 +11,7 @@ module.exports = function optimisticUpdate(ctx, key, id, requestFn) {
       list.splice(idx, 0, removed);
       ctx.setData({ [key]: list });
     }
-    wx.showToast({ title: '操作失败', icon: 'none' });
+    wx.showToast({ duration: 4000,  title: '操作失败', icon: 'none' });
     return Promise.reject(err);
   });
 };

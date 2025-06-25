@@ -105,7 +105,7 @@ Page({
             data: { max_joinable_clubs: join, max_creatable_clubs: create, token },
             success(res) {
               if (res.statusCode === 200) {
-                wx.showToast({ title: '修改成功' });
+                wx.showToast({ duration: 4000,  title: '修改成功' });
                 that.setData({
                   'limits.max_joinable_clubs': join,
                   'limits.max_creatable_clubs': create
@@ -113,7 +113,7 @@ Page({
                 that.fetchDetail();
               } else {
                 const msg = (res.data && res.data.detail) || '修改失败';
-                wx.showToast({ title: msg, icon: 'none' });
+                wx.showToast({ duration: 4000,  title: msg, icon: 'none' });
               }
             },
             complete() {

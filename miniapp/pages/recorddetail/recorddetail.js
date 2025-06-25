@@ -48,6 +48,6 @@ Page({
     }
   },
   noAccess() {
-    wx.showToast({ title: t.noAccess, icon: 'none' });
+    wx.showToast({ duration: 4000,  title: t.noAccess, icon: 'none' });
   }
 });

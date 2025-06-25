@@ -1,7 +1,7 @@
 const { zh_CN: t } = require('./locales');
 
 function showError(msg) {
-  wx.showToast({ title: msg, icon: 'none' });
+  wx.showToast({ duration: 4000,  title: msg, icon: 'none' });
 }
 
 function validateClubName(name) {

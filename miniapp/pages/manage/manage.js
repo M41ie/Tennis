@@ -262,7 +262,7 @@ Page({
   confirmRating() {
     const rating = parseFloat(this.data.ratingInput);
     if (isNaN(rating)) {
-      wx.showToast({ title: '无效评分', icon: 'none' });
+      wx.showToast({ duration: 4000,  title: '无效评分', icon: 'none' });
       return;
     }
     const uid = this.data.ratingApplicantId;

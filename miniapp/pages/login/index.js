@@ -17,7 +17,7 @@ Page({
               store.setAuth(resp.access_token, resp.user_id, resp.refresh_token);
               wx.navigateBack();
             } else {
-              wx.showToast({ title: t.loginFailed, icon: 'none' });
+              wx.showToast({ duration: 4000,  title: t.loginFailed, icon: 'none' });
             }
           })
           .catch(() => {});

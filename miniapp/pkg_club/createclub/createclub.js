@@ -75,17 +75,17 @@ Page({
                 token
               },
               complete() {
-                wx.showToast({ title: that.data.t.created, icon: 'success' });
+                wx.showToast({ duration: 4000,  title: that.data.t.created, icon: 'success' });
                 wx.navigateBack();
               }
             });
           } else {
-            wx.showToast({ title: that.data.t.created, icon: 'success' });
+            wx.showToast({ duration: 4000,  title: that.data.t.created, icon: 'success' });
             wx.navigateBack();
           }
         } else {
           const msg = (res.data && res.data.detail) || that.data.t.failed;
-          wx.showToast({ title: msg, icon: 'none' });
+          wx.showToast({ duration: 4000,  title: msg, icon: 'none' });
         }
       }
     });
@@ -121,7 +121,7 @@ Page({
         }
       },
       fail() {
-        wx.showToast({ title: that.data.t.loadFailed, icon: 'none' });
+        wx.showToast({ duration: 4000,  title: that.data.t.loadFailed, icon: 'none' });
       }
     });
   },

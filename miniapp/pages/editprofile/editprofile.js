@@ -77,7 +77,7 @@ Page({
       success(res) {
         const path = res.tempFilePaths[0];
         if (!/\.(jpg|jpeg|png)$/i.test(path)) {
-          wx.showToast({ title: that.data.t.uploadImageError, icon: 'none' });
+          wx.showToast({ duration: 4000,  title: that.data.t.uploadImageError, icon: 'none' });
           return;
         }
         that.setData({ avatar: path });
@@ -116,10 +116,10 @@ Page({
       },
       success(res) {
         if (res.statusCode === 200) {
-          wx.showToast({ title: that.data.t.updated, icon: 'success' });
+          wx.showToast({ duration: 4000,  title: that.data.t.updated, icon: 'success' });
           wx.navigateBack();
         } else {
-          wx.showToast({ title: that.data.t.failed, icon: 'none' });
+          wx.showToast({ duration: 4000,  title: that.data.t.failed, icon: 'none' });
         }
       }
     });
