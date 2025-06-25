@@ -64,9 +64,13 @@ from .rating import (
 from .services.stats import _pending_status_for_user, _club_stats
 from .models import Player, Club, Match, DoublesMatch, Appointment, User, players
 
-# runtime state stored in simple module-level dictionaries
-clubs: dict[str, Club] = {}
-users: dict[str, User] = {}
+# Runtime state loaded from persistent storage. ``load_data`` returns the
+# internal cache dictionaries, so these remain in sync with updates performed
+# through the storage layer.
+clubs, _players_cache = load_data()
+users = load_users()
+players.clear()
+players.update(_players_cache)
 
 
 app = FastAPI()
