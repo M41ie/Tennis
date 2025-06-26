@@ -50,9 +50,6 @@ ActiveConfig = _CONFIGS.get(APP_ENV, DevelopmentConfig)
 
 def get_database_url() -> str:
     """Return the configured database connection string."""
-    url = os.getenv("DATABASE_URL")
-    if url:
-        return url
     return (
         f"postgresql://{ActiveConfig.DB_USER}:{ActiveConfig.DB_PASSWORD}"
         f"@{ActiveConfig.DB_HOST}/{ActiveConfig.DB_NAME}"
