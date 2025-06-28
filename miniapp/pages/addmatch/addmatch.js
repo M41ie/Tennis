@@ -72,7 +72,7 @@ Page({
             }
             that.setData({ clubIds: ids, clubOptions: names, clubIndex: index });
             if (index > 0) {
-              that.fetchPlayers(ids[index]);
+              that.fetchPlayers(store.clubId);
             }
           },
           fail() {
