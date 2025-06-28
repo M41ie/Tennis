@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from fastapi import FastAPI, HTTPException, Depends, Header
+from fastapi import FastAPI, HTTPException, Depends, Header, UploadFile, File
+from starlette.staticfiles import StaticFiles
 from .services.exceptions import ServiceError
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
@@ -9,6 +10,7 @@ import datetime
 import json
 import urllib.request
 import urllib.parse
+import secrets
 from pathlib import Path
 
 import tennis.storage as storage
@@ -72,8 +74,12 @@ users = load_users()
 players.clear()
 players.update(_players_cache)
 
+UPLOAD_DIR = Path("uploads")
+UPLOAD_DIR.mkdir(exist_ok=True)
+
 
 app = FastAPI()
+app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 
 
 @app.exception_handler(RequestValidationError)
@@ -96,6 +102,18 @@ from .routes.matches import router as matches_router
 app.include_router(users_router)
 app.include_router(clubs_router)
 app.include_router(matches_router)
+
+
+@app.post("/upload")
+async def upload_image(file: UploadFile = File(...)):
+    ext = Path(file.filename).suffix.lower()
+    if ext not in {".jpg", ".jpeg", ".png"}:
+        raise HTTPException(400, "Only jpg/png allowed")
+    name = secrets.token_hex(8) + ext
+    path = UPLOAD_DIR / name
+    with path.open("wb") as f:
+        f.write(await file.read())
+    return {"url": f"/uploads/{name}"}
 
 
 
