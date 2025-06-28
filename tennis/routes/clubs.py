@@ -123,6 +123,8 @@ def list_pending_members(club_id: str):
                     else info.doubles_rating,
                 }
             )
+            if singles is not None:
+                entry["global_rating"] = singles
         else:
             user = get_user(uid)
             entry.update(
@@ -174,6 +176,8 @@ def get_clubs_batch(club_ids: str):
                         "doubles_rating": doubles if doubles is not None else info.doubles_rating,
                     }
                 )
+                if singles is not None:
+                    entry["global_rating"] = singles
             else:
                 user = get_user(uid)
                 entry.update(
