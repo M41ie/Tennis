@@ -63,7 +63,17 @@ Page({
             const names = [that.data.t.chooseClub];
             ids.push(...filtered.map(c => c.club_id));
             names.push(...filtered.map(c => c.name));
-            that.setData({ clubIds: ids, clubOptions: names, clubIndex: 0 });
+            let index = 0;
+            if (store.clubId && ids.includes(store.clubId)) {
+              index = ids.indexOf(store.clubId);
+            } else if (!store.clubId && filtered.length === 1) {
+              index = 1;
+              store.setClubId(ids[1]);
+            }
+            that.setData({ clubIds: ids, clubOptions: names, clubIndex: index });
+            if (index > 0) {
+              that.fetchPlayers(ids[index]);
+            }
           },
           fail() {
             const ids = [''];
@@ -101,6 +111,7 @@ Page({
     const idx = e.detail.value;
     this.setData({ clubIndex: idx });
     const cid = this.data.clubIds[idx];
+    store.setClubId(cid);
     if (cid) {
       this.fetchPlayers(cid);
     } else {
@@ -153,7 +164,7 @@ Page({
       return;
     }
 
-    const cid = this.data.clubIds[this.data.clubIndex];
+    const cid = store.clubId || this.data.clubIds[this.data.clubIndex];
     const userId = store.userId;
     const token = store.token;
     if (!cid || !userId || !token) return;
