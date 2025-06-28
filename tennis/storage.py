@@ -36,6 +36,32 @@ if REDIS_URL:
     except Exception:
         _redis = None
 
+# Redis key storing the current cache version
+CACHE_VERSION_KEY = "tennis:cache_version"
+
+
+def get_cache_version() -> int:
+    """Return the integer cache version stored in Redis (0 if unavailable)."""
+    if not _redis:
+        return 0
+    try:
+        value = _redis.get(CACHE_VERSION_KEY)
+        if value is None:
+            return 0
+        return int(value)
+    except Exception:
+        return 0
+
+
+def increment_cache_version() -> int:
+    """Increment and return the cache version stored in Redis."""
+    if not _redis:
+        return 0
+    try:
+        return int(_redis.incr(CACHE_VERSION_KEY))
+    except Exception:
+        return 0
+
 
 class _PgCursor:
     def __init__(self, cursor):
@@ -175,6 +201,9 @@ def _refresh_after_write() -> None:
     _pending_clubs.clear()
     _pending_users.clear()
     _pending_players.clear()
+
+    # bump cache version so other workers reload on next request
+    increment_cache_version()
 
 
 def invalidate_cache() -> None:
