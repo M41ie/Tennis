@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from fastapi import FastAPI, HTTPException, Depends, Header, UploadFile, File
+from fastapi import FastAPI, HTTPException, Depends, Header, UploadFile, File, Request
 from starlette.staticfiles import StaticFiles
 import secrets
 from .services.exceptions import ServiceError
@@ -17,10 +17,11 @@ UPLOAD_DIR = Path("uploads")
 
 
 import tennis.storage as storage
-from .storage import load_data, load_users, invalidate_cache
+from .storage import load_data, load_users, invalidate_cache, get_cache_version
 
 # ensure cached data does not leak across reloads
 invalidate_cache()
+CACHE_VERSION = get_cache_version()
 from .cli import (
     register_user,
     resolve_user,
@@ -81,6 +82,22 @@ players.update(_players_cache)
 app = FastAPI()
 UPLOAD_DIR.mkdir(exist_ok=True)
 app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
+
+
+@app.middleware("http")
+async def cache_sync_middleware(request: Request, call_next):
+    """Reload cached data when another worker has updated the version."""
+    global CACHE_VERSION, clubs, users
+    version = storage.get_cache_version()
+    if version != CACHE_VERSION:
+        invalidate_cache()
+        clubs, _players_cache = load_data()
+        users = load_users()
+        players.clear()
+        players.update(_players_cache)
+        CACHE_VERSION = version
+    response = await call_next(request)
+    return response
 
 
 @app.exception_handler(RequestValidationError)
