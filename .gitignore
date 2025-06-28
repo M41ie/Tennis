@@ -16,3 +16,4 @@ tennis.db
 # Miniapp
 miniapp/node_modules/
 .env
+uploads/
