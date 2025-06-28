@@ -31,6 +31,9 @@ Page({
     this.setData({ userId: store.userId });
     this.checkSysAdmin();
   },
+  onShow() {
+    this.fetchPlayers();
+  },
   checkSysAdmin() {
     const uid = this.data.userId;
     const that = this;

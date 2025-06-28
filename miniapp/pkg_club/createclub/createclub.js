@@ -76,11 +76,13 @@ Page({
               },
               complete() {
                 wx.showToast({ duration: 4000,  title: that.data.t.created, icon: 'success' });
+                store.setClubId(cid);
                 wx.navigateBack();
               }
             });
           } else {
             wx.showToast({ duration: 4000,  title: that.data.t.created, icon: 'success' });
+            store.setClubId(cid);
             wx.navigateBack();
           }
         } else {
