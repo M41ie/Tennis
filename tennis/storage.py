@@ -547,6 +547,7 @@ def load_data() -> tuple[Dict[str, Club], Dict[str, Player]]:
             pb1 = players[data["b1"]]
             pb2 = players[data["b2"]]
             match = DoublesMatch(
+                id=row["id"],
                 date=date,
                 player_a1=pa1,
                 player_a2=pa2,
@@ -576,6 +577,7 @@ def load_data() -> tuple[Dict[str, Club], Dict[str, Player]]:
             pa = players[data["player_a"]]
             pb = players[data["player_b"]]
             match = Match(
+                id=row["id"],
                 date=date,
                 player_a=pa,
                 player_b=pb,
@@ -609,6 +611,7 @@ def load_data() -> tuple[Dict[str, Club], Dict[str, Player]]:
             pb1 = players[data["b1"]]
             pb2 = players[data["b2"]]
             match = DoublesMatch(
+                id=row["id"],
                 date=date,
                 player_a1=pa1,
                 player_a2=pa2,
@@ -637,6 +640,7 @@ def load_data() -> tuple[Dict[str, Club], Dict[str, Player]]:
             pa = players[data["player_a"]]
             pb = players[data["player_b"]]
             match = Match(
+                id=row["id"],
                 date=date,
                 player_a=pa,
                 player_b=pb,
@@ -744,119 +748,9 @@ def save_data(clubs: Dict[str, Club]) -> None:
                     (cid, uid),
                 )
         for m in club.matches:
-            if isinstance(m, DoublesMatch):
-                data = {
-                    "a1": m.player_a1.user_id,
-                    "a2": m.player_a2.user_id,
-                    "b1": m.player_b1.user_id,
-                    "b2": m.player_b2.user_id,
-                    "score_a": m.score_a,
-                    "score_b": m.score_b,
-                    "weight": m.format_weight,
-                    "location": m.location,
-                    "format_name": m.format_name,
-                    "rating_a1_before": m.rating_a1_before,
-                    "rating_a2_before": m.rating_a2_before,
-                    "rating_b1_before": m.rating_b1_before,
-                    "rating_b2_before": m.rating_b2_before,
-                    "rating_a1_after": m.rating_a1_after,
-                    "rating_a2_after": m.rating_a2_after,
-                    "rating_b1_after": m.rating_b1_after,
-                    "rating_b2_after": m.rating_b2_after,
-                    "created": m.created.isoformat(),
-                    "created_ts": m.created_ts.isoformat(),
-                }
-                cur.execute(
-                    "INSERT INTO matches(club_id, type, date, data) VALUES (?,?,?,?)",
-                    (
-                        cid,
-                        "doubles",
-                        m.date.isoformat(),
-                        json.dumps(data),
-                    ),
-                )
-            else:
-                data = {
-                    "player_a": m.player_a.user_id,
-                    "player_b": m.player_b.user_id,
-                    "score_a": m.score_a,
-                    "score_b": m.score_b,
-                    "weight": m.format_weight,
-                    "location": m.location,
-                    "format_name": m.format_name,
-                    "rating_a_before": m.rating_a_before,
-                    "rating_b_before": m.rating_b_before,
-                    "rating_a_after": m.rating_a_after,
-                    "rating_b_after": m.rating_b_after,
-                    "created": m.created.isoformat(),
-                    "created_ts": m.created_ts.isoformat(),
-                }
-                cur.execute(
-                    "INSERT INTO matches(club_id, type, date, data) VALUES (?,?,?,?)",
-                    (
-                        cid,
-                        "singles",
-                        m.date.isoformat(),
-                        json.dumps(data),
-                    ),
-                )
+            m.id = create_match(cid, m, pending=False, conn=conn)
         for m in club.pending_matches:
-            if isinstance(m, DoublesMatch):
-                data = {
-                    "a1": m.player_a1.user_id,
-                    "a2": m.player_a2.user_id,
-                    "b1": m.player_b1.user_id,
-                    "b2": m.player_b2.user_id,
-                    "score_a": m.score_a,
-                    "score_b": m.score_b,
-                    "weight": m.format_weight,
-                    "location": m.location,
-                    "format_name": m.format_name,
-                    "initiator": m.initiator,
-                    "confirmed_a": m.confirmed_a,
-                    "confirmed_b": m.confirmed_b,
-                    "created": m.created.isoformat(),
-                    "created_ts": m.created_ts.isoformat(),
-                    "confirmed_on": m.confirmed_on.isoformat() if m.confirmed_on else None,
-                    "status": m.status,
-                    "status_date": m.status_date.isoformat() if m.status_date else None,
-                }
-                cur.execute(
-                    "INSERT INTO pending_matches(club_id, type, date, data) VALUES (?,?,?,?)",
-                    (
-                        cid,
-                        "doubles",
-                        m.date.isoformat(),
-                        json.dumps(data),
-                    ),
-                )
-            else:
-                data = {
-                    "player_a": m.player_a.user_id,
-                    "player_b": m.player_b.user_id,
-                    "score_a": m.score_a,
-                    "score_b": m.score_b,
-                    "weight": m.format_weight,
-                    "location": m.location,
-                    "format_name": m.format_name,
-                    "initiator": m.initiator,
-                    "confirmed_a": m.confirmed_a,
-                    "confirmed_b": m.confirmed_b,
-                    "created": m.created.isoformat(),
-                    "created_ts": m.created_ts.isoformat(),
-                    "confirmed_on": m.confirmed_on.isoformat() if m.confirmed_on else None,
-                    "status": m.status,
-                    "status_date": m.status_date.isoformat() if m.status_date else None,
-                }
-                cur.execute(
-                    "INSERT INTO pending_matches(club_id, type, date, data) VALUES (?,?,?,?)",
-                    (
-                        cid,
-                        "singles",
-                        m.date.isoformat(),
-                        json.dumps(data),
-                    ),
-                )
+            m.id = create_match(cid, m, pending=True, conn=conn)
         for a in club.appointments:
             cur.execute(
                 "INSERT INTO appointments(club_id, date, creator, location, info, signups) VALUES (?,?,?,?,?,?)",
@@ -1110,14 +1004,20 @@ def create_match(
     match: Match | DoublesMatch,
     pending: bool = False,
     conn: sqlite3.Connection | None = None,
-) -> None:
-    """Insert a match record."""
+) -> int:
+    """Insert a match record and return its row id."""
     close = conn is None
     if conn is None:
         conn = _connect()
     cur = conn.cursor()
     table = "pending_matches" if pending else "matches"
+    cols = ["club_id", "type", "date", "data"]
+    values = [club_id]
     if isinstance(match, DoublesMatch):
+        values.extend([
+            "doubles",
+            match.date.isoformat(),
+        ])
         data = {
             "a1": match.player_a1.user_id,
             "a2": match.player_a2.user_id,
@@ -1137,16 +1037,12 @@ def create_match(
                 "status": match.status,
                 "status_date": match.status_date.isoformat() if match.status_date else None,
             }
-        cur.execute(
-            f"INSERT INTO {table}(club_id, type, date, data) VALUES (?,?,?,?)",
-            (
-                club_id,
-                "doubles",
-                match.date.isoformat(),
-                json.dumps(data),
-            ),
-        )
+        values.append(json.dumps(data))
     else:
+        values.extend([
+            "singles",
+            match.date.isoformat(),
+        ])
         data = {
             "player_a": match.player_a.user_id,
             "player_b": match.player_b.user_id,
@@ -1164,18 +1060,23 @@ def create_match(
                 "status": match.status,
                 "status_date": match.status_date.isoformat() if match.status_date else None,
             }
-        cur.execute(
-            f"INSERT INTO {table}(club_id, type, date, data) VALUES (?,?,?,?)",
-            (
-                club_id,
-                "singles",
-                match.date.isoformat(),
-                json.dumps(data),
-            ),
-        )
+        values.append(json.dumps(data))
+
+    placeholders = "?, ?, ?, ?"
+    if match.id is not None:
+        cols.insert(0, "id")
+        values.insert(0, match.id)
+        placeholders = "?, ?, ?, ?, ?"
+    query = f"INSERT INTO {table}({', '.join(cols)}) VALUES ({placeholders})" + (
+        " RETURNING id" if IS_PG else ""
+    )
+    cur.execute(query, values)
+    row_id = cur.fetchone()[0] if IS_PG else cur.lastrowid
+    match.id = row_id
     if close:
         conn.commit()
         conn.close()
+    return row_id
 
 
 def update_match_record(
@@ -1915,9 +1816,9 @@ def save_club(club: Club, conn: sqlite3.Connection | None = None) -> None:
         create_player(club.club_id, player, conn=conn)
         update_player_record(player, conn=conn)
     for m in club.matches:
-        create_match(club.club_id, m, pending=False, conn=conn)
+        m.id = create_match(club.club_id, m, pending=False, conn=conn)
     for m in club.pending_matches:
-        create_match(club.club_id, m, pending=True, conn=conn)
+        m.id = create_match(club.club_id, m, pending=True, conn=conn)
     for a in club.appointments:
         create_appointment_record(club.club_id, a, conn=conn)
     if close:

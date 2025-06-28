@@ -267,7 +267,7 @@ Page({
     });
   },
   confirmSingle(e) {
-    const idx = e.currentTarget.dataset.index;
+    const idx = e.currentTarget.dataset.id;
     const cid = e.currentTarget.dataset.club;
     const token = store.token;
     optimisticUpdate(this, 'pendingSingles', idx, () =>
@@ -281,7 +281,7 @@ Page({
     });
   },
   approveSingle(e) {
-    const idx = e.currentTarget.dataset.index;
+    const idx = e.currentTarget.dataset.id;
     const cid = e.currentTarget.dataset.club;
     const token = store.token;
     const that = this;
@@ -303,7 +303,7 @@ Page({
     });
   },
   vetoSingle(e) {
-    const idx = e.currentTarget.dataset.index;
+    const idx = e.currentTarget.dataset.id;
     const cid = e.currentTarget.dataset.club;
     const token = store.token;
     optimisticUpdate(this, 'pendingSingles', idx, () =>
@@ -317,7 +317,7 @@ Page({
     });
   },
   rejectSingle(e) {
-    const idx = e.currentTarget.dataset.index;
+    const idx = e.currentTarget.dataset.id;
     const cid = e.currentTarget.dataset.club;
     const token = store.token;
     optimisticUpdate(this, 'pendingSingles', idx, () =>
@@ -331,7 +331,7 @@ Page({
     });
   },
   confirmDouble(e) {
-    const idx = e.currentTarget.dataset.index;
+    const idx = e.currentTarget.dataset.id;
     const cid = e.currentTarget.dataset.club;
     const token = store.token;
     optimisticUpdate(this, 'pendingDoubles', idx, () =>
@@ -345,7 +345,7 @@ Page({
     });
   },
   approveDouble(e) {
-    const idx = e.currentTarget.dataset.index;
+    const idx = e.currentTarget.dataset.id;
     const cid = e.currentTarget.dataset.club;
     const token = store.token;
     const that = this;
@@ -367,7 +367,7 @@ Page({
     });
   },
   vetoDouble(e) {
-    const idx = e.currentTarget.dataset.index;
+    const idx = e.currentTarget.dataset.id;
     const cid = e.currentTarget.dataset.club;
     const token = store.token;
     optimisticUpdate(this, 'pendingDoubles', idx, () =>
@@ -381,7 +381,7 @@ Page({
     });
   },
   rejectDouble(e) {
-    const idx = e.currentTarget.dataset.index;
+    const idx = e.currentTarget.dataset.id;
     const cid = e.currentTarget.dataset.club;
     const token = store.token;
     optimisticUpdate(this, 'pendingDoubles', idx, () =>
