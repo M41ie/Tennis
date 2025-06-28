@@ -50,11 +50,14 @@ from .helpers import get_club_or_404
 from ..models import players
 
 
-def _prepare_players(club: "Club" | None = None, extra: list[str] | None = None) -> None:
-    """Populate the global ``players`` dict from a club and extra ids."""
-    players.clear()
+def _prepare_players(
+    club: "Club" | None = None, extra: list[str] | None = None
+) -> None:
+    """Populate the global ``players`` dict with club members and extra ids."""
     if club:
-        players.update({p.user_id: p for p in club.members.values()})
+        for p in club.members.values():
+            if p.user_id not in players:
+                players[p.user_id] = p
     if extra:
         for uid in extra:
             if uid not in players:
