@@ -81,6 +81,25 @@ Page({
           return;
         }
         that.setData({ avatar: path });
+        wx.uploadFile({
+          url: `${BASE_URL}/upload`,
+          filePath: path,
+          name: 'file',
+          success(resp) {
+            let data = {};
+            try {
+              data = JSON.parse(resp.data);
+            } catch (e) {}
+            if (data && data.url) {
+              that.setData({ avatar: data.url });
+            } else {
+              wx.showToast({ duration: 4000,  title: that.data.t.failed, icon: 'none' });
+            }
+          },
+          fail() {
+            wx.showToast({ duration: 4000,  title: that.data.t.failed, icon: 'none' });
+          }
+        });
       }
     });
   },
