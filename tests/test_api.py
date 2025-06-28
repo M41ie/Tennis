@@ -71,8 +71,9 @@ def test_api_match_flow(tmp_path, monkeypatch):
     assert resp.json()["status"] == "pending"
 
     # confirm by opponent
+    match_id = client.get(f"/clubs/c1/pending_matches?token={token_p1}").json()[0]["id"]
     resp = client.post(
-        "/clubs/c1/pending_matches/0/confirm",
+        f"/clubs/c1/pending_matches/{match_id}/confirm",
         json={"user_id": "p2", "token": token_p2},
     )
     assert resp.status_code == 200
@@ -80,7 +81,7 @@ def test_api_match_flow(tmp_path, monkeypatch):
 
     # approve by leader
     resp = client.post(
-        "/clubs/c1/pending_matches/0/approve",
+        f"/clubs/c1/pending_matches/{match_id}/approve",
         json={"approver": "leader", "token": token_leader},
     )
     assert resp.status_code == 200
@@ -408,7 +409,6 @@ def test_pending_match_query(tmp_path, monkeypatch):
     records = resp.json()
     assert len(records) == 1
     rec = records[0]
-    assert rec["index"] == 0
     assert rec["player_a"] == "p1"
     assert rec["player_b"] == "p2"
     assert rec["confirmed_a"] is True
@@ -467,8 +467,9 @@ def test_pending_match_role_fields(tmp_path, monkeypatch):
     assert rec["can_decline"] is True
     assert rec["current_user_role_in_match"] == "opponent"
 
+    match_id = rec["id"]
     client.post(
-        "/clubs/c1/pending_matches/0/confirm",
+        f"/clubs/c1/pending_matches/{match_id}/confirm",
         json={"user_id": "p2", "token": tokens["p2"]},
     )
 
@@ -526,7 +527,6 @@ def test_pending_doubles_query(tmp_path, monkeypatch):
     records = resp.json()
     assert len(records) == 1
     rec = records[0]
-    assert rec["index"] == 0
     assert rec["a1"] == "p1"
     assert rec["a2"] == "p2"
     assert rec["b1"] == "p3"
@@ -645,9 +645,9 @@ def test_admin_submitter_review_text(tmp_path, monkeypatch):
 
     rec = client.get(f"/clubs/c1/pending_matches?token={tokens['leader']}").json()[0]
     assert rec["display_status_text"] == "您已提交，等待对手确认"
-
+    mid = rec["id"]
     client.post(
-        "/clubs/c1/pending_matches/0/confirm",
+        f"/clubs/c1/pending_matches/{mid}/confirm",
         json={"user_id": "p2", "token": tokens["p2"]},
     )
 
@@ -761,8 +761,9 @@ def test_reject_pending_match(tmp_path, monkeypatch):
     assert rec["can_confirm"] is True
     assert rec["can_decline"] is True
 
+    mid = rec["id"]
     resp = client.post(
-        "/clubs/c1/pending_matches/0/reject",
+        f"/clubs/c1/pending_matches/{mid}/reject",
         json={"user_id": "p2", "token": tokens["p2"]},
     )
     assert resp.status_code == 200
@@ -859,8 +860,9 @@ def test_veto_pending_match(tmp_path, monkeypatch):
         json={"initiator": "p1", "opponent": "p2", "score_initiator": 6, "score_opponent": 4, "token": tokens["p1"]},
     )
 
+    mid = client.get(f"/clubs/c1/pending_matches?token={tokens['leader']}").json()[0]["id"]
     resp = client.post(
-        "/clubs/c1/pending_matches/0/veto",
+        f"/clubs/c1/pending_matches/{mid}/veto",
         json={"approver": "leader", "token": tokens["leader"]},
     )
     assert resp.status_code == 200
@@ -977,8 +979,9 @@ def test_pending_visibility_rules(tmp_path, monkeypatch):
     assert client.get(f"/clubs/c1/pending_matches?token={tokens['leader']}").json() == []
 
     # opponent confirms; now both participants confirmed
+    mid = client.get(f"/clubs/c1/pending_matches?token={tokens['p1']}").json()[0]["id"]
     client.post(
-        "/clubs/c1/pending_matches/0/confirm",
+        f"/clubs/c1/pending_matches/{mid}/confirm",
         json={"user_id": "p2", "token": tokens["p2"]},
     )
 

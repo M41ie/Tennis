@@ -88,6 +88,7 @@ class Club:
 
 @dataclass
 class Match:
+    id: int | None = None
     date: datetime.date
     player_a: Player
     player_b: Player
@@ -113,6 +114,7 @@ class Match:
 
 @dataclass
 class DoublesMatch:
+    id: int | None = None
     date: datetime.date
     player_a1: Player
     player_a2: Player

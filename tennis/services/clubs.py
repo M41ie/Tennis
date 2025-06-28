@@ -50,6 +50,13 @@ from .helpers import get_club_or_404
 from ..models import players
 
 
+def _find_pending_match(club, match_id: int) -> int:
+    for idx, m in enumerate(club.pending_matches):
+        if getattr(m, "id", None) == match_id:
+            return idx
+    raise ServiceError("Match not found", 404)
+
+
 def _prepare_players(
     club: "Club" | None = None, extra: list[str] | None = None
 ) -> None:
@@ -183,14 +190,13 @@ def dissolve_existing_club(club_id: str, user_id: str) -> None:
                 save_user(u, conn=conn)
 
 
-def approve_pending_match(club_id: str, index: int, approver: str) -> None:
+def approve_pending_match(club_id: str, match_id: int, approver: str) -> None:
     """Approve a pending singles match and persist the club and users."""
     club = get_club_or_404(club_id)
     users = load_users()
     clubs = {club_id: club}
     _prepare_players(club)
-    if index >= len(club.pending_matches):
-        raise ServiceError("Match not found", 404)
+    index = _find_pending_match(club, match_id)
     match = club.pending_matches[index]
     try:
         cli_approve_match(clubs, club_id, index, approver, users)
@@ -415,12 +421,13 @@ def submit_pending_match(
                 save_user(u, conn=conn)
 
 
-def confirm_pending_match(club_id: str, index: int, user_id: str) -> None:
+def confirm_pending_match(club_id: str, match_id: int, user_id: str) -> None:
     """Confirm a pending singles match."""
     club = get_club_or_404(club_id)
     users = load_users()
     clubs = {club_id: club}
     _prepare_players(club)
+    index = _find_pending_match(club, match_id)
     try:
         cli_confirm_match(clubs, club_id, index, user_id, users)
     except ValueError as e:
@@ -434,12 +441,13 @@ def confirm_pending_match(club_id: str, index: int, user_id: str) -> None:
                 save_user(u, conn=conn)
 
 
-def reject_pending_match(club_id: str, index: int, user_id: str) -> None:
+def reject_pending_match(club_id: str, match_id: int, user_id: str) -> None:
     """Reject a pending singles match."""
     club = get_club_or_404(club_id)
     users = load_users()
     clubs = {club_id: club}
     _prepare_players(club)
+    index = _find_pending_match(club, match_id)
     try:
         cli_reject_match(clubs, club_id, index, user_id, users)
     except ValueError as e:
@@ -454,12 +462,13 @@ def reject_pending_match(club_id: str, index: int, user_id: str) -> None:
                 save_user(u, conn=conn)
 
 
-def veto_pending_match(club_id: str, index: int, approver: str) -> None:
+def veto_pending_match(club_id: str, match_id: int, approver: str) -> None:
     """Veto a pending singles match."""
     club = get_club_or_404(club_id)
     users = load_users()
     clubs = {club_id: club}
     _prepare_players(club)
+    index = _find_pending_match(club, match_id)
     try:
         cli_veto_match(clubs, club_id, index, approver, users)
     except ValueError as e:
@@ -520,12 +529,13 @@ def submit_pending_doubles(
                 save_user(u, conn=conn)
 
 
-def confirm_pending_doubles(club_id: str, index: int, user_id: str) -> None:
+def confirm_pending_doubles(club_id: str, match_id: int, user_id: str) -> None:
     """Confirm a pending doubles match."""
     club = get_club_or_404(club_id)
     users = load_users()
     clubs = {club_id: club}
     _prepare_players(club)
+    index = _find_pending_match(club, match_id)
     try:
         cli_confirm_doubles(clubs, club_id, index, user_id, users)
     except ValueError as e:
@@ -539,12 +549,13 @@ def confirm_pending_doubles(club_id: str, index: int, user_id: str) -> None:
                 save_user(u, conn=conn)
 
 
-def reject_pending_doubles(club_id: str, index: int, user_id: str) -> None:
+def reject_pending_doubles(club_id: str, match_id: int, user_id: str) -> None:
     """Reject a pending doubles match."""
     club = get_club_or_404(club_id)
     users = load_users()
     clubs = {club_id: club}
     _prepare_players(club)
+    index = _find_pending_match(club, match_id)
     try:
         cli_reject_doubles(clubs, club_id, index, user_id, users)
     except ValueError as e:
@@ -559,12 +570,13 @@ def reject_pending_doubles(club_id: str, index: int, user_id: str) -> None:
                 save_user(u, conn=conn)
 
 
-def veto_pending_doubles(club_id: str, index: int, approver: str) -> None:
+def veto_pending_doubles(club_id: str, match_id: int, approver: str) -> None:
     """Veto a pending doubles match."""
     club = get_club_or_404(club_id)
     users = load_users()
     clubs = {club_id: club}
     _prepare_players(club)
+    index = _find_pending_match(club, match_id)
     try:
         cli_veto_doubles(clubs, club_id, index, approver, users)
     except ValueError as e:

@@ -1,6 +1,6 @@
 module.exports = function optimisticUpdate(ctx, key, id, requestFn) {
   const list = (ctx.data[key] || []).slice();
-  const idx = list.findIndex(item => item.index === id);
+  const idx = list.findIndex(item => item.id === id);
   let removed;
   if (idx !== -1) {
     removed = list.splice(idx, 1)[0];

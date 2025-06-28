@@ -42,7 +42,7 @@ def list_pending_doubles_service(club_id: str, authorization: str | None = None)
                 continue
 
         entry = {
-            "index": idx,
+            "id": m.id,
             "date": m.date.isoformat(),
             "a1": m.player_a1.user_id,
             "a2": m.player_a2.user_id,
@@ -208,7 +208,7 @@ def list_pending_matches_service(club_id: str, authorization: str | None = None)
                 continue
 
         entry = {
-            "index": idx,
+            "id": m.id,
             "date": m.date.isoformat(),
             "player_a": m.player_a.user_id,
             "player_b": m.player_b.user_id,

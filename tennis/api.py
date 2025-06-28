@@ -933,21 +933,21 @@ class ApproveMatchRequest(BaseModel):
     approver: str
 
 
-@app.post("/clubs/{club_id}/pending_matches/{index}/confirm")
-def confirm_match_api(club_id: str, index: int, data: ConfirmRequest, authorization: str | None = Header(None)):
+@app.post("/clubs/{club_id}/pending_matches/{match_id}/confirm")
+def confirm_match_api(club_id: str, match_id: int, data: ConfirmRequest, authorization: str | None = Header(None)):
     user = require_auth(authorization)
     if user != data.user_id:
         raise HTTPException(401, "Token mismatch")
 
     try:
-        svc_confirm_match(club_id, index, data.user_id)
+        svc_confirm_match(club_id, match_id, data.user_id)
     except ValueError as e:
         raise HTTPException(400, str(e))
     return {"status": "ok"}
 
 
-@app.post("/clubs/{club_id}/pending_matches/{index}/reject")
-def reject_match_api(club_id: str, index: int, data: ConfirmRequest, authorization: str | None = Header(None)):
+@app.post("/clubs/{club_id}/pending_matches/{match_id}/reject")
+def reject_match_api(club_id: str, match_id: int, data: ConfirmRequest, authorization: str | None = Header(None)):
     """Participant rejects a pending singles match."""
 
     user = require_auth(authorization)
@@ -955,31 +955,31 @@ def reject_match_api(club_id: str, index: int, data: ConfirmRequest, authorizati
         raise HTTPException(401, "Token mismatch")
 
     try:
-        svc_reject_match(club_id, index, data.user_id)
+        svc_reject_match(club_id, match_id, data.user_id)
     except ValueError as e:
         raise HTTPException(400, str(e))
     return {"status": "rejected"}
 
 
-@app.post("/clubs/{club_id}/pending_matches/{index}/approve")
-def approve_match_api(club_id: str, index: int, data: ApproveMatchRequest, authorization: str | None = Header(None)):
+@app.post("/clubs/{club_id}/pending_matches/{match_id}/approve")
+def approve_match_api(club_id: str, match_id: int, data: ApproveMatchRequest, authorization: str | None = Header(None)):
     user = require_auth(authorization)
     if user != data.approver:
         raise HTTPException(401, "Token mismatch")
 
-    approve_pending_match(club_id, index, data.approver)
+    approve_pending_match(club_id, match_id, data.approver)
     return {"status": "ok"}
 
 
-@app.post("/clubs/{club_id}/pending_matches/{index}/veto")
-def veto_match_api(club_id: str, index: int, data: ApproveMatchRequest, authorization: str | None = Header(None)):
+@app.post("/clubs/{club_id}/pending_matches/{match_id}/veto")
+def veto_match_api(club_id: str, match_id: int, data: ApproveMatchRequest, authorization: str | None = Header(None)):
     """Admin vetoes a pending singles match."""
     user = require_auth(authorization)
     if user != data.approver:
         raise HTTPException(401, "Token mismatch")
 
     try:
-        svc_veto_match(club_id, index, data.approver)
+        svc_veto_match(club_id, match_id, data.approver)
     except ValueError as e:
         raise HTTPException(400, str(e))
     return {"status": "vetoed"}
@@ -1016,45 +1016,45 @@ def submit_doubles_api(club_id: str, data: PendingDoublesCreate, authorization: 
     return {"status": "pending"}
 
 
-@app.post("/clubs/{club_id}/pending_doubles/{index}/confirm")
-def confirm_doubles_api(club_id: str, index: int, data: ConfirmRequest, authorization: str | None = Header(None)):
+@app.post("/clubs/{club_id}/pending_doubles/{match_id}/confirm")
+def confirm_doubles_api(club_id: str, match_id: int, data: ConfirmRequest, authorization: str | None = Header(None)):
     user = require_auth(authorization)
     if user != data.user_id:
         raise HTTPException(401, "Token mismatch")
 
     try:
-        svc_confirm_doubles(club_id, index, data.user_id)
+        svc_confirm_doubles(club_id, match_id, data.user_id)
     except ValueError as e:
         raise HTTPException(400, str(e))
     return {"status": "ok"}
 
 
-@app.post("/clubs/{club_id}/pending_doubles/{index}/reject")
-def reject_doubles_api(club_id: str, index: int, data: ConfirmRequest, authorization: str | None = Header(None)):
+@app.post("/clubs/{club_id}/pending_doubles/{match_id}/reject")
+def reject_doubles_api(club_id: str, match_id: int, data: ConfirmRequest, authorization: str | None = Header(None)):
     """Participant rejects a pending doubles match."""
     user = require_auth(authorization)
     if user != data.user_id:
         raise HTTPException(401, "Token mismatch")
 
     try:
-        svc_reject_doubles(club_id, index, data.user_id)
+        svc_reject_doubles(club_id, match_id, data.user_id)
     except ValueError as e:
         raise HTTPException(400, str(e))
     return {"status": "rejected"}
 
 
-@app.post("/clubs/{club_id}/pending_doubles/{index}/approve")
-def approve_doubles_api(club_id: str, index: int, data: ApproveMatchRequest, authorization: str | None = Header(None)):
+@app.post("/clubs/{club_id}/pending_doubles/{match_id}/approve")
+def approve_doubles_api(club_id: str, match_id: int, data: ApproveMatchRequest, authorization: str | None = Header(None)):
     user = require_auth(authorization)
     if user != data.approver:
         raise HTTPException(401, "Token mismatch")
 
-    approve_pending_match(club_id, index, data.approver)
+    approve_pending_match(club_id, match_id, data.approver)
     return {"status": "ok"}
 
 
-@app.post("/clubs/{club_id}/pending_doubles/{index}/veto")
-def veto_doubles_api(club_id: str, index: int, data: ApproveMatchRequest, authorization: str | None = Header(None)):
+@app.post("/clubs/{club_id}/pending_doubles/{match_id}/veto")
+def veto_doubles_api(club_id: str, match_id: int, data: ApproveMatchRequest, authorization: str | None = Header(None)):
     """Admin vetoes a pending doubles match."""
 
     user = require_auth(authorization)
@@ -1062,7 +1062,7 @@ def veto_doubles_api(club_id: str, index: int, data: ApproveMatchRequest, author
         raise HTTPException(401, "Token mismatch")
 
     try:
-        svc_veto_doubles(club_id, index, data.approver)
+        svc_veto_doubles(club_id, match_id, data.approver)
     except ValueError as e:
         raise HTTPException(400, str(e))
     return {"status": "vetoed"}

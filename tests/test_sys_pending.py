@@ -44,8 +44,9 @@ def test_sys_pending_singles_filtered(tmp_path, monkeypatch):
         "/clubs/c1/pending_matches",
         json={"initiator": "p1", "opponent": "p2", "score_initiator": 6, "score_opponent": 4, "token": tokens["p1"]},
     )
+    mid = client.get(f"/clubs/c1/pending_matches?token={tokens['p1']}").json()[0]["id"]
     client.post(
-        "/clubs/c1/pending_matches/0/reject",
+        f"/clubs/c1/pending_matches/{mid}/reject",
         json={"user_id": "p2", "token": tokens["p2"]},
     )
 
@@ -57,12 +58,13 @@ def test_sys_pending_singles_filtered(tmp_path, monkeypatch):
         "/clubs/c1/pending_matches",
         json={"initiator": "p1", "opponent": "p2", "score_initiator": 6, "score_opponent": 3, "token": tokens["p1"]},
     )
+    mid2 = client.get(f"/clubs/c1/pending_matches?token={tokens['p1']}").json()[0]["id"]
     client.post(
-        "/clubs/c1/pending_matches/1/confirm",
+        f"/clubs/c1/pending_matches/{mid2}/confirm",
         json={"user_id": "p2", "token": tokens["p2"]},
     )
     client.post(
-        "/clubs/c1/pending_matches/1/veto",
+        f"/clubs/c1/pending_matches/{mid2}/veto",
         json={"approver": "leader", "token": tokens["leader"]},
     )
 
