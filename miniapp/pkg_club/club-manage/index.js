@@ -66,14 +66,14 @@ Page({
     });
   },
   openClub(e) {
-    const cid = e.currentTarget.dataset.id;
+    const cid = e.detail.club ? e.detail.club.club_id : '';
     if (cid) {
       store.setClubId(cid);
       wx.navigateTo({ url: `/pages/manage/manage?cid=${cid}` });
     }
   },
   quitClub(e) {
-    const cid = e.currentTarget.dataset.id;
+    const cid = e.detail.club ? e.detail.club.club_id : '';
     const uid = store.userId;
     const token = store.token;
     const that = this;
@@ -85,7 +85,7 @@ Page({
     });
   },
   resignAdmin(e) {
-    const cid = e.currentTarget.dataset.id;
+    const cid = e.detail.club ? e.detail.club.club_id : '';
     const uid = store.userId;
     const token = store.token;
     const that = this;
@@ -106,7 +106,7 @@ Page({
     });
   },
   toggleAdmin(e) {
-    const cid = e.currentTarget.dataset.id;
+    const cid = e.detail.club ? e.detail.club.club_id : '';
     const uid = store.userId;
     const token = store.token;
     const that = this;
@@ -118,7 +118,7 @@ Page({
     });
   },
   transferLeader(e) {
-    const cid = e.currentTarget.dataset.id;
+    const cid = e.detail.club ? e.detail.club.club_id : '';
     const uid = store.userId;
     const token = store.token;
     const that = this;
