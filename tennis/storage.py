@@ -464,17 +464,35 @@ def load_data() -> tuple[Dict[str, Club], Dict[str, Player]]:
         club = clubs.get(row["club_id"])
         if not club:
             continue
-        club.banned_ids.update(json.loads(row["banned_ids"] or "[]"))
+        value = row["banned_ids"]
+        if isinstance(value, str):
+            parsed = json.loads(value or "[]")
+        else:
+            parsed = value or []
+        club.banned_ids.update(parsed)
         club.leader_id = row["leader_id"]
-        club.admin_ids.update(json.loads(row["admin_ids"] or "[]"))
-        pending = json.loads(row["pending_members"] or "{}")
+        value = row["admin_ids"]
+        if isinstance(value, str):
+            parsed = json.loads(value or "[]")
+        else:
+            parsed = value or []
+        club.admin_ids.update(parsed)
+        value = row["pending_members"]
+        if isinstance(value, str):
+            pending = json.loads(value or "{}")
+        else:
+            pending = value or {}
         for uid, info in pending.items():
             club.pending_members[uid] = JoinApplication(
                 reason=info.get("reason"),
                 singles_rating=info.get("singles_rating"),
                 doubles_rating=info.get("doubles_rating"),
             )
-        rejected = json.loads(row["rejected_members"] or "{}")
+        value = row["rejected_members"]
+        if isinstance(value, str):
+            rejected = json.loads(value or "{}")
+        else:
+            rejected = value or {}
         club.rejected_members.update(rejected)
 
     for row in cur.execute("SELECT * FROM players"):
@@ -493,7 +511,12 @@ def load_data() -> tuple[Dict[str, Club], Dict[str, Player]]:
             region=row["region"],
             joined=datetime.date.fromisoformat(row["joined"]) if row["joined"] else datetime.date.today(),
         )
-        p.pre_ratings.update(json.loads(row["pre_ratings"] or "{}"))
+        value = row["pre_ratings"]
+        if isinstance(value, str):
+            parsed = json.loads(value or "{}")
+        else:
+            parsed = value or {}
+        p.pre_ratings.update(parsed)
         players[p.user_id] = p
 
     for row in cur.execute("SELECT * FROM club_members"):
@@ -506,7 +529,11 @@ def load_data() -> tuple[Dict[str, Club], Dict[str, Player]]:
         club = clubs.get(row["club_id"])
         if not club:
             continue
-        data = json.loads(row["data"])
+        value = row["data"]
+        if isinstance(value, str):
+            data = json.loads(value or "{}")
+        else:
+            data = value or {}
         date = datetime.date.fromisoformat(row["date"])
         created_ts_str = data.get("created_ts")
         created_ts = (
@@ -570,7 +597,11 @@ def load_data() -> tuple[Dict[str, Club], Dict[str, Player]]:
         club = clubs.get(row["club_id"])
         if not club:
             continue
-        data = json.loads(row["data"])
+        value = row["data"]
+        if isinstance(value, str):
+            data = json.loads(value or "{}")
+        else:
+            data = value or {}
         date = datetime.date.fromisoformat(row["date"])
         if row["type"] == "doubles":
             pa1 = players[data["a1"]]
@@ -638,7 +669,12 @@ def load_data() -> tuple[Dict[str, Club], Dict[str, Player]]:
             location=row["location"],
             info=row["info"],
         )
-        appt.signups.update(json.loads(row["signups"] or "[]"))
+        value = row["signups"]
+        if isinstance(value, str):
+            parsed = json.loads(value or "[]")
+        else:
+            parsed = value or []
+        appt.signups.update(parsed)
         club.appointments.append(appt)
     conn.close()
     _clubs_cache = clubs
@@ -1238,7 +1274,12 @@ def get_player_record(user_id: str) -> Player | None:
         if row["joined"]
         else datetime.date.today(),
     )
-    p.pre_ratings.update(json.loads(row["pre_ratings"] or "{}"))
+    value = row["pre_ratings"]
+    if isinstance(value, str):
+        parsed = json.loads(value or "{}")
+    else:
+        parsed = value or {}
+    p.pre_ratings.update(parsed)
     conn.close()
     return p
 

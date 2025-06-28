@@ -597,7 +597,12 @@ def update_appointment_signups(club_id: str, index: int, *, add: str | None = No
         ).fetchone()
         if not row:
             raise ServiceError("Appointment not found", 404)
-        signups = set(json.loads(row["signups"] or "[]"))
+        value = row["signups"]
+        if isinstance(value, str):
+            parsed = json.loads(value or "[]")
+        else:
+            parsed = value or []
+        signups = set(parsed)
         if add:
             signups.add(add)
             appt.signups.add(add)
