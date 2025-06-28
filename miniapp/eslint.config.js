@@ -18,7 +18,8 @@ export default [
         document: false,
         __dirname: false,
         setTimeout: false,
-        getCurrentPages: false
+        getCurrentPages: false,
+        process: false
       }
     },
     linterOptions: {

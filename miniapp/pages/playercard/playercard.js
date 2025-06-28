@@ -13,11 +13,16 @@ Page({
     placeholderAvatar: IMAGES.DEFAULT_AVATAR,
     infoLine1: '',
     infoLine2: '',
-    viewId: ''
+    viewId: '',
+    isSelf: false
   },
   hideKeyboard,
   onLoad(options) {
-    this.setData({ viewId: options && options.uid ? options.uid : store.userId });
+    const viewId = options && options.uid ? options.uid : store.userId;
+    this.setData({
+      viewId,
+      isSelf: viewId === store.userId
+    });
   },
   onShow() {
     this.loadUser();
@@ -52,6 +57,9 @@ Page({
           infoLine1: extra.line1,
           infoLine2: extra.line2,
         });
+        that.setData({
+          isSelf: that.data.viewId === store.userId
+        });
     });
   },
   editProfile() {
@@ -60,7 +68,7 @@ Page({
   onShareAppMessage() {
     return {
       title: `${this.data.user.name} ${t.playerCard}`,
-      path: '/pages/playercard/playercard'
+      path: `/pages/playercard/playercard?uid=${this.data.viewId}`
     };
   }
 });

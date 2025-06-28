@@ -7,7 +7,7 @@
   info2="{{infoLine2}}"
 />
 <view class="actions">
-  <button class="action-btn" bindtap="editProfile">{{t.editProfile}}</button>
+  <button class="action-btn" bindtap="editProfile" wx:if="{{isSelf}}">{{t.editProfile}}</button>
   <button class="action-btn" open-type="share">{{t.share}}</button>
 </view>
 </view>
