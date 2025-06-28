@@ -1100,7 +1100,8 @@ def create_match(
         " RETURNING id" if IS_PG else ""
     )
     cur.execute(query, values)
-    row_id = cur.fetchone()[0] if IS_PG else cur.lastrowid
+    row = cur.fetchone()
+    row_id = row["id"] if IS_PG else cur.lastrowid
     match.id = row_id
     if close:
         conn.commit()
@@ -1420,7 +1421,8 @@ def create_appointment_record(club_id: str, appt: Appointment, conn: sqlite3.Con
             json.dumps(list(appt.signups)),
         ),
     )
-    row_id = cur.fetchone()[0] if IS_PG else cur.lastrowid
+    row = cur.fetchone()
+    row_id = row["id"] if IS_PG else cur.lastrowid
     if close:
         conn.commit()
         conn.close()
@@ -1504,7 +1506,8 @@ def create_message_record(
     )
     cur.execute(query, (user_id, date.isoformat(), text, int(read)))
     conn.commit()
-    row_id = cur.fetchone()[0] if IS_PG else cur.lastrowid
+    row = cur.fetchone()
+    row_id = row["id"] if IS_PG else cur.lastrowid
     conn.close()
     _refresh_after_write()
     return row_id
