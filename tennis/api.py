@@ -416,6 +416,23 @@ def get_club_info(club_id: str):
     club = clubs.get(club_id)
     if not club:
         raise HTTPException(404, "Club not found")
+    today = datetime.date.today()
+    pending = []
+    for uid, info in club.pending_members.items():
+        entry = {
+            "user_id": uid,
+            "name": players[uid].name,
+            "avatar": players[uid].avatar,
+            "gender": players[uid].gender,
+            "reason": info.reason,
+            "singles_rating": info.singles_rating,
+            "doubles_rating": info.doubles_rating,
+        }
+        singles = weighted_rating(players[uid], today)
+        if singles is not None:
+            entry["global_rating"] = singles
+        pending.append(entry)
+
     return {
         "club_id": club.club_id,
         "name": club.name,
@@ -424,18 +441,7 @@ def get_club_info(club_id: str):
         "slogan": club.slogan,
         "leader_id": club.leader_id,
         "admin_ids": list(club.admin_ids),
-        "pending_members": [
-            {
-                "user_id": uid,
-                "name": players[uid].name,
-                "avatar": players[uid].avatar,
-                "gender": players[uid].gender,
-                "reason": info.reason,
-                "singles_rating": info.singles_rating,
-                "doubles_rating": info.doubles_rating,
-            }
-            for uid, info in club.pending_members.items()
-        ],
+        "pending_members": pending,
         "members": [
             {
                 "user_id": p.user_id,
