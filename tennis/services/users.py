@@ -23,12 +23,11 @@ from ..storage import (
     save_user,
 )
 from . import state
-from ..models import players, User
+from ..models import players, User, Player
 
 
 def create_user(data) -> str:
     users = load_users()
-    players.clear()
     if data.user_id:
         existing = get_player(data.user_id)
         if existing:
@@ -48,6 +47,17 @@ def create_user(data) -> str:
         backhand=data.backhand,
         region=data.region,
     )
+    if uid not in players:
+        players[uid] = Player(
+            user_id=uid,
+            name=data.name,
+            avatar=data.avatar,
+            gender=data.gender,
+            birth=data.birth,
+            handedness=data.handedness,
+            backhand=data.backhand,
+            region=data.region,
+        )
     # persist new records individually
     with transaction() as conn:
         create_user_record(users[uid], conn=conn)
