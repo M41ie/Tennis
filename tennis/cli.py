@@ -15,7 +15,6 @@ from .models import (
     JoinApplication,
     MAX_CREATED_CLUBS,
     MAX_JOINED_CLUBS,
-    players,
 )
 from .rating import (
     update_ratings,
@@ -28,6 +27,9 @@ from .rating import (
     expected_score,
 )
 from .storage import load_data, save_data, load_users, save_users
+
+
+players: dict[str, Player] = {}
 from .services.stats import get_leaderboard
 
 
@@ -1392,9 +1394,8 @@ def main():
     hist.add_argument('--doubles', action='store_true')
 
     args = parser.parse_args()
-    clubs, players_data = load_data()
-    players.clear()
-    players.update(players_data)
+    global players
+    clubs, players = load_data()
     users = load_users()
 
     if args.cmd == 'create_club':

@@ -54,8 +54,8 @@ class Player:
     joined: datetime.date = field(default_factory=datetime.date.today)
 
 
-# Global player registry keyed by user_id
-players: Dict[str, "Player"] = {}
+# Player objects are loaded via :mod:`tennis.storage`.
+# No runtime state is kept in this module.
 
 @dataclass
 class JoinApplication:

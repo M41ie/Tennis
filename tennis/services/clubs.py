@@ -32,9 +32,11 @@ from ..cli import (
 )
 from ..storage import (
     load_users,
+    load_data,
     get_club,
     get_user,
     get_player,
+    set_player,
     create_club as create_club_record,
     create_player,
     update_user_record,
@@ -47,7 +49,7 @@ from ..storage import (
     transaction,
 )
 from .helpers import get_club_or_404
-from ..models import players
+
 
 
 def _find_pending_match(club, match_id: int) -> int:
@@ -60,17 +62,18 @@ def _find_pending_match(club, match_id: int) -> int:
 def _prepare_players(
     club: "Club" | None = None, extra: list[str] | None = None
 ) -> None:
-    """Populate the global ``players`` dict with club members and extra ids."""
+    """Ensure players referenced by a club or ``extra`` ids are cached."""
+    _, players = load_data()
     if club:
         for p in club.members.values():
             if p.user_id not in players:
-                players[p.user_id] = p
+                set_player(p)
     if extra:
         for uid in extra:
             if uid not in players:
                 p = get_player(uid)
                 if p:
-                    players[uid] = p
+                    set_player(p)
 
 
 import uuid
@@ -280,6 +283,7 @@ def update_global_player(user_id: str, **fields) -> None:
         for u in users.values():
             if u.user_id != user_id and u.name == new_name:
                 raise ServiceError("用户名已存在", 400)
+        _, players = load_data()
         for p in players.values():
             if p.user_id != user_id and p.name == new_name:
                 raise ServiceError("用户名已存在", 400)
