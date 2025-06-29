@@ -119,7 +119,7 @@ app.include_router(matches_router)
 
 
 @app.post("/upload")
-async def upload_image(file: UploadFile = File(...)):
+async def upload_image(request: Request, file: UploadFile = File(...)):
     ext = Path(file.filename).suffix.lower()
     if ext not in {".jpg", ".jpeg", ".png"}:
         raise HTTPException(400, "Only jpg/png allowed")
@@ -127,7 +127,8 @@ async def upload_image(file: UploadFile = File(...)):
     path = UPLOAD_DIR / name
     with path.open("wb") as f:
         f.write(await file.read())
-    return {"url": f"/uploads/{name}"}
+    url = request.url_for("uploads", path=name)
+    return {"url": url}
 
 
 
