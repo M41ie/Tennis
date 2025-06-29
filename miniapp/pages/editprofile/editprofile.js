@@ -121,7 +121,7 @@ Page({
     if (!validateUserName(this.data.name)) return;
     request({
       url: `${BASE_URL}/players/${this.data.userId}`,
-      method: 'PATCH',
+      method: 'PUT',
       data: {
         user_id: this.data.userId,
         token,

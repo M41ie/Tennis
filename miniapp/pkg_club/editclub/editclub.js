@@ -68,7 +68,7 @@ Page({
     }
     request({
       url: `${BASE_URL}/clubs/${cid}`,
-      method: 'PATCH',
+      method: 'PUT',
       data: {
         user_id: userId,
         token,

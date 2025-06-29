@@ -1425,7 +1425,7 @@ def test_update_player_api(tmp_path, monkeypatch):
         json={"user_id": "p1", "name": "P1", "token": token_p1},
     )
 
-    resp = client.patch(
+    resp = client.put(
         "/clubs/c1/players/p1",
         json={
             "user_id": "p1",
@@ -1473,7 +1473,7 @@ def test_update_global_player_api(tmp_path, monkeypatch):
 
     token = client.post("/login", json={"user_id": "p1", "password": "pw"}).json()["token"]
 
-    resp = client.patch(
+    resp = client.put(
         "/players/p1",
         json={
             "user_id": "p1",
