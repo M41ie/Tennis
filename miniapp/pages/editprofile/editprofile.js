@@ -8,6 +8,7 @@ const {
   showError,
   validateUserName
 } = require('../../utils/validator');
+const uploadAvatar = require('../../utils/upload');
 
 Page({
   data: {
@@ -86,8 +87,7 @@ Page({
       }
     });
   },
-  submit() {
-    const that = this;
+  async submit() {
     const token = store.token;
     if (!token || !this.data.userId) return;
     if (this.data.submitting) return;
@@ -99,70 +99,45 @@ Page({
       this.data.backhandIndex === 0 ||
       !this.data.regionString;
     if (incomplete) {
-      showError(that.data.t.incompleteInfo);
+      showError(this.data.t.incompleteInfo);
       return;
     }
     if (!validateUserName(this.data.name)) return;
-    this.setData({ submitting: true });
 
-    const doRequest = () => {
-      request({
-        url: `${BASE_URL}/players/${that.data.userId}`,
+    this.setData({ submitting: true });
+    wx.showLoading({ title: this.data.t.loading, mask: true });
+
+    try {
+      let avatar = this.data.avatar;
+      if (this.data.tempAvatar && /^wxfile:/.test(this.data.tempAvatar)) {
+        avatar = await uploadAvatar(this.data.tempAvatar);
+        this.setData({ avatar, tempAvatar: avatar });
+      }
+
+      await request({
+        url: `${BASE_URL}/players/${this.data.userId}`,
         method: 'PUT',
         data: {
-          user_id: that.data.userId,
+          user_id: this.data.userId,
           token,
-          name: that.data.name,
-          gender: that.data.genderIndex === 1 ? 'M' : that.data.genderIndex === 2 ? 'F' : '',
-          avatar: that.data.avatar,
-          birth: that.data.birth,
-          handedness: that.data.handOptions[that.data.handIndex] || '',
-          backhand: that.data.backhandOptions[that.data.backhandIndex] || '',
-          region: that.data.regionString
+          name: this.data.name,
+          gender: this.data.genderIndex === 1 ? 'M' : this.data.genderIndex === 2 ? 'F' : '',
+          avatar,
+          birth: this.data.birth,
+          handedness: this.data.handOptions[this.data.handIndex] || '',
+          backhand: this.data.backhandOptions[this.data.backhandIndex] || '',
+          region: this.data.regionString
         },
-        success(res) {
-          if (res.statusCode === 200) {
-            wx.showToast({ duration: 4000,  title: that.data.t.updated, icon: 'success' });
-            wx.navigateBack();
-          } else {
-            wx.showToast({ duration: 4000,  title: that.data.t.failed, icon: 'none' });
-          }
-        },
-        complete() {
-          that.setData({ submitting: false });
-        }
+        loading: false
       });
-    };
 
-    if (this.data.tempAvatar && /^wxfile:/.test(this.data.tempAvatar)) {
-      wx.showLoading({ title: this.data.t.loading, mask: true });
-      wx.uploadFile({
-        url: `${BASE_URL}/upload`,
-        filePath: this.data.tempAvatar,
-        name: 'file',
-        success(resp) {
-          let data = {};
-          try {
-            data = JSON.parse(resp.data);
-          } catch (e) {}
-          if (data && data.url) {
-            that.setData({ avatar: data.url, tempAvatar: data.url });
-            doRequest();
-          } else {
-            wx.showToast({ duration: 4000,  title: that.data.t.failed, icon: 'none' });
-            that.setData({ submitting: false });
-          }
-        },
-        fail() {
-          wx.showToast({ duration: 4000,  title: that.data.t.failed, icon: 'none' });
-          that.setData({ submitting: false });
-        },
-        complete() {
-          wx.hideLoading();
-        }
-      });
-    } else {
-      doRequest();
+      wx.showToast({ duration: 4000,  title: this.data.t.updated, icon: 'success' });
+      wx.navigateBack();
+    } catch (e) {
+      wx.showToast({ duration: 4000,  title: this.data.t.failed, icon: 'none' });
+    } finally {
+      this.setData({ submitting: false });
+      wx.hideLoading();
     }
   }
 });
