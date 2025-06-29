@@ -123,10 +123,13 @@ async def upload_image(request: Request, file: UploadFile = File(...)):
     ext = Path(file.filename).suffix.lower()
     if ext not in {".jpg", ".jpeg", ".png"}:
         raise HTTPException(400, "Only jpg/png allowed")
+    content = await file.read()
+    if len(content) > 2 * 1024 * 1024:
+        raise HTTPException(413, "File too large, 头像不能超过 2MB")
     name = secrets.token_hex(8) + ext
     path = UPLOAD_DIR / name
     with path.open("wb") as f:
-        f.write(await file.read())
+        f.write(content)
     url = request.url_for("uploads", path=name)
     return {"url": url}
 
