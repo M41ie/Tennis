@@ -3,6 +3,7 @@ const request = require('../../utils/request');
 const store = require('../../store/store');
 const { hideKeyboard } = require('../../utils/hideKeyboard');
 const optimisticUpdate = require('../../utils/optimistic');
+const { withBase } = require('../../utils/format');
 
 // Map backend format identifiers to display names
 const FORMAT_DISPLAY = {
@@ -85,7 +86,7 @@ Page({
               rec.scoreA = rec.self_score;
               rec.scoreB = rec.opponent_score;
               rec.playerAName = player.name || '';
-              rec.playerAAvatar = player.avatar_url || player.avatar || placeholder;
+              rec.playerAAvatar = withBase(player.avatar_url || player.avatar) || placeholder;
               rec.ratingA = rec.self_rating_after != null ? rec.self_rating_after.toFixed(3) : '';
               const d = rec.self_delta;
               if (d != null) {
@@ -99,7 +100,7 @@ Page({
 
               if (!that.data.doubles) {
                 rec.playerBName = rec.opponent || '';
-                rec.playerBAvatar = rec.opponent_avatar || placeholder;
+                rec.playerBAvatar = withBase(rec.opponent_avatar) || placeholder;
                 rec.ratingB = rec.opponent_rating_after != null ? rec.opponent_rating_after.toFixed(3) : '';
                 const d2 = rec.opponent_delta;
                 if (d2 != null) {
@@ -112,7 +113,7 @@ Page({
                 }
               } else {
                 rec.partnerName = rec.partner || '';
-                rec.partnerAvatar = rec.partner_avatar || placeholder;
+                rec.partnerAvatar = withBase(rec.partner_avatar) || placeholder;
                 rec.partnerRating = rec.partner_rating_after != null ? rec.partner_rating_after.toFixed(3) : '';
                 const pd = rec.partner_delta;
                 if (pd != null) {
@@ -125,7 +126,7 @@ Page({
                 }
 
                 rec.opp1Name = rec.opponent1 || '';
-                rec.opp1Avatar = rec.opponent1_avatar || placeholder;
+                rec.opp1Avatar = withBase(rec.opponent1_avatar) || placeholder;
                 rec.opp1Rating = rec.opponent1_rating_after != null ? rec.opponent1_rating_after.toFixed(3) : '';
                 const od1 = rec.opponent1_delta;
                 if (od1 != null) {
@@ -138,7 +139,7 @@ Page({
                 }
 
                 rec.opp2Name = rec.opponent2 || '';
-                rec.opp2Avatar = rec.opponent2_avatar || placeholder;
+                rec.opp2Avatar = withBase(rec.opponent2_avatar) || placeholder;
                 rec.opp2Rating = rec.opponent2_rating_after != null ? rec.opponent2_rating_after.toFixed(3) : '';
                 const od2 = rec.opponent2_delta;
                 if (od2 != null) {
@@ -208,8 +209,8 @@ Page({
           it.scoreB = it.score_b;
           it.playerAName = it.player_a_name || it.player_a;
           it.playerBName = it.player_b_name || it.player_b;
-          it.playerAAvatar = it.player_a_avatar || placeholder;
-          it.playerBAvatar = it.player_b_avatar || placeholder;
+          it.playerAAvatar = withBase(it.player_a_avatar) || placeholder;
+          it.playerBAvatar = withBase(it.player_b_avatar) || placeholder;
           it.ratingA = it.rating_a_before != null ? Number(it.rating_a_before).toFixed(3) : '';
           it.ratingB = it.rating_b_before != null ? Number(it.rating_b_before).toFixed(3) : '';
           it.displayFormat = it.format_name ? displayFormat(it.format_name) : '';
@@ -247,10 +248,10 @@ Page({
           it.partnerName = it.a2_name || it.a2;
           it.opp1Name = it.b1_name || it.b1;
           it.opp2Name = it.b2_name || it.b2;
-          it.playerAAvatar = it.a1_avatar || placeholder;
-          it.partnerAvatar = it.a2_avatar || placeholder;
-          it.opp1Avatar = it.b1_avatar || placeholder;
-          it.opp2Avatar = it.b2_avatar || placeholder;
+          it.playerAAvatar = withBase(it.a1_avatar) || placeholder;
+          it.partnerAvatar = withBase(it.a2_avatar) || placeholder;
+          it.opp1Avatar = withBase(it.b1_avatar) || placeholder;
+          it.opp2Avatar = withBase(it.b2_avatar) || placeholder;
           it.ratingA = it.rating_a1_before != null ? Number(it.rating_a1_before).toFixed(3) : '';
           it.partnerRating = it.rating_a2_before != null ? Number(it.rating_a2_before).toFixed(3) : '';
           it.opp1Rating = it.rating_b1_before != null ? Number(it.rating_b1_before).toFixed(3) : '';
