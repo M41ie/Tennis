@@ -24,6 +24,7 @@ from ..storage import (
     transaction,
     save_user,
 )
+from .. import storage
 from . import state
 from ..models import User, Player
 
@@ -66,6 +67,7 @@ def create_user(data) -> str:
     with transaction() as conn:
         create_user_record(users[uid], conn=conn)
         create_player("", get_player(uid), conn=conn)
+    storage.bump_cache_version()
     return uid
 
 
@@ -89,6 +91,7 @@ def login(user_id: str, password: str):
         user.password_hash = hash_password(password)
         with transaction() as conn:
             save_user(user, conn=conn)
+        storage.bump_cache_version()
     else:
         if not check_password(user, password):
             return False, None, None
@@ -132,6 +135,7 @@ def wechat_login(code: str, exchange_func) -> tuple[str, str, str, bool]:
         with transaction() as conn:
             create_user_record(user, conn=conn)
             create_player("", new_player, conn=conn)
+        storage.bump_cache_version()
         created = True
 
     access_token = secrets.token_hex(16)
@@ -216,4 +220,5 @@ def update_user_limits(user_id: str, max_joinable: int, max_creatable: int) -> N
         raise ServiceError(str(e), 400)
     with transaction() as conn:
         save_user(users[user_id], conn=conn)
+    storage.bump_cache_version()
 
