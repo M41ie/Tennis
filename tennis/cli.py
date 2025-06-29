@@ -1052,7 +1052,11 @@ def get_player_match_cards(clubs, club_id: str, user_id: str):
         raise ValueError("Player not found")
 
     cards = []
-    for m in player.singles_matches:
+    for m in club.matches:
+        if isinstance(m, DoublesMatch):
+            continue
+        if m.player_a != player and m.player_b != player:
+            continue
         if m.player_a == player:
             opp = m.player_b
             self_score = m.score_a
@@ -1122,7 +1126,11 @@ def get_player_doubles_cards(clubs, club_id: str, user_id: str):
         raise ValueError("Player not found")
 
     cards = []
-    for m in player.doubles_matches:
+    for m in club.matches:
+        if not isinstance(m, DoublesMatch):
+            continue
+        if player not in (m.player_a1, m.player_a2, m.player_b1, m.player_b2):
+            continue
         if player in (m.player_a1, m.player_a2):
             partner = m.player_a2 if m.player_a1 == player else m.player_a1
             opp1, opp2 = m.player_b1, m.player_b2
