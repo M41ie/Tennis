@@ -48,6 +48,7 @@ from ..storage import (
     update_appointment_record,
     transaction,
 )
+from .. import storage
 from .helpers import get_club_or_404
 
 
@@ -115,6 +116,7 @@ def create_club(
         create_club_record(club, conn=conn)
         create_player(club_id, club.members[user_id], conn=conn)
         update_user_record(users[user_id], conn=conn)
+    storage.bump_cache_version()
     return club_id
 
 
@@ -132,6 +134,7 @@ def add_player(club_id: str, user_id: str, name: str, **kwargs):
     with transaction() as conn:
         create_player(club_id, player, conn=conn)
         update_player_record(player, conn=conn)
+    storage.bump_cache_version()
 
 
 def request_join_club(club_id: str, user_id: str, **kwargs) -> None:
@@ -151,6 +154,7 @@ def request_join_club(club_id: str, user_id: str, **kwargs) -> None:
             u = users.get(uid)
             if u:
                 save_user(u, conn=conn)
+    storage.bump_cache_version()
 
 
 def approve_member_request(club_id: str, approver_id: str, user_id: str, rating: float, make_admin: bool = False) -> None:
@@ -172,6 +176,7 @@ def approve_member_request(club_id: str, approver_id: str, user_id: str, rating:
         approver = users.get(approver_id)
         if approver:
             save_user(approver, conn=conn)
+    storage.bump_cache_version()
 
 
 def dissolve_existing_club(club_id: str, user_id: str) -> None:
@@ -191,6 +196,7 @@ def dissolve_existing_club(club_id: str, user_id: str) -> None:
             u = users.get(uid)
             if u:
                 save_user(u, conn=conn)
+    storage.bump_cache_version()
 
 
 def approve_pending_match(club_id: str, match_id: int, approver: str) -> None:
@@ -222,6 +228,7 @@ def approve_pending_match(club_id: str, match_id: int, approver: str) -> None:
             u = users.get(uid)
             if u:
                 save_user(u, conn=conn)
+    storage.bump_cache_version()
 
 
 def reject_join_request(club_id: str, approver_id: str, user_id: str, reason: str) -> None:
@@ -240,6 +247,7 @@ def reject_join_request(club_id: str, approver_id: str, user_id: str, reason: st
         u = users.get(user_id)
         if u:
             save_user(u, conn=conn)
+    storage.bump_cache_version()
 
 
 def clear_member_rejection(club_id: str, user_id: str) -> None:
@@ -269,6 +277,7 @@ def update_club_info(club_id: str, **fields) -> None:
         club.slogan = fields["slogan"]
     with transaction() as conn:
         save_club(club, conn=conn)
+    storage.bump_cache_version()
 
 
 def update_global_player(user_id: str, **fields) -> None:
@@ -308,6 +317,7 @@ def update_global_player(user_id: str, **fields) -> None:
         update_player_record(player, conn=conn)
         if user_id in users:
             save_user(users[user_id], conn=conn)
+    storage.bump_cache_version()
 
 
 def update_player_profile(club_id: str, user_id: str, **fields) -> None:
@@ -381,6 +391,7 @@ def update_member_role(club_id: str, action: str, actor_id: str, target_id: str)
             u = users.get(uid)
             if u:
                 save_user(u, conn=conn)
+    storage.bump_cache_version()
 
 
 def submit_pending_match(
@@ -423,6 +434,7 @@ def submit_pending_match(
             u = users.get(uid)
             if u:
                 save_user(u, conn=conn)
+    storage.bump_cache_version()
 
 
 def confirm_pending_match(club_id: str, match_id: int, user_id: str) -> None:
@@ -464,6 +476,7 @@ def reject_pending_match(club_id: str, match_id: int, user_id: str) -> None:
             u = users.get(match.initiator)
             if u:
                 save_user(u, conn=conn)
+    storage.bump_cache_version()
 
 
 def veto_pending_match(club_id: str, match_id: int, approver: str) -> None:
@@ -601,6 +614,7 @@ def create_appointment_entry(club_id: str, appt: Appointment) -> None:
     club.appointments.append(appt)
     with transaction() as conn:
         create_appointment_record(club_id, appt, conn=conn)
+    storage.bump_cache_version()
 
 
 def update_appointment_signups(club_id: str, index: int, *, add: str | None = None, remove: str | None = None) -> None:
@@ -629,6 +643,7 @@ def update_appointment_signups(club_id: str, index: int, *, add: str | None = No
             signups.discard(remove)
             appt.signups.discard(remove)
         update_appointment_record(row["id"], conn=conn, signups=signups)
+    storage.bump_cache_version()
 
 
 def pre_rate_member(club_id: str, rater_id: str, target_id: str, rating: float) -> None:
@@ -643,6 +658,7 @@ def pre_rate_member(club_id: str, rater_id: str, target_id: str, rating: float) 
     player = clubs[club_id].members[target_id]
     with transaction() as conn:
         update_player_record(player, conn=conn)
+    storage.bump_cache_version()
 
 
 def record_match_result(
@@ -683,6 +699,7 @@ def record_match_result(
         save_club(club, conn=conn)
         update_player_record(pa, conn=conn)
         update_player_record(pb, conn=conn)
+    storage.bump_cache_version()
 
 
 def sys_set_leader(club_id: str, user_id: str) -> None:
@@ -702,5 +719,6 @@ def sys_set_leader(club_id: str, user_id: str) -> None:
             u = users.get(uid)
             if u:
                 save_user(u, conn=conn)
+    storage.bump_cache_version()
 
 
