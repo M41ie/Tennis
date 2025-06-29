@@ -376,7 +376,7 @@ def clear_rejection_api(club_id: str, data: ClearRejectRequest, authorization: s
     return {"status": "ok"}
 
 
-@app.patch("/clubs/{club_id}")
+@app.api_route("/clubs/{club_id}", methods=["PATCH", "PUT"])
 def update_club_info(club_id: str, data: ClubUpdate, authorization: str | None = Header(None)):
     """Update club basic information (leader or admin only)."""
     user = require_auth(authorization)
