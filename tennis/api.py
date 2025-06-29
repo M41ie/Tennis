@@ -599,7 +599,7 @@ def list_all_players(
         clubs_to_iter.append(c)
     today = datetime.date.today()
     get_rating = weighted_doubles_rating if doubles else weighted_rating
-    players = []
+    players_map: dict[str, dict[str, object]] = {}
     for c in clubs_to_iter:
         for p in c.members.values():
             rating = get_rating(p, today)
@@ -617,6 +617,8 @@ def list_all_players(
                 continue
             if not _region_match(p.region, region):
                 continue
+            if p.user_id in players_map:
+                continue
             entry = {
                 "club_id": c.club_id,
                 "user_id": p.user_id,
@@ -631,7 +633,8 @@ def list_all_players(
                 entry["doubles_rating"] = rating
             else:
                 entry["singles_rating"] = rating
-            players.append(entry)
+            players_map[p.user_id] = entry
+    players = list(players_map.values())
     key = "doubles_rating" if doubles else "singles_rating"
     players.sort(key=lambda x: x.get(key, float('-inf')) if x.get(key) is not None else float('-inf'), reverse=True)
     if offset:
