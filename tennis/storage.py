@@ -63,6 +63,18 @@ def increment_cache_version() -> int:
         return 0
 
 
+def bump_cache_version() -> int:
+    """Increment and return the cache version stored in Redis."""
+    return increment_cache_version()
+
+
+__all__ = [
+    "get_cache_version",
+    "increment_cache_version",
+    "bump_cache_version",
+]
+
+
 class _PgCursor:
     def __init__(self, cursor):
         self._c = cursor
