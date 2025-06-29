@@ -63,17 +63,7 @@ Page({
             const names = [that.data.t.chooseClub];
             ids.push(...filtered.map(c => c.club_id));
             names.push(...filtered.map(c => c.name));
-            let index = 0;
-            if (store.clubId && ids.includes(store.clubId)) {
-              index = ids.indexOf(store.clubId);
-            } else if (!store.clubId && filtered.length === 1) {
-              index = 1;
-              store.setClubId(ids[1]);
-            }
-            that.setData({ clubIds: ids, clubOptions: names, clubIndex: index });
-            if (index > 0) {
-              that.fetchPlayers(store.clubId);
-            }
+            that.setData({ clubIds: ids, clubOptions: names, clubIndex: 0 });
           },
           fail() {
             const ids = [''];
