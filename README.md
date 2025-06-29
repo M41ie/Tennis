@@ -108,7 +108,7 @@ To invalidate a token call `/logout` with the token value.
 To update profile information before joining a club, use the global endpoint:
 
 ```bash
-curl -X PATCH http://localhost:8000/players/USER \
+curl -X PUT http://localhost:8000/players/USER \
      -H "Content-Type: application/json" \
      -H "Authorization: Bearer TOKEN" \
      -d '{"user_id":"USER","name":"New"}'

@@ -703,7 +703,7 @@ def leaderboard_full(
 
 
 
-@app.patch("/players/{user_id}")
+@app.api_route("/players/{user_id}", methods=["PATCH", "PUT"])
 def update_global_player(user_id: str, data: PlayerUpdate, authorization: str | None = Header(None)):
     """Update player information without specifying a club."""
     user = require_auth(authorization)
@@ -724,7 +724,7 @@ def update_global_player(user_id: str, data: PlayerUpdate, authorization: str | 
     return {"status": "ok"}
 
 
-@app.patch("/clubs/{club_id}/players/{user_id}")
+@app.api_route("/clubs/{club_id}/players/{user_id}", methods=["PATCH", "PUT"])
 def update_player_api(club_id: str, user_id: str, data: PlayerUpdate, authorization: str | None = Header(None)):
     """Update existing player information."""
     user = require_auth(authorization)
