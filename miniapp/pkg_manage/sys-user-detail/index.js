@@ -35,7 +35,7 @@ Page({
         const user = {
           id: d.id || uid,
           name: d.name,
-          avatar_url: d.avatar_url || d.avatar,
+          avatar_url: withBase(d.avatar_url || d.avatar),
           singles_rating: formatRating(d.singles_rating),
           doubles_rating: formatRating(d.doubles_rating),
           weighted_games_singles: formatGames(d.weighted_games_singles),

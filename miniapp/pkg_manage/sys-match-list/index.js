@@ -1,6 +1,7 @@
 const BASE_URL = getApp().globalData.BASE_URL;
 const request = require('../../utils/request');
 const { hideKeyboard } = require('../../utils/hideKeyboard');
+const { withBase } = require('../../utils/format');
 const FORMAT_DISPLAY = {
   '6_game': '六局',
   '4_game': '四局',
@@ -41,8 +42,8 @@ Page({
           if (!that.data.doubles) {
             rec.playerAName = rec.a_name || rec.player_a;
             rec.playerBName = rec.b_name || rec.player_b;
-            rec.playerAAvatar = rec.a_avatar || placeholder;
-            rec.playerBAvatar = rec.b_avatar || placeholder;
+            rec.playerAAvatar = withBase(rec.a_avatar) || placeholder;
+            rec.playerBAvatar = withBase(rec.b_avatar) || placeholder;
             rec.ratingA = rec.a_after != null ? Number(rec.a_after).toFixed(3) : '';
             rec.ratingB = rec.b_after != null ? Number(rec.b_after).toFixed(3) : '';
             if (rec.a_after != null && rec.a_before != null) {
@@ -68,10 +69,10 @@ Page({
             rec.partnerName = rec.a2_name || rec.a2;
             rec.opp1Name = rec.b1_name || rec.b1;
             rec.opp2Name = rec.b2_name || rec.b2;
-            rec.playerAAvatar = rec.a1_avatar || placeholder;
-            rec.partnerAvatar = rec.a2_avatar || placeholder;
-            rec.opp1Avatar = rec.b1_avatar || placeholder;
-            rec.opp2Avatar = rec.b2_avatar || placeholder;
+            rec.playerAAvatar = withBase(rec.a1_avatar) || placeholder;
+            rec.partnerAvatar = withBase(rec.a2_avatar) || placeholder;
+            rec.opp1Avatar = withBase(rec.b1_avatar) || placeholder;
+            rec.opp2Avatar = withBase(rec.b2_avatar) || placeholder;
             rec.ratingA = rec.rating_a1_after != null ? Number(rec.rating_a1_after).toFixed(3) : '';
             rec.partnerRating = rec.rating_a2_after != null ? Number(rec.rating_a2_after).toFixed(3) : '';
             rec.opp1Rating = rec.rating_b1_after != null ? Number(rec.rating_b1_after).toFixed(3) : '';

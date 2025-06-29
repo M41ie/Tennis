@@ -1,6 +1,7 @@
 const clubService = require('../../services/club');
 const store = require('../../store/store');
 const { hideKeyboard } = require('../../utils/hideKeyboard');
+const { withBase } = require('../../utils/format');
 
 Page({
   data: {
@@ -59,6 +60,7 @@ Page({
           p.rating = rating != null ? Number(rating).toFixed(3) : '--';
           if (p.weighted_singles_matches != null) p.weighted_singles_matches = p.weighted_singles_matches.toFixed(2);
           if (p.weighted_doubles_matches != null) p.weighted_doubles_matches = p.weighted_doubles_matches.toFixed(2);
+          p.avatar = withBase(p.avatar || p.avatar_url);
         });
         const filter = { ...that.data.filter, clubs: clubIds };
         that.setData({
@@ -158,6 +160,7 @@ Page({
           p.rating = rating != null ? Number(rating).toFixed(3) : '--';
           if (p.weighted_singles_matches != null) p.weighted_singles_matches = p.weighted_singles_matches.toFixed(2);
           if (p.weighted_doubles_matches != null) p.weighted_doubles_matches = p.weighted_doubles_matches.toFixed(2);
+          p.avatar = withBase(p.avatar || p.avatar_url);
         });
         if (that.data.page === 1) {
           that.setData({

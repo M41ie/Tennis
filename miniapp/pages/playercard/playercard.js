@@ -36,7 +36,7 @@ Page({
         const doublesCount = raw.weighted_games_doubles ?? raw.weighted_doubles_matches;
         const user = {
           id: raw.id || raw.user_id,
-          avatar_url: raw.avatar_url || raw.avatar,
+          avatar_url: withBase(raw.avatar_url || raw.avatar),
           name: raw.name,
           gender: raw.gender,
           birth: raw.birth,

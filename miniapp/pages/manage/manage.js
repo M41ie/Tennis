@@ -4,6 +4,7 @@ const { hideKeyboard } = require('../../utils/hideKeyboard');
 const { zh_CN } = require('../../utils/locales.js');
 const { genderText } = require('../../utils/userFormat');
 const store = require('../../store/store');
+const { withBase } = require('../../utils/format');
 
 Page({
   data: {
@@ -161,8 +162,8 @@ Page({
                 user_id: p.user_id,
                 id: p.user_id,
                 name: p.name,
-                avatar: p.avatar,
-                avatar_url: p.avatar,
+                avatar: withBase(p.avatar),
+                avatar_url: withBase(p.avatar),
                 gender: p.gender,
                 joined: p.joined,
                 singles_rating: p.singles_rating != null ? p.singles_rating.toFixed(3) : '--',
@@ -178,8 +179,8 @@ Page({
                 user_id: p.user_id,
                 id: p.user_id,
                 name: p.name,
-                avatar: p.avatar,
-                avatar_url: p.avatar,
+                avatar: withBase(p.avatar),
+                avatar_url: withBase(p.avatar),
                 gender: p.gender,
                 joined: p.joined
               };

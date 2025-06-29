@@ -62,7 +62,7 @@ Page({
         const doublesCount = raw.weighted_games_doubles ?? raw.weighted_doubles_matches;
         const user = {
           id: raw.id || raw.user_id,
-          avatar_url: raw.avatar_url || raw.avatar,
+          avatar_url: withBase(raw.avatar_url || raw.avatar),
           name: raw.name,
           singles_rating: formatRating(raw.singles_rating),
           doubles_rating: formatRating(raw.doubles_rating),

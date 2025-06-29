@@ -2,6 +2,7 @@ const BASE_URL = getApp().globalData.BASE_URL;
 const request = require('../../utils/request');
 const store = require('../../store/store');
 const { hideKeyboard } = require('../../utils/hideKeyboard');
+const { withBase } = require('../../utils/format');
 const FORMAT_DISPLAY = {
   '6_game': '六局',
   '4_game': '四局',
@@ -43,8 +44,8 @@ Page({
             it.scoreB = it.score_b;
             it.playerAName = it.player_a_name || it.player_a;
             it.playerBName = it.player_b_name || it.player_b;
-            it.playerAAvatar = it.player_a_avatar || placeholder;
-            it.playerBAvatar = it.player_b_avatar || placeholder;
+            it.playerAAvatar = withBase(it.player_a_avatar) || placeholder;
+            it.playerBAvatar = withBase(it.player_b_avatar) || placeholder;
             it.ratingA = it.rating_a_before != null ? Number(it.rating_a_before).toFixed(3) : '';
             it.ratingB = it.rating_b_before != null ? Number(it.rating_b_before).toFixed(3) : '';
             it.displayFormat = it.format_name ? displayFormat(it.format_name) : '';
@@ -70,10 +71,10 @@ Page({
             it.partnerName = it.a2_name || it.a2;
             it.opp1Name = it.b1_name || it.b1;
             it.opp2Name = it.b2_name || it.b2;
-            it.playerAAvatar = it.a1_avatar || placeholder;
-            it.partnerAvatar = it.a2_avatar || placeholder;
-            it.opp1Avatar = it.b1_avatar || placeholder;
-            it.opp2Avatar = it.b2_avatar || placeholder;
+            it.playerAAvatar = withBase(it.a1_avatar) || placeholder;
+            it.partnerAvatar = withBase(it.a2_avatar) || placeholder;
+            it.opp1Avatar = withBase(it.b1_avatar) || placeholder;
+            it.opp2Avatar = withBase(it.b2_avatar) || placeholder;
             it.ratingA = it.rating_a1_before != null ? Number(it.rating_a1_before).toFixed(3) : '';
             it.partnerRating = it.rating_a2_before != null ? Number(it.rating_a2_before).toFixed(3) : '';
             it.opp1Rating = it.rating_b1_before != null ? Number(it.rating_b1_before).toFixed(3) : '';
