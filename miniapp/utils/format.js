@@ -12,4 +12,10 @@ function formatGames(value) {
   return num.toFixed(2);
 }
 
-module.exports = { formatRating, formatGames };
+function withBase(path) {
+  if (!path) return '';
+  if (path.startsWith('http')) return path;
+  return getApp().globalData.BASE_URL + path;
+}
+
+module.exports = { formatRating, formatGames, withBase };

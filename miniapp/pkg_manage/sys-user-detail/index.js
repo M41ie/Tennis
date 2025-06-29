@@ -1,7 +1,7 @@
 const BASE_URL = getApp().globalData.BASE_URL;
 const request = require('../../utils/request');
 const { hideKeyboard } = require('../../utils/hideKeyboard');
-const { formatRating, formatGames } = require('../../utils/format');
+const { formatRating, formatGames, withBase } = require('../../utils/format');
 const { formatClubCardData } = require('../../utils/clubFormat');
 const store = require('../../store/store');
 
