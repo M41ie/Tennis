@@ -125,7 +125,7 @@ async def upload_image(request: Request, file: UploadFile = File(...)):
         raise HTTPException(400, "Only jpg/png allowed")
     content = await file.read()
     if len(content) > 2 * 1024 * 1024:
-        raise HTTPException(413, "File too large, 头像不能超过 2MB")
+        raise HTTPException(413, "头像大小超过2MB限制")
     name = secrets.token_hex(8) + ext
     path = UPLOAD_DIR / name
     with path.open("wb") as f:
