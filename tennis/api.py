@@ -522,7 +522,7 @@ def list_players(
 
 
 @app.get("/players/{user_id}")
-def get_global_player(user_id: str, recent: int = 0, request: Request):
+def get_global_player(user_id: str, request: Request, recent: int = 0):
     """Return player information without requiring a club."""
     player = get_player(user_id)
     if not player:
@@ -785,7 +785,7 @@ def pre_rate_api(club_id: str, data: PreRateRequest, authorization: str | None =
 
 
 @app.get("/clubs/{club_id}/players/{user_id}")
-def get_player(club_id: str, user_id: str, recent: int = 0, request: Request):
+def get_player(club_id: str, user_id: str, request: Request, recent: int = 0):
     club = clubs.get(club_id)
     if not club:
         raise HTTPException(404, "Club not found")
