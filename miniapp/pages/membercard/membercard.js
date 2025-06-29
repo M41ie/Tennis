@@ -1,7 +1,7 @@
 const BASE_URL = getApp().globalData.BASE_URL;
 const request = require('../../utils/request');
 const IMAGES = require('../../assets/base64.js');
-const { formatRating } = require('../../utils/format');
+const { formatRating, withBase } = require('../../utils/format');
 const store = require('../../store/store');
 const { hideKeyboard } = require('../../utils/hideKeyboard');
 const { formatExtraLines } = require('../../utils/userFormat');
