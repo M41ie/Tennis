@@ -17,7 +17,7 @@ UPLOAD_DIR = Path("uploads")
 
 
 import tennis.storage as storage
-from .storage import load_data, load_users, invalidate_cache, get_cache_version
+from .storage import load_data, load_users, invalidate_cache, get_cache_version, get_player
 
 # ensure cached data does not leak across reloads
 invalidate_cache()
@@ -68,15 +68,13 @@ from .rating import (
     weighted_doubles_matches,
 )
 from .services.stats import _pending_status_for_user, _club_stats
-from .models import Player, Club, Match, DoublesMatch, Appointment, User, players
+from .models import Player, Club, Match, DoublesMatch, Appointment, User
 
 # Runtime state loaded from persistent storage. ``load_data`` returns the
 # internal cache dictionaries, so these remain in sync with updates performed
 # through the storage layer.
-clubs, _players_cache = load_data()
+clubs, players = load_data()
 users = load_users()
-players.clear()
-players.update(_players_cache)
 
 
 app = FastAPI()
@@ -87,14 +85,12 @@ app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 @app.middleware("http")
 async def cache_sync_middleware(request: Request, call_next):
     """Reload cached data when another worker has updated the version."""
-    global CACHE_VERSION, clubs, users
+    global CACHE_VERSION, clubs, users, players
     version = storage.get_cache_version()
     if version != CACHE_VERSION:
         invalidate_cache()
-        clubs, _players_cache = load_data()
+        clubs, players = load_data()
         users = load_users()
-        players.clear()
-        players.update(_players_cache)
         CACHE_VERSION = version
     response = await call_next(request)
     return response
@@ -419,16 +415,17 @@ def get_club_info(club_id: str):
     today = datetime.date.today()
     pending = []
     for uid, info in club.pending_members.items():
+        p = get_player(uid)
         entry = {
             "user_id": uid,
-            "name": players[uid].name,
-            "avatar": players[uid].avatar,
-            "gender": players[uid].gender,
+            "name": p.name if p else None,
+            "avatar": getattr(p, "avatar", None) if p else None,
+            "gender": getattr(p, "gender", None) if p else None,
             "reason": info.reason,
             "singles_rating": info.singles_rating,
             "doubles_rating": info.doubles_rating,
         }
-        singles = weighted_rating(players[uid], today)
+        singles = weighted_rating(p, today) if p else None
         if singles is not None:
             entry["global_rating"] = singles
         pending.append(entry)
@@ -517,7 +514,7 @@ def list_players(
 @app.get("/players/{user_id}")
 def get_global_player(user_id: str, recent: int = 0):
     """Return player information without requiring a club."""
-    player = players.get(user_id)
+    player = get_player(user_id)
     if not player:
         raise HTTPException(404, "Player not found")
 
@@ -1188,7 +1185,7 @@ def cancel_signup(club_id: str, index: int, data: SignupRequest, authorization: 
 
 def _user_summary(user: User) -> dict[str, object]:
     """Return basic profile information with rating stats."""
-    player = players.get(user.user_id)
+    player = get_player(user.user_id)
     today = datetime.date.today()
     if player:
         singles = weighted_rating(player, today)

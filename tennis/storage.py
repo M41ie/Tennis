@@ -121,7 +121,6 @@ from .models import (
     Appointment,
     Message,
     JoinApplication,
-    players,
 )
 
 # in-memory store used when loading player data
@@ -725,7 +724,7 @@ def save_data(clubs: Dict[str, Club]) -> None:
     cur.execute("DELETE FROM pending_matches")
     cur.execute("DELETE FROM appointments")
     cur.execute("DELETE FROM club_meta")
-    for p in players.values():
+    for p in _players_cache.values():
         cur.execute(
             """INSERT INTO players
             (user_id, name, singles_rating, doubles_rating, experience, pre_ratings,

@@ -5,6 +5,7 @@ from .exceptions import ServiceError
 from ..cli import register_user, resolve_user, check_password, hash_password, set_user_limits
 from ..storage import (
     load_users,
+    load_data,
     get_player,
     get_club,
     list_clubs,
@@ -16,6 +17,7 @@ from ..storage import (
     delete_refresh_token,
     create_user as create_user_record,
     create_player,
+    set_player,
     get_user as get_user_record,
     list_user_messages,
     mark_user_message_read,
@@ -23,15 +25,16 @@ from ..storage import (
     save_user,
 )
 from . import state
-from ..models import players, User, Player
+from ..models import User, Player
 
 
 def create_user(data) -> str:
     users = load_users()
+    _, players = load_data()
     if data.user_id:
         existing = get_player(data.user_id)
         if existing:
-            players[data.user_id] = existing
+            set_player(existing)
     if data.user_id and data.user_id in users:
         raise ServiceError("User exists", 400)
     uid = register_user(
@@ -48,7 +51,7 @@ def create_user(data) -> str:
         region=data.region,
     )
     if uid not in players:
-        players[uid] = Player(
+        new_player = Player(
             user_id=uid,
             name=data.name,
             avatar=data.avatar,
@@ -58,10 +61,11 @@ def create_user(data) -> str:
             backhand=data.backhand,
             region=data.region,
         )
+        set_player(new_player)
     # persist new records individually
     with transaction() as conn:
         create_user_record(users[uid], conn=conn)
-        create_player("", players[uid], conn=conn)
+        create_player("", get_player(uid), conn=conn)
     return uid
 
 
@@ -123,9 +127,11 @@ def wechat_login(code: str, exchange_func) -> tuple[str, str, str, bool]:
         user.password_hash = ""
         user.wechat_openid = openid
         users[uid] = user
+        new_player = Player(user_id=uid, name=nickname)
+        set_player(new_player)
         with transaction() as conn:
             create_user_record(user, conn=conn)
-            create_player("", players[uid], conn=conn)
+            create_player("", new_player, conn=conn)
         created = True
 
     access_token = secrets.token_hex(16)
