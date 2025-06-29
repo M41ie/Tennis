@@ -10,6 +10,11 @@ python3 -m pip install -r requirements.txt
 
 ## 2. Run tests
 
+The test suite spins up an ephemeral PostgreSQL server using
+[`testing.postgresql`](https://pypi.org/project/testing.postgresql/).
+Ensure all dependencies from `requirements.txt` are installed so this package is
+available.
+
 ```bash
 pytest
 ```
