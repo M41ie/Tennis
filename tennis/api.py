@@ -1219,10 +1219,10 @@ def _user_summary(user: User, request: Request) -> dict[str, object]:
 
 @app.get("/sys/users")
 def list_all_users(
+    request: Request,
     query: str | None = None,
     limit: int | None = None,
     offset: int = 0,
-    request: Request,
 ) -> list[dict[str, object]]:
     """Return users optionally filtered by a search query."""
     q = query.lower() if query else None
