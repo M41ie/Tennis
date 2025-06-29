@@ -1962,8 +1962,31 @@ def test_club_persistence_after_reload(tmp_path, monkeypatch):
     resp = client.get("/clubs")
     assert any(c["club_id"] == "c1" for c in resp.json())
 
+
+def test_update_club_put(tmp_path, monkeypatch):
+    db = tmp_path / "tennis.db"
+    monkeypatch.setattr(storage, "DB_FILE", db)
+    importlib.reload(state)
+
     api = importlib.reload(importlib.import_module("tennis.api"))
     client = TestClient(api.app)
 
-    resp = client.get("/clubs")
-    assert any(c["club_id"] == "c1" for c in resp.json())
+    client.post(
+        "/users",
+        json={"user_id": "leader", "name": "Leader", "password": "pw", "allow_create": True},
+    )
+    token = client.post("/login", json={"user_id": "leader", "password": "pw"}).json()["token"]
+    client.post(
+        "/clubs",
+        json={"club_id": "c1", "name": "Club", "user_id": "leader", "token": token},
+    )
+
+    resp = client.put(
+        "/clubs/c1",
+        json={"user_id": "leader", "name": "New Name", "token": token},
+    )
+    assert resp.status_code == 200
+    assert resp.json()["status"] == "ok"
+
+    info = client.get("/clubs/c1").json()
+    assert info["name"] == "New Name"
