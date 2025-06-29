@@ -164,6 +164,15 @@ def _exchange_wechat_code(code: str) -> dict:
         return json.loads(resp.read().decode())
 
 
+# --- utility helpers -------------------------------------------------------
+
+def absolute_url(request: Request, path: str | None) -> str | None:
+    """Return ``path`` as an absolute URL relative to ``request`` base."""
+    if not path or path.startswith("http://") or path.startswith("https://"):
+        return path
+    return str(request.base_url).rstrip("/") + path
+
+
 # authentication helpers now provided by services.auth
 
 
@@ -513,7 +522,7 @@ def list_players(
 
 
 @app.get("/players/{user_id}")
-def get_global_player(user_id: str, recent: int = 0):
+def get_global_player(user_id: str, recent: int = 0, request: Request):
     """Return player information without requiring a club."""
     player = get_player(user_id)
     if not player:
@@ -530,7 +539,7 @@ def get_global_player(user_id: str, recent: int = 0):
         "id": player.user_id,
         "name": player.name,
         "avatar": player.avatar,
-        "avatar_url": player.avatar,
+        "avatar_url": absolute_url(request, player.avatar),
         "birth": player.birth,
         "gender": player.gender,
         "handedness": player.handedness,
@@ -776,7 +785,7 @@ def pre_rate_api(club_id: str, data: PreRateRequest, authorization: str | None =
 
 
 @app.get("/clubs/{club_id}/players/{user_id}")
-def get_player(club_id: str, user_id: str, recent: int = 0):
+def get_player(club_id: str, user_id: str, recent: int = 0, request: Request):
     club = clubs.get(club_id)
     if not club:
         raise HTTPException(404, "Club not found")
@@ -794,7 +803,7 @@ def get_player(club_id: str, user_id: str, recent: int = 0):
         "id": player.user_id,
         "name": player.name,
         "avatar": player.avatar,
-        "avatar_url": player.avatar,
+        "avatar_url": absolute_url(request, player.avatar),
         "birth": player.birth,
         "gender": player.gender,
         "handedness": player.handedness,
@@ -1184,7 +1193,7 @@ def cancel_signup(club_id: str, index: int, data: SignupRequest, authorization: 
 
 # ---- System management endpoints ----
 
-def _user_summary(user: User) -> dict[str, object]:
+def _user_summary(user: User, request: Request) -> dict[str, object]:
     """Return basic profile information with rating stats."""
     player = get_player(user.user_id)
     today = datetime.date.today()
@@ -1200,7 +1209,7 @@ def _user_summary(user: User) -> dict[str, object]:
         "user_id": user.user_id,
         "id": user.user_id,
         "name": user.name,
-        "avatar_url": getattr(player, "avatar", None) if player else None,
+        "avatar_url": absolute_url(request, player.avatar if player else None),
         "singles_rating": singles,
         "doubles_rating": doubles,
         "weighted_games_singles": round(singles_count, 2),
@@ -1213,6 +1222,7 @@ def list_all_users(
     query: str | None = None,
     limit: int | None = None,
     offset: int = 0,
+    request: Request,
 ) -> list[dict[str, object]]:
     """Return users optionally filtered by a search query."""
     q = query.lower() if query else None
@@ -1220,7 +1230,7 @@ def list_all_users(
     for u in users.values():
         if q and q not in u.user_id.lower() and q not in u.name.lower():
             continue
-        result.append(_user_summary(u))
+        result.append(_user_summary(u, request))
     result.sort(key=lambda x: x["user_id"])
     if offset:
         result = result[offset:]

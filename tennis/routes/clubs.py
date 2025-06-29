@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Header
+from fastapi import APIRouter, HTTPException, Header, Request
 from ..services.exceptions import ServiceError
 from pydantic import BaseModel
 from ..services.auth import require_auth, assert_token_matches
@@ -82,7 +82,7 @@ def add_player(club_id: str, data: PlayerCreate, authorization: str | None = Hea
 
 
 @router.get("/clubs/{club_id}/pending_members")
-def list_pending_members(club_id: str):
+def list_pending_members(club_id: str, request: Request):
     """Return pending member applications with player details."""
     club = get_club(club_id)
     if not club:
@@ -107,7 +107,7 @@ def list_pending_members(club_id: str):
                 {
                     "name": player.name,
                     "avatar": player.avatar,
-                    "avatar_url": player.avatar,
+                    "avatar_url": api.absolute_url(request, player.avatar),
                     "gender": player.gender,
                     "weighted_games_singles": round(
                         weighted_singles_matches(player), 2
@@ -131,7 +131,7 @@ def list_pending_members(club_id: str):
                 {
                     "name": user.name if user else uid,
                     "avatar": getattr(user, "avatar", "") if user else "",
-                    "avatar_url": getattr(user, "avatar", "") if user else "",
+                    "avatar_url": api.absolute_url(request, getattr(user, "avatar", "") if user else ""),
                     "gender": getattr(user, "gender", "") if user else "",
                     "weighted_games_singles": None,
                     "weighted_games_doubles": None,
@@ -143,7 +143,7 @@ def list_pending_members(club_id: str):
 
 
 @router.get("/clubs/batch")
-def get_clubs_batch(club_ids: str):
+def get_clubs_batch(club_ids: str, request: Request):
     """Return basic club information for multiple clubs."""
     ids = [c for c in club_ids.split(",") if c]
     clubs = svc_get_clubs_batch(ids)
@@ -166,7 +166,7 @@ def get_clubs_batch(club_ids: str):
                     {
                         "name": player.name,
                         "avatar": player.avatar,
-                        "avatar_url": player.avatar,
+                        "avatar_url": api.absolute_url(request, player.avatar),
                         "gender": player.gender,
                         "weighted_games_singles": round(weighted_singles_matches(player), 2),
                         "weighted_games_doubles": round(
@@ -184,7 +184,7 @@ def get_clubs_batch(club_ids: str):
                     {
                         "name": user.name if user else uid,
                         "avatar": getattr(user, "avatar", "") if user else "",
-                        "avatar_url": getattr(user, "avatar", "") if user else "",
+                        "avatar_url": api.absolute_url(request, getattr(user, "avatar", "") if user else ""),
                         "gender": getattr(user, "gender", "") if user else "",
                         "weighted_games_singles": None,
                         "weighted_games_doubles": None,
