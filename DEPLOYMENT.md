@@ -36,7 +36,20 @@ The default SQLite database contains these tables: `users`, `players`, `clubs`,
 To enable caching export a `REDIS_URL` pointing to a running Redis server. For
 example install Redis locally and set `export REDIS_URL=redis://localhost:6379/0`.
 
-## 3. Start the API server
+## 3. Deploy Redis
+
+Install and start a Redis server. Set the `REDIS_URL` environment variable so
+the application can connect, for example:
+
+```bash
+export REDIS_URL=redis://localhost:6379/0
+```
+
+When running the API with multiple worker processes the server stores a
+`CACHE_VERSION` key in Redis. Each worker checks this value and reloads cached
+data whenever it changes to keep state consistent.
+
+## 4. Start the API server
 
 Launch the FastAPI application. A local `tennis.db` SQLite database will be created automatically if it does not exist. Set `DATABASE_URL` to a PostgreSQL DSN if you prefer using a server.
 
@@ -50,7 +63,7 @@ All runtime data is persisted in SQLite or PostgreSQL depending on
 `DATABASE_URL`. Because the API accesses the database for every request you can
 run multiple stateless instances behind a load balancer.
 
-## 4. Import the mini program
+## 5. Import the mini program
 
 1. Open WeChat Developer Tools and choose **Import**.
 2. Select the `miniapp` directory from this repository.
