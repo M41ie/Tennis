@@ -38,6 +38,8 @@ If the `REDIS_URL` environment variable is set the application caches loaded
 club and user data in Redis for faster access. A running Redis server is
 required for this feature, for example `export REDIS_URL=redis://localhost:6379/0`.
 Cached entries expire automatically after a few minutes.
+Every write operation bumps a `CACHE_VERSION` value in Redis so that multiple
+API workers reload their local cache when the version changes.
 
 ### Environment configuration
 
@@ -54,6 +56,11 @@ WECHAT_SECRET=your-secret
 
 Install `python-dotenv` with `pip install python-dotenv` if you want to use a
 `.env` file during development.
+
+When caching is enabled via `REDIS_URL` the server stores a `CACHE_VERSION`
+value in Redis. All workers compare this version on each request and reload
+their cached data whenever it changes. Ensure all processes point to the same
+Redis instance.
 
 Available format names:
 
