@@ -17,7 +17,7 @@ UPLOAD_DIR = Path("uploads")
 
 
 import tennis.storage as storage
-from .storage import load_data, load_users, invalidate_cache, get_cache_version, get_player
+from .storage import load_data, load_users, invalidate_cache, get_cache_version
 
 # ensure cached data does not leak across reloads
 invalidate_cache()
@@ -425,7 +425,7 @@ def get_club_info(club_id: str):
     today = datetime.date.today()
     pending = []
     for uid, info in club.pending_members.items():
-        p = get_player(uid)
+        p = storage.get_player(uid)
         entry = {
             "user_id": uid,
             "name": p.name if p else None,
@@ -524,7 +524,7 @@ def list_players(
 @app.get("/players/{user_id}")
 def get_global_player(user_id: str, request: Request, recent: int = 0):
     """Return player information without requiring a club."""
-    player = get_player(user_id)
+    player = storage.get_player(user_id)
     if not player:
         raise HTTPException(404, "Player not found")
 
@@ -1195,7 +1195,7 @@ def cancel_signup(club_id: str, index: int, data: SignupRequest, authorization: 
 
 def _user_summary(user: User, request: Request) -> dict[str, object]:
     """Return basic profile information with rating stats."""
-    player = get_player(user.user_id)
+    player = storage.get_player(user.user_id)
     today = datetime.date.today()
     if player:
         singles = weighted_rating(player, today)
