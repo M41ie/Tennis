@@ -152,6 +152,28 @@ curl -X POST http://localhost:8000/clubs/c1/pending_matches/INDEX/approve \
 
 Doubles matches use the corresponding `/pending_doubles/...` routes.
 
+### Upload
+
+Use `/upload` to store images on the server.
+
+```
+POST /upload
+```
+
+Send the image in a multipart form field named `file`. The response contains
+the absolute URL of the stored file:
+
+```json
+{ "url": "<uploaded file URL>" }
+```
+
+Example:
+
+```bash
+curl -X POST http://localhost:8000/upload \
+     -F "file=@example.jpg"
+```
+
 ### Mini App
 
 The `miniapp` directory contains a very small WeChat Mini Program that
