@@ -598,19 +598,24 @@ def list_all_players(
 ):
     """Return players from one or more clubs optionally filtered and sorted."""
 
-    # When no club parameter is provided, return an empty list so the
-    # leaderboard correctly shows no players selected.
-    if not club:
-        return []
-
     gender = normalize_gender(gender)
-    club_ids = club.split(",")
-    clubs_to_iter = []
-    for cid in club_ids:
-        c = clubs.get(cid)
-        if not c:
-            raise HTTPException(404, "Club not found")
-        clubs_to_iter.append(c)
+    if not club:
+        clubs_to_iter = list(clubs.values())
+        _, all_players = storage.load_data()
+        extra_players = [
+            p
+            for p in all_players.values()
+            if all(p.user_id not in c.members for c in clubs_to_iter)
+        ]
+    else:
+        club_ids = club.split(",")
+        clubs_to_iter = []
+        for cid in club_ids:
+            c = clubs.get(cid)
+            if not c:
+                raise HTTPException(404, "Club not found")
+            clubs_to_iter.append(c)
+        extra_players = []
     today = datetime.date.today()
     get_rating = weighted_doubles_rating if doubles else weighted_rating
     players_map: dict[str, dict[str, object]] = {}
@@ -635,6 +640,41 @@ def list_all_players(
                 continue
             entry = {
                 "club_id": c.club_id,
+                "user_id": p.user_id,
+                "name": p.name,
+                "avatar": p.avatar,
+                "gender": p.gender,
+                "joined": p.joined.isoformat(),
+                "weighted_singles_matches": round(singles_count, 2),
+                "weighted_doubles_matches": round(doubles_count, 2),
+            }
+            if doubles:
+                entry["doubles_rating"] = rating
+            else:
+                entry["singles_rating"] = rating
+            players_map[p.user_id] = entry
+
+    if not club:
+        for p in extra_players:
+            rating = get_rating(p, today)
+            singles_count = weighted_singles_matches(p)
+            doubles_count = weighted_doubles_matches(p)
+            if min_rating is not None and (rating is None or rating < min_rating):
+                continue
+            if max_rating is not None and (rating is None or rating > max_rating):
+                continue
+            if min_age is not None and (p.age is None or p.age < min_age):
+                continue
+            if max_age is not None and (p.age is None or p.age > max_age):
+                continue
+            if gender is not None and p.gender != gender:
+                continue
+            if not _region_match(p.region, region):
+                continue
+            if p.user_id in players_map:
+                continue
+            entry = {
+                "club_id": None,
                 "user_id": p.user_id,
                 "name": p.name,
                 "avatar": p.avatar,
