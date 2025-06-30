@@ -12,6 +12,10 @@ function uploadAvatar(filePath) {
       success(res) {
         try {
           const data = JSON.parse(res.data);
+          if (res.statusCode >= 400) {
+            wx.showToast({ duration: 4000, title: data.detail, icon: 'none' });
+            return reject(res);
+          }
           if (data && data.url) return resolve(data.url);
         } catch (e) {}
         reject(res);
