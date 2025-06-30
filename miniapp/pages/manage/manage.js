@@ -295,10 +295,16 @@ Page({
     if (!applicant) return;
     const lines = [];
     if (applicant.reason) lines.push('理由：' + applicant.reason);
-    if (applicant.singles_rating != null)
-      lines.push('单打自评：' + applicant.singles_rating);
-    if (applicant.doubles_rating != null)
-      lines.push('双打自评：' + applicant.doubles_rating);
+    if (applicant.singles_rating != null) {
+      const label =
+        applicant.global_rating != null ? '单打评分：' : '单打自评：';
+      lines.push(label + applicant.singles_rating);
+    }
+    if (applicant.doubles_rating != null) {
+      const label =
+        applicant.global_rating != null ? '双打评分：' : '双打自评：';
+      lines.push(label + applicant.doubles_rating);
+    }
     const that = this;
     wx.showModal({
       title: applicant.name || applicant.user_id,
