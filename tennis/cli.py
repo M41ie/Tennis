@@ -221,12 +221,6 @@ def request_join(
         raise ValueError("Already member")
     if user_id not in users:
         raise ValueError("User not registered")
-    player = players.get(user_id)
-    if player is None or (
-        player.singles_rating is None and player.doubles_rating is None
-    ):
-        if singles_rating is None or doubles_rating is None:
-            raise ValueError("Rating required")
     club.pending_members[user_id] = JoinApplication(
         reason=reason,
         singles_rating=singles_rating,

@@ -75,6 +75,8 @@ from .models import Player, Club, Match, DoublesMatch, Appointment, User
 # through the storage layer.
 clubs, players = load_data()
 users = load_users()
+import tennis.cli as cli_module
+cli_module.players = players
 
 
 app = FastAPI()
@@ -91,6 +93,8 @@ async def cache_sync_middleware(request: Request, call_next):
         invalidate_cache()
         clubs, players = load_data()
         users = load_users()
+        import tennis.cli as cli_module
+        cli_module.players = players
         CACHE_VERSION = version
     response = await call_next(request)
     return response
