@@ -46,3 +46,17 @@ test('avatar upload and submit', async () => {
   expect(putCall).toBeTruthy();
   expect(wx.navigateBack).toHaveBeenCalled();
 });
+
+test('upload failure shows detail toast', async () => {
+  global.getApp = () => ({ globalData: { BASE_URL: 'http://server' } });
+  global.wx = {
+    uploadFile: jest.fn(opts => {
+      opts.success({ statusCode: 400, data: JSON.stringify({ detail: 'error' }) });
+    }),
+    showToast: jest.fn()
+  };
+
+  const uploadAvatar = require('../utils/upload');
+  await expect(uploadAvatar('tmp')).rejects.toEqual(expect.objectContaining({ statusCode: 400 }));
+  expect(wx.showToast).toHaveBeenCalledWith(expect.objectContaining({ title: 'error' }));
+});
