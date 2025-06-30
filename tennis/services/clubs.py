@@ -2,6 +2,7 @@ from __future__ import annotations
 import datetime
 import json
 from .exceptions import ServiceError
+from .. import cli
 from ..cli import (
     create_club as cli_create_club,
     add_player as cli_add_player,
@@ -65,6 +66,7 @@ def _prepare_players(
 ) -> None:
     """Ensure players referenced by a club or ``extra`` ids are cached."""
     _, players = load_data()
+    cli.players = players
     if club:
         for p in club.members.values():
             if p.user_id not in players:

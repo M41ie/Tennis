@@ -2,6 +2,7 @@ from __future__ import annotations
 import secrets
 import datetime
 from .exceptions import ServiceError
+from .. import cli
 from ..cli import register_user, resolve_user, check_password, hash_password, set_user_limits
 from ..storage import (
     load_users,
@@ -32,6 +33,7 @@ from ..models import User, Player
 def create_user(data) -> str:
     users = load_users()
     _, players = load_data()
+    cli.players = players
     if data.user_id:
         existing = get_player(data.user_id)
         if existing:
@@ -115,6 +117,8 @@ def wechat_login(code: str, exchange_func) -> tuple[str, str, str, bool]:
         raise ServiceError("Invalid code", 400)
 
     users = load_users()
+    _, players = load_data()
+    cli.players = players
     user = None
     created = False
     for u in users.values():
