@@ -114,20 +114,21 @@ Page({
         this.setData({ avatar, tempAvatar: avatar });
       }
 
+      const payload = {
+        user_id: this.data.userId,
+        name: this.data.name,
+        gender: this.data.genderIndex === 1 ? 'M' : this.data.genderIndex === 2 ? 'F' : '',
+        avatar,
+        birth: this.data.birth,
+        handedness: this.data.handOptions[this.data.handIndex] || '',
+        backhand: this.data.backhandOptions[this.data.backhandIndex] || '',
+        region: this.data.regionString
+      };
+
       await request({
         url: `${BASE_URL}/players/${this.data.userId}`,
         method: 'PUT',
-        data: {
-          user_id: this.data.userId,
-          token,
-          name: this.data.name,
-          gender: this.data.genderIndex === 1 ? 'M' : this.data.genderIndex === 2 ? 'F' : '',
-          avatar,
-          birth: this.data.birth,
-          handedness: this.data.handOptions[this.data.handIndex] || '',
-          backhand: this.data.backhandOptions[this.data.backhandIndex] || '',
-          region: this.data.regionString
-        },
+        data: payload,
         loading: false
       });
 
