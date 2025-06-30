@@ -89,6 +89,7 @@ class Club:
 @dataclass
 class Match:
     date: datetime.date
+    club_id: str | None = None
     player_a: Player
     player_b: Player
     score_a: int
@@ -115,6 +116,7 @@ class Match:
 @dataclass
 class DoublesMatch:
     date: datetime.date
+    club_id: str | None = None
     player_a1: Player
     player_a2: Player
     player_b1: Player
