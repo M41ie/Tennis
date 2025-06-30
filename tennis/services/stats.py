@@ -5,6 +5,7 @@ from ..rating import (
     weighted_doubles_rating,
 )
 from ..models import Club, Player, Match, DoublesMatch
+from ..storage import load_data
 
 
 def _pending_status_for_user(user_id: str, match: Match | DoublesMatch, club: Club) -> dict[str, object]:
@@ -137,10 +138,34 @@ def get_leaderboard(
         clubs_to_iter = [club]
     else:
         clubs_to_iter = list(clubs.values())
+        # fetch all players so we can include those without club membership
+        _, all_players = load_data()
+        extra_players = [
+            p
+            for p in all_players.values()
+            if all(p.user_id not in c.members for c in clubs_to_iter)
+        ]
 
     players: list[tuple[Player, float]] = []
     for club in clubs_to_iter:
         for p in club.members.values():
+            rating = weighted_doubles_rating(p, today) if doubles else weighted_rating(p, today)
+            if rating is None:
+                continue
+            if min_rating is not None and rating < min_rating:
+                continue
+            if max_rating is not None and rating > max_rating:
+                continue
+            if min_age is not None and (p.age is None or p.age < min_age):
+                continue
+            if max_age is not None and (p.age is None or p.age > max_age):
+                continue
+            if gender is not None and p.gender != gender:
+                continue
+            players.append((p, rating))
+
+    if club_id is None:
+        for p in extra_players:
             rating = weighted_doubles_rating(p, today) if doubles else weighted_rating(p, today)
             if rating is None:
                 continue

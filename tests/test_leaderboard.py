@@ -1,5 +1,6 @@
 import datetime
 
+import tennis.services.stats as stats
 from tennis.services.stats import get_leaderboard
 from tennis.models import Club, Player
 
@@ -36,4 +37,21 @@ def test_get_leaderboard_doubles():
     result = get_leaderboard(clubs, "c1", True)
     ids = [p.user_id for p, _ in result]
     assert ids == ["p3", "p1", "p2"]
+
+
+def test_get_leaderboard_global(monkeypatch):
+    club = Club(club_id="c1", name="Club")
+    p1 = Player("p1", "P1", singles_rating=1200.0)
+    orphan = Player("solo", "Solo", singles_rating=1000.0)
+    club.members[p1.user_id] = p1
+    clubs = {club.club_id: club}
+
+    def fake_load_data():
+        return clubs, {p1.user_id: p1, orphan.user_id: orphan}
+
+    monkeypatch.setattr(stats, "load_data", fake_load_data)
+
+    result = get_leaderboard(clubs, None, False)
+    ids = [p.user_id for p, _ in result]
+    assert "solo" in ids
 

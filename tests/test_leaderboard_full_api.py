@@ -45,3 +45,23 @@ def test_leaderboard_full(tmp_path, monkeypatch):
     assert any(c["club_id"] == "c1" for c in data.get("clubs", []))
     assert data.get("joined_clubs") == ["c1"]
     assert data.get("players")[0]["user_id"] == "p1"
+
+
+def test_global_leaderboard_includes_orphan(tmp_path, monkeypatch):
+    api, client = setup_db(tmp_path, monkeypatch)
+
+    # register a user without joining any club
+    client.post(
+        "/users",
+        json={"user_id": "solo", "name": "Solo", "password": "pw"},
+    )
+
+    # give the user a rating so they show up
+    player = storage.get_player("solo")
+    player.singles_rating = 1000.0
+    storage.update_player_record(player)
+
+    resp = client.get("/leaderboard_full")
+    assert resp.status_code == 200
+    ids = [p["user_id"] for p in resp.json()["players"]]
+    assert "solo" in ids
