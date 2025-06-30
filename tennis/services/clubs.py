@@ -66,7 +66,8 @@ def _prepare_players(
 ) -> None:
     """Ensure players referenced by a club or ``extra`` ids are cached."""
     _, players = load_data()
-    cli.players = players
+    import tennis.cli as cli_module
+    cli_module.players = players
     if club:
         for p in club.members.values():
             if p.user_id not in players:
