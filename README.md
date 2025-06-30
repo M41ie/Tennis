@@ -167,6 +167,8 @@ Use `/upload` to store images on the server.
 POST /upload
 ```
 
+Files larger than 2&nbsp;MB are rejected with status code `413`.
+
 Send the image in a multipart form field named `file`. The response contains
 the absolute URL of the stored file:
 
