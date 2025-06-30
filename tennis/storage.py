@@ -567,8 +567,6 @@ def load_data() -> tuple[Dict[str, Club], Dict[str, Player]]:
 
     for row in cur.execute("SELECT * FROM matches ORDER BY id"):
         club = clubs.get(row["club_id"])
-        if not club:
-            continue
         value = row["data"]
         if isinstance(value, str):
             data = json.loads(value or "{}")
@@ -589,6 +587,7 @@ def load_data() -> tuple[Dict[str, Club], Dict[str, Player]]:
             match = DoublesMatch(
                 id=row["id"],
                 date=date,
+                club_id=row["club_id"],
                 player_a1=pa1,
                 player_a2=pa2,
                 player_b1=pb1,
@@ -608,7 +607,8 @@ def load_data() -> tuple[Dict[str, Club], Dict[str, Player]]:
             match.rating_a2_after = data.get("rating_a2_after")
             match.rating_b1_after = data.get("rating_b1_after")
             match.rating_b2_after = data.get("rating_b2_after")
-            club.matches.append(match)
+            if club:
+                club.matches.append(match)
             pa1.doubles_matches.append(match)
             pa2.doubles_matches.append(match)
             pb1.doubles_matches.append(match)
@@ -619,6 +619,7 @@ def load_data() -> tuple[Dict[str, Club], Dict[str, Player]]:
             match = Match(
                 id=row["id"],
                 date=date,
+                club_id=row["club_id"],
                 player_a=pa,
                 player_b=pb,
                 score_a=data["score_a"],
@@ -632,7 +633,8 @@ def load_data() -> tuple[Dict[str, Club], Dict[str, Player]]:
             match.rating_b_before = data.get("rating_b_before")
             match.rating_a_after = data.get("rating_a_after")
             match.rating_b_after = data.get("rating_b_after")
-            club.matches.append(match)
+            if club:
+                club.matches.append(match)
             pa.singles_matches.append(match)
             pb.singles_matches.append(match)
     for row in cur.execute("SELECT * FROM pending_matches ORDER BY id"):

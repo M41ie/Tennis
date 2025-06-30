@@ -1884,6 +1884,60 @@ def test_dissolve_club(tmp_path, monkeypatch):
         assert member[0] == 0
 
 
+def test_records_persist_after_dissolve(tmp_path, monkeypatch):
+    db = tmp_path / "tennis.db"
+    monkeypatch.setattr(storage, "DB_FILE", db)
+    importlib.reload(state)
+
+    api = importlib.reload(importlib.import_module("tennis.api"))
+    client = TestClient(api.app)
+
+    for uid, allow in [("leader", True), ("p1", False), ("p2", False)]:
+        client.post(
+            "/users",
+            json={"user_id": uid, "name": uid.upper(), "password": "pw", "allow_create": allow},
+        )
+
+    token_leader = client.post("/login", json={"user_id": "leader", "password": "pw"}).json()["token"]
+    token_p1 = client.post("/login", json={"user_id": "p1", "password": "pw"}).json()["token"]
+    token_p2 = client.post("/login", json={"user_id": "p2", "password": "pw"}).json()["token"]
+
+    client.post(
+        "/clubs",
+        json={"club_id": "c1", "name": "C1", "user_id": "leader", "token": token_leader},
+    )
+    for pid, token in [("p1", token_p1), ("p2", token_p2)]:
+        client.post(
+            "/clubs/c1/players",
+            json={"user_id": pid, "name": pid.upper(), "token": token},
+        )
+
+    client.post(
+        "/clubs/c1/matches",
+        json={
+            "user_id": "p1",
+            "user_a": "p1",
+            "user_b": "p2",
+            "score_a": 6,
+            "score_b": 3,
+            "date": "2023-01-01",
+            "token": token_p1,
+        },
+    )
+
+    assert len(client.get("/players/p1/records").json()) == 1
+
+    client.request(
+        "DELETE",
+        "/clubs/c1",
+        json={"user_id": "leader", "token": token_leader},
+    )
+
+    records = client.get("/players/p1/records").json()
+    assert len(records) == 1
+    assert records[0]["club_id"] == "c1"
+
+
 def test_sys_matches_and_doubles(tmp_path, monkeypatch):
     db = tmp_path / "tennis.db"
     monkeypatch.setattr(storage, "DB_FILE", db)

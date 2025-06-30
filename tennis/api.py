@@ -883,20 +883,15 @@ def get_global_player_records(
     user_id: str, limit: int | None = None, offset: int = 0
 ):
     """Return singles match history across all clubs for a player."""
-    from .cli import get_player_match_cards
+    from .cli import get_player_global_match_cards
 
-    cards = []
-    for cid, club in clubs.items():
-        if user_id not in club.members:
-            continue
-        try:
-            recs = get_player_match_cards(clubs, cid, user_id)
-        except ValueError:
-            continue
-        for c in recs:
-            c["date"] = c["date"].isoformat()
-            c["club_id"] = cid
-            cards.append(c)
+    player = storage.get_player(user_id)
+    if not player:
+        raise HTTPException(404, "Player not found")
+
+    cards = get_player_global_match_cards(player)
+    for c in cards:
+        c["date"] = c["date"].isoformat()
 
     cards.sort(key=lambda x: x["date"], reverse=True)
     if offset:
@@ -911,20 +906,15 @@ def get_global_player_doubles_records(
     user_id: str, limit: int | None = None, offset: int = 0
 ):
     """Return doubles match history across all clubs for a player."""
-    from .cli import get_player_doubles_cards
+    from .cli import get_player_global_doubles_cards
 
-    cards = []
-    for cid, club in clubs.items():
-        if user_id not in club.members:
-            continue
-        try:
-            recs = get_player_doubles_cards(clubs, cid, user_id)
-        except ValueError:
-            continue
-        for c in recs:
-            c["date"] = c["date"].isoformat()
-            c["club_id"] = cid
-            cards.append(c)
+    player = storage.get_player(user_id)
+    if not player:
+        raise HTTPException(404, "Player not found")
+
+    cards = get_player_global_doubles_cards(player)
+    for c in cards:
+        c["date"] = c["date"].isoformat()
 
     cards.sort(key=lambda x: x["date"], reverse=True)
     if offset:

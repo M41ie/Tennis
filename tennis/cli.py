@@ -603,6 +603,7 @@ def submit_match(
         raise ValueError("Both players must be in club")
     match = Match(
         date=date,
+        club_id=club_id,
         player_a=p_init,
         player_b=p_opp,
         score_a=score_initiator,
@@ -772,6 +773,7 @@ def submit_doubles(
 
     match = DoublesMatch(
         date=date,
+        club_id=club_id,
         player_a1=pa1,
         player_a2=pa2,
         player_b1=pb1,
@@ -942,6 +944,7 @@ def record_match(
         raise ValueError('Both players must be in club')
     match = Match(
         date=date,
+        club_id=club_id,
         player_a=pa,
         player_b=pb,
         score_a=score_a,
@@ -986,6 +989,7 @@ def record_doubles(
         raise ValueError('All players must be in club')
     match = DoublesMatch(
         date=date,
+        club_id=club_id,
         player_a1=pa1,
         player_a2=pa2,
         player_b1=pb1,
@@ -1112,6 +1116,65 @@ def get_player_match_cards(clubs, club_id: str, user_id: str):
     return cards
 
 
+def _match_to_card(m: Match, player: Player) -> dict:
+    """Return card info for a single match from the player's perspective."""
+    if m.player_a == player:
+        opp = m.player_b
+        self_score = m.score_a
+        opp_score = m.score_b
+        self_after = m.rating_a_after
+        self_before = m.rating_a_before
+        opp_after = m.rating_b_after
+        opp_before = m.rating_b_before
+    else:
+        opp = m.player_a
+        self_score = m.score_b
+        opp_score = m.score_a
+        self_after = m.rating_b_after
+        self_before = m.rating_b_before
+        opp_after = m.rating_a_after
+        opp_before = m.rating_a_before
+
+    if self_before is not None and opp_before is not None:
+        exp_rate = expected_score(self_before, opp_before)
+    else:
+        exp_rate = None
+    total = self_score + opp_score
+    actual_rate = self_score / total if total > 0 else None
+
+    return {
+        "date": m.date,
+        "created_ts": m.created_ts,
+        "location": m.location,
+        "format": m.format_name,
+        "self_score": self_score,
+        "opponent_score": opp_score,
+        "opponent": opp.name,
+        "opponent_id": opp.user_id,
+        "opponent_avatar": opp.avatar,
+        "expected_score": exp_rate,
+        "actual_rate": actual_rate,
+        "self_rating_after": self_after,
+        "self_delta": (
+            self_after - self_before if self_after is not None and self_before is not None else None
+        ),
+        "opponent_rating_after": opp_after,
+        "opponent_delta": (
+            opp_after - opp_before if opp_after is not None and opp_before is not None else None
+        ),
+        "club_id": m.club_id,
+    }
+
+
+def get_player_global_match_cards(player: Player) -> list[dict]:
+    """Return match cards for a player across all clubs."""
+    cards = [_match_to_card(m, player) for m in player.singles_matches]
+    cards.sort(key=lambda x: (x["date"], x["created_ts"]), reverse=True)
+    for c in cards:
+        del c["created_ts"]
+    return cards
+
+
 def get_player_doubles_cards(clubs, club_id: str, user_id: str):
     """Return a list of doubles match card info for a player."""
     club = clubs.get(club_id)
@@ -1232,6 +1295,111 @@ def get_player_doubles_cards(clubs, club_id: str, user_id: str):
             }
         )
 
+    cards.sort(key=lambda x: (x["date"], x["created_ts"]), reverse=True)
+    for c in cards:
+        del c["created_ts"]
+    return cards
+
+
+def _doubles_match_to_card(m: DoublesMatch, player: Player) -> dict:
+    if player in (m.player_a1, m.player_a2):
+        partner = m.player_a2 if m.player_a1 == player else m.player_a1
+        opp1, opp2 = m.player_b1, m.player_b2
+        self_score = m.score_a
+        opp_score = m.score_b
+        if player == m.player_a1:
+            self_after = m.rating_a1_after
+            self_before = m.rating_a1_before
+            partner_after = m.rating_a2_after
+            partner_before = m.rating_a2_before
+        else:
+            self_after = m.rating_a2_after
+            self_before = m.rating_a2_before
+            partner_after = m.rating_a1_after
+            partner_before = m.rating_a1_before
+        opp1_after = m.rating_b1_after
+        opp1_before = m.rating_b1_before
+        opp2_after = m.rating_b2_after
+        opp2_before = m.rating_b2_before
+    else:
+        partner = m.player_b2 if m.player_b1 == player else m.player_b1
+        opp1, opp2 = m.player_a1, m.player_a2
+        self_score = m.score_b
+        opp_score = m.score_a
+        if player == m.player_b1:
+            self_after = m.rating_b1_after
+            self_before = m.rating_b1_before
+            partner_after = m.rating_b2_after
+            partner_before = m.rating_b2_before
+        else:
+            self_after = m.rating_b2_after
+            self_before = m.rating_b2_before
+            partner_after = m.rating_b1_after
+            partner_before = m.rating_b1_before
+        opp1_after = m.rating_a1_after
+        opp1_before = m.rating_a1_before
+        opp2_after = m.rating_a2_after
+        opp2_before = m.rating_a2_before
+
+    if (
+        m.rating_a1_before is not None
+        and m.rating_a2_before is not None
+        and m.rating_b1_before is not None
+        and m.rating_b2_before is not None
+    ):
+        team_a_before = (m.rating_a1_before + m.rating_a2_before) / 2
+        team_b_before = (m.rating_b1_before + m.rating_b2_before) / 2
+        if player in (m.player_a1, m.player_a2):
+            exp_rate = expected_score(team_a_before, team_b_before)
+        else:
+            exp_rate = expected_score(team_b_before, team_a_before)
+    else:
+        exp_rate = None
+
+    total = self_score + opp_score
+    actual_rate = self_score / total if total > 0 else None
+
+    return {
+        "date": m.date,
+        "created_ts": m.created_ts,
+        "location": m.location,
+        "format": m.format_name,
+        "self_score": self_score,
+        "opponent_score": opp_score,
+        "partner": partner.name,
+        "partner_id": partner.user_id,
+        "partner_avatar": partner.avatar,
+        "partner_rating_after": partner_after,
+        "partner_delta": (
+            partner_after - partner_before if partner_after is not None and partner_before is not None else None
+        ),
+        "opponent1": opp1.name,
+        "opponent1_id": opp1.user_id,
+        "opponent1_avatar": opp1.avatar,
+        "opponent1_rating_after": opp1_after,
+        "opponent1_delta": (
+            opp1_after - opp1_before if opp1_after is not None and opp1_before is not None else None
+        ),
+        "opponent2": opp2.name,
+        "opponent2_id": opp2.user_id,
+        "opponent2_avatar": opp2.avatar,
+        "opponent2_rating_after": opp2_after,
+        "opponent2_delta": (
+            opp2_after - opp2_before if opp2_after is not None and opp2_before is not None else None
+        ),
+        "opponents": f"{opp1.name}/{opp2.name}",
+        "expected_score": exp_rate,
+        "actual_rate": actual_rate,
+        "self_rating_after": self_after,
+        "self_delta": (
+            self_after - self_before if self_after is not None and self_before is not None else None
+        ),
+        "club_id": m.club_id,
+    }
+
+
+def get_player_global_doubles_cards(player: Player) -> list[dict]:
+    cards = [_doubles_match_to_card(m, player) for m in player.doubles_matches]
     cards.sort(key=lambda x: (x["date"], x["created_ts"]), reverse=True)
     for c in cards:
         del c["created_ts"]
