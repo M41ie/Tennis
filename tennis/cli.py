@@ -266,8 +266,10 @@ def approve_member(
     if player is None:
         player = Player(user_id=user.user_id, name=user.name)
         players[user_id] = player
-    player.singles_rating = rating
-    player.doubles_rating = rating
+    if player.singles_rating is None:
+        player.singles_rating = rating
+    if player.doubles_rating is None:
+        player.doubles_rating = rating
     club.members[user_id] = player
     user.joined_clubs += 1
     if make_admin:
