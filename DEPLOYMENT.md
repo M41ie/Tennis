@@ -67,9 +67,35 @@ run multiple stateless instances behind a load balancer.
 
 1. Open WeChat Developer Tools and choose **Import**.
 2. Select the `miniapp` directory from this repository.
-3. Configure the request domain to point to the API server URL.
+3. Configure both the *request* and *uploadFile* domains in the WeChat
+   console to point to the API server URL. All mini-program requests must
+   use `https://` URLs.
 4. Adjust the API endpoints in `miniapp/config.js`. The file contains
    `BASE_URL` values for the WeChat `develop`, `trial` and `release` modes.
    When building the mini program the appropriate entry is chosen based on the
    compilation environment.
 5. Build and upload the mini program through the developer tools.
+
+## 6. Sample Nginx configuration
+
+When deploying publicly you can place Nginx in front of the FastAPI server.
+The following server block proxies requests for
+`api-trial.tennisrating.top` to a local instance:
+
+```nginx
+server {
+    listen 443 ssl;
+    server_name api-trial.tennisrating.top;
+
+    ssl_certificate     /etc/letsencrypt/live/api-trial.tennisrating.top/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/api-trial.tennisrating.top/privkey.pem;
+
+    client_max_body_size 5m;
+
+    location / {
+        proxy_pass http://127.0.0.1:8000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+}
+```
