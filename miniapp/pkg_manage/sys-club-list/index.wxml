@@ -4,6 +4,7 @@
       wx:for="{{clubs}}"
       wx:key="club_id"
       club="{{item}}"
+      data-id="{{item.club_id}}"
       bind:tap="openClub"
     />
   </view>
