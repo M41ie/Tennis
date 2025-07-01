@@ -9,6 +9,7 @@ const {
   validateUserName
 } = require('../../utils/validator');
 const uploadAvatar = require('../../utils/upload');
+const userService = require('../../services/user');
 
 Page({
   data: {
@@ -27,7 +28,9 @@ Page({
     handOptions: ['请选择', '右手持拍', '左手持拍'],
     backhandOptions: ['请选择', '双反', '单反'],
     userId: '',
-    submitting: false
+    submitting: false,
+    form: {},
+    newAvatarTempPath: ''
   },
   onLoad() {
     const uid = store.userId;
@@ -51,7 +54,8 @@ Page({
           avatar: p.avatar || '',
           birth: p.birth || '',
           region: regionArr,
-          regionString: p.region || ''
+          regionString: p.region || '',
+          form: { ...p }
         });
       }
     });
@@ -59,16 +63,26 @@ Page({
   onName(e) {
     const name = e.detail.value;
     const ok = /^[A-Za-z\u4e00-\u9fa5]{0,12}$/.test(name);
-    this.setData({ name, nameError: ok ? '' : this.data.t.nameRule });
+    this.setData({ name, nameError: ok ? '' : this.data.t.nameRule, 'form.name': name });
   },
-  onGender(e) { this.setData({ genderIndex: Number(e.detail.value) }); },
-  onBirthChange(e) { this.setData({ birth: e.detail.value }); },
-  onHand(e) { this.setData({ handIndex: Number(e.detail.value) }); },
-  onBackhand(e) { this.setData({ backhandIndex: Number(e.detail.value) }); },
+  onGender(e) {
+    const idx = Number(e.detail.value);
+    this.setData({ genderIndex: idx, 'form.gender': idx === 1 ? 'M' : idx === 2 ? 'F' : '' });
+  },
+  onBirthChange(e) { this.setData({ birth: e.detail.value, 'form.birth': e.detail.value }); },
+  onHand(e) {
+    const idx = Number(e.detail.value);
+    this.setData({ handIndex: idx, 'form.handedness': this.data.handOptions[idx] || '' });
+  },
+  onBackhand(e) {
+    const idx = Number(e.detail.value);
+    this.setData({ backhandIndex: idx, 'form.backhand': this.data.backhandOptions[idx] || '' });
+  },
   onRegionChange(e) {
     this.setData({
       region: e.detail.value,
-      regionString: e.detail.value.join(' ')
+      regionString: e.detail.value.join(' '),
+      'form.region': e.detail.value.join(' ')
     });
   },
   hideKeyboard,
@@ -83,7 +97,12 @@ Page({
           wx.showToast({ duration: 4000,  title: that.data.t.uploadImageError, icon: 'none' });
           return;
         }
-        that.setData({ avatar: path, tempAvatar: path });
+        that.setData({
+          avatar: path,
+          tempAvatar: path,
+          'form.avatar': path,
+          newAvatarTempPath: path
+        });
       }
     });
   },
@@ -108,36 +127,30 @@ Page({
     wx.showLoading({ title: this.data.t.loading, mask: true });
 
     try {
-      let avatar = this.data.avatar;
-      if (this.data.tempAvatar && /^wxfile:/.test(this.data.tempAvatar)) {
-        avatar = await uploadAvatar(this.data.tempAvatar);
-        this.setData({ avatar, tempAvatar: avatar });
-      }
-
-      const payload = {
-        user_id: this.data.userId,
+      let finalPayload = {
         name: this.data.name,
         gender: this.data.genderIndex === 1 ? 'M' : this.data.genderIndex === 2 ? 'F' : '',
-        avatar,
         birth: this.data.birth,
         handedness: this.data.handOptions[this.data.handIndex] || '',
         backhand: this.data.backhandOptions[this.data.backhandIndex] || '',
-        region: this.data.regionString
+        region: this.data.regionString,
+        avatar: this.data.avatar
       };
 
-      await request({
-        url: `${BASE_URL}/players/${this.data.userId}`,
-        method: 'PUT',
-        data: payload,
-        loading: false
-      });
+      if (this.data.newAvatarTempPath) {
+        const permanentRelativeUrl = await uploadAvatar(this.data.newAvatarTempPath);
+        finalPayload.avatar = permanentRelativeUrl;
+      }
+
+      await userService.updatePlayerProfile(this.data.userId, finalPayload);
 
       wx.showToast({ duration: 4000,  title: this.data.t.updated, icon: 'success' });
+      store.fetchUserInfo && store.fetchUserInfo();
       wx.navigateBack();
     } catch (e) {
       wx.showToast({ duration: 4000,  title: this.data.t.failed, icon: 'none' });
     } finally {
-      this.setData({ submitting: false });
+      this.setData({ submitting: false, newAvatarTempPath: '' });
       wx.hideLoading();
     }
   }

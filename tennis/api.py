@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 from fastapi import FastAPI, HTTPException, Depends, Header, UploadFile, File, Request
-from starlette.staticfiles import StaticFiles
-import secrets
+import shutil
+from uuid import uuid4
 from .services.exceptions import ServiceError
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
@@ -13,7 +13,10 @@ import urllib.request
 import urllib.parse
 from pathlib import Path
 
-UPLOAD_DIR = Path("uploads")
+STATIC_ROOT = Path("/home/ubuntu/Tennis/static")
+MEDIA_URL_PREFIX = "/static/media/avatars"
+AVATARS_ROOT = STATIC_ROOT / "media/avatars"
+AVATARS_ROOT.mkdir(parents=True, exist_ok=True)
 
 
 import tennis.storage as storage
@@ -80,8 +83,6 @@ cli_module.players = players
 
 
 app = FastAPI()
-UPLOAD_DIR.mkdir(exist_ok=True)
-app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 
 
 @app.middleware("http")
@@ -122,20 +123,23 @@ app.include_router(clubs_router)
 app.include_router(matches_router)
 
 
-@app.post("/upload")
-async def upload_image(request: Request, file: UploadFile = File(...)):
-    ext = Path(file.filename).suffix.lower()
-    if ext not in {".jpg", ".jpeg", ".png"}:
-        raise HTTPException(400, "Only jpg/png allowed")
-    content = await file.read()
-    if len(content) > 2 * 1024 * 1024:
-        raise HTTPException(413, "头像大小不能超过2MB")
-    name = secrets.token_hex(8) + ext
-    path = UPLOAD_DIR / name
-    with path.open("wb") as f:
-        f.write(content)
-    url = request.url_for("uploads", path=name)
-    return {"url": url}
+@app.post("/upload/image", tags=["upload"])
+async def upload_image(file: UploadFile = File(...)):
+    try:
+        ext = Path(file.filename).suffix
+        if ext.lower() not in [".jpg", ".jpeg", ".png", ".gif"]:
+            raise HTTPException(status_code=400, detail="不支持的图片格式")
+
+        new_filename = f"{uuid4()}{ext}"
+        save_path = AVATARS_ROOT / new_filename
+        with open(save_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+
+        return {"url": f"{MEDIA_URL_PREFIX}/{new_filename}"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"文件上传失败: {e}")
 
 
 

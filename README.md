@@ -161,25 +161,25 @@ Doubles matches use the corresponding `/pending_doubles/...` routes.
 
 ### Upload
 
-Use `/upload` to store images on the server.
+Use `/upload/image` to store images on the server.
 
 ```
-POST /upload
+POST /upload/image
 ```
 
 Files larger than 2&nbsp;MB are rejected with status code `413`.
 
 Send the image in a multipart form field named `file`. The response contains
-the absolute URL of the stored file:
+the relative URL of the stored file:
 
 ```json
-{ "url": "<uploaded file URL>" }
+{ "url": "/static/media/avatars/<filename>" }
 ```
 
 Example:
 
 ```bash
-curl -X POST http://localhost:8000/upload \
+curl -X POST http://localhost:8000/upload/image \
      -F "file=@example.jpg"
 ```
 

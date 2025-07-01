@@ -16,9 +16,14 @@ function getPlayerInfo(userId) {
   return request({ url: `/players/${userId}` });
 }
 
+function updatePlayerProfile(userId, data) {
+  return request({ url: `/players/${userId}`, method: 'PUT', data });
+}
+
 module.exports = {
   wechatLogin,
   logout,
   getUserInfo,
   getPlayerInfo,
+  updatePlayerProfile,
 };
