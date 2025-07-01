@@ -19,7 +19,10 @@ export default [
         __dirname: false,
         setTimeout: false,
         getCurrentPages: false,
-        process: false
+        process: false,
+        console: false,
+        jest: false,
+        global: false
       }
     },
     linterOptions: {
