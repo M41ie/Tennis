@@ -128,6 +128,7 @@ Page({
 
     try {
       let finalPayload = {
+        user_id: this.data.userId,
         name: this.data.name,
         gender: this.data.genderIndex === 1 ? 'M' : this.data.genderIndex === 2 ? 'F' : '',
         birth: this.data.birth,
