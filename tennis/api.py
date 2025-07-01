@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from fastapi import FastAPI, HTTPException, Depends, Header, UploadFile, File, Request
+from fastapi.staticfiles import StaticFiles
 import shutil
 from uuid import uuid4
 from .services.exceptions import ServiceError
@@ -83,6 +84,7 @@ cli_module.players = players
 
 
 app = FastAPI()
+app.mount("/static", StaticFiles(directory=STATIC_ROOT), name="static")
 
 
 @app.middleware("http")
