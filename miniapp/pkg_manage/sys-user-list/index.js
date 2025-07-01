@@ -40,7 +40,6 @@ Page({
         const raw = res.data || [];
         const list = raw.map(u => ({
           ...u,
-          avatar_url: withBase(u.avatar_url || u.avatar),
           singles_rating: formatRating(u.singles_rating),
           doubles_rating: formatRating(u.doubles_rating),
           weighted_games_singles: formatGames(u.weighted_games_singles),
