@@ -1878,7 +1878,7 @@ def save_club(club: Club, conn: sqlite3.Connection | None = None) -> None:
         _pending_clubs[club.club_id] = club
 
 def delete_club(club_id: str, conn: sqlite3.Connection | None = None) -> None:
-    """Remove all records associated with a club."""
+    """Remove a club while preserving its match history."""
     close = conn is None
     if conn is None:
         conn = _connect()
@@ -1886,7 +1886,6 @@ def delete_club(club_id: str, conn: sqlite3.Connection | None = None) -> None:
     cur.execute("DELETE FROM clubs WHERE club_id = ?", (club_id,))
     cur.execute("DELETE FROM club_meta WHERE club_id = ?", (club_id,))
     cur.execute("DELETE FROM club_members WHERE club_id = ?", (club_id,))
-    cur.execute("DELETE FROM matches WHERE club_id = ?", (club_id,))
     cur.execute("DELETE FROM pending_matches WHERE club_id = ?", (club_id,))
     cur.execute("DELETE FROM appointments WHERE club_id = ?", (club_id,))
     if close:
