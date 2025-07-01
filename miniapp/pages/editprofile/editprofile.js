@@ -142,6 +142,11 @@ Page({
         finalPayload.avatar = permanentRelativeUrl;
       }
 
+      // ======================= 新增的诊断代码在这里 =======================
+      // 在发起更新请求前，以易于阅读的JSON格式打印出将要发送的完整对象
+      console.log('【最终诊断】发送给后端的用户资料 payload:', JSON.stringify(finalPayload, null, 2));
+      // =================================================================
+      
       await userService.updatePlayerProfile(this.data.userId, finalPayload);
 
       wx.showToast({ duration: 4000,  title: this.data.t.updated, icon: 'success' });
