@@ -143,6 +143,9 @@ Page({
         finalPayload.avatar = permanentRelativeUrl;
       }
 
+      // 移除 payload 中的 user_id，避免重复发送
+      delete finalPayload.user_id;
+
       // ======================= 新增的诊断代码在这里 =======================
       // 在发起更新请求前，以易于阅读的JSON格式打印出将要发送的完整对象
       console.log('【最终诊断】发送给后端的用户资料 payload:', JSON.stringify(finalPayload, null, 2));
