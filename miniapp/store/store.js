@@ -31,7 +31,8 @@ const store = observable({
   },
   setUserInfo(info) {
     this.userInfo = info || null;
-  }
+  },
+  fetchUserInfo() {}
 });
 
 module.exports = store;

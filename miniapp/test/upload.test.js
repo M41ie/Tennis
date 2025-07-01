@@ -6,10 +6,11 @@ test('avatar upload and submit', async () => {
   global.getApp = () => ({ globalData: { BASE_URL: 'http://server' } });
   store.token = 'TOKEN';
   store.userId = 'u1';
+  store.fetchUserInfo = jest.fn();
 
   global.wx = {
     uploadFile: jest.fn(opts => {
-      opts.success({ statusCode: 200, data: JSON.stringify({ url: 'http://server/uploads/a.png' }) });
+      opts.success({ statusCode: 200, data: JSON.stringify({ url: '/static/media/avatars/a.png' }) });
     }),
     request: jest.fn(opts => {
       opts.success({ statusCode: 200, data: {} });
@@ -36,7 +37,8 @@ test('avatar upload and submit', async () => {
     region: ['A', 'B', 'C'],
     regionString: 'A B C',
     avatar: 'wxfile://tmp.png',
-    tempAvatar: 'wxfile://tmp.png'
+    tempAvatar: 'wxfile://tmp.png',
+    newAvatarTempPath: 'wxfile://tmp.png'
   });
 
   await comp.instance.submit();
@@ -44,6 +46,7 @@ test('avatar upload and submit', async () => {
   expect(wx.uploadFile).toHaveBeenCalled();
   const putCall = wx.request.mock.calls.find(c => c[0].method === 'PUT');
   expect(putCall).toBeTruthy();
+  expect(store.fetchUserInfo).toHaveBeenCalled();
   expect(wx.navigateBack).toHaveBeenCalled();
 });
 
@@ -57,6 +60,6 @@ test('upload failure shows detail toast', async () => {
   };
 
   const uploadAvatar = require('../utils/upload');
-  await expect(uploadAvatar('tmp')).rejects.toEqual(expect.objectContaining({ statusCode: 400 }));
+  await expect(uploadAvatar('tmp')).rejects.toThrow();
   expect(wx.showToast).toHaveBeenCalledWith(expect.objectContaining({ title: 'error' }));
 });

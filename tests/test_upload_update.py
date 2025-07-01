@@ -8,8 +8,10 @@ def test_upload_then_update_avatar(tmp_path, monkeypatch):
     db = tmp_path / "tennis.db"
     monkeypatch.setattr(storage, "DB_FILE", db)
     importlib.reload(state)
-    api = importlib.reload(importlib.import_module("tennis.api"))
-    client = TestClient(api.app)
+    api_module = importlib.reload(importlib.import_module("tennis.api"))
+    monkeypatch.setattr(api_module, "AVATARS_ROOT", tmp_path / "avatars")
+    api_module.AVATARS_ROOT.mkdir(parents=True, exist_ok=True)
+    client = TestClient(api_module.app)
 
     client.post(
         "/users",
@@ -21,9 +23,10 @@ def test_upload_then_update_avatar(tmp_path, monkeypatch):
         b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15\xc4\x89"
         b"\x00\x00\x00\nIDATx\xda\x63\xf8\x0f\x00\x01\x01\x01\x00\x18\xdd\x8d\xa5\x00\x00\x00\x00IEND\xaeB\x60\x82"
     )
-    resp = client.post("/upload", files={"file": ("a.png", img, "image/png")})
+    resp = client.post("/upload/image", files={"file": ("a.png", img, "image/png")})
     assert resp.status_code == 200
     url = resp.json()["url"]
+    assert url.startswith("/static/media/avatars/")
 
     resp = client.put(
         "/players/u1",
