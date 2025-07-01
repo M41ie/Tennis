@@ -46,6 +46,7 @@ test('avatar upload and submit', async () => {
   expect(wx.uploadFile).toHaveBeenCalled();
   const putCall = wx.request.mock.calls.find(c => c[0].method === 'PUT');
   expect(putCall).toBeTruthy();
+  expect(putCall[0].data.user_id).toBe('u1');
   expect(store.fetchUserInfo).toHaveBeenCalled();
   expect(wx.navigateBack).toHaveBeenCalled();
 });

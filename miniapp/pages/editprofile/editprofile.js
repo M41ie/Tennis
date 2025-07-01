@@ -108,7 +108,10 @@ Page({
   },
   async submit() {
     const token = store.token;
-    if (!token || !this.data.userId) return;
+    if (!token || !this.data.userId) {
+      wx.showToast({ duration: 4000, title: this.data.t.pleaseRelogin, icon: 'none' });
+      return;
+    }
     if (this.data.submitting) return;
     const incomplete =
       !this.data.name ||
