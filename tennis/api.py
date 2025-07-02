@@ -61,7 +61,10 @@ from .services.clubs import (
     record_match_result as svc_record_match,
     sys_set_leader as svc_sys_set_leader,
 )
-from .services.users import update_user_limits as svc_update_limits
+from .services.users import (
+    update_user_limits as svc_update_limits,
+    update_player_rating as svc_update_rating,
+)
 from .rating import (
     update_ratings,
     update_doubles_ratings,
@@ -337,6 +340,11 @@ class RoleRequest(BaseModel):
 class LimitsUpdateRequest(BaseModel):
     max_joinable_clubs: int
     max_creatable_clubs: int
+
+
+class RatingUpdateRequest(BaseModel):
+    singles_rating: float | None = None
+    doubles_rating: float | None = None
 
 
 class SysLeaderRequest(BaseModel):
@@ -798,6 +806,22 @@ def update_player_api(club_id: str, user_id: str, data: PlayerUpdate, authorizat
         )
     except ValueError as e:
         raise HTTPException(400, str(e))
+    return {"status": "ok"}
+
+
+@app.post("/sys/users/{user_id}/rating")
+def update_user_rating(
+    user_id: str, data: RatingUpdateRequest, authorization: str | None = Header(None)
+) -> dict[str, str]:
+    """System admin adjusts a user's rating."""
+    actor = require_auth(authorization)
+    user = users.get(actor)
+    if not user or not getattr(user, "is_sys_admin", False):
+        raise HTTPException(401, "Not authorized")
+    player = storage.get_player(user_id)
+    if not player:
+        raise HTTPException(404, "Player not found")
+    svc_update_rating(user_id, data.singles_rating, data.doubles_rating)
     return {"status": "ok"}
 
 
@@ -1425,15 +1449,44 @@ def list_all_matches(
 ) -> list[dict[str, object]]:
     """Return all singles match records across all clubs."""
     result = []
+    seen: set[int] = set()
     for cid, club in clubs.items():
         for m in club.matches:
             if isinstance(m, DoublesMatch):
                 continue
+            seen.add(m.id)
             result.append(
                 {
                     "date": m.date.isoformat(),
                     "created_ts": m.created_ts,
                     "club_id": cid,
+                    "player_a": m.player_a.user_id,
+                    "player_b": m.player_b.user_id,
+                    "a_name": m.player_a.name,
+                    "b_name": m.player_b.name,
+                    "a_avatar": m.player_a.avatar,
+                    "b_avatar": m.player_b.avatar,
+                    "score_a": m.score_a,
+                    "score_b": m.score_b,
+                    "location": m.location,
+                    "format": m.format_name,
+                    "a_before": m.rating_a_before,
+                    "a_after": m.rating_a_after,
+                    "b_before": m.rating_b_before,
+                    "b_after": m.rating_b_after,
+                }
+            )
+    # include matches from players not linked to existing clubs
+    for p in players.values():
+        for m in p.singles_matches:
+            if m.id in seen or isinstance(m, DoublesMatch):
+                continue
+            seen.add(m.id)
+            result.append(
+                {
+                    "date": m.date.isoformat(),
+                    "created_ts": m.created_ts,
+                    "club_id": m.club_id,
                     "player_a": m.player_a.user_id,
                     "player_b": m.player_b.user_id,
                     "a_name": m.player_a.name,
@@ -1466,15 +1519,54 @@ def list_all_doubles(
 ) -> list[dict[str, object]]:
     """Return all doubles match records across all clubs."""
     result = []
+    seen: set[int] = set()
     for cid, club in clubs.items():
         for m in club.matches:
             if not isinstance(m, DoublesMatch):
                 continue
+            seen.add(m.id)
             result.append(
                 {
                     "date": m.date.isoformat(),
                     "created_ts": m.created_ts,
                     "club_id": cid,
+                    "a1": m.player_a1.user_id,
+                    "a2": m.player_a2.user_id,
+                    "b1": m.player_b1.user_id,
+                    "b2": m.player_b2.user_id,
+                    "a1_name": m.player_a1.name,
+                    "a2_name": m.player_a2.name,
+                    "b1_name": m.player_b1.name,
+                    "b2_name": m.player_b2.name,
+                    "a1_avatar": m.player_a1.avatar,
+                    "a2_avatar": m.player_a2.avatar,
+                    "b1_avatar": m.player_b1.avatar,
+                    "b2_avatar": m.player_b2.avatar,
+                    "score_a": m.score_a,
+                    "score_b": m.score_b,
+                    "location": m.location,
+                    "format": m.format_name,
+                    "rating_a1_before": m.rating_a1_before,
+                    "rating_a2_before": m.rating_a2_before,
+                    "rating_b1_before": m.rating_b1_before,
+                    "rating_b2_before": m.rating_b2_before,
+                    "rating_a1_after": m.rating_a1_after,
+                    "rating_a2_after": m.rating_a2_after,
+                    "rating_b1_after": m.rating_b1_after,
+                    "rating_b2_after": m.rating_b2_after,
+                }
+            )
+    # include matches from players not linked to existing clubs
+    for p in players.values():
+        for m in p.doubles_matches:
+            if m.id in seen or not isinstance(m, DoublesMatch):
+                continue
+            seen.add(m.id)
+            result.append(
+                {
+                    "date": m.date.isoformat(),
+                    "created_ts": m.created_ts,
+                    "club_id": m.club_id,
                     "a1": m.player_a1.user_id,
                     "a2": m.player_a2.user_id,
                     "b1": m.player_b1.user_id,

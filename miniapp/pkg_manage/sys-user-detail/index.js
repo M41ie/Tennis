@@ -4,6 +4,19 @@ const { hideKeyboard } = require('../../utils/hideKeyboard');
 const { formatRating, formatGames, withBase } = require('../../utils/format');
 const { formatClubCardData } = require('../../utils/clubFormat');
 const store = require('../../store/store');
+const FORMAT_DISPLAY = {
+  '6_game': '六局',
+  '4_game': '四局',
+  tb10: '抢十',
+  tb7: '抢七',
+  '6局': '六局',
+  '4局': '四局',
+  '抢10': '抢十',
+  '抢7': '抢七'
+};
+function displayFormat(fmt) {
+  return FORMAT_DISPLAY[fmt] || fmt;
+}
 
 Page({
   data: {
@@ -15,7 +28,15 @@ Page({
     },
     showEdit: false,
     inputJoin: '',
-    inputCreate: ''
+    inputCreate: '',
+    records: [],
+    recPage: 1,
+    recFinished: false,
+    modeIndex: 0,
+    doubles: false,
+    showRating: false,
+    ratingSingles: '',
+    ratingDoubles: ''
   },
   onLoad(options) {
     if (options && options.user_id) {
@@ -79,6 +100,8 @@ Page({
         });
       }
     });
+    this.setData({ recPage: 1, recFinished: false, records: [] });
+    this.fetchRecords();
   },
   openEdit() {
     this.setData({ showEdit: true, inputJoin: String(this.data.limits.max_joinable_clubs), inputCreate: String(this.data.limits.max_creatable_clubs) });
@@ -123,5 +146,108 @@ Page({
         }
       }
     });
+  },
+  switchMode(e) {
+    const idx = e.currentTarget.dataset.index;
+    this.setData({ modeIndex: idx, doubles: idx == 1, recPage: 1, recFinished: false, records: [] });
+    this.fetchRecords();
+  },
+  fetchRecords() {
+    const uid = this.data.userId;
+    if (!uid) return;
+    const placeholder = require('../../assets/base64.js').DEFAULT_AVATAR;
+    const that = this;
+    const limit = 10;
+    const offset = (this.data.recPage - 1) * limit;
+    const path = this.data.doubles ? 'doubles_records' : 'records';
+    request({
+      url: `${BASE_URL}/players/${uid}/${path}?limit=${limit}&offset=${offset}`,
+      success(res) {
+        const list = res.data || [];
+        const user = that.data.user || {};
+        list.forEach(rec => {
+          rec.scoreA = rec.self_score;
+          rec.scoreB = rec.opponent_score;
+          rec.playerAName = user.name || '';
+          rec.playerAAvatar = user.avatar_url || placeholder;
+          rec.ratingA = rec.self_rating_after != null ? rec.self_rating_after.toFixed(3) : '';
+          const d = rec.self_delta;
+          if (d != null) {
+            const abs = Math.abs(d).toFixed(3);
+            rec.deltaDisplayA = (d > 0 ? '+' : d < 0 ? '-' : '') + abs;
+            rec.deltaClassA = d > 0 ? 'pos' : d < 0 ? 'neg' : 'neutral';
+          }
+          if (!that.data.doubles) {
+            rec.playerBName = rec.opponent || '';
+            rec.playerBAvatar = withBase(rec.opponent_avatar) || placeholder;
+            rec.ratingB = rec.opponent_rating_after != null ? rec.opponent_rating_after.toFixed(3) : '';
+            const d2 = rec.opponent_delta;
+            if (d2 != null) {
+              const abs2 = Math.abs(d2).toFixed(3);
+              rec.deltaDisplayB = (d2 > 0 ? '+' : d2 < 0 ? '-' : '') + abs2;
+              rec.deltaClassB = d2 > 0 ? 'pos' : d2 < 0 ? 'neg' : 'neutral';
+            }
+          } else {
+            rec.partnerName = rec.partner || '';
+            rec.partnerAvatar = withBase(rec.partner_avatar) || placeholder;
+            rec.partnerRating = rec.partner_rating_after != null ? rec.partner_rating_after.toFixed(3) : '';
+            rec.opp1Name = rec.opponent1 || '';
+            rec.opp1Avatar = withBase(rec.opponent1_avatar) || placeholder;
+            rec.opp1Rating = rec.opponent1_rating_after != null ? rec.opponent1_rating_after.toFixed(3) : '';
+            rec.opp2Name = rec.opponent2 || '';
+            rec.opp2Avatar = withBase(rec.opponent2_avatar) || placeholder;
+            rec.opp2Rating = rec.opponent2_rating_after != null ? rec.opponent2_rating_after.toFixed(3) : '';
+          }
+          rec.displayFormat = displayFormat(rec.format);
+        });
+        if (that.data.recPage === 1) {
+          that.setData({ records: list, recFinished: list.length < limit });
+        } else {
+          const start = that.data.records.length;
+          const obj = { recFinished: list.length < limit };
+          list.forEach((item, i) => {
+            obj[`records[${start + i}]`] = item;
+          });
+          that.setData(obj);
+        }
+      }
+    });
+  },
+  openRating() {
+    const u = this.data.user || {};
+    this.setData({ showRating: true, ratingSingles: u.singles_rating || '', ratingDoubles: u.doubles_rating || '' });
+  },
+  closeRating() { this.setData({ showRating: false }); },
+  onSinglesInput(e) { this.setData({ ratingSingles: e.detail.value }); },
+  onDoublesInput(e) { this.setData({ ratingDoubles: e.detail.value }); },
+  saveRating() {
+    const uid = this.data.userId;
+    const s = parseFloat(this.data.ratingSingles);
+    const d = parseFloat(this.data.ratingDoubles);
+    const that = this;
+    request({
+      url: `${BASE_URL}/sys/users/${uid}/rating`,
+      method: 'POST',
+      data: { singles_rating: isNaN(s) ? undefined : s, doubles_rating: isNaN(d) ? undefined : d },
+      success(res) {
+        if (res.statusCode === 200) {
+          wx.showToast({ duration: 4000, title: '已更新' });
+          that.fetchDetail();
+        } else {
+          wx.showToast({ duration: 4000, title: '失败', icon: 'none' });
+        }
+      },
+      complete() { that.setData({ showRating: false }); }
+    });
+  },
+  onReachBottom() {
+    if (this.data.recFinished) return;
+    this.setData({ recPage: this.data.recPage + 1 });
+    this.fetchRecords();
+  },
+  onPullDownRefresh() {
+    this.setData({ recPage: 1, recFinished: false, records: [] });
+    this.fetchRecords();
+    wx.stopPullDownRefresh();
   }
 });

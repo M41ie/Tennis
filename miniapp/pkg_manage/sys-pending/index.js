@@ -89,21 +89,20 @@ Page({
     }
   },
   approveSingle(e) {
-    const idx = e.currentTarget.dataset.index;
+    const idx = e.currentTarget.dataset.index || e.detail.index;
     const cid = e.currentTarget.dataset.club;
-    const token = store.token;
     const that = this;
     request({
       url: `${BASE_URL}/clubs/${cid}/pending_matches/${idx}/approve`,
       method: 'POST',
-      data: { approver: store.userId, token },
+      data: { approver: store.userId },
+      fail() { wx.showToast({ duration: 4000, title: '操作失败', icon: 'none' }); },
       complete() { that.fetchPendings(); }
     });
   },
   vetoSingle(e) {
-    const idx = e.currentTarget.dataset.index;
+    const idx = e.currentTarget.dataset.index || e.detail.index;
     const cid = e.currentTarget.dataset.club;
-    const token = store.token;
     const that = this;
     // Optimistically remove the item so the UI updates immediately
     const arr = this.data.singles.slice();
@@ -115,26 +114,25 @@ Page({
     request({
       url: `${BASE_URL}/clubs/${cid}/pending_matches/${idx}/veto`,
       method: 'POST',
-      data: { approver: store.userId, token },
+      data: { approver: store.userId },
       complete() { that.fetchPendings(); }
     });
   },
   approveDouble(e) {
-    const idx = e.currentTarget.dataset.index;
+    const idx = e.currentTarget.dataset.index || e.detail.index;
     const cid = e.currentTarget.dataset.club;
-    const token = store.token;
     const that = this;
     request({
       url: `${BASE_URL}/clubs/${cid}/pending_doubles/${idx}/approve`,
       method: 'POST',
-      data: { approver: store.userId, token },
+      data: { approver: store.userId },
+      fail() { wx.showToast({ duration: 4000, title: '操作失败', icon: 'none' }); },
       complete() { that.fetchPendings(); }
     });
   },
   vetoDouble(e) {
-    const idx = e.currentTarget.dataset.index;
+    const idx = e.currentTarget.dataset.index || e.detail.index;
     const cid = e.currentTarget.dataset.club;
-    const token = store.token;
     const that = this;
     // Optimistically remove the item so the UI updates immediately
     const arr = this.data.doublesList.slice();
@@ -146,7 +144,7 @@ Page({
     request({
       url: `${BASE_URL}/clubs/${cid}/pending_doubles/${idx}/veto`,
       method: 'POST',
-      data: { approver: store.userId, token },
+      data: { approver: store.userId },
       complete() { that.fetchPendings(); }
     });
   }
