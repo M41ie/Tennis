@@ -138,12 +138,12 @@ Page({
         handedness: this.data.handOptions[this.data.handIndex] || '',
         backhand: this.data.backhandOptions[this.data.backhandIndex] || '',
         region: this.data.regionString,
-        avatar_url: this.data.avatar
+        avatar: this.data.avatar
       };
 
       if (this.data.newAvatarTempPath) {
         const permanentRelativeUrl = await uploadAvatar(this.data.newAvatarTempPath);
-        finalPayload.avatar_url = permanentRelativeUrl;
+        finalPayload.avatar = permanentRelativeUrl;
       }
 
       // ======================= 新增的诊断代码在这里 =======================
