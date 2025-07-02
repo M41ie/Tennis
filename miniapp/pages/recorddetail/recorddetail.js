@@ -33,15 +33,16 @@ Page({
         }
         const d = rec.self_delta;
         if (d != null) {
-          const abs = Math.abs(d).toFixed(3);
-          rec.deltaDisplay = (d > 0 ? '+' : d < 0 ? '-' : '') + abs;
-          rec.deltaClass = d > 0 ? 'pos' : d < 0 ? 'neg' : 'neutral';
+          const delta = Number(d);
+          const abs = Math.abs(delta).toFixed(3);
+          rec.deltaDisplay = (delta > 0 ? '+' : delta < 0 ? '-' : '') + abs;
+          rec.deltaClass = delta > 0 ? 'pos' : delta < 0 ? 'neg' : 'neutral';
         } else {
           rec.deltaDisplay = '';
           rec.deltaClass = 'neutral';
         }
         if (rec.self_rating_after != null)
-          rec.self_rating_after = rec.self_rating_after.toFixed(3);
+          rec.self_rating_after = Number(rec.self_rating_after).toFixed(3);
         rec.displayFormat = displayFormat(rec.format);
         this.setData({ record: rec });
       } catch (e) {}
