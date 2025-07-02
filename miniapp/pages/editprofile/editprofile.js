@@ -11,9 +11,8 @@ const {
 const uploadAvatar = require('../../utils/upload');
 const userService = require('../../services/user');
 
-function ensureSlash(p) {
-  return p.startsWith('/') ? p : '/' + p;
-}
+// 保证以 / 开头，方便 withBase() 拼接
+const ensureSlash = p => p.startsWith('/') ? p : '/' + p;
 
 Page({
   data: {
@@ -142,7 +141,7 @@ Page({
         handedness: this.data.handOptions[this.data.handIndex] || '',
         backhand: this.data.backhandOptions[this.data.backhandIndex] || '',
         region: this.data.regionString,
-        avatar: this.data.avatar
+        avatar: ensureSlash(this.data.avatar || '')
       };
 
       if (this.data.newAvatarTempPath) {
