@@ -1,4 +1,5 @@
 // miniapp/utils/upload.js
+const store = require('../store/store');
 
 /**
  * 封装 wx.uploadFile, 用于上传文件并返回服务器提供的URL
@@ -8,7 +9,7 @@
 function uploadAvatar(filePath) {
   // 在函数调用时才获取 BASE_URL，确保其已就绪
   const BASE_URL = getApp().globalData.BASE_URL;
-  const token = wx.getStorageSync('authToken');
+  const token = store.token || wx.getStorageSync('token');
 
   // 返回一个 Promise，便于使用 async/await
   return new Promise((resolve, reject) => {
@@ -18,9 +19,7 @@ function uploadAvatar(filePath) {
       url: `${BASE_URL}/upload/image`,
       filePath,
       name: 'file',
-      header: {
-        'Authorization': `Bearer ${token}`,
-      },
+      header: token ? { 'Authorization': `Bearer ${token}` } : {},
       success(res) {
         try {
           if (typeof res.data !== 'string') {
