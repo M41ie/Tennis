@@ -134,7 +134,7 @@ Page({
     wx.showLoading({ title: this.data.t.loading, mask: true });
 
     try {
-      let finalPayload = {
+      const finalPayload = {
         user_id: this.data.userId,
         name: this.data.name,
         gender: this.data.genderIndex === 1 ? 'M' : this.data.genderIndex === 2 ? 'F' : '',
@@ -146,11 +146,11 @@ Page({
       };
 
       if (this.data.newAvatarTempPath) {
-        const permanentRelativeUrl = await uploadAvatar(this.data.newAvatarTempPath);
-        finalPayload.avatar = ensureSlash(permanentRelativeUrl);
+        const relativeUrl = await uploadAvatar(this.data.newAvatarTempPath);
+        finalPayload.avatar = ensureSlash(relativeUrl);
         this.setData({
-          avatar: ensureSlash(permanentRelativeUrl),
-          'form.avatar': ensureSlash(permanentRelativeUrl)
+          avatar: ensureSlash(relativeUrl),
+          newAvatarTempPath: ''
         });
       }
 
@@ -167,7 +167,7 @@ Page({
     } catch (e) {
       wx.showToast({ duration: 4000,  title: this.data.t.failed, icon: 'none' });
     } finally {
-      this.setData({ submitting: false, newAvatarTempPath: '' });
+      this.setData({ submitting: false });
       wx.hideLoading();
     }
   }
