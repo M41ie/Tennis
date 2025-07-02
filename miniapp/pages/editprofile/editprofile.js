@@ -164,7 +164,11 @@ Page({
       store.fetchUserInfo && store.fetchUserInfo();
       wx.navigateBack();
     } catch (e) {
-      wx.showToast({ duration: 4000,  title: this.data.t.failed, icon: 'none' });
+      // ======================= 新增的详细诊断日志 =======================
+      console.error('【最终诊断】在submit流程中捕获到异常:', e);
+      const errorTitle = e.errMsg || this.data.t.failed;
+      wx.showToast({ duration: 4000,  title: errorTitle, icon: 'none' });
+      // =================================================================
     } finally {
       this.setData({ submitting: false });
       wx.hideLoading();
