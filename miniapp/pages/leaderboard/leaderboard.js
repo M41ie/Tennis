@@ -51,7 +51,7 @@ Page({
         const joined = data.joined_clubs || [];
         const options = that.buildClubOptions(joined);
         const selected = joined.length ? '_my' : '_global';
-        const clubIds = joined.length ? joined.slice() : ids;
+        const clubIds = joined.length ? joined.slice() : [];
         const index = options.findIndex(o => o.id === selected);
         data.players = data.players || [];
         data.players.forEach(p => {
@@ -98,7 +98,7 @@ Page({
     if (!item) return;
     const selected = item.id;
     let clubs = [];
-    if (selected === '_global') clubs = this.data.allClubIds;
+    if (selected === '_global') clubs = [];
     else if (selected === '_my') clubs = this.data.joinedClubIds;
     else clubs = [selected];
     const filter = { ...this.data.filter, clubs };
