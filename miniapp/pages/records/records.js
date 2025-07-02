@@ -87,12 +87,13 @@ Page({
               rec.scoreB = rec.opponent_score;
               rec.playerAName = player.name || '';
               rec.playerAAvatar = withBase(player.avatar_url || player.avatar) || placeholder;
-              rec.ratingA = rec.self_rating_after != null ? rec.self_rating_after.toFixed(3) : '';
+              rec.ratingA = rec.self_rating_after != null ? Number(rec.self_rating_after).toFixed(3) : '';
               const d = rec.self_delta;
               if (d != null) {
-                const abs = Math.abs(d).toFixed(3);
-                rec.deltaDisplayA = (d > 0 ? '+' : d < 0 ? '-' : '') + abs;
-                rec.deltaClassA = d > 0 ? 'pos' : d < 0 ? 'neg' : 'neutral';
+                const delta = Number(d);
+                const abs = Math.abs(delta).toFixed(3);
+                rec.deltaDisplayA = (delta > 0 ? '+' : delta < 0 ? '-' : '') + abs;
+                rec.deltaClassA = delta > 0 ? 'pos' : delta < 0 ? 'neg' : 'neutral';
               } else {
                 rec.deltaDisplayA = '';
                 rec.deltaClassA = 'neutral';
@@ -101,12 +102,13 @@ Page({
               if (!that.data.doubles) {
                 rec.playerBName = rec.opponent || '';
                 rec.playerBAvatar = withBase(rec.opponent_avatar) || placeholder;
-                rec.ratingB = rec.opponent_rating_after != null ? rec.opponent_rating_after.toFixed(3) : '';
+                rec.ratingB = rec.opponent_rating_after != null ? Number(rec.opponent_rating_after).toFixed(3) : '';
                 const d2 = rec.opponent_delta;
                 if (d2 != null) {
-                  const abs2 = Math.abs(d2).toFixed(3);
-                  rec.deltaDisplayB = (d2 > 0 ? '+' : d2 < 0 ? '-' : '') + abs2;
-                  rec.deltaClassB = d2 > 0 ? 'pos' : d2 < 0 ? 'neg' : 'neutral';
+                  const delta2 = Number(d2);
+                  const abs2 = Math.abs(delta2).toFixed(3);
+                  rec.deltaDisplayB = (delta2 > 0 ? '+' : delta2 < 0 ? '-' : '') + abs2;
+                  rec.deltaClassB = delta2 > 0 ? 'pos' : delta2 < 0 ? 'neg' : 'neutral';
                 } else {
                   rec.deltaDisplayB = '';
                   rec.deltaClassB = 'neutral';
@@ -114,12 +116,13 @@ Page({
               } else {
                 rec.partnerName = rec.partner || '';
                 rec.partnerAvatar = withBase(rec.partner_avatar) || placeholder;
-                rec.partnerRating = rec.partner_rating_after != null ? rec.partner_rating_after.toFixed(3) : '';
+                rec.partnerRating = rec.partner_rating_after != null ? Number(rec.partner_rating_after).toFixed(3) : '';
                 const pd = rec.partner_delta;
                 if (pd != null) {
-                  const abs = Math.abs(pd).toFixed(3);
-                  rec.partnerDeltaDisplay = (pd > 0 ? '+' : pd < 0 ? '-' : '') + abs;
-                  rec.partnerDeltaClass = pd > 0 ? 'pos' : pd < 0 ? 'neg' : 'neutral';
+                  const deltaP = Number(pd);
+                  const abs = Math.abs(deltaP).toFixed(3);
+                  rec.partnerDeltaDisplay = (deltaP > 0 ? '+' : deltaP < 0 ? '-' : '') + abs;
+                  rec.partnerDeltaClass = deltaP > 0 ? 'pos' : deltaP < 0 ? 'neg' : 'neutral';
                 } else {
                   rec.partnerDeltaDisplay = '';
                   rec.partnerDeltaClass = 'neutral';
@@ -127,12 +130,13 @@ Page({
 
                 rec.opp1Name = rec.opponent1 || '';
                 rec.opp1Avatar = withBase(rec.opponent1_avatar) || placeholder;
-                rec.opp1Rating = rec.opponent1_rating_after != null ? rec.opponent1_rating_after.toFixed(3) : '';
+                rec.opp1Rating = rec.opponent1_rating_after != null ? Number(rec.opponent1_rating_after).toFixed(3) : '';
                 const od1 = rec.opponent1_delta;
                 if (od1 != null) {
-                  const abs = Math.abs(od1).toFixed(3);
-                  rec.opp1DeltaDisplay = (od1 > 0 ? '+' : od1 < 0 ? '-' : '') + abs;
-                  rec.opp1DeltaClass = od1 > 0 ? 'pos' : od1 < 0 ? 'neg' : 'neutral';
+                  const delta1 = Number(od1);
+                  const abs = Math.abs(delta1).toFixed(3);
+                  rec.opp1DeltaDisplay = (delta1 > 0 ? '+' : delta1 < 0 ? '-' : '') + abs;
+                  rec.opp1DeltaClass = delta1 > 0 ? 'pos' : delta1 < 0 ? 'neg' : 'neutral';
                 } else {
                   rec.opp1DeltaDisplay = '';
                   rec.opp1DeltaClass = 'neutral';
@@ -140,12 +144,13 @@ Page({
 
                 rec.opp2Name = rec.opponent2 || '';
                 rec.opp2Avatar = withBase(rec.opponent2_avatar) || placeholder;
-                rec.opp2Rating = rec.opponent2_rating_after != null ? rec.opponent2_rating_after.toFixed(3) : '';
+                rec.opp2Rating = rec.opponent2_rating_after != null ? Number(rec.opponent2_rating_after).toFixed(3) : '';
                 const od2 = rec.opponent2_delta;
                 if (od2 != null) {
-                  const abs = Math.abs(od2).toFixed(3);
-                  rec.opp2DeltaDisplay = (od2 > 0 ? '+' : od2 < 0 ? '-' : '') + abs;
-                  rec.opp2DeltaClass = od2 > 0 ? 'pos' : od2 < 0 ? 'neg' : 'neutral';
+                  const delta2 = Number(od2);
+                  const abs = Math.abs(delta2).toFixed(3);
+                  rec.opp2DeltaDisplay = (delta2 > 0 ? '+' : delta2 < 0 ? '-' : '') + abs;
+                  rec.opp2DeltaClass = delta2 > 0 ? 'pos' : delta2 < 0 ? 'neg' : 'neutral';
                 } else {
                   rec.opp2DeltaDisplay = '';
                   rec.opp2DeltaClass = 'neutral';

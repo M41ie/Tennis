@@ -39,9 +39,9 @@ Page({
       success(res) {
         const data = res.data;
         if (data.singles_rating != null)
-          data.singles_rating = data.singles_rating.toFixed(3);
+          data.singles_rating = Number(data.singles_rating).toFixed(3);
         if (data.doubles_rating != null)
-          data.doubles_rating = data.doubles_rating.toFixed(3);
+          data.doubles_rating = Number(data.doubles_rating).toFixed(3);
         that.setData({ target: data });
       }
     });

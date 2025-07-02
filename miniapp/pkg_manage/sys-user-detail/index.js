@@ -170,33 +170,35 @@ Page({
           rec.scoreB = rec.opponent_score;
           rec.playerAName = user.name || '';
           rec.playerAAvatar = user.avatar_url || placeholder;
-          rec.ratingA = rec.self_rating_after != null ? rec.self_rating_after.toFixed(3) : '';
+          rec.ratingA = rec.self_rating_after != null ? Number(rec.self_rating_after).toFixed(3) : '';
           const d = rec.self_delta;
           if (d != null) {
-            const abs = Math.abs(d).toFixed(3);
-            rec.deltaDisplayA = (d > 0 ? '+' : d < 0 ? '-' : '') + abs;
-            rec.deltaClassA = d > 0 ? 'pos' : d < 0 ? 'neg' : 'neutral';
+            const delta = Number(d);
+            const abs = Math.abs(delta).toFixed(3);
+            rec.deltaDisplayA = (delta > 0 ? '+' : delta < 0 ? '-' : '') + abs;
+            rec.deltaClassA = delta > 0 ? 'pos' : delta < 0 ? 'neg' : 'neutral';
           }
           if (!that.data.doubles) {
             rec.playerBName = rec.opponent || '';
             rec.playerBAvatar = withBase(rec.opponent_avatar) || placeholder;
-            rec.ratingB = rec.opponent_rating_after != null ? rec.opponent_rating_after.toFixed(3) : '';
+            rec.ratingB = rec.opponent_rating_after != null ? Number(rec.opponent_rating_after).toFixed(3) : '';
             const d2 = rec.opponent_delta;
             if (d2 != null) {
-              const abs2 = Math.abs(d2).toFixed(3);
-              rec.deltaDisplayB = (d2 > 0 ? '+' : d2 < 0 ? '-' : '') + abs2;
-              rec.deltaClassB = d2 > 0 ? 'pos' : d2 < 0 ? 'neg' : 'neutral';
+              const delta2 = Number(d2);
+              const abs2 = Math.abs(delta2).toFixed(3);
+              rec.deltaDisplayB = (delta2 > 0 ? '+' : delta2 < 0 ? '-' : '') + abs2;
+              rec.deltaClassB = delta2 > 0 ? 'pos' : delta2 < 0 ? 'neg' : 'neutral';
             }
           } else {
             rec.partnerName = rec.partner || '';
             rec.partnerAvatar = withBase(rec.partner_avatar) || placeholder;
-            rec.partnerRating = rec.partner_rating_after != null ? rec.partner_rating_after.toFixed(3) : '';
+            rec.partnerRating = rec.partner_rating_after != null ? Number(rec.partner_rating_after).toFixed(3) : '';
             rec.opp1Name = rec.opponent1 || '';
             rec.opp1Avatar = withBase(rec.opponent1_avatar) || placeholder;
-            rec.opp1Rating = rec.opponent1_rating_after != null ? rec.opponent1_rating_after.toFixed(3) : '';
+            rec.opp1Rating = rec.opponent1_rating_after != null ? Number(rec.opponent1_rating_after).toFixed(3) : '';
             rec.opp2Name = rec.opponent2 || '';
             rec.opp2Avatar = withBase(rec.opponent2_avatar) || placeholder;
-            rec.opp2Rating = rec.opponent2_rating_after != null ? rec.opponent2_rating_after.toFixed(3) : '';
+            rec.opp2Rating = rec.opponent2_rating_after != null ? Number(rec.opponent2_rating_after).toFixed(3) : '';
           }
           rec.displayFormat = displayFormat(rec.format);
         });
