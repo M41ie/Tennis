@@ -11,6 +11,7 @@
   </view>
   <view class="section-title">权限管理</view>
   <button class="primary-btn" bindtap="openEdit">编辑权限</button>
+  <button class="primary-btn" bindtap="openRating">调整评分</button>
   <view wx:if="{{showEdit}}" class="dialog-mask" bindtap="close">
     <view class="dialog-card" catchtap="noop">
       <view class="dialog-title">权限管理</view>
@@ -25,4 +26,27 @@
       <button class="primary-btn" bindtap="save">保存修改</button>
     </view>
   </view>
+  <view wx:if="{{showRating}}" class="dialog-mask" bindtap="closeRating">
+    <view class="dialog-card" catchtap="noop">
+      <view class="dialog-title">调整评分</view>
+      <view class="edit-row">
+        <text>单打评分</text>
+        <input type="number" value="{{ratingSingles}}" bindinput="onSinglesInput" />
+      </view>
+      <view class="edit-row">
+        <text>双打评分</text>
+        <input type="number" value="{{ratingDoubles}}" bindinput="onDoublesInput" />
+      </view>
+      <button class="primary-btn" bindtap="saveRating">保存</button>
+    </view>
+  </view>
+  <view class="section-title">用户战绩</view>
+  <view class="mode-switch">
+    <view class="mode-item {{modeIndex==0?'active':''}}" data-index="0" bindtap="switchMode">单打</view>
+    <view class="mode-item {{modeIndex==1?'active':''}}" data-index="1" bindtap="switchMode">双打</view>
+  </view>
+  <block wx:for="{{records}}" wx:key="index">
+    <record-card record="{{item}}" doubles="{{doubles}}" show-actions="{{false}}" />
+  </block>
+  <view wx:if="{{!records.length}}" class="empty">暂无数据</view>
 </view>

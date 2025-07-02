@@ -24,6 +24,7 @@ from ..storage import (
     mark_user_message_read,
     transaction,
     save_user,
+    update_player_record,
 )
 from .. import storage
 from . import state
@@ -226,5 +227,19 @@ def update_user_limits(user_id: str, max_joinable: int, max_creatable: int) -> N
         raise ServiceError(str(e), 400)
     with transaction() as conn:
         save_user(users[user_id], conn=conn)
+    storage.bump_cache_version()
+
+
+def update_player_rating(user_id: str, singles: float | None, doubles: float | None) -> None:
+    """Directly set a player's rating values."""
+    player = storage.get_player(user_id)
+    if not player:
+        raise ServiceError("Player not found", 404)
+    if singles is not None:
+        player.singles_rating = singles
+    if doubles is not None:
+        player.doubles_rating = doubles
+    with transaction() as conn:
+        update_player_record(player, conn=conn)
     storage.bump_cache_version()
 
