@@ -1,7 +1,9 @@
 import datetime
 import json
+import pytest
 import tennis.storage as storage
 from tennis.models import Club, Player, Match
+from tennis.rating import update_ratings
 
 
 def test_pending_matches_roundtrip(tmp_path, monkeypatch):
@@ -81,3 +83,33 @@ def test_load_after_member_removed(tmp_path, monkeypatch):
             "SELECT user_id FROM club_members WHERE club_id = 'c'"
         ).fetchall()
         assert [m[0] for m in members] == ["p2"]
+
+
+def test_match_ratings_persisted(tmp_path, monkeypatch):
+    db = tmp_path / "tennis.db"
+    monkeypatch.setattr(storage, "DB_FILE", db)
+
+    club = Club(club_id="c", name="Club")
+    p1 = Player("p1", "P1", singles_rating=1000.0)
+    p2 = Player("p2", "P2", singles_rating=1000.0)
+    club.members[p1.user_id] = p1
+    club.members[p2.user_id] = p2
+
+    match = Match(
+        date=datetime.date(2023, 1, 1),
+        player_a=p1,
+        player_b=p2,
+        score_a=6,
+        score_b=4,
+        format_weight=1.0,
+    )
+    update_ratings(match)
+    club.matches.append(match)
+    storage.save_club(club)
+
+    with storage._connect() as conn:
+        row = conn.execute("SELECT data FROM matches").fetchone()
+        assert row is not None
+        data = json.loads(row[0])
+        assert data["rating_a_before"] == pytest.approx(match.rating_a_before)
+        assert data["rating_a_after"] == pytest.approx(match.rating_a_after)
