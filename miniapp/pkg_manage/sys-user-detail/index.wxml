@@ -31,11 +31,11 @@
       <view class="dialog-title">调整评分</view>
       <view class="edit-row">
         <text>单打评分</text>
-        <input type="number" value="{{ratingSingles}}" bindinput="onSinglesInput" />
+        <input type="digit" value="{{ratingSingles}}" bindinput="onSinglesInput" />
       </view>
       <view class="edit-row">
         <text>双打评分</text>
-        <input type="number" value="{{ratingDoubles}}" bindinput="onDoublesInput" />
+        <input type="digit" value="{{ratingDoubles}}" bindinput="onDoublesInput" />
       </view>
       <button class="primary-btn" bindtap="saveRating">保存</button>
     </view>
