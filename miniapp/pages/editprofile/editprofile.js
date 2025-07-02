@@ -11,6 +11,10 @@ const {
 const uploadAvatar = require('../../utils/upload');
 const userService = require('../../services/user');
 
+function ensureSlash(p) {
+  return p.startsWith('/') ? p : '/' + p;
+}
+
 Page({
   data: {
     t: zh_CN,
@@ -143,7 +147,11 @@ Page({
 
       if (this.data.newAvatarTempPath) {
         const permanentRelativeUrl = await uploadAvatar(this.data.newAvatarTempPath);
-        finalPayload.avatar = permanentRelativeUrl;
+        finalPayload.avatar = ensureSlash(permanentRelativeUrl);
+        this.setData({
+          avatar: ensureSlash(permanentRelativeUrl),
+          'form.avatar': ensureSlash(permanentRelativeUrl)
+        });
       }
 
       // ======================= 新增的诊断代码在这里 =======================
