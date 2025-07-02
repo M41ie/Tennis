@@ -1373,11 +1373,33 @@ def sys_set_club_leader(club_id: str, data: SysLeaderRequest, authorization: str
     return {"status": "ok"}
 
 
+def _iter_all_matches():
+    """Yield all unique match objects across the system."""
+    seen: set[int] = set()
+    for club in clubs.values():
+        for m in club.matches:
+            if m.id in seen:
+                continue
+            seen.add(m.id)
+            yield m
+    for p in players.values():
+        for m in p.singles_matches:
+            if m.id in seen:
+                continue
+            seen.add(m.id)
+            yield m
+        for m in p.doubles_matches:
+            if m.id in seen:
+                continue
+            seen.add(m.id)
+            yield m
+
+
 @app.get("/sys/stats")
 def system_stats() -> dict[str, int]:
     """Return aggregated statistics for system overview."""
     total_users = len(users)
-    total_matches = sum(len(c.matches) for c in clubs.values())
+    total_matches = sum(1 for _ in _iter_all_matches())
     total_clubs = len(clubs)
     pending_items = sum(len(c.pending_members) + len(c.pending_matches) for c in clubs.values())
     return {
@@ -1429,10 +1451,9 @@ def system_match_activity(days: int = 7) -> list[dict[str, object]]:
     start = end - datetime.timedelta(days=days - 1)
 
     counts: dict[datetime.date, int] = {}
-    for club in clubs.values():
-        for m in club.matches:
-            if start <= m.date <= end:
-                counts[m.date] = counts.get(m.date, 0) + 1
+    for m in _iter_all_matches():
+        if start <= m.date <= end:
+            counts[m.date] = counts.get(m.date, 0) + 1
 
     result = []
     current = start
