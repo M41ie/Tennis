@@ -1014,12 +1014,22 @@ def approve_match(clubs, club_id: str, index: int, approver: str, users=None):
             participant_ids = [match.player_a1.user_id, match.player_a2.user_id, match.player_b1.user_id, match.player_b2.user_id]
         else:
             participant_ids = [match.player_a.user_id, match.player_b.user_id]
+        mode = 1 if isinstance(match, DoublesMatch) else 0
         for uid in participant_ids:
             u = users.get(uid)
             if u:
                 u.messages.append(
                     Message(date=match.date, text=f"Match on {date_str} approved in {club.name}")
                 )
+                if u.wechat_openid:
+                    send_audit_message(
+                        uid,
+                        u.wechat_openid,
+                        "match",
+                        "战绩审核",
+                        "新的战绩已通过并生效，请点击查看您的评分变化。",
+                        page=f"/pages/records/records?tab=0&mode={mode}",
+                    )
 
 
 def record_match(
