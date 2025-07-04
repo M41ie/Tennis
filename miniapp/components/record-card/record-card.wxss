@@ -11,11 +11,11 @@
 .info.doubles{justify-content:flex-start; margin-left:120rpx;} /* Added margin-left */
 .unit{display:flex;align-items:center;margin-right:10rpx;flex:1 0 auto;width:50%;}
 .unit:last-child{margin-right:0;}
-.avatar{width:48rpx;height:48rpx;border-radius:50%;margin-right:12rpx;background:#ccc;flex-shrink:0;}
-.name{color:#333;font-size:26rpx;max-width:120rpx;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.score{width:100rpx;margin-right:20rpx;margin-left:35rpx;text-align:center;font-size:48rpx;font-weight:700;color:#000;}
-.rating{margin-left:8rpx;font-size:26rpx;color:#333;}
-.delta{font-size:22rpx;margin-left:8rpx;}
+.record-card .avatar{width:48rpx;height:48rpx;border-radius:50%;margin-right:12rpx;background:#ccc;flex-shrink:0;}
+.record-card .name{color:#333;font-size:26rpx;max-width:120rpx;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.record-card .score{width:100rpx;margin-right:20rpx;margin-left:35rpx;text-align:center;font-size:48rpx;font-weight:700;color:#000;}
+.record-card .rating{margin-left:8rpx;font-size:26rpx;color:#333;}
+.record-card .delta{font-size:22rpx;margin-left:8rpx;}
 .pos{color:#2f8f2f;}
 .neg{color:#e03a3a;}
 .neutral{color:gray;}
