@@ -1,4 +1,4 @@
-const TEMPLATE_ID = 'uqaaIKXK918Yz4FGODyiuB4uJgMFkXC_63vTGq-0G2c_';
+const TEMPLATE_ID = 'uqaaIKXK918Yz4FGODyiuB4uJgMFkXC_63vTGq-0G2c';
 
 function ensureSubscribe(scene) {
   return new Promise(resolve => {
