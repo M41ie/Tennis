@@ -377,14 +377,14 @@ def _init_schema(conn) -> None:
         )"""
         )
         cur.execute(
-            "CREATE TABLE IF NOT EXISTS matches (id INTEGER PRIMARY KEY AUTOINCREMENT, club_id TEXT, type TEXT, date TEXT, data TEXT)"
+            "CREATE TABLE IF NOT EXISTS matches (id SERIAL PRIMARY KEY, club_id TEXT, type TEXT, date TEXT, data TEXT)"
         )
         cur.execute(
-            "CREATE TABLE IF NOT EXISTS pending_matches (id INTEGER PRIMARY KEY AUTOINCREMENT, club_id TEXT, type TEXT, date TEXT, data TEXT)"
+            "CREATE TABLE IF NOT EXISTS pending_matches (id SERIAL PRIMARY KEY, club_id TEXT, type TEXT, date TEXT, data TEXT)"
         )
         cur.execute(
             """CREATE TABLE IF NOT EXISTS appointments (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id SERIAL PRIMARY KEY,
             club_id TEXT,
             date TEXT,
             creator TEXT,
@@ -448,7 +448,7 @@ def _init_schema(conn) -> None:
     else:
         cur.execute(
             """CREATE TABLE IF NOT EXISTS messages (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id SERIAL PRIMARY KEY,
             user_id TEXT,
             date TEXT,
             text TEXT,
@@ -479,7 +479,7 @@ def _init_schema(conn) -> None:
     )
     cur.execute(
         """CREATE TABLE IF NOT EXISTS subscribe_log (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id SERIAL PRIMARY KEY,
         user_id TEXT,
         scene TEXT,
         errcode INTEGER,
