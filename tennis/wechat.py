@@ -68,6 +68,7 @@ def send_audit_message(openid: str, audit_type: str, audit_status: str, page: st
             url, data=json.dumps(payload).encode(), headers={"Content-Type": "application/json"}
         )
         with urllib.request.urlopen(req) as resp:
-            resp.read()
-    except Exception:
-        pass
+            result = json.loads(resp.read().decode())
+        print("wechat_subscribe", result.get("errcode"), result.get("errmsg"))
+    except Exception as exc:
+        print("wechat_subscribe_error", exc)

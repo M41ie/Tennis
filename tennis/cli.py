@@ -723,13 +723,6 @@ def reject_match(clubs, club_id: str, index: int, user_id: str, users=None):
                     "您的对手拒绝了您创建的战绩，请点击查看详情。",
                     page="/pages/records/records?tab=1&pending=1",
                 )
-            if initiator.wechat_openid:
-                send_audit_message(
-                    initiator.wechat_openid,
-                    "战绩审核",
-                    "您的对手拒绝了您创建的战绩，请点击查看详情。",
-                    page="/pages/records/records?tab=1&pending=0",
-                )
 
 
 def veto_match(clubs, club_id: str, index: int, approver: str, users=None):
