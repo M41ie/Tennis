@@ -164,3 +164,18 @@ class Appointment:
     location: Optional[str] = None
     info: Optional[str] = None
     signups: Set[str] = field(default_factory=set)
+
+@dataclass
+class UserSubscribe:
+    user_id: str
+    scene: str
+    quota: int = 0
+
+
+@dataclass
+class SubscribeLog:
+    user_id: str
+    scene: str
+    errcode: int
+    errmsg: str | None = None
+    retries: int = 0

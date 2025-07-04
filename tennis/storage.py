@@ -469,6 +469,25 @@ def _init_schema(conn) -> None:
         expires TEXT
     )"""
     )
+    cur.execute(
+        """CREATE TABLE IF NOT EXISTS user_subscribe (
+        user_id TEXT,
+        scene TEXT,
+        quota INTEGER DEFAULT 0,
+        PRIMARY KEY (user_id, scene)
+    )"""
+    )
+    cur.execute(
+        """CREATE TABLE IF NOT EXISTS subscribe_log (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id TEXT,
+        scene TEXT,
+        errcode INTEGER,
+        errmsg TEXT,
+        retries INTEGER DEFAULT 0,
+        ts TEXT
+    )"""
+    )
     conn.commit()
 
 
@@ -1672,6 +1691,55 @@ def delete_refresh_token(user_id: str) -> None:
     conn.commit()
     conn.close()
     _refresh_after_write()
+
+
+def add_subscribe_quota(user_id: str, scene: str, quota: int = 1) -> None:
+    """Increment or set subscription quota for a user/scene."""
+    conn = _connect()
+    cur = conn.cursor()
+    cur.execute(
+        "INSERT OR IGNORE INTO user_subscribe(user_id, scene, quota) VALUES (?,?,0)",
+        (user_id, scene),
+    )
+    cur.execute(
+        "UPDATE user_subscribe SET quota = quota + ? WHERE user_id = ? AND scene = ?",
+        (quota, user_id, scene),
+    )
+    conn.commit()
+    conn.close()
+
+
+def consume_subscribe_quota(user_id: str, scene: str) -> bool:
+    """Decrement quota if available and return True on success."""
+    conn = _connect()
+    cur = conn.cursor()
+    row = cur.execute(
+        "SELECT quota FROM user_subscribe WHERE user_id = ? AND scene = ?",
+        (user_id, scene),
+    ).fetchone()
+    q = row["quota"] if row else 0
+    if q <= 0:
+        conn.close()
+        return False
+    cur.execute(
+        "UPDATE user_subscribe SET quota = quota - 1 WHERE user_id = ? AND scene = ?",
+        (user_id, scene),
+    )
+    conn.commit()
+    conn.close()
+    return True
+
+
+def log_subscribe_error(user_id: str, scene: str, errcode: int, errmsg: str) -> None:
+    """Record a failed subscribe push."""
+    conn = _connect()
+    cur = conn.cursor()
+    cur.execute(
+        "INSERT INTO subscribe_log(user_id, scene, errcode, errmsg, ts) VALUES (?,?,?,?,?)",
+        (user_id, scene, errcode, errmsg, datetime.datetime.utcnow().isoformat()),
+    )
+    conn.commit()
+    conn.close()
 
 
 def get_user(user_id: str) -> User | None:

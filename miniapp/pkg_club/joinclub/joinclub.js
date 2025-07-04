@@ -4,6 +4,7 @@ const { hideKeyboard } = require('../../utils/hideKeyboard');
 const { zh_CN } = require('../../utils/locales.js');
 const { formatJoinClubCardData } = require('../../utils/clubFormat');
 const store = require('../../store/store');
+const ensureSubscribe = require('../../utils/ensureSubscribe');
 
 Page({
   data: {
@@ -161,9 +162,10 @@ Page({
       return;
     }
     const that = this;
-    request({
-      url: `${BASE_URL}/clubs/${cid}/join`,
-      method: 'POST',
+    ensureSubscribe('club_join').then(() => {
+      request({
+        url: `${BASE_URL}/clubs/${cid}/join`,
+        method: 'POST',
         data: {
           user_id: userId,
           token,
@@ -171,18 +173,19 @@ Page({
           doubles_rating: this.data.needRating ? rating : undefined,
           reason: this.data.reason
         },
-      success(r) {
-        if (r.statusCode === 200) {
-          store.setClubId(cid);
-          wx.showToast({ duration: 4000,  title: that.data.t.applied, icon: 'success' });
-          const clubs = that.data.clubs.map(c =>
-            c.club_id === cid ? { ...c, pending: true, rejected_reason: '' } : c
-          );
-          that.setData({ clubs, showDialog: false });
-        } else {
-          wx.showToast({ duration: 4000,  title: that.data.t.failed, icon: 'none' });
+        success(r) {
+          if (r.statusCode === 200) {
+            store.setClubId(cid);
+            wx.showToast({ duration: 4000,  title: that.data.t.applied, icon: 'success' });
+            const clubs = that.data.clubs.map(c =>
+              c.club_id === cid ? { ...c, pending: true, rejected_reason: '' } : c
+            );
+            that.setData({ clubs, showDialog: false });
+          } else {
+            wx.showToast({ duration: 4000,  title: that.data.t.failed, icon: 'none' });
+          }
         }
-      }
+      });
     });
   }
 });
