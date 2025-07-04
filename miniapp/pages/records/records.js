@@ -39,10 +39,25 @@ Page({
     isEmpty: false
   },
   hideKeyboard,
-  onLoad() {
-    this.setData({ userId: store.userId, page: 1, finished: false, records: [] });
-    this.fetchRecords();
-    this.fetchPendings();
+  onLoad(options) {
+    const tabIndex = options && options.tab ? Number(options.tab) : 0;
+    const pendingTab = options && options.pending ? Number(options.pending) : 0;
+    const modeIdx = options && options.mode ? Number(options.mode) : 0;
+    this.setData({
+      userId: store.userId,
+      tabIndex,
+      pendingTabIndex: pendingTab,
+      modeIndex: modeIdx,
+      doubles: modeIdx == 1,
+      page: 1,
+      finished: false,
+      records: [],
+    });
+    if (tabIndex == 0) {
+      this.fetchRecords();
+    } else {
+      this.fetchPendings();
+    }
   },
   switchTab(e) {
     const idx = e.currentTarget.dataset.index;

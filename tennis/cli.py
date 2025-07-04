@@ -27,6 +27,7 @@ from .rating import (
     expected_score,
 )
 from .storage import load_data, save_data, load_users, save_users
+from .wechat import send_audit_message
 
 
 players: dict[str, Player] = {}
@@ -237,6 +238,13 @@ def request_join(
             u.messages.append(
                 Message(date=today, text=f"Join request from {user_id} for club {club.name}")
             )
+            if u.wechat_openid:
+                send_audit_message(
+                    u.wechat_openid,
+                    "俱乐部申请",
+                    f"用户申请加入{club.name}，请及时审核。",
+                    page=f"/pages/manage/manage?cid={club.club_id}",
+                )
 
 
 def approve_member(
@@ -282,6 +290,13 @@ def approve_member(
             text=f"Approved to join club {club.name}",
         )
     )
+    if user.wechat_openid:
+        send_audit_message(
+            user.wechat_openid,
+            "俱乐部申请",
+            f"您申请加入{club.name}的请求已通过。",
+            page=f"/pages/manage/manage?cid={club.club_id}",
+        )
 
 
 def reject_application(
@@ -310,6 +325,13 @@ def reject_application(
                 text=f"Join request for club {club.name} rejected: {reason}",
             )
         )
+        if user.wechat_openid:
+            send_audit_message(
+                user.wechat_openid,
+                "俱乐部申请",
+                f"您申请加入{club.name}的请求未通过。",
+                page=f"/pages/manage/manage?cid={club.club_id}",
+            )
 
 
 def clear_rejection(clubs, club_id: str, user_id: str):
@@ -621,6 +643,16 @@ def submit_match(
         match.confirmed_b = True
     club.pending_matches.append(match)
 
+    if users is not None:
+        opp_user = users.get(opponent)
+        if opp_user and opp_user.wechat_openid:
+            send_audit_message(
+                opp_user.wechat_openid,
+                "战绩审核",
+                "您的球友创建了与您对战的战绩，请及时确认。",
+                page="/pages/records/records?tab=1&pending=0",
+            )
+
     # Do not notify admins until all participants have confirmed
 
 
@@ -652,6 +684,13 @@ def confirm_match(clubs, club_id: str, index: int, user_id: str, users=None):
                 u.messages.append(
                     Message(date=today, text=f"Match pending approval in {club.name}")
                 )
+                if u.wechat_openid:
+                    send_audit_message(
+                        u.wechat_openid,
+                        "战绩审核",
+                        f"{club.name}成员创建了新的战绩，请及时审核。",
+                        page="/pages/records/records?tab=1&pending=0",
+                    )
 
 
 def reject_match(clubs, club_id: str, index: int, user_id: str, users=None):
@@ -677,6 +716,20 @@ def reject_match(clubs, club_id: str, index: int, user_id: str, users=None):
                     text=f"Match on {match.date.isoformat()} rejected in {club.name}",
                 )
             )
+            if initiator.wechat_openid:
+                send_audit_message(
+                    initiator.wechat_openid,
+                    "战绩审核",
+                    "您的对手拒绝了您创建的战绩，请点击查看详情。",
+                    page="/pages/records/records?tab=1&pending=1",
+                )
+            if initiator.wechat_openid:
+                send_audit_message(
+                    initiator.wechat_openid,
+                    "战绩审核",
+                    "您的对手拒绝了您创建的战绩，请点击查看详情。",
+                    page="/pages/records/records?tab=1&pending=0",
+                )
 
 
 def veto_match(clubs, club_id: str, index: int, approver: str, users=None):
@@ -699,15 +752,25 @@ def veto_match(clubs, club_id: str, index: int, approver: str, users=None):
         raise ValueError("Not a singles match")
     match.status = "vetoed"
     match.status_date = datetime.date.today()
-    if users is not None and match.initiator:
-        initiator = users.get(match.initiator)
-        if initiator:
-            initiator.messages.append(
+    if users is not None:
+        participants = [match.player_a.user_id, match.player_b.user_id]
+        for uid in participants:
+            u = users.get(uid)
+            if not u:
+                continue
+            u.messages.append(
                 Message(
                     date=datetime.date.today(),
                     text=f"Match on {match.date.isoformat()} vetoed in {club.name}",
                 )
             )
+            if u.wechat_openid:
+                send_audit_message(
+                    u.wechat_openid,
+                    "战绩审核",
+                    f"{club.name}否决了您的战绩，请点击查看详情。",
+                    page="/pages/records/records?tab=1&pending=0",
+                )
 
 
 def veto_doubles(clubs, club_id: str, index: int, approver: str, users=None):
@@ -729,15 +792,30 @@ def veto_doubles(clubs, club_id: str, index: int, approver: str, users=None):
         raise ValueError("Not a doubles match")
     match.status = "vetoed"
     match.status_date = datetime.date.today()
-    if users is not None and match.initiator:
-        initiator = users.get(match.initiator)
-        if initiator:
-            initiator.messages.append(
+    if users is not None:
+        players = [
+            match.player_a1.user_id,
+            match.player_a2.user_id,
+            match.player_b1.user_id,
+            match.player_b2.user_id,
+        ]
+        for uid in players:
+            u = users.get(uid)
+            if not u:
+                continue
+            u.messages.append(
                 Message(
                     date=datetime.date.today(),
                     text=f"Match on {match.date.isoformat()} vetoed in {club.name}",
                 )
             )
+            if u.wechat_openid:
+                send_audit_message(
+                    u.wechat_openid,
+                    "战绩审核",
+                    f"{club.name}否决了您的战绩，请点击查看详情。",
+                    page="/pages/records/records?tab=1&pending=1",
+                )
 
 
 def submit_doubles(
@@ -791,14 +869,14 @@ def submit_doubles(
     club.pending_matches.append(match)
 
     if users is not None:
-        today = datetime.date.today()
-        for uid in [club.leader_id, *club.admin_ids]:
-            if not uid:
-                continue
-            u = users.get(uid)
-            if u:
-                u.messages.append(
-                    Message(date=today, text=f"Doubles match pending approval in {club.name}")
+        opp_users = [users.get(opponent1), users.get(opponent2)]
+        for opp in opp_users:
+            if opp and opp.wechat_openid:
+                send_audit_message(
+                    opp.wechat_openid,
+                    "战绩审核",
+                    "您的球友创建了与您对战的战绩，请及时确认。",
+                    page="/pages/records/records?tab=1&pending=1",
                 )
 
 
@@ -832,6 +910,13 @@ def confirm_doubles(clubs, club_id: str, index: int, user_id: str, users=None):
                 u.messages.append(
                     Message(date=today, text=f"Doubles match pending approval in {club.name}")
                 )
+                if u.wechat_openid:
+                    send_audit_message(
+                        u.wechat_openid,
+                        "战绩审核",
+                        f"{club.name}成员创建了新的战绩，请及时审核。",
+                        page="/pages/records/records?tab=1&pending=1",
+                    )
 
 
 def reject_doubles(clubs, club_id: str, index: int, user_id: str, users=None):
