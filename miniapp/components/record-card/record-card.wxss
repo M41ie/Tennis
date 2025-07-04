@@ -6,11 +6,11 @@
 .location .icon{margin-right:4rpx;}
 .row{display:flex;align-items:center;padding:20rpx;border-bottom:1px solid #eee;}
 .row:last-child{border-bottom:none;}
-.info{flex:1;display:flex;align-items:center;flex-wrap:nowrap;}
-.info.singles{margin-left:120rpx;} /* Increased from 60rpx */
-.info.doubles{justify-content:flex-start; margin-left:120rpx;} /* Added margin-left */
-.unit{display:flex;align-items:center;margin-right:10rpx;flex:1 0 auto;width:50%;}
-.unit:last-child{margin-right:0;}
+.record-card .info{flex:1;display:flex;align-items:center;flex-wrap:nowrap;flex-direction:row;}
+.record-card .info.singles{margin-left:120rpx;} /* Increased from 60rpx */
+.record-card .info.doubles{justify-content:flex-start; margin-left:120rpx;} /* Added margin-left */
+.record-card .unit{display:flex;align-items:center;margin-right:10rpx;flex:1 0 auto;width:50%;}
+.record-card .unit:last-child{margin-right:0;}
 .record-card .avatar{width:48rpx;height:48rpx;border-radius:50%;margin-right:12rpx;background:#ccc;flex-shrink:0;}
 .record-card .name{color:#333;font-size:26rpx;max-width:120rpx;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .record-card .score{width:100rpx;margin-right:20rpx;margin-left:35rpx;text-align:center;font-size:48rpx;font-weight:700;color:#000;}
