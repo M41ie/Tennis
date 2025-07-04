@@ -23,7 +23,8 @@ Page({
     showRatingDialog: false,
     ratingInput: '',
     ratingDialogTitle: '',
-    ratingApplicantId: ''
+    ratingApplicantId: '',
+    joinStatus: 'joined'
   },
   onLoad(options) {
     if (options && options.cid) {
@@ -99,15 +100,28 @@ Page({
       url: `${BASE_URL}/clubs/${cid}`,
       success(res) {
         const info = res.data;
+        const members = info.members || [];
+        const pendingList = info.pending_members || [];
+        const rejectedMap = info.rejected_members || {};
+        const isMember =
+          info.leader_id === that.data.userId ||
+          (info.admin_ids && info.admin_ids.includes(that.data.userId)) ||
+          members.some(m => m.user_id === that.data.userId);
         const isAdmin =
           info.leader_id === that.data.userId ||
           (info.admin_ids && info.admin_ids.includes(that.data.userId)) ||
           that.data.isSysAdmin;
-        let role = 'member';
-        if (info.leader_id === that.data.userId) role = 'leader';
-        else if (info.admin_ids && info.admin_ids.includes(that.data.userId))
-          role = 'admin';
-        const roleText = role === 'leader' ? '负责人' : role === 'admin' ? '管理员' : '成员';
+        let role = '';
+        if (isMember) {
+          role = 'member';
+          if (info.leader_id === that.data.userId) role = 'leader';
+          else if (info.admin_ids && info.admin_ids.includes(that.data.userId)) role = 'admin';
+        }
+        const roleText =
+          role === 'leader' ? '负责人' : role === 'admin' ? '管理员' : role ? '成员' : '';
+        const pending = pendingList.some(p => p.user_id === that.data.userId);
+        const rejected = rejectedMap[that.data.userId] || '';
+        const joinStatus = isMember ? 'joined' : pending ? 'pending' : rejected ? 'rejected' : 'apply';
         const stats = info.stats || {};
         const fmt = n =>
           typeof n === 'number' ? n.toFixed(1) : '--';
@@ -138,7 +152,8 @@ Page({
           role,
           roleText,
           leaderId: info.leader_id,
-          adminIds: info.admin_ids || []
+          adminIds: info.admin_ids || [],
+          joinStatus
         });
         that.loadPendingNames();
       }
@@ -432,6 +447,17 @@ Page({
         }
       }
     });
+  },
+  applyJoin() {
+    const cid = store.clubId;
+    wx.navigateTo({ url: `/pkg_club/joinclub/joinclub?cid=${cid}` });
+  },
+  onShareAppMessage() {
+    const cid = store.clubId;
+    return {
+      title: `${this.data.clubName} 俱乐部`,
+      path: `/pages/manage/manage?cid=${cid}`
+    };
   },
   editClub() {
     wx.navigateTo({ url: '/pkg_club/editclub/editclub' });

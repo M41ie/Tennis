@@ -52,6 +52,7 @@
   </block>
   <button wx:if="{{role==='admin'||role==='leader'||isSysAdmin}}" class="op-btn" bindtap="editClub">编辑</button>
   <button wx:if="{{role==='leader'||isSysAdmin}}" class="op-btn danger" bindtap="dissolveClub">解散</button>
+  <button wx:if="{{joinStatus==='apply'}}" class="op-btn" bindtap="applyJoin">{{t.applyJoin}}</button>
   <button class="op-btn" open-type="share">分享</button>
 </view>
 

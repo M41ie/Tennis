@@ -15,11 +15,15 @@ Page({
     joinClubId: '',
     needRating: false,
     rating: '',
-    reason: ''
+    reason: '',
+    directClubId: ''
   },
   onLoad(options) {
     if (options && options.query) {
       this.setData({ query: options.query });
+    }
+    if (options && options.cid) {
+      this.setData({ directClubId: options.cid });
     }
     this.fetchJoined();
   },
@@ -65,6 +69,13 @@ Page({
               formatJoinClubCardData(info, uid, that.data.joined)
             );
             that.setData({ clubs: result });
+            if (that.data.directClubId) {
+              const target = result.find(c => c.club_id === that.data.directClubId);
+              if (target) {
+                that.join({ detail: { club: target } });
+              }
+              that.setData({ directClubId: '' });
+            }
           }
         });
       }
