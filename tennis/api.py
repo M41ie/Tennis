@@ -1770,3 +1770,30 @@ if __name__ == "__main__":
     import uvicorn
 
     uvicorn.run(app, host="0.0.0.0", port=8000)
+
+# ---- tennis/api.py 追加 START ----
+import hashlib
+from fastapi import Response, APIRouter
+
+TOKEN = "tennisNotify2025"  # <-- 替换成后台 Token
+router_wechat = APIRouter()
+
+@router_wechat.get("/wechat/callback")
+async def wechat_verify(signature: str,
+                        timestamp: str,
+                        nonce: str,
+                        echostr: str):
+    tmp = "".join(sorted([TOKEN, timestamp, nonce]))
+    if hashlib.sha1(tmp.encode()).hexdigest() == signature:
+        # 必须原样返回 echostr，且 5 秒内结束
+        return Response(content=echostr, media_type="text/plain")
+    return Response(content="invalid", status_code=400)
+
+# 可选：POST 回调（以后订阅消息送达或客服消息用）
+@router_wechat.post("/wechat/callback")
+async def wechat_callback():
+    return "success"
+
+app.include_router(router_wechat)
+# ---- tennis/api.py 追加 END ----
+
