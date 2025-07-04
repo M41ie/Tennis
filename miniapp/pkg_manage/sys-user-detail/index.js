@@ -193,12 +193,35 @@ Page({
             rec.partnerName = rec.partner || '';
             rec.partnerAvatar = withBase(rec.partner_avatar) || placeholder;
             rec.partnerRating = rec.partner_rating_after != null ? Number(rec.partner_rating_after).toFixed(3) : '';
+            const pd = rec.partner_delta;
+            if (pd != null) {
+              const deltaP = Number(pd);
+              const abs = Math.abs(deltaP).toFixed(3);
+              rec.partnerDeltaDisplay = (deltaP > 0 ? '+' : deltaP < 0 ? '-' : '') + abs;
+              rec.partnerDeltaClass = deltaP > 0 ? 'pos' : deltaP < 0 ? 'neg' : 'neutral';
+            }
+
             rec.opp1Name = rec.opponent1 || '';
             rec.opp1Avatar = withBase(rec.opponent1_avatar) || placeholder;
             rec.opp1Rating = rec.opponent1_rating_after != null ? Number(rec.opponent1_rating_after).toFixed(3) : '';
+            const od1 = rec.opponent1_delta;
+            if (od1 != null) {
+              const delta1 = Number(od1);
+              const abs = Math.abs(delta1).toFixed(3);
+              rec.opp1DeltaDisplay = (delta1 > 0 ? '+' : delta1 < 0 ? '-' : '') + abs;
+              rec.opp1DeltaClass = delta1 > 0 ? 'pos' : delta1 < 0 ? 'neg' : 'neutral';
+            }
+
             rec.opp2Name = rec.opponent2 || '';
             rec.opp2Avatar = withBase(rec.opponent2_avatar) || placeholder;
             rec.opp2Rating = rec.opponent2_rating_after != null ? Number(rec.opponent2_rating_after).toFixed(3) : '';
+            const od2 = rec.opponent2_delta;
+            if (od2 != null) {
+              const delta2 = Number(od2);
+              const abs = Math.abs(delta2).toFixed(3);
+              rec.opp2DeltaDisplay = (delta2 > 0 ? '+' : delta2 < 0 ? '-' : '') + abs;
+              rec.opp2DeltaClass = delta2 > 0 ? 'pos' : delta2 < 0 ? 'neg' : 'neutral';
+            }
           }
           rec.displayFormat = displayFormat(rec.format);
         });
