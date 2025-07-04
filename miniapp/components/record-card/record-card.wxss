@@ -6,7 +6,7 @@
 .location .icon{margin-right:4rpx;}
 .row{display:flex;align-items:center;padding:20rpx;border-bottom:1px solid #eee;}
 .row:last-child{border-bottom:none;}
-.info{flex:1;display:flex;align-items:center;flex-wrap:wrap;}
+.info{flex:1;display:flex;align-items:center;flex-wrap:nowrap;}
 .info.singles{margin-left:120rpx;} /* Increased from 60rpx */
 .info.doubles{justify-content:flex-start; margin-left:120rpx;} /* Added margin-left */
 .unit{display:flex;align-items:center;margin-right:10rpx;flex:1 0 auto;width:50%;}
