@@ -7,7 +7,7 @@ import redis
 from .config import get_wechat_appid, get_wechat_secret, get_redis_url
 from .storage import consume_subscribe_quota, log_subscribe_error
 
-TEMPLATE_ID = "uqaaIKXK918Yz4FGODyiuB4uJgMFkXC_63vTGq-0G2c_"
+TEMPLATE_ID = "uqaaIKXK918Yz4FGODyiuB4uJgMFkXC_63vTGq-0G2c"
 
 REDIS_URL = get_redis_url()
 _redis = None
