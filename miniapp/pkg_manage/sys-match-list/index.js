@@ -77,12 +77,30 @@ Page({
             rec.partnerRating = rec.rating_a2_after != null ? Number(rec.rating_a2_after).toFixed(3) : '';
             rec.opp1Rating = rec.rating_b1_after != null ? Number(rec.rating_b1_after).toFixed(3) : '';
             rec.opp2Rating = rec.rating_b2_after != null ? Number(rec.rating_b2_after).toFixed(3) : '';
-            // deltas
-            const pd = rec.rating_a1_after != null && rec.rating_a1_before != null ? rec.rating_a1_after - rec.rating_a1_before : null;
-            if (pd != null) {
-              const abs = Math.abs(pd).toFixed(3);
-              rec.deltaDisplayA = (pd > 0 ? '+' : pd < 0 ? '-' : '') + abs;
-              rec.deltaClassA = pd > 0 ? 'pos' : pd < 0 ? 'neg' : 'neutral';
+            // deltas for all participants
+            const dA1 = rec.rating_a1_after != null && rec.rating_a1_before != null ? rec.rating_a1_after - rec.rating_a1_before : null;
+            if (dA1 != null) {
+              const abs = Math.abs(dA1).toFixed(3);
+              rec.deltaDisplayA = (dA1 > 0 ? '+' : dA1 < 0 ? '-' : '') + abs;
+              rec.deltaClassA = dA1 > 0 ? 'pos' : dA1 < 0 ? 'neg' : 'neutral';
+            }
+            const dA2 = rec.rating_a2_after != null && rec.rating_a2_before != null ? rec.rating_a2_after - rec.rating_a2_before : null;
+            if (dA2 != null) {
+              const abs = Math.abs(dA2).toFixed(3);
+              rec.partnerDeltaDisplay = (dA2 > 0 ? '+' : dA2 < 0 ? '-' : '') + abs;
+              rec.partnerDeltaClass = dA2 > 0 ? 'pos' : dA2 < 0 ? 'neg' : 'neutral';
+            }
+            const dB1 = rec.rating_b1_after != null && rec.rating_b1_before != null ? rec.rating_b1_after - rec.rating_b1_before : null;
+            if (dB1 != null) {
+              const abs = Math.abs(dB1).toFixed(3);
+              rec.opp1DeltaDisplay = (dB1 > 0 ? '+' : dB1 < 0 ? '-' : '') + abs;
+              rec.opp1DeltaClass = dB1 > 0 ? 'pos' : dB1 < 0 ? 'neg' : 'neutral';
+            }
+            const dB2 = rec.rating_b2_after != null && rec.rating_b2_before != null ? rec.rating_b2_after - rec.rating_b2_before : null;
+            if (dB2 != null) {
+              const abs = Math.abs(dB2).toFixed(3);
+              rec.opp2DeltaDisplay = (dB2 > 0 ? '+' : dB2 < 0 ? '-' : '') + abs;
+              rec.opp2DeltaClass = dB2 > 0 ? 'pos' : dB2 < 0 ? 'neg' : 'neutral';
             }
           }
           rec.displayFormat = displayFormat(rec.format);
