@@ -4,6 +4,7 @@ const store = require('../../store/store');
 const { hideKeyboard } = require('../../utils/hideKeyboard');
 const optimisticUpdate = require('../../utils/optimistic');
 const { withBase } = require('../../utils/format');
+const ensureSubscribe = require('../../utils/ensureSubscribe');
 
 // Map backend format identifiers to display names
 const FORMAT_DISPLAY = {
@@ -291,14 +292,16 @@ Page({
     const idx = e.currentTarget.dataset.id;
     const cid = e.currentTarget.dataset.club;
     const token = store.token;
-    optimisticUpdate(this, 'pendingSingles', idx, () =>
-      request({
-        url: `${BASE_URL}/clubs/${cid}/pending_matches/${idx}/confirm`,
-        method: 'POST',
-        data: { user_id: this.data.userId, token }
-      })
-    ).finally(() => {
-      this.fetchPendings();
+    ensureSubscribe('match').then(() => {
+      optimisticUpdate(this, 'pendingSingles', idx, () =>
+        request({
+          url: `${BASE_URL}/clubs/${cid}/pending_matches/${idx}/confirm`,
+          method: 'POST',
+          data: { user_id: this.data.userId, token }
+        })
+      ).finally(() => {
+        this.fetchPendings();
+      });
     });
   },
   approveSingle(e) {
@@ -355,14 +358,16 @@ Page({
     const idx = e.currentTarget.dataset.id;
     const cid = e.currentTarget.dataset.club;
     const token = store.token;
-    optimisticUpdate(this, 'pendingDoubles', idx, () =>
-      request({
-        url: `${BASE_URL}/clubs/${cid}/pending_doubles/${idx}/confirm`,
-        method: 'POST',
-        data: { user_id: this.data.userId, token }
-      })
-    ).finally(() => {
-      this.fetchPendings();
+    ensureSubscribe('match').then(() => {
+      optimisticUpdate(this, 'pendingDoubles', idx, () =>
+        request({
+          url: `${BASE_URL}/clubs/${cid}/pending_doubles/${idx}/confirm`,
+          method: 'POST',
+          data: { user_id: this.data.userId, token }
+        })
+      ).finally(() => {
+        this.fetchPendings();
+      });
     });
   },
   approveDouble(e) {
