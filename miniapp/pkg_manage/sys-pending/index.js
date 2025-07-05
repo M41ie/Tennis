@@ -89,7 +89,7 @@ Page({
     }
   },
   approveSingle(e) {
-    const idx = e.currentTarget.dataset.index || e.detail.index;
+    const idx = e.currentTarget.dataset.id || e.detail.id;
     const cid = e.currentTarget.dataset.club;
     const that = this;
     request({
@@ -101,12 +101,12 @@ Page({
     });
   },
   vetoSingle(e) {
-    const idx = e.currentTarget.dataset.index || e.detail.index;
+    const idx = e.currentTarget.dataset.id || e.detail.id;
     const cid = e.currentTarget.dataset.club;
     const that = this;
     // Optimistically remove the item so the UI updates immediately
     const arr = this.data.singles.slice();
-    const pos = arr.findIndex(it => it.index === idx);
+    const pos = arr.findIndex(it => it.id === idx);
     if (pos !== -1) {
       arr.splice(pos, 1);
       this.setData({ singles: arr });
@@ -119,7 +119,7 @@ Page({
     });
   },
   approveDouble(e) {
-    const idx = e.currentTarget.dataset.index || e.detail.index;
+    const idx = e.currentTarget.dataset.id || e.detail.id;
     const cid = e.currentTarget.dataset.club;
     const that = this;
     request({
@@ -131,12 +131,12 @@ Page({
     });
   },
   vetoDouble(e) {
-    const idx = e.currentTarget.dataset.index || e.detail.index;
+    const idx = e.currentTarget.dataset.id || e.detail.id;
     const cid = e.currentTarget.dataset.club;
     const that = this;
     // Optimistically remove the item so the UI updates immediately
     const arr = this.data.doublesList.slice();
-    const pos = arr.findIndex(it => it.index === idx);
+    const pos = arr.findIndex(it => it.id === idx);
     if (pos !== -1) {
       arr.splice(pos, 1);
       this.setData({ doublesList: arr });
