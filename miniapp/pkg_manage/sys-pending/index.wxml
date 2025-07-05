@@ -5,13 +5,13 @@
   </view>
   <block wx:if="{{modeIndex==0}}">
     <block wx:for="{{singles}}" wx:key="index">
-      <record-card record="{{item}}" doubles="{{false}}" show-actions="{{true}}" data-index="{{item.index}}" data-club="{{item.club_id}}" status-text="{{item.statusText}}" can-approve="{{item.canApprove}}" can-veto="{{item.canVeto}}" can-share="{{item.canShare}}" bind:approve="approveSingle" bind:veto="vetoSingle" />
+      <record-card record="{{item}}" doubles="{{false}}" show-actions="{{true}}" data-id="{{item.id}}" data-club="{{item.club_id}}" status-text="{{item.statusText}}" can-approve="{{item.canApprove}}" can-veto="{{item.canVeto}}" can-share="{{item.canShare}}" bind:approve="approveSingle" bind:veto="vetoSingle" />
     </block>
     <view wx:if="{{!singles.length}}" class="empty">暂无数据</view>
   </block>
   <block wx:elif="{{modeIndex==1}}">
     <block wx:for="{{doublesList}}" wx:key="index">
-        <record-card record="{{item}}" doubles="{{true}}" show-actions="{{true}}" data-index="{{item.index}}" data-club="{{item.club_id}}" status-text="{{item.statusText}}" can-approve="{{item.canApprove}}" can-veto="{{item.canVeto}}" can-share="{{item.canShare}}" bind:approve="approveDouble" bind:veto="vetoDouble" />
+        <record-card record="{{item}}" doubles="{{true}}" show-actions="{{true}}" data-id="{{item.id}}" data-club="{{item.club_id}}" status-text="{{item.statusText}}" can-approve="{{item.canApprove}}" can-veto="{{item.canVeto}}" can-share="{{item.canShare}}" bind:approve="approveDouble" bind:veto="vetoDouble" />
     </block>
     <view wx:if="{{!doublesList.length}}" class="empty">暂无数据</view>
   </block>
