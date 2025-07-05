@@ -4,7 +4,7 @@ from ..services import users as user_service
 from ..services.auth import require_auth, assert_token_matches
 from ..services.helpers import get_user_or_404
 
-from ..storage import get_user, get_player
+from ..storage import get_user, get_player, add_subscribe_quota
 from .. import api
 
 router = APIRouter()
@@ -42,6 +42,12 @@ class RefreshRequest(BaseModel):
 
 class WeChatLoginRequest(BaseModel):
     code: str
+
+
+class SubscribeRequest(BaseModel):
+    user_id: str
+    scene: str
+    token: str
 
 
 @router.post("/users")
@@ -131,4 +137,12 @@ def mark_message_read(user_id: str, index: int, authorization: str | None = Head
     assert_token_matches(uid, user_id)
     user = get_user_or_404(user_id)
     user_service.mark_read(user, index)
+    return {"status": "ok"}
+
+
+@router.post("/subscribe")
+def subscribe(data: SubscribeRequest, authorization: str | None = Header(None)):
+    uid = require_auth(authorization)
+    assert_token_matches(uid, data.user_id)
+    add_subscribe_quota(data.user_id, data.scene)
     return {"status": "ok"}
