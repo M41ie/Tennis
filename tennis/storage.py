@@ -1697,10 +1697,19 @@ def add_subscribe_quota(user_id: str, scene: str, quota: int = 1) -> None:
     """Increment or set subscription quota for a user/scene."""
     conn = _connect()
     cur = conn.cursor()
-    cur.execute(
-        "INSERT OR IGNORE INTO user_subscribe(user_id, scene, quota) VALUES (?,?,0)",
-        (user_id, scene),
-    )
+    if IS_PG:
+        cur.execute(
+            """
+            INSERT INTO user_subscribe(user_id, scene, quota) VALUES (?, ?, 0)
+            ON CONFLICT (user_id, scene) DO NOTHING
+            """,
+            (user_id, scene),
+        )
+    else:
+        cur.execute(
+            "INSERT OR IGNORE INTO user_subscribe(user_id, scene, quota) VALUES (?, ?,0)",
+            (user_id, scene),
+        )
     cur.execute(
         "UPDATE user_subscribe SET quota = quota + ? WHERE user_id = ? AND scene = ?",
         (quota, user_id, scene),
