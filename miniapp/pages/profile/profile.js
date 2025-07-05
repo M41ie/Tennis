@@ -4,6 +4,7 @@ const userService = require('../../services/user');
 const store = require('../../store/store');
 const { hideKeyboard } = require('../../utils/hideKeyboard');
 const { t } = require('../../utils/locales');
+const ensureSubscribe = require('../../utils/ensureSubscribe');
 
 Page({
   data: {
@@ -32,6 +33,8 @@ Page({
     const uid = store.userId;
     const cid = store.clubId;
     if (uid) {
+      ensureSubscribe('club_join');
+      ensureSubscribe('match');
       this.setData({ loggedIn: true });
       this.loadJoinedClubs(uid, cid);
     } else {
@@ -91,6 +94,8 @@ Page({
             .then(resp => {
               if (resp.access_token) {
                 store.setAuth(resp.access_token, resp.user_id, resp.refresh_token);
+                ensureSubscribe('club_join');
+                ensureSubscribe('match');
                 this.setData({ loggedIn: true });
                 if (resp.just_created) {
                   wx.navigateTo({ url: '/pages/editprofile/editprofile' });
