@@ -3,6 +3,7 @@ const request = require('../../utils/request');
 const { hideKeyboard } = require('../../utils/hideKeyboard');
 const { zh_CN } = require('../../utils/locales.js');
 const store = require('../../store/store');
+const ensureSubscribe = require('../../utils/ensureSubscribe');
 
 Page({
   data: {
@@ -159,55 +160,57 @@ Page({
     const token = store.token;
     if (!cid || !userId || !token) return;
 
-    if (doubles) {
-      const players = this.data.players;
-      const partner = players[this.data.partnerIndex];
-      const b1 = players[this.data.opp1Index];
-      const b2 = players[this.data.opp2Index];
-      request({
-        url: `${BASE_URL}/clubs/${cid}/pending_doubles`,
-        method: 'POST',
-        data: {
-          initiator: userId,
-          partner: partner.user_id,
-          opponent1: b1.user_id,
-          opponent2: b2.user_id,
-          score_initiator: parseInt(this.data.scoreA, 10),
-          score_opponent: parseInt(this.data.scoreB, 10),
-          date: this.data.date,
-          format: this.data.formatCodes[this.data.formatIndex],
-          location: this.data.location,
-          token
-        },
-        success() {
-          wx.showToast({ duration: 4000,  title: that.data.t.submitSuccess, icon: 'success', duration: 1000 });
-          setTimeout(() => {
-            wx.navigateBack();
-          }, 1000);
-        }
-      });
-    } else {
-      const opponent = this.data.players[this.data.opponentIndex];
-      request({
-        url: `${BASE_URL}/clubs/${cid}/pending_matches`,
-        method: 'POST',
-        data: {
-          initiator: userId,
-          opponent: opponent.user_id,
-          score_initiator: parseInt(this.data.scoreA, 10),
-          score_opponent: parseInt(this.data.scoreB, 10),
-          date: this.data.date,
-          format: this.data.formatCodes[this.data.formatIndex],
-          location: this.data.location,
-          token
-        },
-        success() {
-          wx.showToast({ duration: 4000,  title: that.data.t.submitSuccess, icon: 'success', duration: 1000 });
-          setTimeout(() => {
-            wx.navigateBack();
-          }, 1000);
-        }
-      });
-    }
+    ensureSubscribe('match').then(() => {
+      if (doubles) {
+        const players = this.data.players;
+        const partner = players[this.data.partnerIndex];
+        const b1 = players[this.data.opp1Index];
+        const b2 = players[this.data.opp2Index];
+        request({
+          url: `${BASE_URL}/clubs/${cid}/pending_doubles`,
+          method: 'POST',
+          data: {
+            initiator: userId,
+            partner: partner.user_id,
+            opponent1: b1.user_id,
+            opponent2: b2.user_id,
+            score_initiator: parseInt(this.data.scoreA, 10),
+            score_opponent: parseInt(this.data.scoreB, 10),
+            date: this.data.date,
+            format: this.data.formatCodes[this.data.formatIndex],
+            location: this.data.location,
+            token
+          },
+          success() {
+            wx.showToast({ duration: 4000,  title: that.data.t.submitSuccess, icon: 'success', duration: 1000 });
+            setTimeout(() => {
+              wx.navigateBack();
+            }, 1000);
+          }
+        });
+      } else {
+        const opponent = this.data.players[this.data.opponentIndex];
+        request({
+          url: `${BASE_URL}/clubs/${cid}/pending_matches`,
+          method: 'POST',
+          data: {
+            initiator: userId,
+            opponent: opponent.user_id,
+            score_initiator: parseInt(this.data.scoreA, 10),
+            score_opponent: parseInt(this.data.scoreB, 10),
+            date: this.data.date,
+            format: this.data.formatCodes[this.data.formatIndex],
+            location: this.data.location,
+            token
+          },
+          success() {
+            wx.showToast({ duration: 4000,  title: that.data.t.submitSuccess, icon: 'success', duration: 1000 });
+            setTimeout(() => {
+              wx.navigateBack();
+            }, 1000);
+          }
+        });
+      }
+    });
   }
 });
