@@ -84,34 +84,33 @@ Page({
   },
   toLogin() { wx.navigateTo({ url: '/pages/login/index' }); },
   toRegister() { wx.navigateTo({ url: '/pages/register/register' }); },
-  onCardTap() {
+  async onCardTap() {
     if (!this.data.loggedIn) {
-      wx.login({
-        success: res => {
-          if (!res.code) return;
-          userService
-            .wechatLogin(res.code)
-            .then(resp => {
-              if (resp.access_token) {
-                store.setAuth(resp.access_token, resp.user_id, resp.refresh_token);
-                ensureSubscribe('club_join');
-                ensureSubscribe('match');
-                this.setData({ loggedIn: true });
-                if (resp.just_created) {
-                  wx.navigateTo({ url: '/pages/editprofile/editprofile' });
-                } else {
-                  this.loadJoinedClubs(
-                    resp.user_id,
-                    store.clubId
-                  );
-                }
-              } else {
-                wx.showToast({ duration: 4000,  title: '登录失败', icon: 'none' });
-              }
-            })
-            .catch(() => {});
+      try {
+        const res = await new Promise((resolve, reject) => {
+          wx.login({ success: resolve, fail: reject });
+        });
+        if (!res.code) return;
+        const resp = await userService.wechatLogin(res.code);
+        if (resp.access_token) {
+          store.setAuth(resp.access_token, resp.user_id, resp.refresh_token);
+          await ensureSubscribe('club_join');
+          await ensureSubscribe('match');
+          this.setData({ loggedIn: true });
+          if (resp.just_created) {
+            wx.navigateTo({ url: '/pages/editprofile/editprofile' });
+          } else {
+            this.loadJoinedClubs(
+              resp.user_id,
+              store.clubId
+            );
+          }
+        } else {
+          wx.showToast({ duration: 4000, title: '登录失败', icon: 'none' });
         }
-      });
+      } catch (e) {
+        // ignore
+      }
     } else {
       wx.navigateTo({ url: '/pages/playercard/playercard' });
     }
