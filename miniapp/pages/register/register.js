@@ -8,34 +8,28 @@ const ensureSubscribe = require('../../utils/ensureSubscribe');
 Page({
   data: { t },
   hideKeyboard,
-  wechatLogin() {
-    wx.login({
-      success(res) {
-        if (!res.code) return;
-        request({
-          url: `${BASE_URL}/wechat_login`,
-          method: 'POST',
-          data: { code: res.code },
-          timeout: 5000,
-          success(resp) {
-            if (resp.statusCode === 200 && resp.data.access_token) {
-              store.setAuth(
-                resp.data.access_token,
-                resp.data.user_id,
-                resp.data.refresh_token
-              );
-              ensureSubscribe('club_join');
-              ensureSubscribe('match');
-              wx.navigateTo({ url: '/pages/editprofile/editprofile' });
-            } else {
-              wx.showToast({ duration: 4000,  title: t.failed, icon: 'none' });
-            }
-          },
-          fail() {
-            wx.showToast({ duration: 4000,  title: t.networkError, icon: 'none' });
-          }
-        });
+  async wechatLogin() {
+    try {
+      const res = await new Promise((resolve, reject) => {
+        wx.login({ success: resolve, fail: reject });
+      });
+      if (!res.code) return;
+      const resp = await request({
+        url: `${BASE_URL}/wechat_login`,
+        method: 'POST',
+        data: { code: res.code },
+        timeout: 5000
+      });
+      if (resp.access_token) {
+        store.setAuth(resp.access_token, resp.user_id, resp.refresh_token);
+        await ensureSubscribe('club_join');
+        await ensureSubscribe('match');
+        wx.navigateTo({ url: '/pages/editprofile/editprofile' });
+      } else {
+        wx.showToast({ duration: 4000, title: t.failed, icon: 'none' });
       }
-    });
+    } catch (e) {
+      wx.showToast({ duration: 4000, title: t.networkError, icon: 'none' });
+    }
   }
 });
