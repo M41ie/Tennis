@@ -242,7 +242,7 @@ def request_join(
                 send_audit_message(
                     uid,
                     u.wechat_openid,
-                    "club_join",
+                    "club_manage",
                     "俱乐部申请",
                     f"用户申请加入{club.name}，请及时审核。",
                     page=f"/pages/manage/manage?cid={club.club_id}",
@@ -296,7 +296,7 @@ def approve_member(
         send_audit_message(
             user.user_id,
             user.wechat_openid,
-            "club_join",
+            "join_club",
             "俱乐部申请",
             f"您申请加入{club.name}的请求已通过。",
             page=f"/pages/manage/manage?cid={club.club_id}",
@@ -333,7 +333,7 @@ def reject_application(
             send_audit_message(
                 user.user_id,
                 user.wechat_openid,
-                "club_join",
+                "join_club",
                 "俱乐部申请",
                 f"您申请加入{club.name}的请求未通过。",
                 page=f"/pages/manage/manage?cid={club.club_id}",
@@ -655,7 +655,7 @@ def submit_match(
             send_audit_message(
                 opp_user.user_id,
                 opp_user.wechat_openid,
-                "match",
+                "match_confirm",
                 "战绩审核",
                 "您的球友创建了与您对战的战绩，请及时确认。",
                 page="/pages/records/records?tab=1&pending=0",
@@ -696,7 +696,7 @@ def confirm_match(clubs, club_id: str, index: int, user_id: str, users=None):
                     send_audit_message(
                         uid,
                         u.wechat_openid,
-                        "match",
+                        "match_audit",
                         "战绩审核",
                         f"{club.name}成员创建了新的战绩，请及时审核。",
                         page="/pages/records/records?tab=1&pending=0",
@@ -730,7 +730,7 @@ def reject_match(clubs, club_id: str, index: int, user_id: str, users=None):
                 send_audit_message(
                     initiator.user_id,
                     initiator.wechat_openid,
-                    "match",
+                    "match_create",
                     "战绩审核",
                     "您的对手拒绝了您创建的战绩，请点击查看详情。",
                     page="/pages/records/records?tab=1&pending=1",
@@ -773,7 +773,7 @@ def veto_match(clubs, club_id: str, index: int, approver: str, users=None):
                 send_audit_message(
                     uid,
                     u.wechat_openid,
-                    "match",
+                    "match_create",
                     "战绩审核",
                     f"{club.name}否决了您的战绩，请点击查看详情。",
                     page="/pages/records/records?tab=1&pending=0",
@@ -820,7 +820,7 @@ def veto_doubles(clubs, club_id: str, index: int, approver: str, users=None):
                 send_audit_message(
                     uid,
                     u.wechat_openid,
-                    "match",
+                    "match_create",
                     "战绩审核",
                     f"{club.name}否决了您的战绩，请点击查看详情。",
                     page="/pages/records/records?tab=1&pending=1",
@@ -884,7 +884,7 @@ def submit_doubles(
                 send_audit_message(
                     opp.user_id,
                     opp.wechat_openid,
-                    "match",
+                    "match_confirm",
                     "战绩审核",
                     "您的球友创建了与您对战的战绩，请及时确认。",
                     page="/pages/records/records?tab=1&pending=1",
@@ -925,7 +925,7 @@ def confirm_doubles(clubs, club_id: str, index: int, user_id: str, users=None):
                     send_audit_message(
                         uid,
                         u.wechat_openid,
-                        "match",
+                        "match_audit",
                         "战绩审核",
                         f"{club.name}成员创建了新的战绩，请及时审核。",
                         page="/pages/records/records?tab=1&pending=1",
@@ -1025,7 +1025,7 @@ def approve_match(clubs, club_id: str, index: int, approver: str, users=None):
                     send_audit_message(
                         uid,
                         u.wechat_openid,
-                        "match",
+                        "match_create",
                         "战绩审核",
                         "新的战绩已通过并生效，请点击查看您的评分变化。",
                         page=f"/pages/records/records?tab=0&mode={mode}",

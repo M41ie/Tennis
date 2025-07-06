@@ -207,6 +207,24 @@ npm run lint
 
 Basic front‑end tests using `miniprogram-simulate` can be executed with `npm test`.
 
+### WeChat subscription messages
+
+The mini program requests message push authorization only when needed. The
+backend tracks quota usage per **scene** identifier:
+
+- `club_manage` – leaders and admins receive notifications about pending join
+  requests. Permission is requested when an admin approves or rejects an
+  application.
+- `join_club` – applicants are informed when their join request is approved or
+  rejected. Authorization happens when submitting the request.
+- `match_confirm` – opponents are notified of a newly created match. The
+  subscription is requested when opening the pending match list.
+- `match_audit` – club staff are asked to review confirmed matches. Permission is
+  requested when they tap the approve or veto buttons.
+- `match_create` – players are informed when a match is rejected or approved.
+  Authorization occurs after submitting a match or confirming an opponent's
+  match.
+
 ### Testing
 
 To run the test suite:

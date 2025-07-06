@@ -162,7 +162,7 @@ Page({
       return;
     }
     const that = this;
-    ensureSubscribe('club_join').then(() => {
+    ensureSubscribe('join_club').then(() => {
       request({
         url: `${BASE_URL}/clubs/${cid}/join`,
         method: 'POST',

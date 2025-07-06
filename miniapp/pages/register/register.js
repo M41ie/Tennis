@@ -3,7 +3,6 @@ const request = require('../../utils/request');
 const { hideKeyboard } = require('../../utils/hideKeyboard');
 const store = require('../../store/store');
 const { t } = require('../../utils/locales');
-const ensureSubscribe = require('../../utils/ensureSubscribe');
 
 Page({
   data: { t },
@@ -22,8 +21,6 @@ Page({
       });
       if (resp.access_token) {
         store.setAuth(resp.access_token, resp.user_id, resp.refresh_token);
-        await ensureSubscribe('club_join');
-        await ensureSubscribe('match');
         wx.navigateTo({ url: '/pages/editprofile/editprofile' });
       } else {
         wx.showToast({ duration: 4000, title: t.failed, icon: 'none' });
