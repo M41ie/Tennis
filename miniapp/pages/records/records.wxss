@@ -41,6 +41,8 @@
   z-index:999;
 }
 
+.subscribe-btn{margin:20rpx 24rpx;}
+
 .action-bar{padding:20rpx;border-top:1px solid #eee;font-size:24rpx;color:#666;}
 .action-bar .button-group{display:flex;flex-wrap:wrap;gap:8rpx;margin-top:10rpx;}
 .action-bar .status-text{margin-bottom:6rpx;}

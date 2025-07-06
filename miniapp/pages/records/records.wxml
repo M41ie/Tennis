@@ -13,6 +13,7 @@
     <view class="mode-item {{modeIndex==0?'active':''}}" data-index="0" bindtap="switchMode">单打</view>
     <view class="mode-item {{modeIndex==1?'active':''}}" data-index="1" bindtap="switchMode">双打</view>
   </view>
+  <button class="primary-btn subscribe-btn" bindtap="subscribeMatch">订阅战绩提醒</button>
   <view wx:if="{{isLoading}}" class="skeleton-list">
     <block wx:for="{{[1,2,3,4,5]}}" wx:key="index">
       <view class="record-skeleton"></view>

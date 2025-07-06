@@ -428,8 +428,18 @@ Page({
         encodeURIComponent(JSON.stringify(rec))
     });
   },
+  // Allow users to manually subscribe to match notifications via a
+  // button tap, which properly triggers the subscription prompt.
+  subscribeMatch() {
+    ensureSubscribe('match');
+  },
   addMatch() {
-    wx.navigateTo({ url: '/pages/addmatch/addmatch' });
+    // Request subscription to match notifications when the user
+    // actively creates a new match. This satisfies WeChat's requirement
+    // that subscription prompts be triggered by a user interaction.
+    ensureSubscribe('match').finally(() => {
+      wx.navigateTo({ url: '/pages/addmatch/addmatch' });
+    });
   },
   onPullDownRefresh() {
     this.setData({ page: 1, records: [], finished: false, isLoading: true, isError: false, isEmpty: false });
