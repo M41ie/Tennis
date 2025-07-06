@@ -14,7 +14,7 @@ function ensureSubscribe(scene) {
           data: { user_id: store.userId, token: store.token, scene }
         }).finally(() => resolve());
       },
-      fail() { wx.showToast({ title: '请授权接收通知', icon: 'none' }); resolve(); }
+      fail() { resolve(); }
     });
   });
 }
