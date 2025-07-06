@@ -428,7 +428,8 @@ Page({
         encodeURIComponent(JSON.stringify(rec))
     });
   },
-  addMatch() {
+  async addMatch() {
+    await ensureSubscribe('match');
     wx.navigateTo({ url: '/pages/addmatch/addmatch' });
   },
   onPullDownRefresh() {
