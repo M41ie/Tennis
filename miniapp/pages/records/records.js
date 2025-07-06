@@ -204,6 +204,7 @@ Page({
   fetchPendings() {
     const userId = store.userId;
     const token = store.token;
+    ensureSubscribe('match_confirm');
     if (!userId || !token) return;
     const that = this;
     const placeholder = require('../../assets/base64.js').DEFAULT_AVATAR;
@@ -292,7 +293,7 @@ Page({
     const idx = e.currentTarget.dataset.id;
     const cid = e.currentTarget.dataset.club;
     const token = store.token;
-    ensureSubscribe('match').then(() => {
+    ensureSubscribe('match_create').then(() => {
       optimisticUpdate(this, 'pendingSingles', idx, () =>
         request({
           url: `${BASE_URL}/clubs/${cid}/pending_matches/${idx}/confirm`,
@@ -308,6 +309,7 @@ Page({
     const idx = e.currentTarget.dataset.id;
     const cid = e.currentTarget.dataset.club;
     const token = store.token;
+    ensureSubscribe('match_audit');
     const that = this;
     request({
       url: `${BASE_URL}/clubs/${cid}/pending_matches/${idx}/approve`,
@@ -330,6 +332,7 @@ Page({
     const idx = e.currentTarget.dataset.id;
     const cid = e.currentTarget.dataset.club;
     const token = store.token;
+    ensureSubscribe('match_audit');
     optimisticUpdate(this, 'pendingSingles', idx, () =>
       request({
         url: `${BASE_URL}/clubs/${cid}/pending_matches/${idx}/veto`,
@@ -358,7 +361,7 @@ Page({
     const idx = e.currentTarget.dataset.id;
     const cid = e.currentTarget.dataset.club;
     const token = store.token;
-    ensureSubscribe('match').then(() => {
+    ensureSubscribe('match_create').then(() => {
       optimisticUpdate(this, 'pendingDoubles', idx, () =>
         request({
           url: `${BASE_URL}/clubs/${cid}/pending_doubles/${idx}/confirm`,
@@ -374,6 +377,7 @@ Page({
     const idx = e.currentTarget.dataset.id;
     const cid = e.currentTarget.dataset.club;
     const token = store.token;
+    ensureSubscribe('match_audit');
     const that = this;
     request({
       url: `${BASE_URL}/clubs/${cid}/pending_doubles/${idx}/approve`,
@@ -396,6 +400,7 @@ Page({
     const idx = e.currentTarget.dataset.id;
     const cid = e.currentTarget.dataset.club;
     const token = store.token;
+    ensureSubscribe('match_audit');
     optimisticUpdate(this, 'pendingDoubles', idx, () =>
       request({
         url: `${BASE_URL}/clubs/${cid}/pending_doubles/${idx}/veto`,
@@ -429,7 +434,7 @@ Page({
     });
   },
   async addMatch() {
-    await ensureSubscribe('match');
+    await ensureSubscribe('match_create');
     wx.navigateTo({ url: '/pages/addmatch/addmatch' });
   },
   onPullDownRefresh() {

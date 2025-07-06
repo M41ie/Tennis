@@ -160,7 +160,7 @@ Page({
     const token = store.token;
     if (!cid || !userId || !token) return;
 
-    ensureSubscribe('match').then(() => {
+    ensureSubscribe('match_create').then(() => {
       if (doubles) {
         const players = this.data.players;
         const partner = players[this.data.partnerIndex];

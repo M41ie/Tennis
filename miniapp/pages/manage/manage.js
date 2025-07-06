@@ -5,6 +5,7 @@ const { zh_CN } = require('../../utils/locales.js');
 const { genderText } = require('../../utils/userFormat');
 const store = require('../../store/store');
 const { withBase } = require('../../utils/format');
+const ensureSubscribe = require('../../utils/ensureSubscribe');
 
 Page({
   data: {
@@ -247,6 +248,7 @@ Page({
     const cid = store.clubId;
     const token = store.token;
     const that = this;
+    ensureSubscribe('club_manage');
     request({
       url: `${BASE_URL}/clubs/${cid}/approve`,
       method: 'POST',
@@ -297,6 +299,7 @@ Page({
     const cid = store.clubId;
     const token = store.token;
     const that = this;
+    ensureSubscribe('club_manage');
     request({
       url: `${BASE_URL}/clubs/${cid}/reject`,
       method: 'POST',

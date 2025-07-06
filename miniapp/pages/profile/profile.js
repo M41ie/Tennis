@@ -4,7 +4,6 @@ const userService = require('../../services/user');
 const store = require('../../store/store');
 const { hideKeyboard } = require('../../utils/hideKeyboard');
 const { t } = require('../../utils/locales');
-const ensureSubscribe = require('../../utils/ensureSubscribe');
 
 Page({
   data: {
@@ -92,8 +91,6 @@ Page({
         const resp = await userService.wechatLogin(res.code);
         if (resp.access_token) {
           store.setAuth(resp.access_token, resp.user_id, resp.refresh_token);
-          await ensureSubscribe('club_join');
-          await ensureSubscribe('match');
           this.setData({ loggedIn: true });
           if (resp.just_created) {
             wx.navigateTo({ url: '/pages/editprofile/editprofile' });
@@ -115,8 +112,6 @@ Page({
   },
   async goMyClub() {
     if (!this.data.loggedIn) return;
-    await ensureSubscribe('club_join');
-    await ensureSubscribe('match');
     wx.navigateTo({ url: '/pkg_club/club-manage/index' });
   },
   goMyNotes() {
