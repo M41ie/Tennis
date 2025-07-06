@@ -5,7 +5,6 @@ const { zh_CN } = require('../../utils/locales.js');
 const { genderText } = require('../../utils/userFormat');
 const store = require('../../store/store');
 const { withBase } = require('../../utils/format');
-const ensureSubscribe = require('../../utils/ensureSubscribe');
 
 Page({
   data: {
@@ -35,8 +34,6 @@ Page({
     this.checkSysAdmin();
   },
   onShow() {
-    ensureSubscribe('club_join');
-    ensureSubscribe('match');
     this.fetchPlayers();
   },
   checkSysAdmin() {
