@@ -40,12 +40,6 @@ Page({
     isEmpty: false
   },
   hideKeyboard,
-  // Prompt the user to authorize match notifications each time this
-  // records page becomes visible. This helps ensure opponents and
-  // participants receive updates about match confirmations and approvals.
-  onShow() {
-    ensureSubscribe('match');
-  },
   onLoad(options) {
     const tabIndex = options && options.tab ? Number(options.tab) : 0;
     const pendingTab = options && options.pending ? Number(options.pending) : 0;
