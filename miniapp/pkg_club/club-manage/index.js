@@ -4,6 +4,7 @@ const { hideKeyboard } = require('../../utils/hideKeyboard');
 const { zh_CN } = require('../../utils/locales.js');
 const { formatClubCardData } = require('../../utils/clubFormat');
 const store = require('../../store/store');
+const ensureSubscribe = require('../../utils/ensureSubscribe');
 
 Page({
   data: {
@@ -65,9 +66,11 @@ Page({
       }
     });
   },
-  openClub(e) {
+  async openClub(e) {
     const cid = e.detail.club ? e.detail.club.club_id : '';
     if (cid) {
+      await ensureSubscribe('club_join');
+      await ensureSubscribe('match');
       store.setClubId(cid);
       wx.navigateTo({ url: `/pages/manage/manage?cid=${cid}` });
     }

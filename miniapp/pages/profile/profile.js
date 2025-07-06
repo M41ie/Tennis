@@ -33,8 +33,6 @@ Page({
     const uid = store.userId;
     const cid = store.clubId;
     if (uid) {
-      ensureSubscribe('club_join');
-      ensureSubscribe('match');
       this.setData({ loggedIn: true });
       this.loadJoinedClubs(uid, cid);
     } else {
@@ -115,8 +113,10 @@ Page({
       wx.navigateTo({ url: '/pages/playercard/playercard' });
     }
   },
-  goMyClub() {
+  async goMyClub() {
     if (!this.data.loggedIn) return;
+    await ensureSubscribe('club_join');
+    await ensureSubscribe('match');
     wx.navigateTo({ url: '/pkg_club/club-manage/index' });
   },
   goMyNotes() {
