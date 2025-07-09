@@ -37,7 +37,8 @@ Page({
     isAdmin: false,
     isLoading: true,
     isError: false,
-    isEmpty: false
+    isEmpty: false,
+    approving: false
   },
   hideKeyboard,
   onLoad(options) {
@@ -306,11 +307,16 @@ Page({
     });
   },
   approveSingle(e) {
+    if (this.data.approving) {
+      wx.showToast({ title: '审核进行中', icon: 'none', duration: 1500 });
+      return;
+    }
     const idx = e.currentTarget.dataset.id;
     const cid = e.currentTarget.dataset.club;
     const token = store.token;
     ensureSubscribe('match_audit');
     const that = this;
+    this.setData({ approving: true });
     request({
       url: `${BASE_URL}/clubs/${cid}/pending_matches/${idx}/approve`,
       method: 'POST',
@@ -324,24 +330,32 @@ Page({
         wx.showToast({ duration: 4000,  title: '网络错误', icon: 'none' });
       },
       complete() {
+        that.setData({ approving: false });
         that.fetchPendings();
       }
     });
   },
   vetoSingle(e) {
+    if (this.data.approving) {
+      wx.showToast({ title: '审核进行中', icon: 'none', duration: 1500 });
+      return;
+    }
     const idx = e.currentTarget.dataset.id;
     const cid = e.currentTarget.dataset.club;
     const token = store.token;
     ensureSubscribe('match_audit');
+    this.setData({ approving: true });
     optimisticUpdate(this, 'pendingSingles', idx, () =>
       request({
         url: `${BASE_URL}/clubs/${cid}/pending_matches/${idx}/veto`,
         method: 'POST',
         data: { approver: this.data.userId, token }
       })
-    ).finally(() => {
-      this.fetchPendings();
-    });
+    )
+      .finally(() => {
+        this.setData({ approving: false });
+        this.fetchPendings();
+      });
   },
   rejectSingle(e) {
     const idx = e.currentTarget.dataset.id;
@@ -374,11 +388,16 @@ Page({
     });
   },
   approveDouble(e) {
+    if (this.data.approving) {
+      wx.showToast({ title: '审核进行中', icon: 'none', duration: 1500 });
+      return;
+    }
     const idx = e.currentTarget.dataset.id;
     const cid = e.currentTarget.dataset.club;
     const token = store.token;
     ensureSubscribe('match_audit');
     const that = this;
+    this.setData({ approving: true });
     request({
       url: `${BASE_URL}/clubs/${cid}/pending_doubles/${idx}/approve`,
       method: 'POST',
@@ -392,24 +411,32 @@ Page({
         wx.showToast({ duration: 4000,  title: '网络错误', icon: 'none' });
       },
       complete() {
+        that.setData({ approving: false });
         that.fetchPendings();
       }
     });
   },
   vetoDouble(e) {
+    if (this.data.approving) {
+      wx.showToast({ title: '审核进行中', icon: 'none', duration: 1500 });
+      return;
+    }
     const idx = e.currentTarget.dataset.id;
     const cid = e.currentTarget.dataset.club;
     const token = store.token;
     ensureSubscribe('match_audit');
+    this.setData({ approving: true });
     optimisticUpdate(this, 'pendingDoubles', idx, () =>
       request({
         url: `${BASE_URL}/clubs/${cid}/pending_doubles/${idx}/veto`,
         method: 'POST',
         data: { approver: this.data.userId, token }
       })
-    ).finally(() => {
-      this.fetchPendings();
-    });
+    )
+      .finally(() => {
+        this.setData({ approving: false });
+        this.fetchPendings();
+      });
   },
   rejectDouble(e) {
     const idx = e.currentTarget.dataset.id;
