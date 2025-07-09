@@ -37,7 +37,8 @@ Page({
     isAdmin: false,
     isLoading: true,
     isError: false,
-    isEmpty: false
+    isEmpty: false,
+    approving: false
   },
   hideKeyboard,
   onLoad(options) {
@@ -306,11 +307,13 @@ Page({
     });
   },
   approveSingle(e) {
+    if (this.data.approving) return;
     const idx = e.currentTarget.dataset.id;
     const cid = e.currentTarget.dataset.club;
     const token = store.token;
     ensureSubscribe('match_audit');
     const that = this;
+    this.setData({ approving: true });
     request({
       url: `${BASE_URL}/clubs/${cid}/pending_matches/${idx}/approve`,
       method: 'POST',
@@ -324,15 +327,18 @@ Page({
         wx.showToast({ duration: 4000,  title: '网络错误', icon: 'none' });
       },
       complete() {
+        that.setData({ approving: false });
         that.fetchPendings();
       }
     });
   },
   vetoSingle(e) {
+    if (this.data.approving) return;
     const idx = e.currentTarget.dataset.id;
     const cid = e.currentTarget.dataset.club;
     const token = store.token;
     ensureSubscribe('match_audit');
+    this.setData({ approving: true });
     optimisticUpdate(this, 'pendingSingles', idx, () =>
       request({
         url: `${BASE_URL}/clubs/${cid}/pending_matches/${idx}/veto`,
@@ -340,6 +346,7 @@ Page({
         data: { approver: this.data.userId, token }
       })
     ).finally(() => {
+      this.setData({ approving: false });
       this.fetchPendings();
     });
   },
@@ -374,11 +381,13 @@ Page({
     });
   },
   approveDouble(e) {
+    if (this.data.approving) return;
     const idx = e.currentTarget.dataset.id;
     const cid = e.currentTarget.dataset.club;
     const token = store.token;
     ensureSubscribe('match_audit');
     const that = this;
+    this.setData({ approving: true });
     request({
       url: `${BASE_URL}/clubs/${cid}/pending_doubles/${idx}/approve`,
       method: 'POST',
@@ -392,15 +401,18 @@ Page({
         wx.showToast({ duration: 4000,  title: '网络错误', icon: 'none' });
       },
       complete() {
+        that.setData({ approving: false });
         that.fetchPendings();
       }
     });
   },
   vetoDouble(e) {
+    if (this.data.approving) return;
     const idx = e.currentTarget.dataset.id;
     const cid = e.currentTarget.dataset.club;
     const token = store.token;
     ensureSubscribe('match_audit');
+    this.setData({ approving: true });
     optimisticUpdate(this, 'pendingDoubles', idx, () =>
       request({
         url: `${BASE_URL}/clubs/${cid}/pending_doubles/${idx}/veto`,
@@ -408,6 +420,7 @@ Page({
         data: { approver: this.data.userId, token }
       })
     ).finally(() => {
+      this.setData({ approving: false });
       this.fetchPendings();
     });
   },

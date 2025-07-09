@@ -17,7 +17,7 @@ function displayFormat(fmt) {
   return FORMAT_DISPLAY[fmt] || fmt;
 }
 Page({
-  data: { modeIndex: 0, singles: [], doublesList: [] },
+  data: { modeIndex: 0, singles: [], doublesList: [], approving: false },
   hideKeyboard,
   onLoad() { this.fetchPendings(); },
   switchMode(e) {
@@ -89,18 +89,24 @@ Page({
     }
   },
   approveSingle(e) {
+    if (this.data.approving) return;
     const idx = e.currentTarget.dataset.id || e.detail.id;
     const cid = e.currentTarget.dataset.club;
     const that = this;
+    this.setData({ approving: true });
     request({
       url: `${BASE_URL}/clubs/${cid}/pending_matches/${idx}/approve`,
       method: 'POST',
       data: { approver: store.userId },
       fail() { wx.showToast({ duration: 4000, title: '操作失败', icon: 'none' }); },
-      complete() { that.fetchPendings(); }
+      complete() {
+        that.setData({ approving: false });
+        that.fetchPendings();
+      }
     });
   },
   vetoSingle(e) {
+    if (this.data.approving) return;
     const idx = e.currentTarget.dataset.id || e.detail.id;
     const cid = e.currentTarget.dataset.club;
     const that = this;
@@ -111,26 +117,36 @@ Page({
       arr.splice(pos, 1);
       this.setData({ singles: arr });
     }
+    this.setData({ approving: true });
     request({
       url: `${BASE_URL}/clubs/${cid}/pending_matches/${idx}/veto`,
       method: 'POST',
       data: { approver: store.userId },
-      complete() { that.fetchPendings(); }
+      complete() {
+        that.setData({ approving: false });
+        that.fetchPendings();
+      }
     });
   },
   approveDouble(e) {
+    if (this.data.approving) return;
     const idx = e.currentTarget.dataset.id || e.detail.id;
     const cid = e.currentTarget.dataset.club;
     const that = this;
+    this.setData({ approving: true });
     request({
       url: `${BASE_URL}/clubs/${cid}/pending_doubles/${idx}/approve`,
       method: 'POST',
       data: { approver: store.userId },
       fail() { wx.showToast({ duration: 4000, title: '操作失败', icon: 'none' }); },
-      complete() { that.fetchPendings(); }
+      complete() {
+        that.setData({ approving: false });
+        that.fetchPendings();
+      }
     });
   },
   vetoDouble(e) {
+    if (this.data.approving) return;
     const idx = e.currentTarget.dataset.id || e.detail.id;
     const cid = e.currentTarget.dataset.club;
     const that = this;
@@ -141,11 +157,15 @@ Page({
       arr.splice(pos, 1);
       this.setData({ doublesList: arr });
     }
+    this.setData({ approving: true });
     request({
       url: `${BASE_URL}/clubs/${cid}/pending_doubles/${idx}/veto`,
       method: 'POST',
       data: { approver: store.userId },
-      complete() { that.fetchPendings(); }
+      complete() {
+        that.setData({ approving: false });
+        that.fetchPendings();
+      }
     });
   }
 });
