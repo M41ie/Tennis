@@ -25,7 +25,8 @@ Page({
     placeholderAvatar: IMAGES.DEFAULT_AVATAR,
     iconClub: IMAGES.ICON_CLUB,
     iconComing: IMAGES.ICON_COMING,
-    myClubBtnText: t.manageClub
+    myClubBtnText: t.manageClub,
+    showRatingTip: false
   },
   hideKeyboard,
   onShow() {
@@ -73,7 +74,8 @@ Page({
             ? doublesCount.toFixed(2)
             : (doublesCount ? Number(doublesCount).toFixed(2) : '--')
         };
-        this.setData({ user });
+        const showRatingTip = raw.singles_rating == null && raw.doubles_rating == null;
+        this.setData({ user, showRatingTip });
     });
   },
   editProfile() {
