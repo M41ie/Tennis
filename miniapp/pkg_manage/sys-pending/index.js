@@ -17,7 +17,7 @@ function displayFormat(fmt) {
   return FORMAT_DISPLAY[fmt] || fmt;
 }
 Page({
-  data: { modeIndex: 0, singles: [], doublesList: [] },
+  data: { modeIndex: 0, singles: [], doublesList: [], approving: false },
   hideKeyboard,
   onLoad() { this.fetchPendings(); },
   switchMode(e) {
@@ -89,21 +89,34 @@ Page({
     }
   },
   approveSingle(e) {
+    if (this.data.approving) {
+      wx.showToast({ title: '审核进行中', icon: 'none', duration: 1500 });
+      return;
+    }
     const idx = e.currentTarget.dataset.id || e.detail.id;
     const cid = e.currentTarget.dataset.club;
     const that = this;
+    this.setData({ approving: true });
     request({
       url: `${BASE_URL}/clubs/${cid}/pending_matches/${idx}/approve`,
       method: 'POST',
       data: { approver: store.userId },
       fail() { wx.showToast({ duration: 4000, title: '操作失败', icon: 'none' }); },
-      complete() { that.fetchPendings(); }
+      complete() {
+        that.setData({ approving: false });
+        that.fetchPendings();
+      }
     });
   },
   vetoSingle(e) {
+    if (this.data.approving) {
+      wx.showToast({ title: '审核进行中', icon: 'none', duration: 1500 });
+      return;
+    }
     const idx = e.currentTarget.dataset.id || e.detail.id;
     const cid = e.currentTarget.dataset.club;
     const that = this;
+    this.setData({ approving: true });
     // Optimistically remove the item so the UI updates immediately
     const arr = this.data.singles.slice();
     const pos = arr.findIndex(it => it.id === idx);
@@ -115,25 +128,41 @@ Page({
       url: `${BASE_URL}/clubs/${cid}/pending_matches/${idx}/veto`,
       method: 'POST',
       data: { approver: store.userId },
-      complete() { that.fetchPendings(); }
+      complete() {
+        that.setData({ approving: false });
+        that.fetchPendings();
+      }
     });
   },
   approveDouble(e) {
+    if (this.data.approving) {
+      wx.showToast({ title: '审核进行中', icon: 'none', duration: 1500 });
+      return;
+    }
     const idx = e.currentTarget.dataset.id || e.detail.id;
     const cid = e.currentTarget.dataset.club;
     const that = this;
+    this.setData({ approving: true });
     request({
       url: `${BASE_URL}/clubs/${cid}/pending_doubles/${idx}/approve`,
       method: 'POST',
       data: { approver: store.userId },
       fail() { wx.showToast({ duration: 4000, title: '操作失败', icon: 'none' }); },
-      complete() { that.fetchPendings(); }
+      complete() {
+        that.setData({ approving: false });
+        that.fetchPendings();
+      }
     });
   },
   vetoDouble(e) {
+    if (this.data.approving) {
+      wx.showToast({ title: '审核进行中', icon: 'none', duration: 1500 });
+      return;
+    }
     const idx = e.currentTarget.dataset.id || e.detail.id;
     const cid = e.currentTarget.dataset.club;
     const that = this;
+    this.setData({ approving: true });
     // Optimistically remove the item so the UI updates immediately
     const arr = this.data.doublesList.slice();
     const pos = arr.findIndex(it => it.id === idx);
@@ -145,7 +174,10 @@ Page({
       url: `${BASE_URL}/clubs/${cid}/pending_doubles/${idx}/veto`,
       method: 'POST',
       data: { approver: store.userId },
-      complete() { that.fetchPendings(); }
+      complete() {
+        that.setData({ approving: false });
+        that.fetchPendings();
+      }
     });
   }
 });
