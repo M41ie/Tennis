@@ -41,7 +41,7 @@
     <input class="weui-input" type="number" placeholder="{{t.inputOppScore}}" bindinput="onScoreB" cursor-spacing="80" bindblur="hideKeyboard" />
   </view>
 
-  <button class="weui-btn weui-btn_primary submit-btn" bindtap="submit">{{t.submit}}</button>
+  <button class="weui-btn weui-btn_primary submit-btn {{submitting ? 'weui-btn_disabled' : ''}}" bindtap="submit" disabled="{{submitting}}">{{t.submit}}</button>
   </scroll-view>
 </view>
 
