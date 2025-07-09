@@ -35,7 +35,8 @@ Page({
     formatCodes: ['', '6_game', '4_game', 'tb10', 'tb7'],
     formatIndex: 0,
     scoreA: '',
-    scoreB: ''
+    scoreB: '',
+    submitting: false
   },
   onLoad() {
     const today = new Date().toISOString().slice(0, 10);
@@ -136,6 +137,7 @@ Page({
   onScoreB(e) { this.setData({ scoreB: e.detail.value }); },
   hideKeyboard,
   submit() {
+    if (this.data.submitting) return;
     const that = this;
     const doubles = this.data.modeIndex === 2;
     const incomplete =
@@ -159,6 +161,8 @@ Page({
     const userId = store.userId;
     const token = store.token;
     if (!cid || !userId || !token) return;
+
+    this.setData({ submitting: true });
 
     ensureSubscribe('match_create').then(() => {
       if (doubles) {
@@ -186,6 +190,9 @@ Page({
             setTimeout(() => {
               wx.navigateBack();
             }, 1000);
+          },
+          complete() {
+            that.setData({ submitting: false });
           }
         });
       } else {
@@ -208,6 +215,9 @@ Page({
             setTimeout(() => {
               wx.navigateBack();
             }, 1000);
+          },
+          complete() {
+            that.setData({ submitting: false });
           }
         });
       }
