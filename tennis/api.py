@@ -1541,8 +1541,9 @@ def list_all_matches(
             )
     result.sort(
         key=lambda x: (
-            (x.get("approved_ts") or datetime.datetime.combine(x["date"], datetime.time())),
-            (x.get("approved_ts") or x["created_ts"]),
+            x.get("approved_ts") or datetime.datetime.min,
+            datetime.datetime.combine(x["date"], datetime.time()),
+            x["created_ts"],
         ),
         reverse=True,
     )
@@ -1641,8 +1642,9 @@ def list_all_doubles(
             )
     result.sort(
         key=lambda x: (
-            (x.get("approved_ts") or datetime.datetime.combine(x["date"], datetime.time())),
-            (x.get("approved_ts") or x["created_ts"]),
+            x.get("approved_ts") or datetime.datetime.min,
+            datetime.datetime.combine(x["date"], datetime.time()),
+            x["created_ts"],
         ),
         reverse=True,
     )
