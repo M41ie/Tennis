@@ -909,13 +909,6 @@ def get_player(club_id: str, user_id: str, request: Request, recent: int = 0):
             raise HTTPException(404, str(e))
         for c in cards:
             c["date"] = c["date"].isoformat()
-        cards.sort(
-            key=lambda x: (
-                x.get("approved_ts") or x["date"],
-                x.get("approved_ts") or x.get("created_ts", x["date"]),
-            ),
-            reverse=True,
-        )
         result["recent_records"] = cards[:recent]
 
     return result
@@ -975,8 +968,6 @@ def get_global_player_records(
     cards = get_player_global_match_cards(player)
     for c in cards:
         c["date"] = c["date"].isoformat()
-
-    cards.sort(key=lambda x: x["date"], reverse=True)
     if offset:
         cards = cards[offset:]
     if limit is not None:
@@ -998,8 +989,6 @@ def get_global_player_doubles_records(
     cards = get_player_global_doubles_cards(player)
     for c in cards:
         c["date"] = c["date"].isoformat()
-
-    cards.sort(key=lambda x: x["date"], reverse=True)
     if offset:
         cards = cards[offset:]
     if limit is not None:
