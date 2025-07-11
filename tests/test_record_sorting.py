@@ -176,3 +176,104 @@ def test_record_match_then_approved_sorting(tmp_path, monkeypatch):
     assert records[0]["self_score"] == 6 and records[0]["opponent_score"] == 3
     assert records[1]["self_score"] == 6 and records[1]["opponent_score"] == 4
 
+
+def test_record_match_vs_late_approval_sorting(tmp_path, monkeypatch):
+    """Record match then approve older pending match later."""
+    cli, users, clubs = _setup_env(tmp_path, monkeypatch)
+
+    ts_record = datetime.datetime(2023, 2, 1, 9, 0, 0)
+
+    class DTRecord(datetime.datetime):
+        @classmethod
+        def now(cls, tz=None):
+            return ts_record
+
+    monkeypatch.setattr(cli.datetime, "datetime", DTRecord)
+    cli.record_match(clubs, "c1", "p1", "p2", 6, 4, datetime.date(2023, 2, 1), 1.0)
+
+    ts_approve = datetime.datetime(2023, 2, 5, 10, 0, 0)
+
+    class DTApprove(datetime.datetime):
+        @classmethod
+        def now(cls, tz=None):
+            return ts_approve
+
+    monkeypatch.setattr(cli.datetime, "datetime", DTApprove)
+    cli.submit_match(clubs, "c1", "p1", "p2", 6, 3, datetime.date(2023, 1, 15), 1.0)
+    cli.confirm_match(clubs, "c1", 0, "p2")
+    cli.approve_match(clubs, "c1", 0, "leader", users)
+
+    storage.save_users(users)
+    storage.save_data(clubs)
+
+    importlib.reload(state)
+    api = importlib.reload(importlib.import_module("tennis.api"))
+    client = TestClient(api.app)
+
+    records = client.get("/players/p1/records").json()
+    assert len(records) == 2
+    assert records[0]["self_score"] == 6 and records[0]["opponent_score"] == 3
+    assert records[0]["date"] == "2023-01-15"
+    assert records[1]["date"] == "2023-02-01"
+
+
+def test_doubles_record_vs_late_approval_sorting(tmp_path, monkeypatch):
+    cli, users, clubs = _setup_env(tmp_path, monkeypatch, doubles=True)
+
+    ts_record = datetime.datetime(2023, 2, 1, 9, 0, 0)
+
+    class DTRecord(datetime.datetime):
+        @classmethod
+        def now(cls, tz=None):
+            return ts_record
+
+    monkeypatch.setattr(cli.datetime, "datetime", DTRecord)
+    cli.record_doubles(
+        clubs,
+        "c1",
+        "p1",
+        "p2",
+        "p3",
+        "p4",
+        6,
+        4,
+        datetime.date(2023, 2, 1),
+        1.0,
+    )
+
+    ts_approve = datetime.datetime(2023, 2, 5, 10, 0, 0)
+
+    class DTApprove(datetime.datetime):
+        @classmethod
+        def now(cls, tz=None):
+            return ts_approve
+
+    monkeypatch.setattr(cli.datetime, "datetime", DTApprove)
+    cli.submit_doubles(
+        clubs,
+        "c1",
+        "p1",
+        "p2",
+        "p3",
+        "p4",
+        6,
+        3,
+        datetime.date(2023, 1, 15),
+        1.0,
+    )
+    cli.confirm_doubles(clubs, "c1", 0, "p3")
+    cli.confirm_doubles(clubs, "c1", 0, "p4")
+    cli.approve_match(clubs, "c1", 0, "leader", users)
+
+    storage.save_users(users)
+    storage.save_data(clubs)
+
+    importlib.reload(state)
+    api = importlib.reload(importlib.import_module("tennis.api"))
+    client = TestClient(api.app)
+
+    records = client.get("/players/p1/doubles_records").json()
+    assert len(records) == 2
+    assert records[0]["self_score"] == 6 and records[0]["opponent_score"] == 3
+    assert records[0]["date"] == "2023-01-15"
+    assert records[1]["date"] == "2023-02-01"
