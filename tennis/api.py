@@ -590,8 +590,14 @@ def get_global_player(user_id: str, request: Request, recent: int = 0):
             for c in match_cards:
                 c["date"] = c["date"].isoformat()
                 cards.append(c)
-        # sort by date descending and return most recent
-        cards.sort(key=lambda x: x["date"], reverse=True)
+        # sort by approval timestamp when available
+        cards.sort(
+            key=lambda x: (
+                x.get("approved_ts") or x["date"],
+                x.get("approved_ts") or x.get("created_ts", x["date"]),
+            ),
+            reverse=True,
+        )
         result["recent_records"] = cards[:recent]
 
     return result
@@ -903,6 +909,13 @@ def get_player(club_id: str, user_id: str, request: Request, recent: int = 0):
             raise HTTPException(404, str(e))
         for c in cards:
             c["date"] = c["date"].isoformat()
+        cards.sort(
+            key=lambda x: (
+                x.get("approved_ts") or x["date"],
+                x.get("approved_ts") or x.get("created_ts", x["date"]),
+            ),
+            reverse=True,
+        )
         result["recent_records"] = cards[:recent]
 
     return result
@@ -1478,8 +1491,9 @@ def list_all_matches(
             seen.add(m.id)
             result.append(
                 {
-                    "date": m.date.isoformat(),
+                    "date": m.date,
                     "created_ts": m.created_ts,
+                    "approved_ts": m.approved_ts,
                     "club_id": cid,
                     "player_a": m.player_a.user_id,
                     "player_b": m.player_b.user_id,
@@ -1505,8 +1519,9 @@ def list_all_matches(
             seen.add(m.id)
             result.append(
                 {
-                    "date": m.date.isoformat(),
+                    "date": m.date,
                     "created_ts": m.created_ts,
+                    "approved_ts": m.approved_ts,
                     "club_id": m.club_id,
                     "player_a": m.player_a.user_id,
                     "player_b": m.player_b.user_id,
@@ -1524,13 +1539,21 @@ def list_all_matches(
                     "b_after": m.rating_b_after,
                 }
             )
-    result.sort(key=lambda x: (x["date"], x["created_ts"]), reverse=True)
+    result.sort(
+        key=lambda x: (
+            (x.get("approved_ts") or datetime.datetime.combine(x["date"], datetime.time())),
+            (x.get("approved_ts") or x["created_ts"]),
+        ),
+        reverse=True,
+    )
     if offset:
         result = result[offset:]
     if limit is not None:
         result = result[:limit]
     for r in result:
+        r["date"] = r["date"].isoformat()
         r.pop("created_ts", None)
+        r.pop("approved_ts", None)
     return result
 
 
@@ -1548,8 +1571,9 @@ def list_all_doubles(
             seen.add(m.id)
             result.append(
                 {
-                    "date": m.date.isoformat(),
+                    "date": m.date,
                     "created_ts": m.created_ts,
+                    "approved_ts": m.approved_ts,
                     "club_id": cid,
                     "a1": m.player_a1.user_id,
                     "a2": m.player_a2.user_id,
@@ -1585,8 +1609,9 @@ def list_all_doubles(
             seen.add(m.id)
             result.append(
                 {
-                    "date": m.date.isoformat(),
+                    "date": m.date,
                     "created_ts": m.created_ts,
+                    "approved_ts": m.approved_ts,
                     "club_id": m.club_id,
                     "a1": m.player_a1.user_id,
                     "a2": m.player_a2.user_id,
@@ -1614,13 +1639,21 @@ def list_all_doubles(
                     "rating_b2_after": m.rating_b2_after,
                 }
             )
-    result.sort(key=lambda x: (x["date"], x["created_ts"]), reverse=True)
+    result.sort(
+        key=lambda x: (
+            (x.get("approved_ts") or datetime.datetime.combine(x["date"], datetime.time())),
+            (x.get("approved_ts") or x["created_ts"]),
+        ),
+        reverse=True,
+    )
     if offset:
         result = result[offset:]
     if limit is not None:
         result = result[:limit]
     for r in result:
+        r["date"] = r["date"].isoformat()
         r.pop("created_ts", None)
+        r.pop("approved_ts", None)
     return result
 
 
