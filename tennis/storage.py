@@ -598,6 +598,12 @@ def load_data() -> tuple[Dict[str, Club], Dict[str, Player]]:
             if created_ts_str
             else datetime.datetime.combine(date, datetime.time())
         )
+        approved_ts_str = data.get("approved_ts")
+        approved_ts = (
+            datetime.datetime.fromisoformat(approved_ts_str)
+            if approved_ts_str
+            else None
+        )
         if row["type"] == "doubles":
             pa1 = players[data["a1"]]
             pa2 = players[data["a2"]]
@@ -618,6 +624,7 @@ def load_data() -> tuple[Dict[str, Club], Dict[str, Player]]:
                 format_name=data.get("format_name"),
             )
             match.created_ts = created_ts
+            match.approved_ts = approved_ts
             match.rating_a1_before = data.get("rating_a1_before")
             match.rating_a2_before = data.get("rating_a2_before")
             match.rating_b1_before = data.get("rating_b1_before")
@@ -648,6 +655,7 @@ def load_data() -> tuple[Dict[str, Club], Dict[str, Player]]:
                 format_name=data.get("format_name"),
             )
             match.created_ts = created_ts
+            match.approved_ts = approved_ts
             match.rating_a_before = data.get("rating_a_before")
             match.rating_b_before = data.get("rating_b_before")
             match.rating_a_after = data.get("rating_a_after")
@@ -666,6 +674,7 @@ def load_data() -> tuple[Dict[str, Club], Dict[str, Player]]:
         else:
             data = value or {}
         date = datetime.date.fromisoformat(row["date"])
+        approved_ts = None
         if row["type"] == "doubles":
             pa1 = players[data["a1"]]
             pa2 = players[data["a2"]]
@@ -691,6 +700,8 @@ def load_data() -> tuple[Dict[str, Club], Dict[str, Player]]:
                 match.created = datetime.date.fromisoformat(data["created"])
             if "created_ts" in data:
                 match.created_ts = datetime.datetime.fromisoformat(data["created_ts"])
+            if data.get("approved_ts"):
+                match.approved_ts = datetime.datetime.fromisoformat(data["approved_ts"])
             if data.get("confirmed_on"):
                 match.confirmed_on = datetime.date.fromisoformat(data["confirmed_on"])
             match.status = data.get("status")
@@ -718,6 +729,8 @@ def load_data() -> tuple[Dict[str, Club], Dict[str, Player]]:
                 match.created = datetime.date.fromisoformat(data["created"])
             if "created_ts" in data:
                 match.created_ts = datetime.datetime.fromisoformat(data["created_ts"])
+            if data.get("approved_ts"):
+                match.approved_ts = datetime.datetime.fromisoformat(data["approved_ts"])
             if data.get("confirmed_on"):
                 match.confirmed_on = datetime.date.fromisoformat(data["confirmed_on"])
             match.status = data.get("status")
@@ -1097,6 +1110,7 @@ def create_match(
             "confirmed_on": match.confirmed_on.isoformat() if match.confirmed_on else None,
             "status": match.status,
             "status_date": match.status_date.isoformat() if match.status_date else None,
+            "approved_ts": match.approved_ts.isoformat() if match.approved_ts else None,
             "rating_a1_before": match.rating_a1_before,
             "rating_a2_before": match.rating_a2_before,
             "rating_b1_before": match.rating_b1_before,
@@ -1128,6 +1142,7 @@ def create_match(
             "confirmed_on": match.confirmed_on.isoformat() if match.confirmed_on else None,
             "status": match.status,
             "status_date": match.status_date.isoformat() if match.status_date else None,
+            "approved_ts": match.approved_ts.isoformat() if match.approved_ts else None,
             "rating_a_before": match.rating_a_before,
             "rating_b_before": match.rating_b_before,
             "rating_a_after": match.rating_a_after,
@@ -1161,6 +1176,8 @@ def update_match_record(
     if conn is None:
         conn = _connect()
     cur = conn.cursor()
+    if "approved_ts" not in data:
+        data["approved_ts"] = None
     cur.execute(
         f"UPDATE {table} SET data = ? WHERE id = ?",
         (json.dumps(data), match_id),

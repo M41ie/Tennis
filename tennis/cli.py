@@ -974,6 +974,7 @@ def approve_doubles(clubs, club_id: str, index: int, approver: str, users=None):
     match = club.pending_matches[index]
     if not isinstance(match, DoublesMatch):
         raise ValueError("Not a doubles match")
+    match.approved_ts = datetime.datetime.now()
     approve_match(clubs, club_id, index, approver, users)
 
 
@@ -996,6 +997,7 @@ def approve_match(clubs, club_id: str, index: int, approver: str, users=None):
         raise ValueError("Match not confirmed")
     match = club.pending_matches.pop(index)
     match.approved = True
+    match.approved_ts = datetime.datetime.now()
     club.matches.append(match)
     if isinstance(match, DoublesMatch):
         update_doubles_ratings(match)
