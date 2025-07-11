@@ -1198,6 +1198,7 @@ def get_player_match_cards(clubs, club_id: str, user_id: str):
             {
                 "date": m.date,
                 "created_ts": m.created_ts,
+                "approved_ts": m.approved_ts,
                 "location": m.location,
                 "format": m.format_name,
                 "self_score": self_score,
@@ -1222,9 +1223,16 @@ def get_player_match_cards(clubs, club_id: str, user_id: str):
             }
         )
 
-    cards.sort(key=lambda x: (x["date"], x["created_ts"]), reverse=True)
+    cards.sort(
+        key=lambda x: (
+            x.get("approved_ts") or x["date"],
+            x.get("approved_ts") or x["created_ts"],
+        ),
+        reverse=True,
+    )
     for c in cards:
         del c["created_ts"]
+        c.pop("approved_ts", None)
     return cards
 
 
@@ -1257,6 +1265,7 @@ def _match_to_card(m: Match, player: Player) -> dict:
     return {
         "date": m.date,
         "created_ts": m.created_ts,
+        "approved_ts": m.approved_ts,
         "location": m.location,
         "format": m.format_name,
         "self_score": self_score,
@@ -1281,9 +1290,16 @@ def _match_to_card(m: Match, player: Player) -> dict:
 def get_player_global_match_cards(player: Player) -> list[dict]:
     """Return match cards for a player across all clubs."""
     cards = [_match_to_card(m, player) for m in player.singles_matches]
-    cards.sort(key=lambda x: (x["date"], x["created_ts"]), reverse=True)
+    cards.sort(
+        key=lambda x: (
+            x.get("approved_ts") or x["date"],
+            x.get("approved_ts") or x["created_ts"],
+        ),
+        reverse=True,
+    )
     for c in cards:
         del c["created_ts"]
+        c.pop("approved_ts", None)
     return cards
 
 
@@ -1364,6 +1380,7 @@ def get_player_doubles_cards(clubs, club_id: str, user_id: str):
             {
                 "date": m.date,
                 "created_ts": m.created_ts,
+                "approved_ts": m.approved_ts,
                 "location": m.location,
                 "format": m.format_name,
                 "self_score": self_score,
@@ -1407,9 +1424,16 @@ def get_player_doubles_cards(clubs, club_id: str, user_id: str):
             }
         )
 
-    cards.sort(key=lambda x: (x["date"], x["created_ts"]), reverse=True)
+    cards.sort(
+        key=lambda x: (
+            x.get("approved_ts") or x["date"],
+            x.get("approved_ts") or x["created_ts"],
+        ),
+        reverse=True,
+    )
     for c in cards:
         del c["created_ts"]
+        c.pop("approved_ts", None)
     return cards
 
 
@@ -1474,6 +1498,7 @@ def _doubles_match_to_card(m: DoublesMatch, player: Player) -> dict:
     return {
         "date": m.date,
         "created_ts": m.created_ts,
+        "approved_ts": m.approved_ts,
         "location": m.location,
         "format": m.format_name,
         "self_score": self_score,
@@ -1512,9 +1537,16 @@ def _doubles_match_to_card(m: DoublesMatch, player: Player) -> dict:
 
 def get_player_global_doubles_cards(player: Player) -> list[dict]:
     cards = [_doubles_match_to_card(m, player) for m in player.doubles_matches]
-    cards.sort(key=lambda x: (x["date"], x["created_ts"]), reverse=True)
+    cards.sort(
+        key=lambda x: (
+            x.get("approved_ts") or x["date"],
+            x.get("approved_ts") or x["created_ts"],
+        ),
+        reverse=True,
+    )
     for c in cards:
         del c["created_ts"]
+        c.pop("approved_ts", None)
     return cards
 
 
