@@ -1225,9 +1225,9 @@ def get_player_match_cards(clubs, club_id: str, user_id: str):
 
     cards.sort(
         key=lambda x: (
-            x.get("approved_ts")
-            or datetime.datetime.combine(x["date"], datetime.time()),
-            x.get("approved_ts") or x["created_ts"],
+            x.get("approved_ts") or datetime.datetime.min,
+            datetime.datetime.combine(x["date"], datetime.time()),
+            x["created_ts"],
         ),
         reverse=True,
     )
@@ -1293,9 +1293,9 @@ def get_player_global_match_cards(player: Player) -> list[dict]:
     cards = [_match_to_card(m, player) for m in player.singles_matches]
     cards.sort(
         key=lambda x: (
-            x.get("approved_ts")
-            or datetime.datetime.combine(x["date"], datetime.time()),
-            x.get("approved_ts") or x["created_ts"],
+            x.get("approved_ts") or datetime.datetime.min,
+            datetime.datetime.combine(x["date"], datetime.time()),
+            x["created_ts"],
         ),
         reverse=True,
     )
@@ -1428,9 +1428,9 @@ def get_player_doubles_cards(clubs, club_id: str, user_id: str):
 
     cards.sort(
         key=lambda x: (
-            x.get("approved_ts")
-            or datetime.datetime.combine(x["date"], datetime.time()),
-            x.get("approved_ts") or x["created_ts"],
+            x.get("approved_ts") or datetime.datetime.min,
+            datetime.datetime.combine(x["date"], datetime.time()),
+            x["created_ts"],
         ),
         reverse=True,
     )
@@ -1542,9 +1542,9 @@ def get_player_global_doubles_cards(player: Player) -> list[dict]:
     cards = [_doubles_match_to_card(m, player) for m in player.doubles_matches]
     cards.sort(
         key=lambda x: (
-            x.get("approved_ts")
-            or datetime.datetime.combine(x["date"], datetime.time()),
-            x.get("approved_ts") or x["created_ts"],
+            x.get("approved_ts") or datetime.datetime.min,
+            datetime.datetime.combine(x["date"], datetime.time()),
+            x["created_ts"],
         ),
         reverse=True,
     )
