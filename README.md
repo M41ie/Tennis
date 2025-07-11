@@ -190,7 +190,9 @@ demonstrates how a front‑end could consume the REST API. It provides three
 pages:
 
 * **Leaderboard** – displays player ratings with basic club and rating filters
-* **Match Records** – shows the logged in user's recent matches
+* **Match Records** – shows the logged in user's recent matches. Approved
+  entries are ordered by when they were approved and fall back to their
+  original order if no timestamp is present
 * **Profile** – displays user information (always from global data) and links to club management
 
 To run the mini program, build it with the WeChat Developer Tools and start the
