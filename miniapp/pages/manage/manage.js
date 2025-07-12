@@ -184,6 +184,7 @@ Page({
                 joined: p.joined,
                 singles_rating: p.singles_rating != null ? p.singles_rating.toFixed(3) : '--',
                 ratingSinglesNum: typeof p.singles_rating === 'number' ? p.singles_rating : null,
+                matchSinglesNum: typeof p.weighted_singles_matches === 'number' ? p.weighted_singles_matches : 0,
                 weighted_games_singles:
                   p.weighted_singles_matches != null
                     ? p.weighted_singles_matches.toFixed(2)
@@ -203,6 +204,10 @@ Page({
               t.doubles_rating = p.doubles_rating != null ? p.doubles_rating.toFixed(3) : '--';
               t.ratingDoublesNum =
                 typeof p.doubles_rating === 'number' ? p.doubles_rating : null;
+              t.matchDoublesNum =
+                typeof p.weighted_doubles_matches === 'number'
+                  ? p.weighted_doubles_matches
+                  : 0;
               t.weighted_games_doubles =
                 p.weighted_doubles_matches != null
                   ? p.weighted_doubles_matches.toFixed(2)
@@ -232,11 +237,21 @@ Page({
               const rd =
                 typeof p.ratingDoublesNum === 'number' ? p.ratingDoublesNum : 0;
               p.totalRating = rs + rd;
+              const ms =
+                typeof p.matchSinglesNum === 'number' ? p.matchSinglesNum : 0;
+              const md =
+                typeof p.matchDoublesNum === 'number' ? p.matchDoublesNum : 0;
+              p.totalMatches = ms + md;
               return p;
             });
             list.sort((a, b) => {
+              const roleScore = { leader: 2, admin: 1, member: 0 };
+              if (roleScore[b.role] !== roleScore[a.role])
+                return roleScore[b.role] - roleScore[a.role];
               if (b.days !== a.days) return b.days - a.days;
-              return b.totalRating - a.totalRating;
+              if (b.totalRating !== a.totalRating)
+                return b.totalRating - a.totalRating;
+              return b.totalMatches - a.totalMatches;
             });
             that.setData({ members: list });
           }
