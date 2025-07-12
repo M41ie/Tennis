@@ -262,8 +262,12 @@ def transaction() -> Generator[object, None, None]:
 
 
 def _init_schema(conn) -> None:
-    cur = conn.cursor()
+    cur = conn.cursor(
+        cursor_factory=psycopg2.extras.RealDictCursor
+    ) if IS_PG else conn.cursor()
     if IS_PG:
+        cur = _PgCursor(cur)
+        
         cur.execute(
             "CREATE TABLE IF NOT EXISTS clubs (club_id TEXT PRIMARY KEY, name TEXT, logo TEXT, region TEXT, slogan TEXT)"
         )
@@ -310,7 +314,7 @@ def _init_schema(conn) -> None:
         cur.execute(
             "SELECT column_name FROM information_schema.columns WHERE table_name='club_members'"
         )
-        cols = {row[0] for row in cur.fetchall()}
+        cols = {row["column_name"] for row in cur.fetchall()}
         if 'joined' not in cols:
             cur.execute("ALTER TABLE club_members ADD COLUMN joined TEXT")
         cur.execute(
