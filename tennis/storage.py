@@ -310,7 +310,7 @@ def _init_schema(conn) -> None:
         cur.execute(
             "SELECT column_name FROM information_schema.columns WHERE table_name='club_members'"
         )
-        cols = {row[0] for row in cur.fetchall()}
+        cols = {row["column_name"] for row in cur.fetchall()}
         if 'joined' not in cols:
             cur.execute("ALTER TABLE club_members ADD COLUMN joined TEXT")
         cur.execute(
