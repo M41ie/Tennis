@@ -32,3 +32,36 @@ def test_wechat_login_creates_user(tmp_path, monkeypatch):
         ).fetchone()
         assert row is not None
         assert row[0] == "wx123"
+
+
+def test_wechat_login_unique_nickname(tmp_path, monkeypatch):
+    db = tmp_path / "tennis.db"
+    monkeypatch.setattr(storage, "DB_FILE", db)
+    importlib.reload(state)
+    api = importlib.reload(importlib.import_module("tennis.api"))
+
+    def fake_exchange(code):
+        if code == "c1":
+            return {"openid": "wx123456", "session_key": "sk1"}
+        elif code == "c2":
+            return {"openid": "wx123abc", "session_key": "sk2"}
+        raise AssertionError("unexpected code")
+
+    monkeypatch.setattr(api, "_exchange_wechat_code", fake_exchange)
+
+    client = TestClient(api.app)
+
+    r1 = client.post("/wechat_login", json={"code": "c1"})
+    assert r1.status_code == 200
+    uid1 = r1.json()["user_id"]
+
+    r2 = client.post("/wechat_login", json={"code": "c2"})
+    assert r2.status_code == 200
+    uid2 = r2.json()["user_id"]
+
+    with storage._connect() as conn:
+        n1 = conn.execute("SELECT name FROM users WHERE user_id = ?", (uid1,)).fetchone()[0]
+        n2 = conn.execute("SELECT name FROM users WHERE user_id = ?", (uid2,)).fetchone()[0]
+
+    assert n1 == "wx123"
+    assert n2 == "wx123a"
