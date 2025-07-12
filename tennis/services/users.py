@@ -70,7 +70,12 @@ def create_user(data) -> str:
     # persist new records individually
     with transaction() as conn:
         create_user_record(users[uid], conn=conn)
-        create_player("", get_player(uid), conn=conn)
+        create_player(
+            "",
+            get_player(uid),
+            joined=get_player(uid).joined,
+            conn=conn,
+        )
     storage.bump_cache_version()
     return uid
 
@@ -183,7 +188,12 @@ def wechat_login(code: str, exchange_func) -> tuple[str, str, str, bool]:
         set_player(new_player)
         with transaction() as conn:
             create_user_record(user, conn=conn)
-            create_player("", new_player, conn=conn)
+            create_player(
+                "",
+                new_player,
+                joined=new_player.joined,
+                conn=conn,
+            )
         storage.bump_cache_version()
         created = True
 
