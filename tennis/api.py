@@ -566,7 +566,14 @@ def get_global_player(user_id: str, request: Request, recent: int = 0):
         "handedness": player.handedness,
         "backhand": player.backhand,
         "region": player.region,
-        "joined": club.member_joined.get(player.user_id, player.joined).isoformat(),
+        "joined": min(
+            (
+                club.member_joined.get(player.user_id, player.joined)
+                for club in clubs.values()
+                if player.user_id in club.members
+            ),
+            default=player.joined,
+        ).isoformat(),
         "singles_rating": singles,
         "doubles_rating": doubles,
         "weighted_singles_matches": round(singles_count, 2),
