@@ -107,6 +107,44 @@ def login(user_id: str, password: str):
     return True, access_token, refresh_token, user.user_id
 
 
+DEFAULT_NICK_LEN = 5
+OPENID_NICK_OFFSET = 6
+
+
+def _unique_nickname(openid: str, users: dict, players: dict) -> str:
+    """Return a unique nickname generated from ``openid``.
+
+    The nickname generation begins from the seventh character of ``openid`` to
+    avoid common leading segments.  Progressively longer slices of this suffix
+    are tested until a unique value is found.  If the suffix alone does not
+    yield a unique nickname, the full ``openid`` is returned as a fallback.
+    """
+
+    suffix = openid[OPENID_NICK_OFFSET:]
+
+    if not suffix:
+        return openid
+
+    def in_use(name: str) -> bool:
+        return any(u.name == name for u in users.values()) or any(
+            p.name == name for p in players.values()
+        )
+
+    length = min(DEFAULT_NICK_LEN, len(suffix))
+    max_len = len(suffix)
+
+    while length <= max_len:
+        nick = suffix[:length]
+        if not in_use(nick):
+            return nick
+        length += 1
+
+    if not in_use(suffix):
+        return suffix
+
+    return openid
+
+
 def wechat_login(code: str, exchange_func) -> tuple[str, str, str, bool]:
     """Login or register using a WeChat mini program code.
 
@@ -131,7 +169,11 @@ def wechat_login(code: str, exchange_func) -> tuple[str, str, str, bool]:
 
     if not user:
         # allocate a sequential user ID using the normal registration flow
-        nickname = info.get("nickname") or openid
+        provided_nick = info.get("nickname")
+        if provided_nick:
+            nickname = provided_nick
+        else:
+            nickname = _unique_nickname(openid, users, players)
         uid = register_user(users, None, nickname, "")
         user = users[uid]
         user.password_hash = ""
