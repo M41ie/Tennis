@@ -5,6 +5,7 @@ from ..services.auth import require_auth, assert_token_matches
 from ..services.helpers import get_user_or_404
 
 from ..storage import get_user, get_player, add_subscribe_quota
+from .. import storage
 from .. import api
 
 router = APIRouter()
@@ -60,6 +61,15 @@ def register_user_api(data: UserCreate):
 def login_api(data: LoginRequest):
     success, access, refresh, user_id = user_service.login(data.user_id, data.password)
     if success:
+        # refresh caches for the logged in user across workers
+        user = get_user(user_id)
+        if user:
+            api.users[user.user_id] = user
+        player = get_player(user_id)
+        if player:
+            api.players[player.user_id] = player
+        storage.bump_cache_version()
+
         return {
             "success": True,
             "access_token": access,
