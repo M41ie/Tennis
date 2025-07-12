@@ -281,6 +281,7 @@ def approve_member(
     if player.doubles_rating is None:
         player.doubles_rating = rating
     club.members[user_id] = player
+    club.member_joined[user_id] = datetime.date.today()
     user.joined_clubs += 1
     if make_admin:
         if len(club.admin_ids) >= 3:
@@ -375,6 +376,7 @@ def create_club(users, clubs, user_id: str, club_id: str, name: str, logo: Optio
         player = Player(user_id=user_id, name=user.name)
         players[user_id] = player
     club.members[user_id] = player
+    club.member_joined[user_id] = datetime.date.today()
     user.created_clubs += 1
     user.joined_clubs += 1
 
@@ -487,6 +489,7 @@ def remove_member(
         raise ValueError("Player not found")
 
     club.members.pop(user_id)
+    club.member_joined.pop(user_id, None)
     club.admin_ids.discard(user_id)
     if ban:
         club.banned_ids.add(user_id)
@@ -567,6 +570,7 @@ def quit_club(clubs, users, club_id: str, user_id: str):
     if user_id not in club.members:
         raise ValueError("Player not found")
     club.members.pop(user_id)
+    club.member_joined.pop(user_id, None)
     club.admin_ids.discard(user_id)
     u = users.get(user_id)
     if u and u.joined_clubs > 0:

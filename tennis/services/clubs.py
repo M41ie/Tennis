@@ -117,7 +117,12 @@ def create_club(
     club = clubs[club_id]
     with transaction() as conn:
         create_club_record(club, conn=conn)
-        create_player(club_id, club.members[user_id], conn=conn)
+        create_player(
+            club_id,
+            club.members[user_id],
+            joined=club.member_joined.get(user_id, datetime.date.today()),
+            conn=conn,
+        )
         update_user_record(users[user_id], conn=conn)
     storage.bump_cache_version()
     return club_id
@@ -135,7 +140,12 @@ def add_player(club_id: str, user_id: str, name: str, **kwargs):
 
     player = clubs[club_id].members[user_id]
     with transaction() as conn:
-        create_player(club_id, player, conn=conn)
+        create_player(
+            club_id,
+            player,
+            joined=club.member_joined.get(user_id, datetime.date.today()),
+            conn=conn,
+        )
         update_player_record(player, conn=conn)
     storage.bump_cache_version()
 

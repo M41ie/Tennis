@@ -81,6 +81,8 @@ class Club:
     rejected_members: Dict[str, str] = field(default_factory=dict)
     banned_ids: Set[str] = field(default_factory=set)
     members: Dict[str, Player] = field(default_factory=dict)
+    # track per-member join date
+    member_joined: Dict[str, datetime.date] = field(default_factory=dict)
     matches: List['Match | DoublesMatch'] = field(default_factory=list)
     pending_matches: List['Match | DoublesMatch'] = field(default_factory=list)
     # list of upcoming appointments/meetups

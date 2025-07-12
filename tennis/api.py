@@ -527,7 +527,7 @@ def list_players(
             "name": p.name,
             "avatar": p.avatar,
             "gender": p.gender,
-            "joined": p.joined.isoformat(),
+            "joined": club.member_joined.get(p.user_id, p.joined).isoformat(),
             "weighted_singles_matches": round(singles_count, 2),
             "weighted_doubles_matches": round(doubles_count, 2),
         }
@@ -566,7 +566,7 @@ def get_global_player(user_id: str, request: Request, recent: int = 0):
         "handedness": player.handedness,
         "backhand": player.backhand,
         "region": player.region,
-        "joined": player.joined.isoformat(),
+        "joined": club.member_joined.get(player.user_id, player.joined).isoformat(),
         "singles_rating": singles,
         "doubles_rating": doubles,
         "weighted_singles_matches": round(singles_count, 2),
@@ -664,7 +664,7 @@ def list_all_players(
                 "name": p.name,
                 "avatar": p.avatar,
                 "gender": p.gender,
-                "joined": p.joined.isoformat(),
+                "joined": c.member_joined.get(p.user_id, p.joined).isoformat(),
                 "weighted_singles_matches": round(singles_count, 2),
                 "weighted_doubles_matches": round(doubles_count, 2),
             }
@@ -1423,10 +1423,10 @@ def system_user_trend(days: int = 7) -> list[dict[str, object]]:
 
     join_dates: dict[str, datetime.date] = {}
     for club in clubs.values():
-        for p in club.members.values():
-            d = p.joined
-            if p.user_id not in join_dates or d < join_dates[p.user_id]:
-                join_dates[p.user_id] = d
+        for uid, p in club.members.items():
+            d = club.member_joined.get(uid, p.joined)
+            if uid not in join_dates or d < join_dates[uid]:
+                join_dates[uid] = d
 
     sorted_dates = sorted(join_dates.values())
     result = []
