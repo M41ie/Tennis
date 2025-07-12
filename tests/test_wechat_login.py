@@ -42,9 +42,9 @@ def test_wechat_login_unique_nickname(tmp_path, monkeypatch):
 
     def fake_exchange(code):
         if code == "c1":
-            return {"openid": "wx123456", "session_key": "sk1"}
+            return {"openid": "xxxxxxABCDE1", "session_key": "sk1"}
         elif code == "c2":
-            return {"openid": "wx123abc", "session_key": "sk2"}
+            return {"openid": "xxxxxxABCDE2", "session_key": "sk2"}
         raise AssertionError("unexpected code")
 
     monkeypatch.setattr(api, "_exchange_wechat_code", fake_exchange)
@@ -63,5 +63,5 @@ def test_wechat_login_unique_nickname(tmp_path, monkeypatch):
         n1 = conn.execute("SELECT name FROM users WHERE user_id = ?", (uid1,)).fetchone()[0]
         n2 = conn.execute("SELECT name FROM users WHERE user_id = ?", (uid2,)).fetchone()[0]
 
-    assert n1 == "wx123"
-    assert n2 == "wx123a"
+    assert n1 == "ABCDE"
+    assert n2 == "ABCDE2"

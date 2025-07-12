@@ -108,24 +108,40 @@ def login(user_id: str, password: str):
 
 
 DEFAULT_NICK_LEN = 5
+OPENID_NICK_OFFSET = 6
 
 
 def _unique_nickname(openid: str, users: dict, players: dict) -> str:
     """Return a unique nickname generated from ``openid``.
 
-    The name is derived by taking progressively longer prefixes of ``openid``
-    until a unique value is found.  ``DEFAULT_NICK_LEN`` defines the starting
-    prefix length.  The full ``openid`` is used as a last resort.
+    The nickname generation begins from the seventh character of ``openid`` to
+    avoid common leading segments.  Progressively longer slices of this suffix
+    are tested until a unique value is found.  If the suffix alone does not
+    yield a unique nickname, the full ``openid`` is returned as a fallback.
     """
-    length = DEFAULT_NICK_LEN
-    max_len = len(openid)
+
+    suffix = openid[OPENID_NICK_OFFSET:]
+
+    if not suffix:
+        return openid
+
+    def in_use(name: str) -> bool:
+        return any(u.name == name for u in users.values()) or any(
+            p.name == name for p in players.values()
+        )
+
+    length = min(DEFAULT_NICK_LEN, len(suffix))
+    max_len = len(suffix)
+
     while length <= max_len:
-        nick = openid[:length]
-        if all(u.name != nick for u in users.values()) and all(
-            p.name != nick for p in players.values()
-        ):
+        nick = suffix[:length]
+        if not in_use(nick):
             return nick
         length += 1
+
+    if not in_use(suffix):
+        return suffix
+
     return openid
 
 
