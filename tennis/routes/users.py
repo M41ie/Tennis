@@ -60,6 +60,14 @@ def register_user_api(data: UserCreate):
 def login_api(data: LoginRequest):
     success, access, refresh, user_id = user_service.login(data.user_id, data.password)
     if success:
+        # refresh caches for the logged in user
+        user = get_user(user_id)
+        if user:
+            api.users[user.user_id] = user
+        player = get_player(user_id)
+        if player:
+            api.players[player.user_id] = player
+
         return {
             "success": True,
             "access_token": access,
