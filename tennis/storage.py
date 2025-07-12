@@ -262,8 +262,12 @@ def transaction() -> Generator[object, None, None]:
 
 
 def _init_schema(conn) -> None:
-    cur = conn.cursor()
+    cur = conn.cursor(
+        cursor_factory=psycopg2.extras.RealDictCursor
+    ) if IS_PG else conn.cursor()
     if IS_PG:
+        cur = _PgCursor(cur)
+        
         cur.execute(
             "CREATE TABLE IF NOT EXISTS clubs (club_id TEXT PRIMARY KEY, name TEXT, logo TEXT, region TEXT, slogan TEXT)"
         )
