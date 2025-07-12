@@ -303,9 +303,16 @@ def _init_schema(conn) -> None:
             """CREATE TABLE IF NOT EXISTS club_members (
             club_id TEXT,
             user_id TEXT,
+            joined TEXT,
             PRIMARY KEY (club_id, user_id)
         )"""
         )
+        cur.execute(
+            "SELECT column_name FROM information_schema.columns WHERE table_name='club_members'"
+        )
+        cols = {row[0] for row in cur.fetchall()}
+        if 'joined' not in cols:
+            cur.execute("ALTER TABLE club_members ADD COLUMN joined TEXT")
         cur.execute(
             "CREATE TABLE IF NOT EXISTS matches (id SERIAL PRIMARY KEY, club_id TEXT, type TEXT, date TEXT, data JSONB)"
         )
@@ -373,6 +380,7 @@ def _init_schema(conn) -> None:
             """CREATE TABLE IF NOT EXISTS club_members (
             club_id TEXT,
             user_id TEXT,
+            joined TEXT,
             PRIMARY KEY (club_id, user_id)
         )"""
         )
@@ -435,6 +443,9 @@ def _init_schema(conn) -> None:
             cur.execute("ALTER TABLE players ADD COLUMN region TEXT")
         if 'joined' not in cols:
             cur.execute("ALTER TABLE players ADD COLUMN joined TEXT")
+        cols = {row[1] for row in cur.execute("PRAGMA table_info('club_members')")}
+        if 'joined' not in cols:
+            cur.execute("ALTER TABLE club_members ADD COLUMN joined TEXT")
     if IS_PG:
         cur.execute(
             """CREATE TABLE IF NOT EXISTS messages (
@@ -488,6 +499,24 @@ def _init_schema(conn) -> None:
         ts TEXT
     )"""
     )
+    # patch old records lacking per-club join dates
+    cur.execute(
+        "SELECT club_id, user_id FROM club_members WHERE joined IS NULL OR joined = ''"
+    )
+    missing = cur.fetchall()
+    for row in missing:
+        uid = row["user_id"]
+        joined_row = cur.execute(
+            "SELECT joined FROM players WHERE user_id = ?",
+            (uid,),
+        ).fetchone()
+        joined = joined_row["joined"] if joined_row and joined_row["joined"] else None
+        if not joined:
+            joined = datetime.date.today().isoformat()
+        cur.execute(
+            "UPDATE club_members SET joined = ? WHERE club_id = ? AND user_id = ?",
+            (joined, row["club_id"], uid),
+        )
     conn.commit()
 
 
@@ -583,6 +612,9 @@ def load_data() -> tuple[Dict[str, Club], Dict[str, Player]]:
         p = players.get(row["user_id"])
         if club and p:
             club.members[p.user_id] = p
+            joined_str = row["joined"] if "joined" in row.keys() else None
+            if joined_str:
+                club.member_joined[p.user_id] = datetime.date.fromisoformat(joined_str)
 
     for row in cur.execute("SELECT * FROM matches ORDER BY id"):
         club = clubs.get(row["club_id"])
@@ -811,15 +843,16 @@ def save_data(clubs: Dict[str, Club]) -> None:
             ),
         )
         for uid in club.members:
+            joined = club.member_joined.get(uid, club.members[uid].joined).isoformat()
             if IS_PG:
                 cur.execute(
-                    "INSERT INTO club_members(club_id, user_id) VALUES (?,?) ON CONFLICT DO NOTHING",
-                    (cid, uid),
+                    "INSERT INTO club_members(club_id, user_id, joined) VALUES (?,?,?) ON CONFLICT DO NOTHING",
+                    (cid, uid, joined),
                 )
             else:
                 cur.execute(
-                    "INSERT INTO club_members(club_id, user_id) VALUES (?,?)",
-                    (cid, uid),
+                    "INSERT INTO club_members(club_id, user_id, joined) VALUES (?,?,?)",
+                    (cid, uid, joined),
                 )
         for m in club.matches:
             m.id = create_match(cid, m, pending=False, conn=conn)
@@ -998,7 +1031,13 @@ def create_user(user: User, conn: sqlite3.Connection | None = None) -> None:
         _pending_users[user.user_id] = user
 
 
-def create_player(club_id: str, player: Player, conn: sqlite3.Connection | None = None) -> None:
+def create_player(
+    club_id: str,
+    player: Player,
+    *,
+    joined: datetime.date | None = None,
+    conn: sqlite3.Connection | None = None,
+) -> None:
     """Add a player to a club."""
     close = conn is None
     if conn is None:
@@ -1032,8 +1071,8 @@ def create_player(club_id: str, player: Player, conn: sqlite3.Connection | None 
             ),
         )
         cur.execute(
-            "INSERT INTO club_members(club_id, user_id) VALUES (?, ?) ON CONFLICT DO NOTHING",
-            (club_id, player.user_id),
+            "INSERT INTO club_members(club_id, user_id, joined) VALUES (?, ?, ?) ON CONFLICT DO NOTHING",
+            (club_id, player.user_id, joined.isoformat()),
         )
     else:
         cur.execute(
@@ -1062,8 +1101,8 @@ def create_player(club_id: str, player: Player, conn: sqlite3.Connection | None 
             ),
         )
         cur.execute(
-            "INSERT OR IGNORE INTO club_members(club_id, user_id) VALUES (?, ?)",
-            (club_id, player.user_id),
+            "INSERT OR IGNORE INTO club_members(club_id, user_id, joined) VALUES (?, ?, ?)",
+            (club_id, player.user_id, joined.isoformat()),
         )
     if close:
         conn.commit()
@@ -1187,21 +1226,29 @@ def update_match_record(
         conn.close()
 
 
-def add_club_member(club_id: str, user_id: str, conn: sqlite3.Connection | None = None) -> None:
+def add_club_member(
+    club_id: str,
+    user_id: str,
+    *,
+    joined: datetime.date | None = None,
+    conn: sqlite3.Connection | None = None,
+) -> None:
     """Insert a user into ``club_members``."""
     close = conn is None
     if conn is None:
         conn = _connect()
     cur = conn.cursor()
+    if joined is None:
+        joined = datetime.date.today()
     if IS_PG:
         cur.execute(
-            "INSERT INTO club_members(club_id, user_id) VALUES (?, ?) ON CONFLICT DO NOTHING",
-            (club_id, user_id),
+            "INSERT INTO club_members(club_id, user_id, joined) VALUES (?, ?, ?) ON CONFLICT DO NOTHING",
+            (club_id, user_id, joined.isoformat()),
         )
     else:
         cur.execute(
-            "INSERT OR IGNORE INTO club_members(club_id, user_id) VALUES (?, ?)",
-            (club_id, user_id),
+            "INSERT OR IGNORE INTO club_members(club_id, user_id, joined) VALUES (?, ?, ?)",
+            (club_id, user_id, joined.isoformat()),
         )
     if close:
         conn.commit()
@@ -1964,7 +2011,8 @@ def save_club(club: Club, conn: sqlite3.Connection | None = None) -> None:
         ),
     )
     for player in club.members.values():
-        create_player(club.club_id, player, conn=conn)
+        joined = club.member_joined.get(player.user_id, player.joined)
+        create_player(club.club_id, player, joined=joined, conn=conn)
         update_player_record(player, conn=conn)
     for m in club.matches:
         m.id = create_match(club.club_id, m, pending=False, conn=conn)

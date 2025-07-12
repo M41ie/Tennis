@@ -41,8 +41,8 @@ def test_trend_endpoints(tmp_path, monkeypatch):
 
     today = datetime.date.today()
     club = storage.get_club("c1")
-    club.members["u1"].joined = today - datetime.timedelta(days=5)
-    club.members["u2"].joined = today - datetime.timedelta(days=2)
+    club.member_joined["u1"] = today - datetime.timedelta(days=5)
+    club.member_joined["u2"] = today - datetime.timedelta(days=2)
     storage.save_club(club)
 
     client.post(
