@@ -14,10 +14,16 @@ import urllib.request
 import urllib.parse
 from pathlib import Path
 
-STATIC_ROOT = Path("/home/ubuntu/Tennis/static")
+# Serve static files from a repository local directory so the test suite can
+# easily access them. The previous absolute path prevented shipping static
+# assets with the codebase.
+REPO_ROOT = Path(__file__).resolve().parent.parent
+STATIC_ROOT = REPO_ROOT / "static"
 MEDIA_URL_PREFIX = "/static/media/avatars"
 AVATARS_ROOT = STATIC_ROOT / "media/avatars"
 AVATARS_ROOT.mkdir(parents=True, exist_ok=True)
+ADMIN_ROOT = STATIC_ROOT / "admin"
+ADMIN_ROOT.mkdir(parents=True, exist_ok=True)
 
 
 import tennis.storage as storage
@@ -88,6 +94,8 @@ cli_module.players = players
 
 app = FastAPI()
 app.mount("/static", StaticFiles(directory=STATIC_ROOT), name="static")
+# Expose a very small web based admin dashboard stored under ``static/admin``.
+app.mount("/admin", StaticFiles(directory=ADMIN_ROOT, html=True), name="admin")
 
 
 @app.middleware("http")
