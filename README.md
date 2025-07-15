@@ -209,6 +209,14 @@ npm run lint
 
 Basic front‑end tests using `miniprogram-simulate` can be executed with `npm test`.
 
+### Web Admin
+
+The repository also contains a tiny web based dashboard under `static/admin`.
+Start the API server and open `http://localhost:8000/admin/` in a browser to
+see basic statistics and a user search page. The interface is intentionally
+minimal but demonstrates how the REST API can be consumed from a regular web
+application.
+
 ### WeChat subscription messages
 
 The mini program requests message push authorization only when needed. The
