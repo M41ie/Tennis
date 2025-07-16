@@ -3,7 +3,7 @@
   <view wx:elif="{{isError}}" class="empty">{{t.loadFailed}}</view>
   <view wx:elif="{{!list.length}}" class="empty">{{t.noFriends}}</view>
   <block wx:else>
-    <view class="summary">您共与{{totalFriends}}位球友对战过</view>
+    <view class="summary">您共与{{totalFriends}}位球友对战/搭档过</view>
     <block wx:for="{{list}}" wx:key="user_id">
       <view class="friend-item" bindtap="viewFriend" data-uid="{{item.user_id}}">
         <view class="left">
