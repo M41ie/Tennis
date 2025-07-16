@@ -2,13 +2,15 @@ const friendService = require('../../services/friend');
 const store = require('../../store/store');
 const { hideKeyboard } = require('../../utils/hideKeyboard');
 const { t } = require('../../utils/locales');
+const IMAGES = require('../../assets/base64.js');
 
 Page({
   data: {
     t,
     list: [],
     isLoading: true,
-    isError: false
+    isError: false,
+    placeholderAvatar: IMAGES.DEFAULT_AVATAR
   },
   hideKeyboard,
   onShow() {
