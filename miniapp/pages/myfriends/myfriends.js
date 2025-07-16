@@ -17,7 +17,18 @@ Page({
     this.setData({ isLoading: true, isError: false });
     friendService.getFriends(uid)
       .then(res => {
-        this.setData({ list: res || [], isLoading: false });
+        const list = (res || []).map(item => {
+          if (!item.matches_against && item.weight !== undefined) {
+            const winRate = item.weight ? ((item.wins || 0) / item.weight * 100).toFixed(1) : 0;
+            item.matches_against = { count: item.weight, win_rate: winRate };
+          }
+          if (!item.matches_partnered && item.partner_games !== undefined) {
+            const winRate = item.partner_games ? ((item.partner_wins || 0) / item.partner_games * 100).toFixed(1) : 0;
+            item.matches_partnered = { count: item.partner_games, win_rate: winRate };
+          }
+          return item;
+        });
+        this.setData({ list, isLoading: false });
       })
       .catch(() => {
         this.setData({ isError: true, isLoading: false });
