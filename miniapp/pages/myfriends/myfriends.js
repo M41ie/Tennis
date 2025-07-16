@@ -2,6 +2,7 @@ const friendService = require('../../services/friend');
 const store = require('../../store/store');
 const { hideKeyboard } = require('../../utils/hideKeyboard');
 const { t } = require('../../utils/locales');
+const { withBase } = require('../../utils/format');
 const IMAGES = require('../../assets/base64.js');
 
 Page({
@@ -21,6 +22,7 @@ Page({
     friendService.getFriends(uid)
       .then(res => {
         const list = (res || []).map(item => {
+          item.avatar = withBase(item.avatar || item.avatar_url);
           if (!item.matches_against && item.weight !== undefined) {
             const winRate = item.weight ? ((item.wins || 0) / item.weight * 100).toFixed(1) : 0;
             item.matches_against = { count: item.weight, win_rate: winRate };
