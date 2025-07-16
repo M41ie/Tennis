@@ -1013,9 +1013,12 @@ def get_global_player_doubles_records(
 
 
 @app.get("/players/{user_id}/friends")
-def get_player_friends_api(user_id: str):
+def get_player_friends_api(user_id: str, request: Request):
     """Return friend statistics aggregated from matches."""
-    return get_player_friends(user_id)
+    friends = get_player_friends(user_id)
+    for f in friends:
+        f["avatar_url"] = absolute_url(request, f.get("avatar"))
+    return friends
 
 
 @app.post("/clubs/{club_id}/matches")
