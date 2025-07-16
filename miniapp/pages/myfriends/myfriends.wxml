@@ -3,14 +3,15 @@
   <view wx:elif="{{isError}}" class="empty">{{t.loadFailed}}</view>
   <view wx:elif="{{!list.length}}" class="empty">{{t.noFriends}}</view>
   <block wx:else>
+    <view class="summary">您共与{{totalFriends}}位球友搭档/对战过：</view>
     <block wx:for="{{list}}" wx:key="user_id">
       <view class="friend-item" bindtap="viewFriend" data-uid="{{item.user_id}}">
         <view class="left">
-          <image class="avatar" src="{{item.avatar}}" placeholder="{{placeholderAvatar}}" mode="aspectFill"></image>
+          <image class="avatar" src="{{item.avatar || placeholderAvatar}}" mode="aspectFill"></image>
           <view class="name">{{item.name}}</view>
         </view>
         <view class="stats">
-          <view class="stat-row">
+          <view class="col">
             <view class="icon">⚔️</view>
             <view class="text">
               <block wx:if="{{item.matches_against && item.matches_against.count}}">
@@ -22,7 +23,7 @@
               胜率{{item.matches_against.win_rate}}%
             </view>
           </view>
-          <view class="stat-row">
+          <view class="col">
             <view class="icon">🤝</view>
             <view class="text">
               <block wx:if="{{item.matches_partnered && item.matches_partnered.count}}">

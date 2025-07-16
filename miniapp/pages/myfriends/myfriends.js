@@ -10,6 +10,7 @@ Page({
     list: [],
     isLoading: true,
     isError: false,
+    totalFriends: 0,
     placeholderAvatar: IMAGES.DEFAULT_AVATAR
   },
   hideKeyboard,
@@ -30,7 +31,7 @@ Page({
           }
           return item;
         });
-        this.setData({ list, isLoading: false });
+        this.setData({ list, isLoading: false, totalFriends: list.length });
       })
       .catch(() => {
         this.setData({ isError: true, isLoading: false });
