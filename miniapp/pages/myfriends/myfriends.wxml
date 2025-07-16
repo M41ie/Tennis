@@ -5,10 +5,37 @@
   <block wx:else>
     <block wx:for="{{list}}" wx:key="user_id">
       <view class="friend-item" bindtap="viewFriend" data-uid="{{item.user_id}}">
-        <image class="avatar" src="{{item.avatar}}" mode="aspectFill"></image>
-        <view class="info">
+        <view class="left">
+          <image class="avatar" src="{{item.avatar}}" mode="aspectFill"></image>
           <view class="name">{{item.name}}</view>
-          <view class="meta">{{t.total}} {{item.weight}} {{t.wins}} {{item.wins}}</view>
+        </view>
+        <view class="grid">
+          <view class="row icons">
+            <view class="cell icon">⚔️</view>
+            <view class="cell icon">🤝</view>
+          </view>
+          <view class="row counts">
+            <view class="cell">
+              <block wx:if="{{item.matches_against && item.matches_against.count}}">
+                交手{{item.matches_against.count}}场
+              </block>
+              <block wx:else>{{t.noAgainst}}</block>
+            </view>
+            <view class="cell">
+              <block wx:if="{{item.matches_partnered && item.matches_partnered.count}}">
+                搭档{{item.matches_partnered.count}}场
+              </block>
+              <block wx:else>{{t.noPartner}}</block>
+            </view>
+          </view>
+          <view class="row rates">
+            <view class="cell" wx:if="{{item.matches_against && item.matches_against.count}}">
+              胜率{{item.matches_against.win_rate}}%
+            </view>
+            <view class="cell" wx:if="{{item.matches_partnered && item.matches_partnered.count}}">
+              胜率{{item.matches_partnered.win_rate}}%
+            </view>
+          </view>
         </view>
       </view>
     </block>
