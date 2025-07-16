@@ -13,6 +13,7 @@
     "pages/manage/manage",
     "pages/messages/messages",
     "pages/mynotes/mynotes",
+    "pages/myfriends/myfriends",
     "pages/recorddetail/recorddetail",
     "pages/appointment/appointment"
   ],

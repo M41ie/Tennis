@@ -1,0 +1,16 @@
+<view catchtap="hideKeyboard">
+  <view wx:if="{{isLoading}}" class="empty">{{t.loading}}</view>
+  <view wx:elif="{{isError}}" class="empty">{{t.loadFailed}}</view>
+  <view wx:elif="{{!list.length}}" class="empty">{{t.noFriends}}</view>
+  <block wx:else>
+    <block wx:for="{{list}}" wx:key="user_id">
+      <view class="friend-item" bindtap="viewFriend" data-uid="{{item.user_id}}">
+        <image class="avatar" src="{{item.avatar}}" mode="aspectFill"></image>
+        <view class="info">
+          <view class="name">{{item.name}}</view>
+          <view class="meta">{{t.total}} {{item.weight}} {{t.wins}} {{item.wins}}</view>
+        </view>
+      </view>
+    </block>
+  </block>
+</view>

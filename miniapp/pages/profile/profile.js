@@ -119,6 +119,9 @@ Page({
   goMyNotes() {
     wx.navigateTo({ url: '/pages/mynotes/mynotes' });
   },
+  goMyFriends() {
+    wx.navigateTo({ url: '/pages/myfriends/myfriends' });
+  },
   goSysManage() {
     if (!this.data.isSysAdmin) return;
     wx.navigateTo({ url: '/pkg_manage/sysmanage/sysmanage' });
