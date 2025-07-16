@@ -35,4 +35,6 @@ test('friends page shows entries', async () => {
   expect(items[0].querySelector('.name').innerHTML).toBe('F1');
   expect(items[1].querySelector('.name').innerHTML).toBe('F2');
   expect(items[0].querySelectorAll('.icon').length).toBe(2);
+  const summary = comp.dom.querySelector('.summary').innerHTML;
+  expect(summary).toBe('您共与2位球友对战/搭档过');
 });
