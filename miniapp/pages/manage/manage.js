@@ -216,7 +216,12 @@ Page({
             });
             const now = Date.now();
             const list = Object.values(map).map(p => {
-              const joined = p.joined ? new Date(p.joined).getTime() : now;
+              const joined = p.joined
+                ? (() => {
+                    const [y, m, d] = p.joined.split('-').map(Number);
+                    return new Date(y, m - 1, d).getTime();
+                  })()
+                : now;
               const days = Math.floor((now - joined) / (1000 * 60 * 60 * 24));
               const gText = genderText(p.gender) || '-';
               p.genderText = gText;
