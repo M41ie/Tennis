@@ -81,6 +81,7 @@ from .rating import (
     weighted_doubles_matches,
 )
 from .services.stats import _pending_status_for_user, _club_stats
+from .services.friends import get_player_friends
 from .models import Player, Club, Match, DoublesMatch, Appointment, User
 
 # Runtime state loaded from persistent storage. ``load_data`` returns the
@@ -1009,6 +1010,12 @@ def get_global_player_doubles_records(
     if limit is not None:
         cards = cards[:limit]
     return cards
+
+
+@app.get("/players/{user_id}/friends")
+def get_player_friends_api(user_id: str):
+    """Return friend statistics aggregated from matches."""
+    return get_player_friends(user_id)
 
 
 @app.post("/clubs/{club_id}/matches")

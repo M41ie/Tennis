@@ -122,6 +122,10 @@ curl -X PUT http://localhost:8000/players/USER \
 ```
 This accepts the same fields as the club specific `/clubs/{club_id}/players/{user_id}` route.
 
+Use `/players/{user_id}/friends` to retrieve aggregated interaction statistics
+with opponents and doubles partners. Each entry in the response contains the
+friend's `user_id`, name, avatar and the weighted counts and wins.
+
 Similarly, recording a match uses:
 
 ```bash
