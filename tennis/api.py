@@ -1018,8 +1018,15 @@ def get_player_friends_api(user_id: str, request: Request):
     friends = get_player_friends(user_id)
     for f in friends:
         f["avatar_url"] = absolute_url(request, f.get("avatar"))
-        f.setdefault("partner_games", 0.0)
-        f.setdefault("partner_wins", 0.0)
+        for k in (
+            "partner_games",
+            "partner_wins",
+            "singles_weight",
+            "singles_wins",
+            "doubles_weight",
+            "doubles_wins",
+        ):
+            f.setdefault(k, 0.0)
     return friends
 
 
