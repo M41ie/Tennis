@@ -39,6 +39,8 @@ def test_player_friends_api(tmp_path, monkeypatch):
     by_id = {d["user_id"]: d for d in data}
     assert by_id["p2"]["weight"] == 3.0
     assert by_id["p2"]["wins"] == 2.0
+    assert by_id["p2"]["partner_games"] == 1.0
+    assert by_id["p2"]["partner_wins"] == 1.0
     assert by_id["p3"]["weight"] == 3.0
     assert by_id["p3"]["wins"] == 1.0
     assert by_id["p4"]["weight"] == 2.0
