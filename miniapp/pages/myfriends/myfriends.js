@@ -23,6 +23,14 @@ Page({
       .then(res => {
         const list = (res || []).map(item => {
           item.avatar = withBase(item.avatar || item.avatar_url);
+          if (!item.matches_singles && item.singles_weight !== undefined) {
+            const winRate = item.singles_weight ? ((item.singles_wins || 0) / item.singles_weight * 100).toFixed(1) : 0;
+            item.matches_singles = { count: item.singles_weight, win_rate: winRate };
+          }
+          if (!item.matches_doubles && item.doubles_weight !== undefined) {
+            const winRate = item.doubles_weight ? ((item.doubles_wins || 0) / item.doubles_weight * 100).toFixed(1) : 0;
+            item.matches_doubles = { count: item.doubles_weight, win_rate: winRate };
+          }
           if (!item.matches_against && item.weight !== undefined) {
             const winRate = item.weight ? ((item.wins || 0) / item.weight * 100).toFixed(1) : 0;
             item.matches_against = { count: item.weight, win_rate: winRate };
