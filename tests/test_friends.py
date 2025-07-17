@@ -41,7 +41,19 @@ def test_player_friends_api(tmp_path, monkeypatch):
     assert by_id["p2"]["wins"] == 2.0
     assert by_id["p2"]["partner_games"] == 1.0
     assert by_id["p2"]["partner_wins"] == 1.0
+    assert by_id["p2"]["singles_weight"] == 1.0
+    assert by_id["p2"]["singles_wins"] == 1.0
+    assert by_id["p2"]["doubles_weight"] == 1.0
+    assert by_id["p2"]["doubles_wins"] == 0.0
     assert by_id["p3"]["weight"] == 3.0
     assert by_id["p3"]["wins"] == 1.0
+    assert by_id["p3"]["partner_games"] == 1.0
+    assert by_id["p3"]["partner_wins"] == 0.0
+    assert by_id["p3"]["singles_weight"] == 1.0
+    assert by_id["p3"]["singles_wins"] == 0.0
+    assert by_id["p3"]["doubles_weight"] == 1.0
+    assert by_id["p3"]["doubles_wins"] == 1.0
     assert by_id["p4"]["weight"] == 2.0
     assert by_id["p4"]["wins"] == 1.0
+    assert by_id["p4"]["doubles_weight"] == 2.0
+    assert by_id["p4"]["doubles_wins"] == 1.0
