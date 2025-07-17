@@ -12,7 +12,7 @@
         </view>
         <view class="stats">
           <view class="col">
-            <view class="icon">⚔️单打对战</view>
+            <view class="icon">⚔️单打</view>
             <view class="text">
               <block wx:if="{{item.matches_singles && item.matches_singles.count}}">
                 交手{{item.matches_singles.count}}场
@@ -24,7 +24,7 @@
             </view>
           </view>
           <view class="col">
-            <view class="icon">⚔️双打对战</view>
+            <view class="icon">⚔️双打</view>
             <view class="text">
               <block wx:if="{{item.matches_doubles && item.matches_doubles.count}}">
                 交手{{item.matches_doubles.count}}场
@@ -36,7 +36,7 @@
             </view>
           </view>
           <view class="col">
-            <view class="icon">🤝双打合作</view>
+            <view class="icon">🤝双打</view>
             <view class="text">
               <block wx:if="{{item.matches_partnered && item.matches_partnered.count}}">
                 搭档{{item.matches_partnered.count}}场
