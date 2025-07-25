@@ -52,9 +52,10 @@ Page({
             : (doublesCount ? Number(doublesCount).toFixed(2) : '--')
         };
         const extra = formatExtraLines(user);
+        const line1 = extra.line1.replace(/(?:^|·)\d+岁/, '');
         that.setData({
           user,
-          infoLine1: extra.line1,
+          infoLine1: line1,
           infoLine2: extra.line2,
         });
         that.setData({
