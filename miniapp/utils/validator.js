@@ -5,7 +5,7 @@ function showError(msg) {
 }
 
 function validateClubName(name) {
-  const ok = /^[A-Za-z\u4e00-\u9fa5]{1,20}$/.test(name);
+  const ok = /^[A-Za-z0-9\u4e00-\u9fa5]{1,20}$/.test(name);
   if (!ok) showError(t.clubNameRule);
   return ok;
 }

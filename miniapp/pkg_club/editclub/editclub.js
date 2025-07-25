@@ -61,7 +61,7 @@ Page({
       wx.showToast({ duration: 4000,  title: that.data.t.incompleteInfo, icon: 'none' });
       return;
     }
-    const nameOk = /^[A-Za-z\u4e00-\u9fa5]{1,20}$/.test(this.data.name);
+    const nameOk = /^[A-Za-z0-9\u4e00-\u9fa5]{1,20}$/.test(this.data.name);
     if (!nameOk) {
       wx.showToast({ duration: 4000,  title: that.data.t.clubNameRule, icon: 'none' });
       return;
