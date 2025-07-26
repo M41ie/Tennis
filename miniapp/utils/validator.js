@@ -11,7 +11,7 @@ function validateClubName(name) {
 }
 
 function validateUserName(name) {
-  const ok = /^[A-Za-z\u4e00-\u9fa5]{1,12}$/.test(name);
+  const ok = /^[A-Za-z0-9\u4e00-\u9fa5]{1,12}$/.test(name);
   if (!ok) showError(t.nameRule);
   return ok;
 }
