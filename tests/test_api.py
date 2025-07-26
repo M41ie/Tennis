@@ -1274,6 +1274,62 @@ def test_list_all_players_multi_club(tmp_path, monkeypatch):
     assert ids == ["p3", "p4", "p1"]
 
 
+def test_list_players_sort_by_matches(tmp_path, monkeypatch):
+    db = tmp_path / "tennis.db"
+    monkeypatch.setattr(storage, "DB_FILE", db)
+    importlib.reload(state)
+
+    api = importlib.reload(importlib.import_module("tennis.api"))
+    client = TestClient(api.app)
+
+    for uid in ("leader", "p1", "p2", "p3"):
+        allow = uid == "leader"
+        client.post(
+            "/users",
+            json={"user_id": uid, "name": uid.upper(), "password": "pw", "allow_create": allow},
+        )
+
+    tokens = {
+        pid: client.post("/login", json={"user_id": pid, "password": "pw"}).json()["token"]
+        for pid in ("leader", "p1", "p2", "p3")
+    }
+
+    client.post(
+        "/clubs",
+        json={"club_id": "c1", "name": "C1", "user_id": "leader", "token": tokens["leader"]},
+    )
+    for pid in ("p1", "p2", "p3"):
+        client.post(
+            "/clubs/c1/players",
+            json={"user_id": pid, "name": pid.upper(), "token": tokens[pid]},
+        )
+
+    club = storage.get_club("c1")
+    for m in club.members.values():
+        m.singles_rating = 1000
+    import datetime
+    p1 = club.members["p1"]
+    p2 = club.members["p2"]
+    p3 = club.members["p3"]
+    today = datetime.date.today()
+    from tennis.models import Match
+    m1 = Match(date=today, player_a=p1, player_b=p2, score_a=6, score_b=4, club_id="c1")
+    p1.singles_matches.append(m1)
+    p2.singles_matches.append(m1)
+    m2 = Match(date=today, player_a=p2, player_b=p3, score_a=6, score_b=3, club_id="c1")
+    p2.singles_matches.append(m2)
+    p3.singles_matches.append(m2)
+    m3 = Match(date=today, player_a=p2, player_b=p1, score_a=6, score_b=2, club_id="c1")
+    p2.singles_matches.append(m3)
+    p1.singles_matches.append(m3)
+    storage.save_club(club)
+
+    resp = client.get("/clubs/c1/players?sort=matches")
+    assert resp.status_code == 200
+    ids = [p["user_id"] for p in resp.json()]
+    assert ids == ["p2", "p1", "p3", "leader"]
+
+
 def test_leaderboard_dedup_multi_club(tmp_path, monkeypatch):
     db = tmp_path / "tennis.db"
     monkeypatch.setattr(storage, "DB_FILE", db)
