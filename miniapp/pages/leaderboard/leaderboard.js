@@ -173,11 +173,7 @@ Page({
           p.rating = rating != null ? Number(rating).toFixed(3) : '--';
           if (p.weighted_singles_matches != null) p.weighted_singles_matches = p.weighted_singles_matches.toFixed(2);
           if (p.weighted_doubles_matches != null) p.weighted_doubles_matches = p.weighted_doubles_matches.toFixed(2);
-          if (that.data.filter.sort === 'matches') {
-            p.display = that.data.filter.mode === 'Doubles' ? p.weighted_doubles_matches : p.weighted_singles_matches;
-          } else {
-            p.display = p.rating;
-          }
+          p.display = p.rating;
           p.avatar = withBase(p.avatar || p.avatar_url);
         });
         if (that.data.page === 1) {
