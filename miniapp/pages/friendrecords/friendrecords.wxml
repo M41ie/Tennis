@@ -1,0 +1,27 @@
+<view catchtap="hideKeyboard">
+  <profile-card
+    user="{{user}}"
+    placeholder="{{placeholderAvatar}}"
+    editable="{{false}}"
+    info="{{infoLine1}}"
+    info2="{{infoLine2}}"
+  />
+  <view class="mode-switch">
+    <view class="mode-item {{modeIndex==0?'active':''}}" data-index="0" bindtap="switchMode">{{t.singles}}</view>
+    <view class="mode-item {{modeIndex==1?'active':''}}" data-index="1" bindtap="switchMode">{{t.doubles}}</view>
+  </view>
+  <view wx:if="{{isLoading}}" class="skeleton-list">
+    <block wx:for="{{[1,2,3,4,5]}}" wx:key="index">
+      <view class="record-skeleton"></view>
+    </block>
+  </view>
+  <view wx:elif="{{isError}}" class="empty">{{t.loadFailed}}</view>
+  <view wx:elif="{{isEmpty}}" class="empty">{{t.noData}}</view>
+  <view wx:else>
+    <block wx:for="{{records}}" wx:key="index">
+      <view data-index="{{index}}" bindtap="viewRecord">
+        <record-card record="{{item}}" doubles="{{doubles}}" />
+      </view>
+    </block>
+  </view>
+</view>

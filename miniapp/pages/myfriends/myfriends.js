@@ -49,6 +49,6 @@ Page({
   },
   viewFriend(e) {
     const uid = e.currentTarget.dataset.uid;
-    wx.navigateTo({ url: `/pages/playercard/playercard?uid=${uid}` });
+    wx.navigateTo({ url: `/pages/friendrecords/friendrecords?uid=${uid}` });
   }
 });

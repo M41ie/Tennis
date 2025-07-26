@@ -1,0 +1,6 @@
+{
+  "usingComponents": {
+    "profile-card": "/components/profile-card/profile-card",
+    "record-card": "/components/record-card/record-card"
+  }
+}
