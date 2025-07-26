@@ -13,5 +13,6 @@ page{background:#f5f5f5;}
 .rate{font-size:24rpx;color:#666;margin-top:4rpx;}
 .score{font-size:24rpx;margin-top:4rpx;}
 .pos{color:green;}
+.neg{color:red;}
 .neutral{color:gray;}
 .empty{text-align:center;color:#999;padding:40rpx 0;}
