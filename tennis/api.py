@@ -503,6 +503,7 @@ def list_players(
     max_age: int | None = None,
     gender: str | None = None,
     region: str | None = None,
+    sort: str = "rating",
 ):
     """Return members of a club optionally filtered and sorted by rating."""
 
