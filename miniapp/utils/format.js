@@ -25,7 +25,7 @@ function formatScoreDiff(value) {
   }
   const abs = Math.abs(num).toFixed(3);
   const sign = num > 0 ? '+' : num < 0 ? '-' : '';
-  const cls = num === 0 ? 'neutral' : 'pos';
+  const cls = num > 0 ? 'pos' : num < 0 ? 'neg' : 'neutral';
   return { display: sign + abs, cls };
 }
 
