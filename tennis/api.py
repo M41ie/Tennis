@@ -503,6 +503,7 @@ def list_players(
     max_age: int | None = None,
     gender: str | None = None,
     region: str | None = None,
+    sort: str = "rating",
 ):
     """Return members of a club optionally filtered and sorted by rating."""
 
@@ -546,8 +547,15 @@ def list_players(
             entry["singles_rating"] = rating
         players.append(entry)
 
-    key = "doubles_rating" if doubles else "singles_rating"
-    players.sort(key=lambda x: x.get(key, float('-inf')) if x.get(key) is not None else float('-inf'), reverse=True)
+    if sort == "matches":
+        key = "weighted_doubles_matches" if doubles else "weighted_singles_matches"
+        players.sort(key=lambda x: x.get(key, float('-inf')), reverse=True)
+    else:
+        key = "doubles_rating" if doubles else "singles_rating"
+        players.sort(
+            key=lambda x: x.get(key, float("-inf")) if x.get(key) is not None else float("-inf"),
+            reverse=True,
+        )
     return players
 
 
@@ -629,6 +637,7 @@ def list_all_players(
     club: str | None = None,
     doubles: bool = False,
     region: str | None = None,
+    sort: str = "rating",
     limit: int | None = None,
     offset: int = 0,
 ):
@@ -748,6 +757,7 @@ def leaderboard_full(
     club: str | None = None,
     doubles: bool = False,
     region: str | None = None,
+    sort: str = "rating",
     limit: int | None = None,
     offset: int = 0,
 ):
@@ -777,6 +787,7 @@ def leaderboard_full(
             club=club,
             doubles=doubles,
             region=region,
+            sort=sort,
             limit=limit,
             offset=offset,
         )

@@ -16,11 +16,15 @@ Page({
       clubs: [],
       mode: 'Singles',
       gender: 'All',
-      region: ''
+      region: '',
+      sort: 'rating'
     },
     genderOptions: ['男子&女子', '男子', '女子'],
     genderIndex: 0,
     genderText: '男子&女子',
+    sortOptions: ['评分', '场次'],
+    sortIndex: 0,
+    sortText: '评分',
     region: ['-', '-', '-'],
     regionText: '全国',
     page: 1,
@@ -129,6 +133,14 @@ Page({
     this.setData({ genderIndex: index, genderText, filter, page: 1, players: [], finished: false });
     this.fetchList(filter);
   },
+  onSortChange(e) {
+    const index = Number(e.detail.value);
+    const sort = index === 1 ? 'matches' : 'rating';
+    const sortText = this.data.sortOptions[index] || '评分';
+    const filter = { ...this.data.filter, sort };
+    this.setData({ sortIndex: index, sortText, filter, page: 1, players: [], finished: false });
+    this.fetchList(filter);
+  },
   onRegionChange(e) {
     const region = e.detail.value;
     const parts = region.filter(r => r && r !== '-');
@@ -148,6 +160,7 @@ Page({
     if (filter.gender && filter.gender !== 'All') params.gender = filter.gender;
     if (filter.mode === 'Doubles') params.doubles = true;
     if (filter.region) params.region = filter.region;
+    if (filter.sort === 'matches') params.sort = 'matches';
     params.limit = limit;
     if (offset) params.offset = offset;
     if (clubs.length) params.club = clubs.join(',');

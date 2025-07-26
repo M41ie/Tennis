@@ -4,6 +4,9 @@
 </view>
 
 <view class="filter-bar">
+  <picker mode="selector" range="{{sortOptions}}" value="{{sortIndex}}" bindchange="onSortChange">
+    <view class="filter-item">{{sortText}}</view>
+  </picker>
   <picker mode="selector" range="{{clubs}}" range-key="name" value="{{selectedClubIndex}}" bindchange="onClubSelect">
     <view class="filter-item">{{selectedClubText}}</view>
   </picker>
