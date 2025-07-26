@@ -65,7 +65,7 @@ Page({
   },
   onName(e) {
     const name = e.detail.value;
-    const ok = /^[A-Za-z\u4e00-\u9fa5]{0,12}$/.test(name);
+    const ok = /^[A-Za-z0-9\u4e00-\u9fa5]{0,12}$/.test(name);
     this.setData({ name, nameError: ok ? '' : this.data.t.nameRule, 'form.name': name });
   },
   onGender(e) {
