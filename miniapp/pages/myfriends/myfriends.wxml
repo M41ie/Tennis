@@ -19,9 +19,7 @@
               </block>
               <block wx:else>{{t.noAgainst}}</block>
             </view>
-            <view class="rate" wx:if="{{item.matches_singles && item.matches_singles.count}}">
-              胜率{{item.matches_singles.win_rate}}%
-            </view>
+            <view class="score {{item.matches_singles.cls}}">{{item.matches_singles.display}}</view>
           </view>
           <view class="col">
             <view class="icon">⚔️双打</view>
@@ -31,9 +29,7 @@
               </block>
               <block wx:else>{{t.noAgainst}}</block>
             </view>
-            <view class="rate" wx:if="{{item.matches_doubles && item.matches_doubles.count}}">
-              胜率{{item.matches_doubles.win_rate}}%
-            </view>
+            <view class="score {{item.matches_doubles.cls}}">{{item.matches_doubles.display}}</view>
           </view>
           <view class="col">
             <view class="icon">🤝双打</view>
@@ -43,9 +39,7 @@
               </block>
               <block wx:else>{{t.noPartner}}</block>
             </view>
-            <view class="rate" wx:if="{{item.matches_partnered && item.matches_partnered.count}}">
-              胜率{{item.matches_partnered.win_rate}}%
-            </view>
+            <view class="score {{item.matches_partnered.cls}}">{{item.matches_partnered.display}}</view>
           </view>
         </view>
       </view>

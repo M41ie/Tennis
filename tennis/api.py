@@ -1036,6 +1036,9 @@ def get_player_friends_api(user_id: str, request: Request):
             "singles_wins",
             "doubles_weight",
             "doubles_wins",
+            "singles_score_diff",
+            "doubles_score_diff",
+            "partner_score_diff",
         ):
             f.setdefault(k, 0.0)
     return friends

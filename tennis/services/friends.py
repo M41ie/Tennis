@@ -20,6 +20,7 @@ def get_player_friends(user_id: str) -> list[dict[str, object]]:
         singles: bool = False,
         doubles: bool = False,
         partner: bool = False,
+        score_diff: float = 0.0,
     ) -> None:
         if p.user_id == user_id:
             return
@@ -37,6 +38,9 @@ def get_player_friends(user_id: str) -> list[dict[str, object]]:
                 "doubles_wins": 0.0,
                 "partner_games": 0.0,
                 "partner_wins": 0.0,
+                "singles_score_diff": 0.0,
+                "doubles_score_diff": 0.0,
+                "partner_score_diff": 0.0,
             },
         )
         entry["weight"] += weight
@@ -46,36 +50,43 @@ def get_player_friends(user_id: str) -> list[dict[str, object]]:
             entry["singles_weight"] += weight
             if win:
                 entry["singles_wins"] += weight
+            entry["singles_score_diff"] += score_diff
         if doubles:
             entry["doubles_weight"] += weight
             if win:
                 entry["doubles_wins"] += weight
+            entry["doubles_score_diff"] += score_diff
         if partner:
             entry["partner_games"] += weight
             if win:
                 entry["partner_wins"] += weight
+            entry["partner_score_diff"] += score_diff
 
     for m in player.singles_matches:
         if m.player_a == player:
             opp = m.player_b
             win = m.score_a > m.score_b
+            diff = (m.score_a - m.score_b) * m.format_weight
         else:
             opp = m.player_a
             win = m.score_b > m.score_a
-        update(opp, win, m.format_weight, singles=True)
+            diff = (m.score_b - m.score_a) * m.format_weight
+        update(opp, win, m.format_weight, singles=True, score_diff=diff)
 
     for m in player.doubles_matches:
         if player in (m.player_a1, m.player_a2):
             partner = m.player_a2 if m.player_a1 == player else m.player_a1
             opponents = (m.player_b1, m.player_b2)
             win = m.score_a > m.score_b
+            diff = (m.score_a - m.score_b) * m.format_weight
         else:
             partner = m.player_b2 if m.player_b1 == player else m.player_b1
             opponents = (m.player_a1, m.player_a2)
             win = m.score_b > m.score_a
-        update(partner, win, m.format_weight, doubles=True, partner=True)
+            diff = (m.score_b - m.score_a) * m.format_weight
+        update(partner, win, m.format_weight, doubles=True, partner=True, score_diff=diff)
         for opp in opponents:
-            update(opp, win, m.format_weight, doubles=True)
+            update(opp, win, m.format_weight, doubles=True, score_diff=diff)
 
     result = list(friends.values())
     result.sort(key=lambda x: x["weight"], reverse=True)
@@ -88,6 +99,9 @@ def get_player_friends(user_id: str) -> list[dict[str, object]]:
         r["doubles_wins"] = round(r["doubles_wins"], 2)
         r["partner_games"] = round(r["partner_games"], 2)
         r["partner_wins"] = round(r["partner_wins"], 2)
+        r["singles_score_diff"] = round(r["singles_score_diff"], 3)
+        r["doubles_score_diff"] = round(r["doubles_score_diff"], 3)
+        r["partner_score_diff"] = round(r["partner_score_diff"], 3)
     return result
 
 __all__ = ["get_player_friends"]

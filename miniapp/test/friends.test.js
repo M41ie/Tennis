@@ -15,10 +15,13 @@ const sampleData = [
     avatar: '/f1.png',
     singles_weight: 1,
     singles_wins: 1,
+    singles_score_diff: 2,
     doubles_weight: 1,
     doubles_wins: 0,
+    doubles_score_diff: -1,
     partner_games: 1,
     partner_wins: 1,
+    partner_score_diff: 3,
   },
   {
     user_id: 'f2',
@@ -26,6 +29,7 @@ const sampleData = [
     avatar: '/f2.png',
     singles_weight: 1,
     singles_wins: 0,
+    singles_score_diff: -2,
   },
 ];
 
@@ -57,6 +61,10 @@ test('friends page shows entries', async () => {
   // verify absence of partner information displays fallback text
   const partnerText2 = items[1].querySelectorAll('.text')[2].innerHTML;
   expect(partnerText2).toBe('尚未搭档');
+  const score1 = items[0].querySelectorAll('.score')[0].innerHTML;
+  expect(score1).toBe('+2.000');
+  const score2 = items[1].querySelectorAll('.score')[0].innerHTML;
+  expect(score2).toBe('-2.000');
   const summary = comp.dom.querySelector('.summary').innerHTML;
   expect(summary).toBe('您共与2位球友对战/搭档过：');
 });
