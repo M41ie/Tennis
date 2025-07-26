@@ -4,6 +4,9 @@
 </view>
 
 <view class="filter-bar">
+  <picker mode="selector" range="{{sortOptions}}" value="{{sortIndex}}" bindchange="onSortChange">
+    <view class="filter-item">{{sortText}}</view>
+  </picker>
   <picker mode="selector" range="{{clubs}}" range-key="name" value="{{selectedClubIndex}}" bindchange="onClubSelect">
     <view class="filter-item">{{selectedClubText}}</view>
   </picker>
@@ -42,7 +45,7 @@
         <view class="name">{{item.name}}</view>
         <view class="meta">{{item.gender=='M'?'男':item.gender=='F'?'女':'-'}} · {{filter.mode === 'Singles' ? '单打场次:' : '双打场次:'}} {{filter.mode === 'Singles' ? item.weighted_singles_matches : item.weighted_doubles_matches}}</view>
       </view>
-      <view class="score">{{item.rating}}</view>
+      <view class="score">{{item.display}}</view>
     </view>
   </block>
 </view>
