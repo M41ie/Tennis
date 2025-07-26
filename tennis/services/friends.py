@@ -66,11 +66,17 @@ def get_player_friends(user_id: str) -> list[dict[str, object]]:
         if m.player_a == player:
             opp = m.player_b
             win = m.score_a > m.score_b
-            diff = (m.score_a - m.score_b) * m.format_weight
+            if m.rating_a_after is not None and m.rating_a_before is not None:
+                diff = m.rating_a_after - m.rating_a_before
+            else:
+                diff = 0.0
         else:
             opp = m.player_a
             win = m.score_b > m.score_a
-            diff = (m.score_b - m.score_a) * m.format_weight
+            if m.rating_b_after is not None and m.rating_b_before is not None:
+                diff = m.rating_b_after - m.rating_b_before
+            else:
+                diff = 0.0
         update(opp, win, m.format_weight, singles=True, score_diff=diff)
 
     for m in player.doubles_matches:
@@ -78,12 +84,26 @@ def get_player_friends(user_id: str) -> list[dict[str, object]]:
             partner = m.player_a2 if m.player_a1 == player else m.player_a1
             opponents = (m.player_b1, m.player_b2)
             win = m.score_a > m.score_b
-            diff = (m.score_a - m.score_b) * m.format_weight
+            if player == m.player_a1:
+                after = m.rating_a1_after
+                before = m.rating_a1_before
+            else:
+                after = m.rating_a2_after
+                before = m.rating_a2_before
         else:
             partner = m.player_b2 if m.player_b1 == player else m.player_b1
             opponents = (m.player_a1, m.player_a2)
             win = m.score_b > m.score_a
-            diff = (m.score_b - m.score_a) * m.format_weight
+            if player == m.player_b1:
+                after = m.rating_b1_after
+                before = m.rating_b1_before
+            else:
+                after = m.rating_b2_after
+                before = m.rating_b2_before
+        if after is not None and before is not None:
+            diff = after - before
+        else:
+            diff = 0.0
         update(partner, win, m.format_weight, doubles=True, partner=True, score_diff=diff)
         for opp in opponents:
             update(opp, win, m.format_weight, doubles=True, score_diff=diff)
