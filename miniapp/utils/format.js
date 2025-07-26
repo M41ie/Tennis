@@ -18,4 +18,15 @@ function withBase(path) {
   return getApp().globalData.BASE_URL + path;
 }
 
-module.exports = { formatRating, formatGames, withBase };
+function formatScoreDiff(value) {
+  const num = Number(value);
+  if (!value || Number.isNaN(num)) {
+    return { display: '0.000', cls: 'neutral' };
+  }
+  const abs = Math.abs(num).toFixed(3);
+  const sign = num > 0 ? '+' : num < 0 ? '-' : '';
+  const cls = num === 0 ? 'neutral' : 'pos';
+  return { display: sign + abs, cls };
+}
+
+module.exports = { formatRating, formatGames, withBase, formatScoreDiff };

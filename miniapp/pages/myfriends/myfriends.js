@@ -2,7 +2,7 @@ const friendService = require('../../services/friend');
 const store = require('../../store/store');
 const { hideKeyboard } = require('../../utils/hideKeyboard');
 const { t } = require('../../utils/locales');
-const { withBase } = require('../../utils/format');
+const { withBase, formatScoreDiff } = require('../../utils/format');
 const IMAGES = require('../../assets/base64.js');
 
 Page({
@@ -24,20 +24,28 @@ Page({
         const list = (res || []).map(item => {
           item.avatar = withBase(item.avatar || item.avatar_url);
           if (!item.matches_singles && item.singles_weight !== undefined) {
-            const winRate = item.singles_weight ? ((item.singles_wins || 0) / item.singles_weight * 100).toFixed(1) : 0;
-            item.matches_singles = { count: item.singles_weight, win_rate: winRate };
+            const info = formatScoreDiff(item.singles_score_diff);
+            item.matches_singles = {
+              count: item.singles_weight,
+              display: info.display,
+              cls: info.cls,
+            };
           }
           if (!item.matches_doubles && item.doubles_weight !== undefined) {
-            const winRate = item.doubles_weight ? ((item.doubles_wins || 0) / item.doubles_weight * 100).toFixed(1) : 0;
-            item.matches_doubles = { count: item.doubles_weight, win_rate: winRate };
-          }
-          if (!item.matches_against && item.weight !== undefined) {
-            const winRate = item.weight ? ((item.wins || 0) / item.weight * 100).toFixed(1) : 0;
-            item.matches_against = { count: item.weight, win_rate: winRate };
+            const info = formatScoreDiff(item.doubles_score_diff);
+            item.matches_doubles = {
+              count: item.doubles_weight,
+              display: info.display,
+              cls: info.cls,
+            };
           }
           if (!item.matches_partnered && item.partner_games !== undefined) {
-            const winRate = item.partner_games ? ((item.partner_wins || 0) / item.partner_games * 100).toFixed(1) : 0;
-            item.matches_partnered = { count: item.partner_games, win_rate: winRate };
+            const info = formatScoreDiff(item.partner_score_diff);
+            item.matches_partnered = {
+              count: item.partner_games,
+              display: info.display,
+              cls: info.cls,
+            };
           }
           return item;
         });
