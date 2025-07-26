@@ -120,7 +120,7 @@ const zh_CN = {
   pendingRecords: '待确认战绩',
   singlesGames: '单打场次',
   doublesGames: '双打场次',
-  globalRanking: '全局排行',
+  globalRanking: '不限俱乐部',
   myClub: '所属俱乐部',
   genderAll: '男子&女子',
   genderMale: '男子',
