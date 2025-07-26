@@ -66,5 +66,5 @@ test('friends page shows entries', async () => {
   const score2 = items[1].querySelectorAll('.score')[0].innerHTML;
   expect(score2).toBe('-2.000');
   const summary = comp.dom.querySelector('.summary').innerHTML;
-  expect(summary).toBe('您共与2位球友对战/搭档过：');
+  expect(summary).toBe('您与2位球友交手或搭档过：');
 });
