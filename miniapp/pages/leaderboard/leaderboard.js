@@ -22,9 +22,9 @@ Page({
     genderOptions: ['男子&女子', '男子', '女子'],
     genderIndex: 0,
     genderText: '男子&女子',
-    sortOptions: ['评分', '场次'],
+    sortOptions: ['评分排行', '场次排行'],
     sortIndex: 0,
-    sortText: '评分',
+    sortText: '评分排行',
     region: ['-', '-', '-'],
     regionText: '全国',
     page: 1,
@@ -136,7 +136,7 @@ Page({
   onSortChange(e) {
     const index = Number(e.detail.value);
     const sort = index === 1 ? 'matches' : 'rating';
-    const sortText = this.data.sortOptions[index] || '评分';
+    const sortText = this.data.sortOptions[index] || '评分排行';
     const filter = { ...this.data.filter, sort };
     this.setData({ sortIndex: index, sortText, filter, page: 1, players: [], finished: false });
     this.fetchList(filter);
