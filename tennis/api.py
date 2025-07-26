@@ -734,8 +734,15 @@ def list_all_players(
                 entry["singles_rating"] = rating
             players_map[p.user_id] = entry
     players = list(players_map.values())
-    key = "doubles_rating" if doubles else "singles_rating"
-    players.sort(key=lambda x: x.get(key, float('-inf')) if x.get(key) is not None else float('-inf'), reverse=True)
+    if sort == "matches":
+        key = "weighted_doubles_matches" if doubles else "weighted_singles_matches"
+        players.sort(key=lambda x: x.get(key, float("-inf")), reverse=True)
+    else:
+        key = "doubles_rating" if doubles else "singles_rating"
+        players.sort(
+            key=lambda x: x.get(key, float("-inf")) if x.get(key) is not None else float("-inf"),
+            reverse=True,
+        )
     if offset:
         players = players[offset:]
     if limit is not None:
