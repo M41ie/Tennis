@@ -104,7 +104,8 @@ def get_player_friends(user_id: str) -> list[dict[str, object]]:
             diff = after - before
         else:
             diff = 0.0
-        update(partner, win, m.format_weight, doubles=True, partner=True, score_diff=diff)
+        # partner interactions should not count towards doubles opponent stats
+        update(partner, win, m.format_weight, partner=True, score_diff=diff)
         for opp in opponents:
             update(opp, win, m.format_weight, doubles=True, score_diff=diff)
 
